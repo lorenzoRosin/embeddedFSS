@@ -29,6 +29,26 @@ extern "C" {
  *      TYPEDEFS
  **********************************************************************************************************************/
 /* Define a generic crc callback context that must be implemented by the user */
+typedef struct t_eFSS_LLUTILSPRV_EraseCtxUser t_eFSS_LLUTILSPRV_EraseCtx;
+
+/* Call back of a function that will calculate the CRC for this modules.
+ * the p_ptCtx parameter is a custom pointer that can be used by the creator of this CRC callback, and will not be used
+ * by the CRCdigest module */
+typedef bool_t (*f_eFSS_LLUTILSPRV_EraseCb) ( t_eFSS_LLUTILSPRV_EraseCtx* const p_ptCtx,
+                                              const uint32_t p_uPageToErase );
+
+
+
+
+
+
+
+
+
+
+
+
+/* Define a generic crc callback context that must be implemented by the user */
 typedef struct t_eFSS_LLUTILSPRV_CrcCtxUser t_eFSS_LLUTILSPRV_CrcCtx;
 
 /* Call back of a function that will calculate the CRC for this modules.
@@ -41,11 +61,7 @@ typedef enum
 {
     e_eFSS_LLUTILSPRV_RES_OK = 0,
     e_eFSS_LLUTILSPRV_RES_BADPARAM,
-    e_eFSS_LLUTILSPRV_RES_BADPOINTER,
-	e_eFSS_LLUTILSPRV_RES_CORRUPTCTX,
-    e_eFSS_LLUTILSPRV_RES_NODATA,
-    e_eFSS_LLUTILSPRV_RES_NOINITLIB,
-    e_eFSS_LLUTILSPRV_RES_NOINITFRAME,
+    e_eFSS_LLUTILSPRV_RES_CLBCKREPORTERROR
 }e_eFSS_LLUTILSPRV_RES;
 
 
@@ -59,16 +75,28 @@ typedef enum
  **********************************************************************************************************************/
 
 /**
- * @brief       Initialize the CRC32 digester context ( use as base p_uUseed 0xFFFFFFFFu )
+ * @brief       Erase a specified page
  *
- * @param[in]   p_ptCtx       - Crc digester context
- * @param[in]   p_fCrc        - Pointer to a CRC 32 p_uUseed callback function, that will be used to calculate the CRC32
- * @param[in]   p_ptFctx      - Custom context passed to the callback function p_fCrc
+ * @param[in]   p_ptCtx       - Erase function context
+ * @param[in]   p_fErase      - Erase function pointer
+ * @param[in]   p_uPageIndx   - Page index we want to erase
  *
- * @return      e_eCU_CRCD_RES_BADPOINTER     - In case of bad pointer passed to the function
- *              e_eCU_CRCD_RES_OK             - Crc digester initialized successfully
+ * @return      e_eFSS_LLUTILSPRV_RES_OK                - Operation ended successfully
+ *              e_eFSS_LLUTILSPRV_RES_BADPOINTER        - In case of bad pointer passed to the function
+ *              e_eFSS_LLUTILSPRV_RES_CLBCKREPORTERROR  - Error reported from the callback
  */
-e_eFSS_Res erasePageLL( f_eCU_CRCD_CrcCb p_fCrc, const uint32_t pageAreaID, const uint32_t pageIndx );
+e_eFSS_LLUTILSPRV_RES eFSS_LLUTILSPRV_ErasePage( t_eFSS_LLUTILSPRV_EraseCtx* const uint32_t p_ptCtx,
+                                                 f_eFSS_LLUTILSPRV_EraseCb p_fErase, const uint32_t p_uPageIndx );
+
+
+
+
+
+
+
+
+
+
 
 
 
