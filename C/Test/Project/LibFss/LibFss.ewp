@@ -1067,7 +1067,7 @@
                 </option>
                 <option>
                     <name>IarchiveOutput</name>
-                    <state>C:\Project\embeddedCU\C\Test\Project\LibFss\Library\Exe\LibFss.a</state>
+                    <state>C:\Project\embeddedFSS\C\Test\Project\LibFss\Library\Exe\LibFss.a</state>
                 </option>
             </data>
         </settings>
@@ -1107,6 +1107,9 @@
             <name>$PROJ_DIR$\..\..\..\Code\Inc\eCU_DUNPK.h</name>
         </file>
         <file>
+            <name>$PROJ_DIR$\..\..\..\Code\Inc\eFSS_LLUTILSPRV.h</name>
+        </file>
+        <file>
             <name>$PROJ_DIR$\..\..\..\Code\Inc\eFSS_STANDARDTYPE.h</name>
         </file>
         <file>
@@ -1135,6 +1138,9 @@
         </file>
         <file>
             <name>$PROJ_DIR$\..\..\..\Code\Src\eCU_DUNPK.c</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\..\..\Code\Src\eFSS_LLUTILSPRV.c</name>
         </file>
     </group>
 </project>
