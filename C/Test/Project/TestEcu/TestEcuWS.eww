@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<workspace>
+    <project>
+        <path>$WS_DIR$\..\LibEcu\LibEcu.ewp</path>
+    </project>
+    <project>
+        <path>$WS_DIR$\TestEcu.ewp</path>
+    </project>
+    <batchBuild>
+        <batchDefinition>
+            <name>TEST_BUILD</name>
+            <member>
+                <project>LibEcu</project>
+                <configuration>Library</configuration>
+            </member>
+            <member>
+                <project>TestEcu</project>
+                <configuration>Release</configuration>
+            </member>
+        </batchDefinition>
+    </batchBuild>
+</workspace>

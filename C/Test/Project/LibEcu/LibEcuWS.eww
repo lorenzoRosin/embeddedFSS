@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<workspace>
+    <project>
+        <path>$WS_DIR$\LibEcu.ewp</path>
+    </project>
+    <batchBuild>
+        <batchDefinition>
+            <name>LIBRARY</name>
+            <member>
+                <project>LibEcu</project>
+                <configuration>Library</configuration>
+            </member>
+        </batchDefinition>
+    </batchBuild>
+</workspace>

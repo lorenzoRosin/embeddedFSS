@@ -1,0 +1,6 @@
+# ignore 
+Debug/*
+Release/*
+settings/*
+*.dep
+*.wsdt
