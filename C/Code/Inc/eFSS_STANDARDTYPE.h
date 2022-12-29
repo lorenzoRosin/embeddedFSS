@@ -1,14 +1,14 @@
 /**
- * @file       eCU_STANDARDTYPE.h
+ * @file       eFSS_STANDARDTYPE.h
  *
- * @brief      Ecu standard type header
+ * @brief      eFss standard type header
  *
  * @author     Lorenzo Rosin
  *
  **********************************************************************************************************************/
 
-#ifndef ECU_STANDARDTYPE_H
-#define ECU_STANDARDTYPE_H
+#ifndef EFSS_STANDARDTYPE_H
+#define EFSS_STANDARDTYPE_H
 
 
 
@@ -70,4 +70,4 @@ extern "C" {
 
 
 
-#endif /* ECU_STANDARDTYPE_H */
+#endif /* EFSS_STANDARDTYPE_H */

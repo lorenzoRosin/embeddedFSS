@@ -1,14 +1,14 @@
 /**
- * @file       eCU_TYPE.h
+ * @file       eFSS_TYPE.h
  *
- * @brief      Ecu lib type header
+ * @brief      eFss lib type header
  *
  * @author     Lorenzo Rosin
  *
  **********************************************************************************************************************/
 
-#ifndef ECU_TYPE_H
-#define ECU_TYPE_H
+#ifndef EFSS_TYPE_H
+#define EFSS_TYPE_H
 
 
 
@@ -21,7 +21,7 @@ extern "C" {
 /***********************************************************************************************************************
  *      INCLUDES
  **********************************************************************************************************************/
-#include "eCU_STANDARDTYPE.h"
+#include "eFSS_STANDARDTYPE.h"
 
 
 
@@ -40,4 +40,4 @@ extern "C" {
 
 
 
-#endif /* ECU_TYPE_H */
+#endif /* EFSS_TYPE_H */

@@ -1107,10 +1107,10 @@
             <name>$PROJ_DIR$\..\..\..\Code\Inc\eCU_DUNPK.h</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\Code\Inc\eCU_STANDARDTYPE.h</name>
+            <name>$PROJ_DIR$\..\..\..\Code\Inc\eFSS_STANDARDTYPE.h</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\Code\Inc\eCU_TYPE.h</name>
+            <name>$PROJ_DIR$\..\..\..\Code\Inc\eFSS_TYPE.h</name>
         </file>
     </group>
     <group>
