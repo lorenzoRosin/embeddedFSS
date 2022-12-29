@@ -2,7 +2,7 @@
 <project>
     <fileVersion>3</fileVersion>
     <configuration>
-        <name>Release</name>
+        <name>Library</name>
         <toolchain>
             <name>ARM</name>
         </toolchain>
@@ -20,7 +20,7 @@
                 </option>
                 <option>
                     <name>BrowseInfoPath</name>
-                    <state>Release\BrowseInfo</state>
+                    <state>Library\BrowseInfo</state>
                 </option>
                 <option>
                     <name>OGProductVersion</name>
@@ -28,15 +28,15 @@
                 </option>
                 <option>
                     <name>ExePath</name>
-                    <state>Release\Exe</state>
+                    <state>Library\Exe</state>
                 </option>
                 <option>
                     <name>ObjPath</name>
-                    <state>Release\Obj</state>
+                    <state>Library\Obj</state>
                 </option>
                 <option>
                     <name>ListPath</name>
-                    <state>Release\List</state>
+                    <state>Library\List</state>
                 </option>
                 <option>
                     <name>GEndianMode</name>
@@ -52,7 +52,7 @@
                 </option>
                 <option>
                     <name>GOutputBinary</name>
-                    <state>0</state>
+                    <state>1</state>
                 </option>
                 <option>
                     <name>OGCoreOrChip</name>
@@ -61,16 +61,16 @@
                 <option>
                     <name>GRuntimeLibSelect</name>
                     <version>0</version>
-                    <state>2</state>
+                    <state>0</state>
                 </option>
                 <option>
                     <name>GRuntimeLibSelectSlave</name>
                     <version>0</version>
-                    <state>2</state>
+                    <state>0</state>
                 </option>
                 <option>
                     <name>RTDescription</name>
-                    <state>A complete configuration of the C/C++14 runtime library. Full locale interface, C locale, file descriptor support, multibytes in printf and scanf, and hex floats in strtod.</state>
+                    <state>Do not link with a runtime library.</state>
                 </option>
                 <option>
                     <name>OGLastSavedByProductVersion</name>
@@ -82,7 +82,7 @@
                 </option>
                 <option>
                     <name>GenLowLevelInterface</name>
-                    <state>1</state>
+                    <state>0</state>
                 </option>
                 <option>
                     <name>GEndianModeBE</name>
@@ -98,7 +98,7 @@
                 </option>
                 <option>
                     <name>RTConfigPath2</name>
-                    <state>$TOOLKIT_DIR$\inc\c\DLib_Config_Full.h</state>
+                    <state></state>
                 </option>
                 <option>
                     <name>GBECoreSlave</name>
@@ -205,7 +205,7 @@
                 </option>
                 <option>
                     <name>BuildFilesPath</name>
-                    <state>Release\</state>
+                    <state>Library\</state>
                 </option>
                 <option>
                     <name>PointerAuthentication</name>
@@ -347,9 +347,8 @@
                 </option>
                 <option>
                     <name>CCIncludePath2</name>
-                    <state>$PROJ_DIR$\..\..\Code\TestFunction\Inc</state>
-                    <state>$PROJ_DIR$\..\..\Code\TestFunction\Src</state>
                     <state>$PROJ_DIR$\..\..\..\Code\Inc</state>
+                    <state>$PROJ_DIR$\..\..\..\Code\Src</state>
                 </option>
                 <option>
                     <name>CCStdIncCheck</name>
@@ -609,8 +608,7 @@
                 </option>
                 <option>
                     <name>AUserIncludes</name>
-                    <state>$PROJ_DIR$\..\..\Code\TestFunction\Inc</state>
-                    <state>$PROJ_DIR$\..\..\Code\TestFunction\Src</state>
+                    <state></state>
                 </option>
                 <option>
                     <name>AExtraOptionsCheckV2</name>
@@ -648,7 +646,7 @@
                 </option>
                 <option>
                     <name>OOCOutputFile</name>
-                    <state>TestEcu.srec</state>
+                    <state></state>
                 </option>
                 <option>
                     <name>OOCCommandLineProducer</name>
@@ -666,7 +664,7 @@
             <data>
                 <extensions></extensions>
                 <cmdline></cmdline>
-                <hasPrio>0</hasPrio>
+                <hasPrio>1</hasPrio>
                 <buildSequence>inputOutputBased</buildSequence>
             </data>
         </settings>
@@ -759,7 +757,7 @@
                 </option>
                 <option>
                     <name>IlinkIcfFile</name>
-                    <state>$TOOLKIT_DIR$\config\generic_cortex.icf</state>
+                    <state></state>
                 </option>
                 <option>
                     <name>IlinkIcfFileSlave</name>
@@ -807,8 +805,7 @@
                 </option>
                 <option>
                     <name>IlinkAdditionalLibs</name>
-                    <state>$PROJ_DIR$\..\LibEcu\Library\Exe\LibEcu.a
-</state>
+                    <state></state>
                 </option>
                 <option>
                     <name>IlinkOverrideProgramEntryLabel</name>
@@ -820,7 +817,7 @@
                 </option>
                 <option>
                     <name>IlinkProgramEntryLabel</name>
-                    <state>__iar_program_start</state>
+                    <state></state>
                 </option>
                 <option>
                     <name>DoFill</name>
@@ -993,7 +990,7 @@
                 </option>
                 <option>
                     <name>IlinkTrustzoneImportLibraryOut</name>
-                    <state>TestEcu_import_lib.o</state>
+                    <state>###Unitialized###</state>
                 </option>
                 <option>
                     <name>OILinkExtraOption</name>
@@ -1070,7 +1067,7 @@
                 </option>
                 <option>
                     <name>IarchiveOutput</name>
-                    <state>###Unitialized###</state>
+                    <state>C:\Project\embeddedCU\C\Test\Project\LibFss\Library\Exe\LibFss.a</state>
                 </option>
             </data>
         </settings>
@@ -1083,64 +1080,61 @@
     <group>
         <name>Inc</name>
         <file>
-            <name>$PROJ_DIR$\..\..\Code\TestFunction\Inc\eCU_BSTFTST.h</name>
+            <name>$PROJ_DIR$\..\..\..\Code\Inc\eCU_BSTF.h</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\Code\TestFunction\Inc\eCU_BUSTFTST.h</name>
+            <name>$PROJ_DIR$\..\..\..\Code\Inc\eCU_BSTFPRV.h</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\Code\TestFunction\Inc\eCU_CIRQTST.h</name>
+            <name>$PROJ_DIR$\..\..\..\Code\Inc\eCU_BUNSTF.h</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\Code\TestFunction\Inc\eCU_CRCDTST.h</name>
+            <name>$PROJ_DIR$\..\..\..\Code\Inc\eCU_BUNSTFPRV.h</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\Code\TestFunction\Inc\eCU_CRCTST.h</name>
+            <name>$PROJ_DIR$\..\..\..\Code\Inc\eCU_CIRQ.h</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\Code\TestFunction\Inc\eCU_DPKTST.h</name>
+            <name>$PROJ_DIR$\..\..\..\Code\Inc\eCU_CRC.h</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\Code\TestFunction\Inc\eCU_DPKDUNPKTST.h</name>
+            <name>$PROJ_DIR$\..\..\..\Code\Inc\eCU_CRCD.h</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\Code\TestFunction\Inc\eCU_BSTFBUNSTFTST.h</name>
+            <name>$PROJ_DIR$\..\..\..\Code\Inc\eCU_DPK.h</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\Code\TestFunction\Inc\eCU_DUNPKTST.h</name>
+            <name>$PROJ_DIR$\..\..\..\Code\Inc\eCU_DUNPK.h</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\..\..\Code\Inc\eCU_STANDARDTYPE.h</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\..\..\Code\Inc\eCU_TYPE.h</name>
         </file>
     </group>
     <group>
         <name>Src</name>
         <file>
-            <name>$PROJ_DIR$\..\..\Code\TestFunction\Src\eCU_BSTFTST.c</name>
+            <name>$PROJ_DIR$\..\..\..\Code\Src\eCU_BSTF.c</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\Code\TestFunction\Src\eCU_BUSTFTST.c</name>
+            <name>$PROJ_DIR$\..\..\..\Code\Src\eCU_BUNSTF.c</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\Code\TestFunction\Src\eCU_CIRQTST.c</name>
+            <name>$PROJ_DIR$\..\..\..\Code\Src\eCU_CIRQ.c</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\Code\TestFunction\Src\eCU_CRCDTST.c</name>
+            <name>$PROJ_DIR$\..\..\..\Code\Src\eCU_CRC.c</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\Code\TestFunction\Src\eCU_CRCTST.c</name>
+            <name>$PROJ_DIR$\..\..\..\Code\Src\eCU_CRCD.c</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\Code\TestFunction\Src\eCU_DPKTST.c</name>
+            <name>$PROJ_DIR$\..\..\..\Code\Src\eCU_DPK.c</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\Code\TestFunction\Src\eCU_DPKDUNPKTST.c</name>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\..\..\Code\TestFunction\Src\eCU_BSTFBUNSTFTST.c</name>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\..\..\Code\TestFunction\Src\eCU_DUNPKTST.c</name>
+            <name>$PROJ_DIR$\..\..\..\Code\Src\eCU_DUNPK.c</name>
         </file>
     </group>
-    <file>
-        <name>$PROJ_DIR$\main.c</name>
-    </file>
 </project>

@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <workspace>
     <project>
-        <path>$WS_DIR$\..\LibEcu\LibEcu.ewp</path>
+        <path>$WS_DIR$\..\LibFss\LibFss.ewp</path>
     </project>
     <project>
-        <path>$WS_DIR$\TestEcu.ewp</path>
+        <path>$WS_DIR$\TestFss.ewp</path>
     </project>
     <batchBuild>
         <batchDefinition>
             <name>TEST_BUILD</name>
             <member>
-                <project>LibEcu</project>
+                <project>LibFss</project>
                 <configuration>Library</configuration>
             </member>
             <member>
-                <project>TestEcu</project>
+                <project>TestFss</project>
                 <configuration>Release</configuration>
             </member>
         </batchDefinition>

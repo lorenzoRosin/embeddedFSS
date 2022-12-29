@@ -1,7 +1,7 @@
 Code Coverage Result
 =============================================
 
-Program "TestEcu" coverage: 49.19%
+Program "TestFss" coverage: 49.19%
 
 +------------------------------------------+
 
