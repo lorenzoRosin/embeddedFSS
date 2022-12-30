@@ -37,16 +37,25 @@ typedef struct t_eFSS_LLUTILSPRV_EraseCtxUser t_eFSS_LLUTILSPRV_EraseCtx;
 typedef bool_t (*f_eFSS_LLUTILSPRV_EraseCb) ( t_eFSS_LLUTILSPRV_EraseCtx* const p_ptCtx,
                                               const uint32_t p_uPageToErase );
 
+/* Define a generic crc callback context that must be implemented by the user */
+typedef struct t_eFSS_LLUTILSPRV_WriteCtxUser t_eFSS_LLUTILSPRV_WriteCtx;
 
+/* Call back of a function that will calculate the CRC for this modules.
+ * the p_ptCtx parameter is a custom pointer that can be used by the creator of this CRC callback, and will not be used
+ * by the CRCdigest module */
+typedef bool_t (*f_eFSS_LLUTILSPRV_WriteCb) ( t_eFSS_LLUTILSPRV_WriteCtx* const p_ptCtx,
+                                              const uint32_t p_uPageToWrite, uint32_t* const p_puDataToWrite
+                                              const uint32_t p_uDataToWriteL);
 
+/* Define a generic crc callback context that must be implemented by the user */
+typedef struct t_eFSS_LLUTILSPRV_ReadCtxUser t_eFSS_LLUTILSPRV_ReadCtx;
 
-
-
-
-
-
-
-
+/* Call back of a function that will calculate the CRC for this modules.
+ * the p_ptCtx parameter is a custom pointer that can be used by the creator of this CRC callback, and will not be used
+ * by the CRCdigest module */
+typedef bool_t (*f_eFSS_LLUTILSPRV_ReadCb) ( t_eFSS_LLUTILSPRV_ReadCtx* const p_ptCtx,
+                                              const uint32_t p_uPageToRead, uint32_t* const p_puReadBuffer
+                                              const uint32_t p_uReadBufferL);
 
 /* Define a generic crc callback context that must be implemented by the user */
 typedef struct t_eFSS_LLUTILSPRV_CrcCtxUser t_eFSS_LLUTILSPRV_CrcCtx;
@@ -54,13 +63,15 @@ typedef struct t_eFSS_LLUTILSPRV_CrcCtxUser t_eFSS_LLUTILSPRV_CrcCtx;
 /* Call back of a function that will calculate the CRC for this modules.
  * the p_ptCtx parameter is a custom pointer that can be used by the creator of this CRC callback, and will not be used
  * by the CRCdigest module */
-typedef bool_t (*f_eFSS_LLUTILSPRV_CrcCb) ( t_eFSS_LLUTILSPRV_CrcCtx* const p_ptCtx, const uint32_t p_uUseed, const uint8_t* p_puData,
-                                     const uint32_t p_uDataL, uint32_t* const p_puCrc32Val );
+typedef bool_t (*f_eFSS_LLUTILSPRV_CrcCb) ( t_eFSS_LLUTILSPRV_CrcCtx* const p_ptCtx, const uint32_t p_uUseed,
+                                            const uint8_t* p_puData, const uint32_t p_uDataL,
+                                            uint32_t* const p_puCrc32Val );
 
 typedef enum
 {
     e_eFSS_LLUTILSPRV_RES_OK = 0,
     e_eFSS_LLUTILSPRV_RES_BADPARAM,
+    e_eFSS_LLUTILSPRV_RES_BADPOINTER,
     e_eFSS_LLUTILSPRV_RES_CLBCKREPORTERROR
 }e_eFSS_LLUTILSPRV_RES;
 
@@ -88,89 +99,60 @@ typedef enum
 e_eFSS_LLUTILSPRV_RES eFSS_LLUTILSPRV_ErasePage( t_eFSS_LLUTILSPRV_EraseCtx* const uint32_t p_ptCtx,
                                                  f_eFSS_LLUTILSPRV_EraseCb p_fErase, const uint32_t p_uPageIndx );
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+/**
+ * @brief       Write a specified page and verify the operation by reading the data back
+ *
+ * @param[in]   p_ptCtx       - Erase function context
+ * @param[in]   p_fErase      - Erase function pointer
+ * @param[in]   p_uPageIndx   - Page index we want to erase
+ *
+ * @return      e_eFSS_LLUTILSPRV_RES_OK                - Operation ended successfully
+ *              e_eFSS_LLUTILSPRV_RES_BADPOINTER        - In case of bad pointer passed to the function
+ *              e_eFSS_LLUTILSPRV_RES_BADPARAM          - In case of bad param passed to the function
+ *              e_eFSS_LLUTILSPRV_RES_CLBCKREPORTERROR  - Error reported from the callback
+ */
+e_eFSS_LLUTILSPRV_RES eFSS_LLUTILSPRV_WritePage( t_eFSS_LLUTILSPRV_WriteCtx* const uint32_t p_ptCtxW,
+                                                 f_eFSS_LLUTILSPRV_WriteCb p_fWrite,
+                                                 t_eFSS_LLUTILSPRV_ReadCtx* const uint32_t p_ptCtxR,
+                                                 f_eFSS_LLUTILSPRV_ReadCb p_fRead,
+                                                 const uint32_t p_uPageIndx,
+                                                 uint8_t* const p_puDataW, const uint32_t p_uDataWriteLen,
+                                                 uint8_t* const p_puDataR, const uint32_t p_uDataReadLen );
+/**
+ * @brief       Read a specified page and verify the operation by reading the data back
+ *
+ * @param[in]   p_ptCtx       - Erase function context
+ * @param[in]   p_fErase      - Erase function pointer
+ * @param[in]   p_uPageIndx   - Page index we want to erase
+ *
+ * @return      e_eFSS_LLUTILSPRV_RES_OK                - Operation ended successfully
+ *              e_eFSS_LLUTILSPRV_RES_BADPOINTER        - In case of bad pointer passed to the function
+ *              e_eFSS_LLUTILSPRV_RES_BADPARAM          - In case of bad param passed to the function
+ *              e_eFSS_LLUTILSPRV_RES_CLBCKREPORTERROR  - Error reported from the callback
+ */
+e_eFSS_LLUTILSPRV_RES eFSS_LLUTILSPRV_ReadPage( t_eFSS_LLUTILSPRV_ReadCtx* const uint32_t p_ptCtx,
+                                                f_eFSS_LLUTILSPRV_ReadCb p_fRead,
+                                                const uint32_t p_uPageIndx,
+                                                uint8_t* const p_puDataR, const uint32_t p_uDataReadLen );
 
 /**
- * Erase a memory page
- * @param pginfo Information about memory and pages
- * @param cb Information about callbacks and callbacks pointer
- * @param pageIndx page index to erase
- * @return EFSS_RES_BADPOINTER in case of bad pointer
- *         EFSS_RES_BADPARAM in case of a wrong param passed
- *         EFSS_RES_ERRORERASE erase function callback failed
- *         EFSS_RES_OK page erased successfully
+ * @brief       Calculate the CRC 32 of a passed buffer using 0xFFFFFFFF as seed
+ *
+ * @param[in]   p_ptCtx       - Erase function context
+ * @param[in]   p_fErase      - Erase function pointer
+ * @param[in]   p_uPageIndx   - Page index we want to erase
+ *
+ * @return      e_eFSS_LLUTILSPRV_RES_OK                - Operation ended successfully
+ *              e_eFSS_LLUTILSPRV_RES_BADPOINTER        - In case of bad pointer passed to the function
+ *              e_eFSS_LLUTILSPRV_RES_BADPARAM          - In case of bad param passed to the function
+ *              e_eFSS_LLUTILSPRV_RES_CLBCKREPORTERROR  - Error reported from the callback
  */
-e_eFSS_Res erasePageLL( const s_eFSS_PgInfo pginfo, const s_eFSS_Cb cb, const uint32_t pageIndx );
+e_eFSS_LLUTILSPRV_RES eFSS_LLUTILSPRV_CalcCrc32( t_eFSS_LLUTILSPRV_CrcCtx* const uint32_t p_ptCtx,
+                                                 f_eFSS_LLUTILSPRV_CrcCb p_fCrc32,
+                                                 uint8_t* const p_puData, const uint32_t p_uDataLen,
+                                                 uint32_t* const p_puCrcCalculated );
 
-/**
- * Write a page in memory
- * @param pginfo Information about memory and pages
- * @param cb Information about callbacks and callbacks pointer
- * @param pageIndx page index to write
- * @param dataW data to write
- * @param supportMemory pointer to a memory area used to support the write operation
- * @return EFSS_RES_BADPOINTER in case of bad pointer
- *         EFSS_RES_BADPARAM in case of a wrong param passed
- *         EFSS_RES_ERRORWRITE write function callback failed
- *         EFSS_RES_OK page writed successfully
- */
-e_eFSS_Res writePageLL( const s_eFSS_PgInfo pginfo, const s_eFSS_Cb cb, const uint32_t pageIndx, const uint8_t* dataW,
-                        uint8_t* const supportMemory );
 
-/**
- * Read a page in memory
- * @param pginfo Information about memory and pages
- * @param cb Information about callbacks and callbacks pointer
- * @param pageIndx page index to write
- * @param dataR pointer to a buffer where the data readed will be copied
- * @param supportMemory pointer to a memory area used to support the write operation
- * @return EFSS_RES_BADPOINTER in case of bad pointer
- *         EFSS_RES_BADPARAM in case of a wrong param passed
- *         EFSS_RES_ERRORREAD read function callback failed
- *         EFSS_RES_OK page readed successfully
- */
-e_eFSS_Res readPageLL( const s_eFSS_PgInfo pginfo, const s_eFSS_Cb cb, const uint32_t pageIndx, uint8_t* const dataR );
-
-/**
- * Calculate the CRC of a passed buffer
- * @param cb Information about callbacks and callbacks pointer
- * @param crc pointer to the memory area where the calculated crc will be putted
- * @param data pointer to the buffer where the alg will start calculating the CRC
- * @param dataLen how many byte will be used to calculate the CRC
- * @return EFSS_RES_BADPOINTER in case of bad pointer
- *         EFSS_RES_BADPARAM crc function callback failed
- *         EFSS_RES_OK crc calculated successfully
- */
-e_eFSS_Res calcCrcLL(const s_eFSS_Cb cb, uint32_t* const crc, const uint8_t* data, const uint32_t dataLen);
-
-/**
- * Calculate the CRC of a passed buffer using a specific SEED
- * @param cb Information about callbacks and callbacks pointer
- * @param crc pointer to the memory area where the calculated crc will be putted
- * @param data pointer to the buffer where the alg will start calculating the CRC
- * @param dataLen how many byte will be used to calculate the CRC
- * @param seed Seed to use in the calculation
- * @return EFSS_RES_BADPOINTER in case of bad pointer
- *         EFSS_RES_BADPARAM crc function callback failed
- *         EFSS_RES_OK crc calculated successfully
- */
-e_eFSS_Res calcCrcSeedLL(const s_eFSS_Cb cb, uint32_t* const crc, const uint8_t* data, const uint32_t dataLen,
-                         const uint32_t seed );
 
 #ifdef __cplusplus
 } /* extern "C" */
