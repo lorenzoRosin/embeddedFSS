@@ -1453,7 +1453,7 @@
             <name>$PROJ_DIR$\..\..\..\Code\Inc\eCU_DUNPK.h</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\Code\Inc\eFSS_LLUTILSPRV.h</name>
+            <name>$PROJ_DIR$\..\..\..\Code\Inc\eFSS_UTILSLLPRV.h</name>
         </file>
         <file>
             <name>$PROJ_DIR$\..\..\..\Code\Inc\eFSS_STANDARDTYPE.h</name>
@@ -1486,7 +1486,7 @@
             <name>$PROJ_DIR$\..\..\..\Code\Src\eCU_DUNPK.c</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\Code\Src\eFSS_LLUTILSPRV.c</name>
+            <name>$PROJ_DIR$\..\..\..\Code\Src\eFSS_UTILSLLPRV.c</name>
         </file>
     </group>
 </project>

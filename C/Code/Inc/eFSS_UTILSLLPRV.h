@@ -1,5 +1,5 @@
 /**
- * @file       eFSS_LLUTILSPRV.h
+ * @file       eFSS_UTILSLLPRV.h
  *
  * @brief      Low level utils for fail safe storage
  *
@@ -30,11 +30,11 @@ extern "C" {
  **********************************************************************************************************************/
 typedef enum
 {
-    e_eFSS_LLUTILSPRV_RES_OK = 0,
-    e_eFSS_LLUTILSPRV_RES_BADPARAM,
-    e_eFSS_LLUTILSPRV_RES_BADPOINTER,
-    e_eFSS_LLUTILSPRV_RES_CLBCKREPORTERROR
-}e_eFSS_LLUTILSPRV_RES;
+    e_eFSS_UTILSLLPRV_RES_OK = 0,
+    e_eFSS_UTILSLLPRV_RES_BADPARAM,
+    e_eFSS_UTILSLLPRV_RES_BADPOINTER,
+    e_eFSS_UTILSLLPRV_RES_CLBCKREPORTERROR
+}e_eFSS_UTILSLLPRV_RES;
 
 
 
@@ -53,11 +53,11 @@ typedef enum
  * @param[in]   p_uPageIndx   - Page index we want to erase
  * @param[in]   p_uReTry      - Erase function pointer
  *
- * @return      e_eFSS_LLUTILSPRV_RES_OK                - Operation ended successfully
- *              e_eFSS_LLUTILSPRV_RES_BADPOINTER        - In case of bad pointer passed to the function
- *              e_eFSS_LLUTILSPRV_RES_CLBCKREPORTERROR  - Error reported from the callback
+ * @return      e_eFSS_UTILSLLPRV_RES_OK                - Operation ended successfully
+ *              e_eFSS_UTILSLLPRV_RES_BADPOINTER        - In case of bad pointer passed to the function
+ *              e_eFSS_UTILSLLPRV_RES_CLBCKREPORTERROR  - Error reported from the callback
  */
-e_eFSS_LLUTILSPRV_RES eFSS_LLUTILSPRV_ErasePage( t_eFSS_TYPE_CbCtx* const p_ptCtx, const uint32_t p_uPageIndx,
+e_eFSS_UTILSLLPRV_RES eFSS_UTILSLLPRV_ErasePage( t_eFSS_TYPE_CbCtx* const p_ptCtx, const uint32_t p_uPageIndx,
                                                   const uint32_t p_uReTry);
 
 /**
@@ -67,12 +67,12 @@ e_eFSS_LLUTILSPRV_RES eFSS_LLUTILSPRV_ErasePage( t_eFSS_TYPE_CbCtx* const p_ptCt
  * @param[in]   p_fErase      - Erase function pointer
  * @param[in]   p_uPageIndx   - Page index we want to erase
  *
- * @return      e_eFSS_LLUTILSPRV_RES_OK                - Operation ended successfully
- *              e_eFSS_LLUTILSPRV_RES_BADPOINTER        - In case of bad pointer passed to the function
- *              e_eFSS_LLUTILSPRV_RES_BADPARAM          - In case of bad param passed to the function
- *              e_eFSS_LLUTILSPRV_RES_CLBCKREPORTERROR  - Error reported from the callback
+ * @return      e_eFSS_UTILSLLPRV_RES_OK                - Operation ended successfully
+ *              e_eFSS_UTILSLLPRV_RES_BADPOINTER        - In case of bad pointer passed to the function
+ *              e_eFSS_UTILSLLPRV_RES_BADPARAM          - In case of bad param passed to the function
+ *              e_eFSS_UTILSLLPRV_RES_CLBCKREPORTERROR  - Error reported from the callback
  */
-e_eFSS_LLUTILSPRV_RES eFSS_LLUTILSPRV_WritePage( t_eFSS_TYPE_CbCtx* const p_ptCtx,
+e_eFSS_UTILSLLPRV_RES eFSS_UTILSLLPRV_WritePage( t_eFSS_TYPE_CbCtx* const p_ptCtx,
                                                  uint8_t* const p_puDataW, const uint32_t p_uDataWriteLen,
                                                  uint8_t* const p_puDataR, const uint32_t p_uDataReadLen,
                                                  const uint32_t p_uPageIndx, const uint32_t p_uReTry);
@@ -83,12 +83,12 @@ e_eFSS_LLUTILSPRV_RES eFSS_LLUTILSPRV_WritePage( t_eFSS_TYPE_CbCtx* const p_ptCt
  * @param[in]   p_fErase      - Erase function pointer
  * @param[in]   p_uPageIndx   - Page index we want to erase
  *
- * @return      e_eFSS_LLUTILSPRV_RES_OK                - Operation ended successfully
- *              e_eFSS_LLUTILSPRV_RES_BADPOINTER        - In case of bad pointer passed to the function
- *              e_eFSS_LLUTILSPRV_RES_BADPARAM          - In case of bad param passed to the function
- *              e_eFSS_LLUTILSPRV_RES_CLBCKREPORTERROR  - Error reported from the callback
+ * @return      e_eFSS_UTILSLLPRV_RES_OK                - Operation ended successfully
+ *              e_eFSS_UTILSLLPRV_RES_BADPOINTER        - In case of bad pointer passed to the function
+ *              e_eFSS_UTILSLLPRV_RES_BADPARAM          - In case of bad param passed to the function
+ *              e_eFSS_UTILSLLPRV_RES_CLBCKREPORTERROR  - Error reported from the callback
  */
-e_eFSS_LLUTILSPRV_RES eFSS_LLUTILSPRV_ReadPage( t_eFSS_TYPE_CbCtx* const p_ptCtx, const uint32_t p_uPageIndx,
+e_eFSS_UTILSLLPRV_RES eFSS_UTILSLLPRV_ReadPage( t_eFSS_TYPE_CbCtx* const p_ptCtx, const uint32_t p_uPageIndx,
                                                 uint8_t* const p_puDataR, const uint32_t p_uDataReadLen,
                                                 const uint32_t p_uReTry );
 
@@ -99,12 +99,12 @@ e_eFSS_LLUTILSPRV_RES eFSS_LLUTILSPRV_ReadPage( t_eFSS_TYPE_CbCtx* const p_ptCtx
  * @param[in]   p_fErase      - Erase function pointer
  * @param[in]   p_uPageIndx   - Page index we want to erase
  *
- * @return      e_eFSS_LLUTILSPRV_RES_OK                - Operation ended successfully
- *              e_eFSS_LLUTILSPRV_RES_BADPOINTER        - In case of bad pointer passed to the function
- *              e_eFSS_LLUTILSPRV_RES_BADPARAM          - In case of bad param passed to the function
- *              e_eFSS_LLUTILSPRV_RES_CLBCKREPORTERROR  - Error reported from the callback
+ * @return      e_eFSS_UTILSLLPRV_RES_OK                - Operation ended successfully
+ *              e_eFSS_UTILSLLPRV_RES_BADPOINTER        - In case of bad pointer passed to the function
+ *              e_eFSS_UTILSLLPRV_RES_BADPARAM          - In case of bad param passed to the function
+ *              e_eFSS_UTILSLLPRV_RES_CLBCKREPORTERROR  - Error reported from the callback
  */
-e_eFSS_LLUTILSPRV_RES eFSS_LLUTILSPRV_CalcCrc32( t_eFSS_TYPE_CbCtx* const p_ptCtx,
+e_eFSS_UTILSLLPRV_RES eFSS_UTILSLLPRV_CalcCrc32( t_eFSS_TYPE_CbCtx* const p_ptCtx,
                                                  uint8_t* const p_puData, const uint32_t p_uDataLen,
                                                  uint32_t* const p_puCrcCalculated );
 

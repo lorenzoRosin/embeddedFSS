@@ -1,5 +1,5 @@
 /**
- * @file       eFSS_LLUTILSPRV.c
+ * @file       eFSS_UTILSLLPRV.c
  *
  * @brief      Low level utils for fail safe storage
  *
@@ -10,25 +10,25 @@
 /***********************************************************************************************************************
  *      INCLUDES
  **********************************************************************************************************************/
-#include "eFSS_LLUTILSPRV.h"
+#include "eFSS_UTILSLLPRV.h"
 
 
 
 /***********************************************************************************************************************
  *   GLOBAL FUNCTIONS
  **********************************************************************************************************************/
-e_eFSS_LLUTILSPRV_RES eFSS_LLUTILSPRV_ErasePage( t_eFSS_TYPE_CbCtx* const p_ptCtx, const uint32_t p_uPageIndx,
+e_eFSS_UTILSLLPRV_RES eFSS_UTILSLLPRV_ErasePage( t_eFSS_TYPE_CbCtx* const p_ptCtx, const uint32_t p_uPageIndx,
                                                   const uint32_t p_uReTry)
 {
 	/* Local variable */
-	e_eFSS_LLUTILSPRV_RES l_eRes;
+	e_eFSS_UTILSLLPRV_RES l_eRes;
     uint32_t l_uTryPerformed;
     bool_t l_bCbRes;
 
 	/* Check pointer validity */
 	if( NULL == p_ptCtx )
 	{
-		l_eRes = e_eFSS_LLUTILSPRV_RES_BADPOINTER;
+		l_eRes = e_eFSS_UTILSLLPRV_RES_BADPOINTER;
 	}
 	else
 	{
@@ -38,14 +38,14 @@ e_eFSS_LLUTILSPRV_RES eFSS_LLUTILSPRV_ErasePage( t_eFSS_TYPE_CbCtx* const p_ptCt
             ( NULL == p_ptCtx->ptCtxRead  ) || ( NULL == p_ptCtx->fRead ) ||
             ( NULL == p_ptCtx->ptCtxCrc32 ) || ( NULL == p_ptCtx->fCrc32 ) )
         {
-            l_eRes = e_eFSS_LLUTILSPRV_RES_BADPOINTER;
+            l_eRes = e_eFSS_UTILSLLPRV_RES_BADPOINTER;
         }
         else
         {
             /* Check data validity */
             if( p_uReTry <= 0u )
             {
-                l_eRes = e_eFSS_LLUTILSPRV_RES_BADPARAM;
+                l_eRes = e_eFSS_UTILSLLPRV_RES_BADPARAM;
             }
             else
             {
@@ -62,11 +62,11 @@ e_eFSS_LLUTILSPRV_RES eFSS_LLUTILSPRV_ErasePage( t_eFSS_TYPE_CbCtx* const p_ptCt
 
                 if( false == l_bCbRes )
                 {
-                    l_eRes = e_eFSS_LLUTILSPRV_RES_CLBCKREPORTERROR;
+                    l_eRes = e_eFSS_UTILSLLPRV_RES_CLBCKREPORTERROR;
                 }
                 else
                 {
-                    l_eRes = e_eFSS_LLUTILSPRV_RES_OK;
+                    l_eRes = e_eFSS_UTILSLLPRV_RES_OK;
                 }
             }
         }
@@ -75,20 +75,20 @@ e_eFSS_LLUTILSPRV_RES eFSS_LLUTILSPRV_ErasePage( t_eFSS_TYPE_CbCtx* const p_ptCt
 	return l_eRes;
 }
 
-e_eFSS_LLUTILSPRV_RES eFSS_LLUTILSPRV_WritePage( t_eFSS_TYPE_CbCtx* const p_ptCtx,
+e_eFSS_UTILSLLPRV_RES eFSS_UTILSLLPRV_WritePage( t_eFSS_TYPE_CbCtx* const p_ptCtx,
                                                  uint8_t* const p_puDataW, const uint32_t p_uDataWriteLen,
                                                  uint8_t* const p_puDataR, const uint32_t p_uDataReadLen,
                                                  const uint32_t p_uPageIndx, const uint32_t p_uReTry)
 {
 	/* Local variable */
-	e_eFSS_LLUTILSPRV_RES l_eRes;
+	e_eFSS_UTILSLLPRV_RES l_eRes;
     uint32_t l_uTryPerformed;
     bool_t l_bCbRes;
 
 	/* Check pointer validity */
 	if( ( NULL == p_ptCtx ) || ( NULL == p_puDataW ) || ( NULL == p_puDataR ) )
 	{
-		l_eRes = e_eFSS_LLUTILSPRV_RES_BADPOINTER;
+		l_eRes = e_eFSS_UTILSLLPRV_RES_BADPOINTER;
 	}
 	else
 	{
@@ -98,14 +98,14 @@ e_eFSS_LLUTILSPRV_RES eFSS_LLUTILSPRV_WritePage( t_eFSS_TYPE_CbCtx* const p_ptCt
             ( NULL == p_ptCtx->ptCtxRead  ) || ( NULL == p_ptCtx->fRead ) ||
             ( NULL == p_ptCtx->ptCtxCrc32 ) || ( NULL == p_ptCtx->fCrc32 ) )
         {
-            l_eRes = e_eFSS_LLUTILSPRV_RES_BADPOINTER;
+            l_eRes = e_eFSS_UTILSLLPRV_RES_BADPOINTER;
         }
         else
         {
             /* Check data validity */
             if( ( p_uReTry <= 0u ) || ( p_uDataWriteLen <= 0u ) || ( p_uDataReadLen <= 0u ) )
             {
-                l_eRes = e_eFSS_LLUTILSPRV_RES_BADPARAM;
+                l_eRes = e_eFSS_UTILSLLPRV_RES_BADPARAM;
             }
             else
             {
@@ -149,11 +149,11 @@ e_eFSS_LLUTILSPRV_RES eFSS_LLUTILSPRV_WritePage( t_eFSS_TYPE_CbCtx* const p_ptCt
 
                 if( false == l_bCbRes )
                 {
-                    l_eRes = e_eFSS_LLUTILSPRV_RES_CLBCKREPORTERROR;
+                    l_eRes = e_eFSS_UTILSLLPRV_RES_CLBCKREPORTERROR;
                 }
                 else
                 {
-                    l_eRes = e_eFSS_LLUTILSPRV_RES_OK;
+                    l_eRes = e_eFSS_UTILSLLPRV_RES_OK;
                 }
             }
         }
@@ -163,19 +163,19 @@ e_eFSS_LLUTILSPRV_RES eFSS_LLUTILSPRV_WritePage( t_eFSS_TYPE_CbCtx* const p_ptCt
 }
 
 
-e_eFSS_LLUTILSPRV_RES eFSS_LLUTILSPRV_ReadPage( t_eFSS_TYPE_CbCtx* const p_ptCtx, const uint32_t p_uPageIndx,
+e_eFSS_UTILSLLPRV_RES eFSS_UTILSLLPRV_ReadPage( t_eFSS_TYPE_CbCtx* const p_ptCtx, const uint32_t p_uPageIndx,
                                                 uint8_t* const p_puDataR, const uint32_t p_uDataReadLen,
                                                 const uint32_t p_uReTry )
 {
 	/* Local variable */
-	e_eFSS_LLUTILSPRV_RES l_eRes;
+	e_eFSS_UTILSLLPRV_RES l_eRes;
     uint32_t l_uTryPerformed;
     bool_t l_bCbRes;
 
 	/* Check pointer validity */
 	if( ( NULL == p_ptCtx ) || ( NULL == p_puDataR ) )
 	{
-		l_eRes = e_eFSS_LLUTILSPRV_RES_BADPOINTER;
+		l_eRes = e_eFSS_UTILSLLPRV_RES_BADPOINTER;
 	}
 	else
 	{
@@ -185,14 +185,14 @@ e_eFSS_LLUTILSPRV_RES eFSS_LLUTILSPRV_ReadPage( t_eFSS_TYPE_CbCtx* const p_ptCtx
             ( NULL == p_ptCtx->ptCtxRead  ) || ( NULL == p_ptCtx->fRead ) ||
             ( NULL == p_ptCtx->ptCtxCrc32 ) || ( NULL == p_ptCtx->fCrc32 ) )
         {
-            l_eRes = e_eFSS_LLUTILSPRV_RES_BADPOINTER;
+            l_eRes = e_eFSS_UTILSLLPRV_RES_BADPOINTER;
         }
         else
         {
             /* Check data validity */
             if( ( p_uReTry <= 0u ) || ( p_uDataReadLen <= 0u ) )
             {
-                l_eRes = e_eFSS_LLUTILSPRV_RES_BADPARAM;
+                l_eRes = e_eFSS_UTILSLLPRV_RES_BADPARAM;
             }
             else
             {
@@ -211,11 +211,11 @@ e_eFSS_LLUTILSPRV_RES eFSS_LLUTILSPRV_ReadPage( t_eFSS_TYPE_CbCtx* const p_ptCtx
 
                 if( false == l_bCbRes )
                 {
-                    l_eRes = e_eFSS_LLUTILSPRV_RES_CLBCKREPORTERROR;
+                    l_eRes = e_eFSS_UTILSLLPRV_RES_CLBCKREPORTERROR;
                 }
                 else
                 {
-                    l_eRes = e_eFSS_LLUTILSPRV_RES_OK;
+                    l_eRes = e_eFSS_UTILSLLPRV_RES_OK;
                 }
             }
         }
@@ -224,18 +224,18 @@ e_eFSS_LLUTILSPRV_RES eFSS_LLUTILSPRV_ReadPage( t_eFSS_TYPE_CbCtx* const p_ptCtx
 	return l_eRes;
 }
 
-e_eFSS_LLUTILSPRV_RES eFSS_LLUTILSPRV_CalcCrc32( t_eFSS_TYPE_CbCtx* const p_ptCtx,
+e_eFSS_UTILSLLPRV_RES eFSS_UTILSLLPRV_CalcCrc32( t_eFSS_TYPE_CbCtx* const p_ptCtx,
                                                  uint8_t* const p_puData, const uint32_t p_uDataLen,
                                                  uint32_t* const p_puCrcCalculated )
 {
 	/* Local variable */
-	e_eFSS_LLUTILSPRV_RES l_eRes;
+	e_eFSS_UTILSLLPRV_RES l_eRes;
     bool_t l_bCbRes;
 
 	/* Check pointer validity */
 	if( ( NULL == p_ptCtx ) || ( NULL == p_puData ) || ( NULL == p_puCrcCalculated ) )
 	{
-		l_eRes = e_eFSS_LLUTILSPRV_RES_BADPOINTER;
+		l_eRes = e_eFSS_UTILSLLPRV_RES_BADPOINTER;
 	}
 	else
 	{
@@ -245,14 +245,14 @@ e_eFSS_LLUTILSPRV_RES eFSS_LLUTILSPRV_CalcCrc32( t_eFSS_TYPE_CbCtx* const p_ptCt
             ( NULL == p_ptCtx->ptCtxRead  ) || ( NULL == p_ptCtx->fRead ) ||
             ( NULL == p_ptCtx->ptCtxCrc32 ) || ( NULL == p_ptCtx->fCrc32 ) )
         {
-            l_eRes = e_eFSS_LLUTILSPRV_RES_BADPOINTER;
+            l_eRes = e_eFSS_UTILSLLPRV_RES_BADPOINTER;
         }
         else
         {
             /* Check data validity */
             if( p_uDataLen <= 0u )
             {
-                l_eRes = e_eFSS_LLUTILSPRV_RES_BADPARAM;
+                l_eRes = e_eFSS_UTILSLLPRV_RES_BADPARAM;
             }
             else
             {
@@ -265,11 +265,11 @@ e_eFSS_LLUTILSPRV_RES eFSS_LLUTILSPRV_CalcCrc32( t_eFSS_TYPE_CbCtx* const p_ptCt
 
                 if( false == l_bCbRes )
                 {
-                    l_eRes = e_eFSS_LLUTILSPRV_RES_CLBCKREPORTERROR;
+                    l_eRes = e_eFSS_UTILSLLPRV_RES_CLBCKREPORTERROR;
                 }
                 else
                 {
-                    l_eRes = e_eFSS_LLUTILSPRV_RES_OK;
+                    l_eRes = e_eFSS_UTILSLLPRV_RES_OK;
                 }
             }
         }
