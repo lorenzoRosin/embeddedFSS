@@ -24,8 +24,8 @@ e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_GetMetaFromBuff(const uint8_t* pageBuff, c
 {
 	/* Local variable */
 	e_eFSS_UTILSHLPRV_RES l_eRes;
-    uint32_t l_uTryPerformed;
-    bool_t l_bCbRes;
+    uint32_t l_uComulIndx;
+    uint32_t l_uTemp;
 
 	/* Check pointer validity */
 	if( ( NULL == pageBuff ) || ( NULL == pagePrm )  )
@@ -35,31 +35,285 @@ e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_GetMetaFromBuff(const uint8_t* pageBuff, c
 	else
 	{
         /* Check data validity */
-        if( p_pageL <= 0u )
+        if( p_pageL < EFSS_PAGEMETASIZE )
         {
             l_eRes = e_eFSS_UTILSHLPRV_RES_BADPARAM;
         }
         else
         {
             /* Initialize internal status */
-            l_uTryPerformed = 0u;
-            l_bCbRes = false;
+            l_uComulIndx = p_pageL - EFSS_PAGEMETASIZE;
 
-            /* Do operation */
-            while( ( false == l_bCbRes ) && ( l_uTryPerformed < p_uReTry ) )
-            {
-                l_bCbRes = (*(p_ptCtx->fErase))(p_ptCtx->ptCtxErase, p_uPageIndx);
-                l_uTryPerformed++;
-            }
+            /* Init return data */
+            pagePrm->uPageType = 0u;
+            pagePrm->uPageSubType = 0u;
+            pagePrm->uPageVersion = 0u;
+            pagePrm->uPageByteFilled = 0u;
+            pagePrm->uPagePresentElement = 0u;
+            pagePrm->uPageSequentialN = 0u;
+            pagePrm->uPageMagicNumber = 0u;
+            pagePrm->uPageCrc = 0u;
 
-            if( false == l_bCbRes )
-            {
-                l_eRes = e_eFSS_UTILSLLPRV_RES_CLBCKREPORTERROR;
-            }
-            else
-            {
-                l_eRes = e_eFSS_UTILSLLPRV_RES_OK;
-            }
+            /* Copy data Little endian */
+            l_uTemp = (uint32_t) pageBuff[l_uComulIndx];
+            pagePrm->uPageType |= ( l_uTemp & 0x000000FFu );
+            l_uComulIndx++;
+
+            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 8u  );
+            pagePrm->uPageType |= ( l_uTemp & 0x0000FF00u );
+            l_uComulIndx++;
+
+            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 16u  );
+            pagePrm->uPageType |= ( l_uTemp & 0x00FF0000u );
+            l_uComulIndx++;
+
+            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 24u  );
+            pagePrm->uPageType |= ( l_uTemp & 0xFF000000u );
+            l_uComulIndx++;
+
+            /* Copy data Little endian */
+            l_uTemp = (uint32_t) pageBuff[l_uComulIndx];
+            pagePrm->uPageSubType |= ( l_uTemp & 0x000000FFu );
+            l_uComulIndx++;
+
+            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 8u  );
+            pagePrm->uPageSubType |= ( l_uTemp & 0x0000FF00u );
+            l_uComulIndx++;
+
+            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 16u  );
+            pagePrm->uPageSubType |= ( l_uTemp & 0x00FF0000u );
+            l_uComulIndx++;
+
+            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 24u  );
+            pagePrm->uPageSubType |= ( l_uTemp & 0xFF000000u );
+            l_uComulIndx++;
+
+            /* Copy data Little endian */
+            l_uTemp = (uint32_t) pageBuff[l_uComulIndx];
+            pagePrm->uPageVersion |= ( l_uTemp & 0x000000FFu );
+            l_uComulIndx++;
+
+            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 8u  );
+            pagePrm->uPageVersion |= ( l_uTemp & 0x0000FF00u );
+            l_uComulIndx++;
+
+            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 16u  );
+            pagePrm->uPageVersion |= ( l_uTemp & 0x00FF0000u );
+            l_uComulIndx++;
+
+            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 24u  );
+            pagePrm->uPageVersion |= ( l_uTemp & 0xFF000000u );
+            l_uComulIndx++;
+
+            /* Copy data Little endian */
+            l_uTemp = (uint32_t) pageBuff[l_uComulIndx];
+            pagePrm->uPageByteFilled |= ( l_uTemp & 0x000000FFu );
+            l_uComulIndx++;
+
+            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 8u  );
+            pagePrm->uPageByteFilled |= ( l_uTemp & 0x0000FF00u );
+            l_uComulIndx++;
+
+            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 16u  );
+            pagePrm->uPageByteFilled |= ( l_uTemp & 0x00FF0000u );
+            l_uComulIndx++;
+
+            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 24u  );
+            pagePrm->uPageByteFilled |= ( l_uTemp & 0xFF000000u );
+            l_uComulIndx++;
+
+            /* Copy data Little endian */
+            l_uTemp = (uint32_t) pageBuff[l_uComulIndx];
+            pagePrm->uPagePresentElement |= ( l_uTemp & 0x000000FFu );
+            l_uComulIndx++;
+
+            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 8u  );
+            pagePrm->uPagePresentElement |= ( l_uTemp & 0x0000FF00u );
+            l_uComulIndx++;
+
+            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 16u  );
+            pagePrm->uPagePresentElement |= ( l_uTemp & 0x00FF0000u );
+            l_uComulIndx++;
+
+            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 24u  );
+            pagePrm->uPagePresentElement |= ( l_uTemp & 0xFF000000u );
+            l_uComulIndx++;
+
+            /* Copy data Little endian */
+            l_uTemp = (uint32_t) pageBuff[l_uComulIndx];
+            pagePrm->uPageSequentialN |= ( l_uTemp & 0x000000FFu );
+            l_uComulIndx++;
+
+            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 8u  );
+            pagePrm->uPageSequentialN |= ( l_uTemp & 0x0000FF00u );
+            l_uComulIndx++;
+
+            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 16u  );
+            pagePrm->uPageSequentialN |= ( l_uTemp & 0x00FF0000u );
+            l_uComulIndx++;
+
+            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 24u  );
+            pagePrm->uPageSequentialN |= ( l_uTemp & 0xFF000000u );
+            l_uComulIndx++;
+
+            /* Copy data Little endian */
+            l_uTemp = (uint32_t) pageBuff[l_uComulIndx];
+            pagePrm->uPageMagicNumber |= ( l_uTemp & 0x000000FFu );
+            l_uComulIndx++;
+
+            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 8u  );
+            pagePrm->uPageMagicNumber |= ( l_uTemp & 0x0000FF00u );
+            l_uComulIndx++;
+
+            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 16u  );
+            pagePrm->uPageMagicNumber |= ( l_uTemp & 0x00FF0000u );
+            l_uComulIndx++;
+
+            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 24u  );
+            pagePrm->uPageMagicNumber |= ( l_uTemp & 0xFF000000u );
+            l_uComulIndx++;
+
+            /* Copy data Little endian */
+            l_uTemp = (uint32_t) pageBuff[l_uComulIndx];
+            pagePrm->uPageCrc |= ( l_uTemp & 0x000000FFu );
+            l_uComulIndx++;
+
+            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 8u  );
+            pagePrm->uPageCrc |= ( l_uTemp & 0x0000FF00u );
+            l_uComulIndx++;
+
+            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 16u  );
+            pagePrm->uPageCrc |= ( l_uTemp & 0x00FF0000u );
+            l_uComulIndx++;
+
+            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 24u  );
+            pagePrm->uPageCrc |= ( l_uTemp & 0xFF000000u );
+            l_uComulIndx++;
+
+            l_eRes = e_eFSS_UTILSHLPRV_RES_OK;
+        }
+	}
+
+	return l_eRes;
+}
+
+e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_SetMetaInBuff(uint8_t* const pageBuff, const uint32_t p_pageL,
+                                                      t_eFSS_TYPE_PageMeta* const pagePrm)
+{
+	/* Local variable */
+	e_eFSS_UTILSHLPRV_RES l_eRes;
+    uint32_t l_uComulIndx;
+    uint32_t l_uTemp;
+
+	/* Check pointer validity */
+	if( ( NULL == pageBuff ) || ( NULL == pagePrm )  )
+	{
+		l_eRes = e_eFSS_UTILSHLPRV_RES_BADPOINTER;
+	}
+	else
+	{
+        /* Check data validity */
+        if( p_pageL < EFSS_PAGEMETASIZE )
+        {
+            l_eRes = e_eFSS_UTILSHLPRV_RES_BADPARAM;
+        }
+        else
+        {
+            /* Initialize internal status */
+            l_uComulIndx = p_pageL - EFSS_PAGEMETASIZE;
+
+            /* Copy data Little endian */
+            pageBuff[l_uComulIndx] = (uint8_t) ( ( pagePrm->uPageType        ) & 0x000000FFu );
+            l_uComulIndx++;
+
+            pageBuff[l_uComulIndx] = (uint8_t) ( ( pagePrm->uPageType >> 8u  ) & 0x000000FFu );
+            l_uComulIndx++;
+
+            pageBuff[l_uComulIndx] = (uint8_t) ( ( pagePrm->uPageType >> 16u ) & 0x000000FFu );
+            l_uComulIndx++;
+
+            pageBuff[l_uComulIndx] = (uint8_t) ( ( pagePrm->uPageType >> 24u ) & 0x000000FFu );
+            l_uComulIndx++;
+
+            /* Copy data Little endian */
+            pageBuff[l_uComulIndx] = (uint8_t) ( ( pagePrm->uPageType        ) & 0x000000FFu );
+            l_uComulIndx++;
+
+            pageBuff[l_uComulIndx] = (uint8_t) ( ( pagePrm->uPageType >> 8u  ) & 0x000000FFu );
+            l_uComulIndx++;
+
+            pageBuff[l_uComulIndx] = (uint8_t) ( ( pagePrm->uPageType >> 16u ) & 0x000000FFu );
+            l_uComulIndx++;
+
+            pageBuff[l_uComulIndx] = (uint8_t) ( ( pagePrm->uPageType >> 24u ) & 0x000000FFu );
+            l_uComulIndx++;
+
+            /* Copy data Little endian */
+            pageBuff[l_uComulIndx] = (uint8_t) ( ( pagePrm->uPageType        ) & 0x000000FFu );
+            l_uComulIndx++;
+
+            pageBuff[l_uComulIndx] = (uint8_t) ( ( pagePrm->uPageType >> 8u  ) & 0x000000FFu );
+            l_uComulIndx++;
+
+            pageBuff[l_uComulIndx] = (uint8_t) ( ( pagePrm->uPageType >> 16u ) & 0x000000FFu );
+            l_uComulIndx++;
+
+            pageBuff[l_uComulIndx] = (uint8_t) ( ( pagePrm->uPageType >> 24u ) & 0x000000FFu );
+            l_uComulIndx++;
+
+            /* Copy data Little endian */
+            pageBuff[l_uComulIndx] = (uint8_t) ( ( pagePrm->uPageType        ) & 0x000000FFu );
+            l_uComulIndx++;
+
+            pageBuff[l_uComulIndx] = (uint8_t) ( ( pagePrm->uPageType >> 8u  ) & 0x000000FFu );
+            l_uComulIndx++;
+
+            pageBuff[l_uComulIndx] = (uint8_t) ( ( pagePrm->uPageType >> 16u ) & 0x000000FFu );
+            l_uComulIndx++;
+
+            pageBuff[l_uComulIndx] = (uint8_t) ( ( pagePrm->uPageType >> 24u ) & 0x000000FFu );
+            l_uComulIndx++;
+
+            /* Copy data Little endian */
+            pageBuff[l_uComulIndx] = (uint8_t) ( ( pagePrm->uPageType        ) & 0x000000FFu );
+            l_uComulIndx++;
+
+            pageBuff[l_uComulIndx] = (uint8_t) ( ( pagePrm->uPageType >> 8u  ) & 0x000000FFu );
+            l_uComulIndx++;
+
+            pageBuff[l_uComulIndx] = (uint8_t) ( ( pagePrm->uPageType >> 16u ) & 0x000000FFu );
+            l_uComulIndx++;
+
+            pageBuff[l_uComulIndx] = (uint8_t) ( ( pagePrm->uPageType >> 24u ) & 0x000000FFu );
+            l_uComulIndx++;
+
+            /* Copy data Little endian */
+            pageBuff[l_uComulIndx] = (uint8_t) ( ( pagePrm->uPageType        ) & 0x000000FFu );
+            l_uComulIndx++;
+
+            pageBuff[l_uComulIndx] = (uint8_t) ( ( pagePrm->uPageType >> 8u  ) & 0x000000FFu );
+            l_uComulIndx++;
+
+            pageBuff[l_uComulIndx] = (uint8_t) ( ( pagePrm->uPageType >> 16u ) & 0x000000FFu );
+            l_uComulIndx++;
+
+            pageBuff[l_uComulIndx] = (uint8_t) ( ( pagePrm->uPageType >> 24u ) & 0x000000FFu );
+            l_uComulIndx++;
+
+            /* Copy data Little endian */
+            pageBuff[l_uComulIndx] = (uint8_t) ( ( pagePrm->uPageType        ) & 0x000000FFu );
+            l_uComulIndx++;
+
+            pageBuff[l_uComulIndx] = (uint8_t) ( ( pagePrm->uPageType >> 8u  ) & 0x000000FFu );
+            l_uComulIndx++;
+
+            pageBuff[l_uComulIndx] = (uint8_t) ( ( pagePrm->uPageType >> 16u ) & 0x000000FFu );
+            l_uComulIndx++;
+
+            pageBuff[l_uComulIndx] = (uint8_t) ( ( pagePrm->uPageType >> 24u ) & 0x000000FFu );
+            l_uComulIndx++;
+
+            l_eRes = e_eFSS_UTILSHLPRV_RES_OK;
         }
 	}
 
@@ -67,83 +321,55 @@ e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_GetMetaFromBuff(const uint8_t* pageBuff, c
 }
 
 
-e_eFSS_Res getPagePrmFromBuff(const s_eFSS_PgInfo pginfo, const uint8_t* pageBuff, s_prv_pagePrm* const pagePrm)
-{
-    /* Local variable */
-    e_eFSS_Res returnVal;
 
-    /* Check for NULL pointer */
-    if( ( NULL == pageBuff ) || ( NULL == pagePrm ) )
-    {
-        returnVal = EFSS_RES_BADPOINTER;
-    }
-    else
-    {
-        /* Check for parameter validity */
-        if( ( pginfo.pageSize < EFSS_MIN_PAGE_SIZE_BYTE ) || ( pginfo.pageSize > EFSS_MAX_PAGE_SIZE_BYTE ) )
-        {
-            returnVal = EFSS_RES_BADPARAM;
-        }
-        else
-        {
-            /* Calculating offset */
-            uint32_t offset1 = pginfo.pageSize - ( sizeof(uint64_t) + sizeof(uint64_t) );
-            uint32_t offset2 = pginfo.pageSize - ( sizeof(uint64_t) + sizeof(uint32_t) + sizeof(uint16_t) );
-            uint32_t offset3 = pginfo.pageSize - ( sizeof(uint64_t) + sizeof(uint32_t) );
-            uint32_t offset4 = pginfo.pageSize - ( sizeof(uint32_t) + sizeof(uint32_t) );
-            uint32_t offset5 = pginfo.pageSize - ( sizeof(uint32_t) );
 
-            /* fill the parameter using the passed buffer */
-            (void)memcpy( (uint8_t*)&pagePrm->pageType,               &pageBuff[offset1], sizeof(uint16_t) );
-            (void)memcpy( (uint8_t*)&pagePrm->allPageAlignmentNumber, &pageBuff[offset2], sizeof(uint16_t) );
-            (void)memcpy( (uint8_t*)&pagePrm->pageVersion,            &pageBuff[offset3], sizeof(uint32_t) );
-            (void)memcpy( (uint8_t*)&pagePrm->pageMagicNumber,        &pageBuff[offset4], sizeof(uint32_t) );
-            (void)memcpy( (uint8_t*)&pagePrm->pageCrc,                &pageBuff[offset5], sizeof(uint32_t) );
-            returnVal = EFSS_RES_OK;
-        }
-    }
-    return returnVal;
-}
 
-e_eFSS_Res setPagePrmInBuff(const s_eFSS_PgInfo pginfo, uint8_t* const pageBuff, const s_prv_pagePrm* pagePrm)
-{
-    /* Local variable */
-    e_eFSS_Res returnVal;
 
-    /* Check for NULL pointer */
-    if( ( NULL == pageBuff ) || ( NULL == pagePrm ) )
-    {
-        returnVal = EFSS_RES_BADPOINTER;
-    }
-    else
-    {
-        /* Check for parameter validity */
-        if( ( pginfo.pageSize < EFSS_MIN_PAGE_SIZE_BYTE ) || ( pginfo.pageSize > EFSS_MAX_PAGE_SIZE_BYTE ) )
-        {
-            returnVal = EFSS_RES_BADPARAM;
-        }
-        else
-        {
-            /* Calculating offset */
-            uint32_t offset1 = pginfo.pageSize - ( sizeof(uint64_t) + sizeof(uint64_t) );
-            uint32_t offset2 = pginfo.pageSize - ( sizeof(uint64_t) + sizeof(uint32_t) + sizeof(uint16_t) );
-            uint32_t offset3 = pginfo.pageSize - ( sizeof(uint64_t) + sizeof(uint32_t) );
-            uint32_t offset4 = pginfo.pageSize - ( sizeof(uint32_t) + sizeof(uint32_t) );
-            uint32_t offset5 = pginfo.pageSize - ( sizeof(uint32_t) );
 
-            /* fill the paramebuffer using the passed parameter */
-            (void)memcpy( &pageBuff[offset1], (const uint8_t*)&pagePrm->pageType,                 sizeof(uint16_t) );
-            (void)memcpy( &pageBuff[offset2], (const uint8_t*)&pagePrm->allPageAlignmentNumber,   sizeof(uint16_t) );
-            (void)memcpy( &pageBuff[offset3], (const uint8_t*)&pagePrm->pageVersion,              sizeof(uint32_t) );
-            (void)memcpy( &pageBuff[offset4], (const uint8_t*)&pagePrm->pageMagicNumber,          sizeof(uint32_t) );
-            (void)memcpy( &pageBuff[offset5], (const uint8_t*)&pagePrm->pageCrc,                  sizeof(uint32_t) );
 
-            returnVal = EFSS_RES_OK;
-        }
-    }
 
-    return returnVal;
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 e_eFSS_Res setCrcInPagePrmBuff(const s_eFSS_PgInfo pginfo, uint8_t* const pageBuff, const uint32_t crcToSet)
 {
@@ -175,6 +401,29 @@ e_eFSS_Res setCrcInPagePrmBuff(const s_eFSS_PgInfo pginfo, uint8_t* const pageBu
 
     return returnVal;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 e_eFSS_Res calcPagePrmCrcInBuff(const s_eFSS_PgInfo pginfo, const s_eFSS_Cb cbHld, const uint8_t* pageBuff,
                                 uint32_t* const crcCalc)

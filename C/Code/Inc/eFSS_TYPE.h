@@ -31,6 +31,7 @@ extern "C" {
 #define ECU_SOF                                                                                    ( ( uint8_t ) 0xA1u )
 #define ECU_EOF                                                                                    ( ( uint8_t ) 0xA2u )
 #define ECU_ESC                                                                                    ( ( uint8_t ) 0xA3u )
+#define EFSS_PAGEMETASIZE                                                                          ( ( uint32_t )  32u )
 
 
 /***********************************************************************************************************************

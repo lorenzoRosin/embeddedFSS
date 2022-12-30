@@ -56,15 +56,41 @@ e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_GetMetaFromBuff(const uint8_t* pageBuff, c
                                                       t_eFSS_TYPE_PageMeta* const pagePrm);
 
 /**
- * Set s_prv_pagePrm in a page already loaded in a Buffer
- * @param pginfo Information about memory and pages
- * @param pageBuff Pointer to a page loaded in a buffer
- * @param pagePrm Pointer to s_prv_pagePrm that must be copied in the buffer
- * @return EFSS_RES_BADPOINTER in case of bad pointer
- *         EFSS_RES_BADPARAM in case of a wrong param passed
- *         EFSS_RES_OK operation ended successfully
+ * @brief       Erase a specified page
+ *
+ * @param[in]   p_ptCtx       - Erase function context
+ * @param[in]   p_uPageIndx   - Page index we want to erase
+ * @param[in]   p_uReTry      - Erase function pointer
+ *
+ * @return      e_eFSS_UTILSLLPRV_RES_OK                - Operation ended successfully
+ *              e_eFSS_UTILSLLPRV_RES_BADPOINTER        - In case of bad pointer passed to the function
+ *              e_eFSS_UTILSLLPRV_RES_CLBCKREPORTERROR  - Error reported from the callback
  */
-e_eFSS_Res setPagePrmInBuff(const t_eFSS_TYPE_PageMeta pginfo, uint8_t* const pageBuff, const s_prv_pagePrm* pagePrm);
+e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_SetMetaInBuff(uint8_t* const pageBuff, const uint32_t p_pageL,
+                                                      t_eFSS_TYPE_PageMeta* const pagePrm);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /**
  * Set CRC in a page already loaded in a buffer
@@ -76,6 +102,23 @@ e_eFSS_Res setPagePrmInBuff(const t_eFSS_TYPE_PageMeta pginfo, uint8_t* const pa
  *         EFSS_RES_OK operation ended successfully
  */
 e_eFSS_Res setCrcInPagePrmBuff(const t_eFSS_TYPE_PageMeta pginfo, uint8_t* const pageBuff, const uint32_t crcToSet);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /**
  * Calculate the CRC of an already loaded Page in a buffer, excluding the CRC itself from the calc
