@@ -88,6 +88,20 @@ typedef struct
     f_eFSS_TYPE_CrcCb     fCrc32;
 }t_eFSS_TYPE_CbCtx;
 
+typedef struct
+{
+
+    uint32_t    uPageType;
+    uint32_t    uPageSubType;
+    uint32_t    uPageVersion;
+    uint32_t    uPageByteFilled;
+    uint32_t    uPagePresentElement;
+    uint32_t    uPageSequentialN;
+    uint32_t    uPageMagicNumber;
+    uint32_t    uPageCrc;
+}t_eFSS_TYPE_PageMeta;
+
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

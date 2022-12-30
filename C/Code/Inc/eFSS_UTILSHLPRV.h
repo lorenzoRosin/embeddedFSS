@@ -1,10 +1,14 @@
 /**
- * @file Prv_eFSSUtils.h
+ * @file       eFSS_UTILSHLPRV.h
  *
- */
+ * @brief      High level utils for fail safe storage
+ *
+ * @author     Lorenzo Rosin
+ *
+ **********************************************************************************************************************/
 
-#ifndef PRVEFSSUTILS_H
-#define PRVEFSSUTILS_H
+#ifndef EFSS_UTILSHLPRV_H
+#define EFSS_UTILSHLPRV_H
 
 
 
@@ -17,21 +21,20 @@ extern "C" {
 /***********************************************************************************************************************
  *      INCLUDES
  **********************************************************************************************************************/
-#include "eFSSType.h"
+#include "eFSS_UTILSLLPRV.h"
 
 
 
 /***********************************************************************************************************************
  *      PRIVATE TYPEDEFS
  **********************************************************************************************************************/
-typedef struct
+typedef enum
 {
-    uint16_t    pageType;
-    uint16_t    allPageAlignmentNumber;
-    uint32_t    pageVersion;
-    uint32_t    pageMagicNumber;
-    uint32_t    pageCrc;
-}s_prv_pagePrm;
+    e_eFSS_UTILSHLPRV_RES_OK = 0,
+    e_eFSS_UTILSHLPRV_RES_BADPARAM,
+    e_eFSS_UTILSHLPRV_RES_BADPOINTER,
+    e_eFSS_UTILSHLPRV_RES_CLBCKREPORTERROR
+}e_eFSS_UTILSHLPRV_RES;
 
 
 
@@ -39,15 +42,18 @@ typedef struct
  * GLOBAL PROTOTYPES
  **********************************************************************************************************************/
 /**
- * Get s_prv_pagePrm from a page already loaded in a Buffer
- * @param pginfo Information about memory and pages
- * @param pageBuff Pointer to a page loaded in a buffer
- * @param pagePrm Pointer to a s_prv_pagePrm where we will copy the data readed from the buffer
- * @return EFSS_RES_BADPOINTER in case of bad pointer
- *         EFSS_RES_BADPARAM in case of a wrong param passed
- *         EFSS_RES_OK operation ended successfully
+ * @brief       Erase a specified page
+ *
+ * @param[in]   p_ptCtx       - Erase function context
+ * @param[in]   p_uPageIndx   - Page index we want to erase
+ * @param[in]   p_uReTry      - Erase function pointer
+ *
+ * @return      e_eFSS_UTILSLLPRV_RES_OK                - Operation ended successfully
+ *              e_eFSS_UTILSLLPRV_RES_BADPOINTER        - In case of bad pointer passed to the function
+ *              e_eFSS_UTILSLLPRV_RES_CLBCKREPORTERROR  - Error reported from the callback
  */
-e_eFSS_Res getPagePrmFromBuff(const s_eFSS_PgInfo pginfo, const uint8_t* pageBuff, s_prv_pagePrm* const pagePrm);
+e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_GetMetaFromBuff(const uint8_t* pageBuff, const uint32_t p_pageL,
+                                                      t_eFSS_TYPE_PageMeta* const pagePrm);
 
 /**
  * Set s_prv_pagePrm in a page already loaded in a Buffer
@@ -58,7 +64,7 @@ e_eFSS_Res getPagePrmFromBuff(const s_eFSS_PgInfo pginfo, const uint8_t* pageBuf
  *         EFSS_RES_BADPARAM in case of a wrong param passed
  *         EFSS_RES_OK operation ended successfully
  */
-e_eFSS_Res setPagePrmInBuff(const s_eFSS_PgInfo pginfo, uint8_t* const pageBuff, const s_prv_pagePrm* pagePrm);
+e_eFSS_Res setPagePrmInBuff(const t_eFSS_TYPE_PageMeta pginfo, uint8_t* const pageBuff, const s_prv_pagePrm* pagePrm);
 
 /**
  * Set CRC in a page already loaded in a buffer
@@ -69,7 +75,7 @@ e_eFSS_Res setPagePrmInBuff(const s_eFSS_PgInfo pginfo, uint8_t* const pageBuff,
  *         EFSS_RES_BADPARAM in case of a wrong param passed
  *         EFSS_RES_OK operation ended successfully
  */
-e_eFSS_Res setCrcInPagePrmBuff(const s_eFSS_PgInfo pginfo, uint8_t* const pageBuff, const uint32_t crcToSet);
+e_eFSS_Res setCrcInPagePrmBuff(const t_eFSS_TYPE_PageMeta pginfo, uint8_t* const pageBuff, const uint32_t crcToSet);
 
 /**
  * Calculate the CRC of an already loaded Page in a buffer, excluding the CRC itself from the calc
@@ -81,7 +87,7 @@ e_eFSS_Res setCrcInPagePrmBuff(const s_eFSS_PgInfo pginfo, uint8_t* const pageBu
  *         EFSS_RES_BADPARAM in case of a wrong param passed
  *         EFSS_RES_OK operation ended successfully
  */
-e_eFSS_Res calcPagePrmCrcInBuff(const s_eFSS_PgInfo pginfo, const s_eFSS_Cb cbHld, const uint8_t* pageBuff,
+e_eFSS_Res calcPagePrmCrcInBuff(const t_eFSS_TYPE_PageMeta pginfo, const s_eFSS_Cb cbHld, const uint8_t* pageBuff,
                                 uint32_t* const crcCalc);
 
 /**
@@ -94,7 +100,7 @@ e_eFSS_Res calcPagePrmCrcInBuff(const s_eFSS_PgInfo pginfo, const s_eFSS_Cb cbHl
  *         EFSS_RES_BADPARAM in case of a wrong param passed
  *         EFSS_RES_OK operation ended successfully
  */
-e_eFSS_Res setPagePrmInBuffNCrcUp(const s_eFSS_PgInfo pginfo, const s_eFSS_Cb cbHld, uint8_t* const pageBuff,
+e_eFSS_Res setPagePrmInBuffNCrcUp(const t_eFSS_TYPE_PageMeta pginfo, const s_eFSS_Cb cbHld, uint8_t* const pageBuff,
                                   const s_prv_pagePrm* pagePrm);
 
 /**
@@ -108,7 +114,7 @@ e_eFSS_Res setPagePrmInBuffNCrcUp(const s_eFSS_PgInfo pginfo, const s_eFSS_Cb cb
  *         EFSS_RES_NOTVALIDPAGE the page is not valid, crc or somethings else dosent return
  *         EFSS_RES_OK operation ended successfully
  */
-e_eFSS_Res isValidPageInBuff(const s_eFSS_PgInfo pginfo, const s_eFSS_Cb cbHld, const uint8_t* pageBuff);
+e_eFSS_Res isValidPageInBuff(const t_eFSS_TYPE_PageMeta pginfo, const s_eFSS_Cb cbHld, const uint8_t* pageBuff);
 
 /**
  * Verify if the data present in a page has CRC, magic number, and page type coherent with all the calculated
@@ -123,7 +129,7 @@ e_eFSS_Res isValidPageInBuff(const s_eFSS_PgInfo pginfo, const s_eFSS_Cb cbHld, 
  *         EFSS_RES_ERRORREAD error reported from read callback
  *         EFSS_RES_OK operation ended successfully
  */
-e_eFSS_Res isValidPage(const s_eFSS_PgInfo pginfo, const s_eFSS_Cb cbHld, uint8_t* const suppBuff,
+e_eFSS_Res isValidPage(const t_eFSS_TYPE_PageMeta pginfo, const s_eFSS_Cb cbHld, uint8_t* const suppBuff,
                        const uint32_t pageIndx);
 
 /**
@@ -141,7 +147,7 @@ e_eFSS_Res isValidPage(const s_eFSS_PgInfo pginfo, const s_eFSS_Cb cbHld, uint8_
  *         EFSS_RES_ERRORERASE error reported from erase callback
  *         EFSS_RES_OK operation ended successfully
  */
-e_eFSS_Res writePageNPrmNUpdateCrc(const s_eFSS_PgInfo pginfo, const s_eFSS_Cb cbHld, uint8_t* const pageBuff,
+e_eFSS_Res writePageNPrmNUpdateCrc(const t_eFSS_TYPE_PageMeta pginfo, const s_eFSS_Cb cbHld, uint8_t* const pageBuff,
                                    uint8_t* const suppBuff, const uint32_t pageIndx, const s_prv_pagePrm* prmPage);
 
 /**
@@ -160,7 +166,7 @@ e_eFSS_Res writePageNPrmNUpdateCrc(const s_eFSS_PgInfo pginfo, const s_eFSS_Cb c
  *         EFSS_RES_ERRORERASE error reported from erase callback
  *         EFSS_RES_OK operation ended successfully
  */
-e_eFSS_Res writeNPageNPrmNUpdateCrc(const s_eFSS_PgInfo pginfo, const s_eFSS_Cb cbHld, uint8_t* const pageBuff,
+e_eFSS_Res writeNPageNPrmNUpdateCrc(const t_eFSS_TYPE_PageMeta pginfo, const s_eFSS_Cb cbHld, uint8_t* const pageBuff,
                                     uint8_t* const suppBuff, const uint32_t nPageToWrite, const uint32_t startPageIndx,
                                     const s_prv_pagePrm* prmPage);
 
@@ -178,7 +184,7 @@ e_eFSS_Res writeNPageNPrmNUpdateCrc(const s_eFSS_PgInfo pginfo, const s_eFSS_Cb 
  *         EFSS_RES_ERRORERASE error reported from erase callback
  *         EFSS_RES_OK operation ended successfully
  */
-e_eFSS_Res readPageNPrm(const s_eFSS_PgInfo pginfo, const s_eFSS_Cb cbHld, uint8_t* const pageBuff,
+e_eFSS_Res readPageNPrm(const t_eFSS_TYPE_PageMeta pginfo, const s_eFSS_Cb cbHld, uint8_t* const pageBuff,
                         const uint32_t pageIndx, s_prv_pagePrm* const pagePrm);
 
 /**
@@ -202,7 +208,7 @@ e_eFSS_Res readPageNPrm(const s_eFSS_PgInfo pginfo, const s_eFSS_Cb cbHld, uint8
  *         EFSS_RES_OK_BKP_RCVRD operation ended successfully recovering a backup or an origin page
  *         EFSS_RES_OK operation ended successfully
  */
-e_eFSS_Res verifyAndRipristinateBkup(const s_eFSS_PgInfo pginfo, const s_eFSS_Cb cbHld, uint8_t* const pageOrig,
+e_eFSS_Res verifyAndRipristinateBkup(const t_eFSS_TYPE_PageMeta pginfo, const s_eFSS_Cb cbHld, uint8_t* const pageOrig,
                                      uint8_t* const pageBkup, const uint32_t origIndx, const uint32_t backupIndx);
 
 /**
@@ -220,7 +226,7 @@ e_eFSS_Res verifyAndRipristinateBkup(const s_eFSS_PgInfo pginfo, const s_eFSS_Cb
  *         EFSS_RES_ERRORREAD error reported from read callback
  *         EFSS_RES_OK operation ended successfully
  */
-e_eFSS_Res cloneAPage(const s_eFSS_PgInfo pginfo, const s_eFSS_Cb cbHld, uint8_t* const pageBuff,
+e_eFSS_Res cloneAPage(const t_eFSS_TYPE_PageMeta pginfo, const s_eFSS_Cb cbHld, uint8_t* const pageBuff,
                       uint8_t* const suppBuff, const uint32_t origIndx, const uint32_t destIndx);
 
 
@@ -231,4 +237,4 @@ e_eFSS_Res cloneAPage(const s_eFSS_PgInfo pginfo, const s_eFSS_Cb cbHld, uint8_t
 
 
 
-#endif /* PRVEFSSUTILS_H */
+#endif /* EFSS_UTILSHLPRV_H */
