@@ -33,7 +33,8 @@ typedef enum
     e_eFSS_UTILSHLPRV_RES_OK = 0,
     e_eFSS_UTILSHLPRV_RES_BADPARAM,
     e_eFSS_UTILSHLPRV_RES_BADPOINTER,
-    e_eFSS_UTILSHLPRV_RES_CLBCKREPORTERROR
+    e_eFSS_UTILSHLPRV_RES_CLBCKREPORTERROR,
+    e_eFSS_UTILSHLPRV_RES_NOTVALIDPAGE
 }e_eFSS_UTILSHLPRV_RES;
 
 
@@ -109,70 +110,60 @@ e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_CalcPageMetaCrcInBuff(t_eFSS_TYPE_CbCtx* c
  */
 e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_SetPageMetaInBuffAndUpdtCrc(uint8_t* const pageBuff, const uint32_t p_pageL,
                                                       t_eFSS_TYPE_PageMeta* const pagePrm);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+                                                            const uint32_t p_pageL, uint32_t* const p_puCrcCalc);
 
 /**
- * Verify if the data present in a buffer page has CRC, magic number, and page type coherent with all the calculated
- * value
- * @param pginfo Information about memory and pages
- * @param cbHld Struct containing all callback reference
- * @param pageBuff Pointer to a page loaded in a buffer
- * @return EFSS_RES_BADPOINTER in case of bad pointer
- *         EFSS_RES_BADPARAM in case of a wrong param passed
- *         EFSS_RES_NOTVALIDPAGE the page is not valid, crc or somethings else dosent return
- *         EFSS_RES_OK operation ended successfully
+ * @brief       Erase a specified page
+ *
+ * @param[in]   p_ptCtx       - Erase function context
+ * @param[in]   p_uPageIndx   - Page index we want to erase
+ * @param[in]   p_uReTry      - Erase function pointer
+ *
+ * @return      e_eFSS_UTILSLLPRV_RES_OK                - Operation ended successfully
+ *              e_eFSS_UTILSLLPRV_RES_BADPOINTER        - In case of bad pointer passed to the function
+ *              e_eFSS_UTILSLLPRV_RES_CLBCKREPORTERROR  - Error reported from the callback
  */
-e_eFSS_Res isValidPageInBuff(const t_eFSS_TYPE_PageMeta pginfo, const s_eFSS_Cb cbHld, const uint8_t* pageBuff);
+e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_IsValidPageInBuff(t_eFSS_TYPE_CbCtx* const p_ptCtx, uint8_t* const pageBuff,
+                                                        const uint32_t p_pageL );
 
 /**
- * Verify if the data present in a page has CRC, magic number, and page type coherent with all the calculated
- * value
- * @param pginfo Information about memory and pages
- * @param cbHld Struct containing all callback reference
- * @param suppBuff Support buffer to do the calculation, must be atleast a page size
- * @param pageIndex Index of the page to check
- * @return EFSS_RES_BADPOINTER in case of bad pointer
- *         EFSS_RES_BADPARAM in case of a wrong param passed
- *         EFSS_RES_NOTVALIDPAGE the page is not valid, crc or somethings else dosent return
- *         EFSS_RES_ERRORREAD error reported from read callback
- *         EFSS_RES_OK operation ended successfully
+ * @brief       Erase a specified page
+ *
+ * @param[in]   p_ptCtx       - Erase function context
+ * @param[in]   p_uPageIndx   - Page index we want to erase
+ * @param[in]   p_uReTry      - Erase function pointer
+ *
+ * @return      e_eFSS_UTILSLLPRV_RES_OK                - Operation ended successfully
+ *              e_eFSS_UTILSLLPRV_RES_BADPOINTER        - In case of bad pointer passed to the function
+ *              e_eFSS_UTILSLLPRV_RES_CLBCKREPORTERROR  - Error reported from the callback
  */
-e_eFSS_Res isValidPage(const t_eFSS_TYPE_PageMeta pginfo, const s_eFSS_Cb cbHld, uint8_t* const suppBuff,
-                       const uint32_t pageIndx);
+e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_IsValidPage(t_eFSS_TYPE_CbCtx* const p_ptCtx, const uint32_t p_uPageIdx,
+                                                  uint8_t* const pageBuff, const uint32_t p_pageL, const uint32_t p_uReTry );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /**
  * Erase and write a page with the param passed, and automatically update the CRC of the page it self

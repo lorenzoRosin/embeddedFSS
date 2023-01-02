@@ -441,171 +441,222 @@ e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_SetPageMetaInBuffAndUpdtCrc(uint8_t* const
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-e_eFSS_Res isValidPageInBuff(const s_eFSS_PgInfo pginfo, const s_eFSS_Cb cbHld, const uint8_t* pageBuff)
+e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_IsValidPageInBuff(t_eFSS_TYPE_CbCtx* const p_ptCtx, uint8_t* const pageBuff,
+                                                        const uint32_t p_pageL )
 {
-    /* Local variable */
-    e_eFSS_Res returnVal;
-    s_prv_pagePrm prmPage;
-    uint32_t crcCalc;
+	/* Local variable */
+	e_eFSS_UTILSHLPRV_RES l_eRes;
+    t_eFSS_TYPE_PageMeta l_tPagePrm;
+    uint32_t l_uCrcCalc;
+    uint32_t l_uTemp;
 
-    /* Check for NULL pointer */
-    if( NULL == pageBuff )
-    {
-        returnVal = EFSS_RES_BADPOINTER;
-    }
-    else
-    {
-        /* Get pageBuff param from the ram pageBuff */
-        returnVal = getPagePrmFromBuff(pginfo, pageBuff, &prmPage);
-
-        if( EFSS_RES_OK == returnVal )
+	/* Check pointer validity */
+	if( ( NULL == p_ptCtx ) || ( NULL == pageBuff ) )
+	{
+		l_eRes = e_eFSS_UTILSHLPRV_RES_BADPOINTER;
+	}
+	else
+	{
+        /* Check data validity */
+        if( p_pageL < EFSS_PAGEMETASIZE )
         {
-            /* Calculate the pageBuff param CRC */
-            returnVal = calcPagePrmCrcInBuff(pginfo, cbHld, pageBuff, &crcCalc);
-
-            if( EFSS_RES_OK == returnVal )
-            {
-                /* Verify if calculated CRC is equal to the stored one, check if magic number is equal to the
-                * setted one also */
-                if( (crcCalc == prmPage.pageCrc) && ( PARAM_32_MAGIC_NUMBER == prmPage.pageMagicNumber ) )
-                {
-                    /* Verify if the pageBuff type is what we are aspecting */
-                    if( prmPage.pageType == ( (uint16_t)pginfo.pageType ) )
-                    {
-                        returnVal = EFSS_RES_OK;
-                    }
-                    else
-                    {
-                        returnVal = EFSS_RES_NOTVALIDPAGE;
-                    }
-                }
-                else
-                {
-                    returnVal = EFSS_RES_NOTVALIDPAGE;
-                }
-            }
-        }
-    }
-
-    return returnVal;
-}
-
-e_eFSS_Res isValidPage(const s_eFSS_PgInfo pginfo, const s_eFSS_Cb cbHld, uint8_t* const suppBuff,
-                       const uint32_t pageIndx)
-{
-    /* Local variable */
-    e_eFSS_Res returnVal;
-
-    /* Check for NULL pointer */
-    if( NULL == suppBuff )
-    {
-        returnVal = EFSS_RES_BADPOINTER;
-    }
-    else
-    {
-        /* Check for parameter validity */
-        if( pageIndx >= pginfo.nOfPages )
-        {
-            returnVal = EFSS_RES_BADPARAM;
+            l_eRes = e_eFSS_UTILSHLPRV_RES_BADPARAM;
         }
         else
         {
-            /* Get the page to check in the support ram buffer */
-            returnVal = readPageLL( pginfo, cbHld, pageIndx, suppBuff );
-            if( EFSS_RES_OK == returnVal )
+            /* Get pageBuff param from the ram pageBuff */
+            l_eRes = eFSS_UTILSHLPRV_GetMetaFromBuff(pageBuff, p_pageL, &l_tPagePrm);
+
+            if( e_eFSS_UTILSHLPRV_RES_OK == l_eRes )
             {
-                /* now verify the page loaded in the buffer */
-                returnVal = isValidPageInBuff(pginfo, cbHld, suppBuff);
+                /* Calculate the pageBuff param CRC */
+                l_eRes = eFSS_UTILSHLPRV_CalcPageMetaCrcInBuff(p_ptCtx, pageBuff, p_pageL, &l_uCrcCalc);
+
+                if( e_eFSS_UTILSHLPRV_RES_OK == l_eRes )
+                {
+                    /* Verify if calculated CRC is equal to the stored one, check if magic number is equal to the
+                    * setted one also */
+                    if( (l_uCrcCalc == l_tPagePrm.uPageCrc) && ( EFSS_PAGEMAGICNUMBER == l_tPagePrm.uPageMagicNumber ) )
+                    {
+                        l_eRes = e_eFSS_UTILSHLPRV_RES_OK;
+                    }
+                    else
+                    {
+                        l_eRes = e_eFSS_UTILSHLPRV_RES_NOTVALIDPAGE;
+                    }
+                }
             }
         }
-    }
+	}
 
-    return returnVal;
+	return l_eRes;
 }
+
+
+e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_IsValidPage(t_eFSS_TYPE_CbCtx* const p_ptCtx, const uint32_t p_uPageIdx,
+                                                  uint8_t* const pageBuff, const uint32_t p_pageL, const uint32_t p_uReTry  )
+{
+	/* Local variable */
+	e_eFSS_UTILSHLPRV_RES l_eRes;
+    t_eFSS_TYPE_PageMeta l_tPagePrm;
+    uint32_t l_uCrcCalc;
+    uint32_t l_uTemp;
+
+	/* Check pointer validity */
+	if( ( NULL == p_ptCtx ) || ( NULL == pageBuff ) )
+	{
+		l_eRes = e_eFSS_UTILSHLPRV_RES_BADPOINTER;
+	}
+	else
+	{
+        /* Check data validity */
+        if( p_pageL < EFSS_PAGEMETASIZE )
+        {
+            l_eRes = e_eFSS_UTILSHLPRV_RES_BADPARAM;
+        }
+        else
+        {
+            /* Get pageBuff param from the ram pageBuff */
+            l_eRes = eFSS_UTILSLLPRV_ReadPage( p_ptCtx, p_uPageIdx, pageBuff, p_pageL, p_uReTry );
+
+            if( e_eFSS_UTILSHLPRV_RES_OK == l_eRes )
+            {
+                /* Calculate the pageBuff param CRC */
+                l_eRes = eFSS_UTILSHLPRV_IsValidPageInBuff(p_ptCtx, pageBuff, p_pageL);
+            }
+        }
+	}
+
+	return l_eRes;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 e_eFSS_Res writePageNPrmNUpdateCrc(const s_eFSS_PgInfo pginfo, const s_eFSS_Cb cbHld, uint8_t* const pageBuff,
                                    uint8_t* const suppBuff, const uint32_t pageIndx, const s_prv_pagePrm* prmPage)
