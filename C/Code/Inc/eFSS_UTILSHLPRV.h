@@ -183,25 +183,6 @@ e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_IsValidPage(t_eFSS_TYPE_CbCtx* const p_ptC
 e_eFSS_Res writePageNPrmNUpdateCrc(const t_eFSS_TYPE_PageMeta pginfo, const s_eFSS_Cb cbHld, uint8_t* const pageBuff,
                                    uint8_t* const suppBuff, const uint32_t pageIndx, const s_prv_pagePrm* prmPage);
 
-/**
- * Erase and write n page with the param passed, and automatically update the CRC of all the pages
- * @param pginfo Information about memory and pages
- * @param cbHld Struct containing all callback reference
- * @param pageBuff Pointer to a buffer containing the data that we want to write in the page
- * @param suppBuff Support buffer to do the calculation, must be atleast a page size
- * @param nPageToWrite Number of pages to write
- * @param startPageIndx Index of the page to write
- * @param prmPage Param that we want to write in the page
- * @return EFSS_RES_BADPOINTER in case of bad pointer
- *         EFSS_RES_BADPARAM in case of a wrong param passed
- *         EFSS_RES_NOTVALIDPAGE the page is not valid, crc or somethings else dosent return
- *         EFSS_RES_ERRORWRITE error reported from write callback
- *         EFSS_RES_ERRORERASE error reported from erase callback
- *         EFSS_RES_OK operation ended successfully
- */
-e_eFSS_Res writeNPageNPrmNUpdateCrc(const t_eFSS_TYPE_PageMeta pginfo, const s_eFSS_Cb cbHld, uint8_t* const pageBuff,
-                                    uint8_t* const suppBuff, const uint32_t nPageToWrite, const uint32_t startPageIndx,
-                                    const s_prv_pagePrm* prmPage);
 
 /**
  * Read a page and load it in the buffer, and copy data param in pagePrm also

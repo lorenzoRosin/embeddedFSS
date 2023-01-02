@@ -696,52 +696,7 @@ e_eFSS_Res writePageNPrmNUpdateCrc(const s_eFSS_PgInfo pginfo, const s_eFSS_Cb c
     return returnVal;
 }
 
-e_eFSS_Res writeNPageNPrmNUpdateCrc(const s_eFSS_PgInfo pginfo, const s_eFSS_Cb cbHld, uint8_t* const pageBuff,
-                                    uint8_t* const suppBuff, const uint32_t nPageToWrite, const uint32_t startPageIndx,
-                                    const s_prv_pagePrm* prmPage)
-{
-    /* Local variable */
-    e_eFSS_Res returnVal;
-    uint32_t iterator;
 
-    /* Check for NULL pointer */
-    if( ( NULL == pageBuff )|| ( NULL == suppBuff ) || ( NULL == prmPage ) )
-    {
-        returnVal = EFSS_RES_BADPOINTER;
-    }
-    else
-    {
-        /* Check for parameter validity */
-        if( ( 0u == nPageToWrite ) || ( startPageIndx >= pginfo.nOfPages ) ||
-          ( ( startPageIndx + nPageToWrite - 1u ) >= pginfo.nOfPages ) )
-        {
-            returnVal = EFSS_RES_BADPARAM;
-        }
-        else
-        {
-            /* Set the page param and CRC in the page buffer */
-            returnVal = eFSS_UTILSHLPRV_SetPageMetaInBuffAndUpdtCrc(pginfo, cbHld, pageBuff, prmPage);
-            if( EFSS_RES_OK == returnVal )
-            {
-                iterator = 0u;
-                while( ( iterator < nPageToWrite ) && ( EFSS_RES_OK == returnVal ) )
-                {
-                    /* Erase physical page */
-                    returnVal = erasePageLL(pginfo, cbHld, ( startPageIndx + iterator ) );
-                    if( EFSS_RES_OK == returnVal )
-                    {
-                        /* Write the pageBuff in the physical page */
-                        returnVal = writePageLL(pginfo, cbHld, ( startPageIndx + iterator ), pageBuff, suppBuff );
-                    }
-
-                    iterator++;
-                }
-            }
-        }
-    }
-
-    return returnVal;
-}
 
 e_eFSS_Res readPageNPrm(const s_eFSS_PgInfo pginfo, const s_eFSS_Cb cbHld, uint8_t* const pageBuff,
                         const uint32_t pageIndx, s_prv_pagePrm* const pagePrm)
