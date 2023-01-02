@@ -1107,6 +1107,9 @@
             <name>$PROJ_DIR$\..\..\..\Code\Inc\eCU_DUNPK.h</name>
         </file>
         <file>
+            <name>$PROJ_DIR$\..\..\..\Code\Inc\eFSS_DB.h</name>
+        </file>
+        <file>
             <name>$PROJ_DIR$\..\..\..\Code\Inc\eFSS_STANDARDTYPE.h</name>
         </file>
         <file>
@@ -1141,6 +1144,9 @@
         </file>
         <file>
             <name>$PROJ_DIR$\..\..\..\Code\Src\eCU_DUNPK.c</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\..\..\Code\Src\eFSS_DB.c</name>
         </file>
         <file>
             <name>$PROJ_DIR$\..\..\..\Code\Src\eFSS_UTILSHLPRV.c</name>
