@@ -422,80 +422,40 @@ e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_CalcMetaCrcInBuff(t_eFSS_TYPE_CbCtx* const
 	return l_eRes;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_SetPageMetaInBuffAndUpdtCrc(uint8_t* const pageBuff, const uint32_t p_pageL,
-                                                      t_eFSS_TYPE_PageMeta* const pagePrm)
+e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_SetMetaInBuffNUpdCrc(uint8_t* const p_puPageBuf, const uint32_t p_uPageL,
+                                                           t_eFSS_TYPE_PageMeta* const p_ptPagePrm,
+                                                           t_eFSS_TYPE_CbCtx* const p_ptCbCtx)
 {
 	/* Local variable */
 	e_eFSS_UTILSHLPRV_RES l_eRes;
-    uint32_t l_uComulIndx;
-    uint32_t l_uTemp;
+    uint32_t l_uCrcCalc;
 
 	/* Check pointer validity */
-	if( ( NULL == pageBuff ) || ( NULL == pagePrm )  )
+	if( ( NULL == p_puPageBuf ) || ( NULL == p_ptPagePrm )  )
 	{
 		l_eRes = e_eFSS_UTILSHLPRV_RES_BADPOINTER;
 	}
 	else
 	{
         /* Check data validity */
-        if( p_pageL < EFSS_PAGEMETASIZE )
+        if( p_uPageL <= EFSS_PAGEMETASIZE )
         {
             l_eRes = e_eFSS_UTILSHLPRV_RES_BADPARAM;
         }
         else
         {
             /* Set the parameter in the ram buffer */
-            l_eRes = eFSS_UTILSHLPRV_SetMetaInBuff(pageBuff, p_pageL, pagePrm);
+            l_eRes = eFSS_UTILSHLPRV_SetMetaInBuff(p_puPageBuf, p_uPageL, p_ptPagePrm);
 
-            if( e_eFSS_UTILSLLPRV_RES_OK == l_eRes)
+            if( e_eFSS_UTILSHLPRV_RES_OK == l_eRes)
             {
                 /* Calc crc value of the page */
-                l_eRes = eFSS_UTILSHLPRV_CalcMetaCrcInBuff(pginfo, cbHld, pageBuff, &crcCalc);
+                l_eRes = eFSS_UTILSHLPRV_CalcMetaCrcInBuff(p_ptCbCtx, p_puPageBuf, p_uPageL, &l_uCrcCalc);
 
-                if( e_eFSS_UTILSLLPRV_RES_OK == l_eRes)
+                if( e_eFSS_UTILSHLPRV_RES_OK == l_eRes)
                 {
                     /* Crc calculated, set it */
-                    l_eRes = eFSS_UTILSHLPRV_SetCrcMetaInBuff(pginfo, pageBuff, crcCalc);
+                    l_eRes = eFSS_UTILSHLPRV_SetCrcMetaInBuff(p_puPageBuf, p_uPageL, l_uCrcCalc);
                 }
             }
         }
@@ -504,37 +464,35 @@ e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_SetPageMetaInBuffAndUpdtCrc(uint8_t* const
 	return l_eRes;
 }
 
-
-e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_IsValidPageInBuff(t_eFSS_TYPE_CbCtx* const p_ptCbCtx, uint8_t* const pageBuff,
-                                                        const uint32_t p_pageL )
+e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_IsValidPageInBuff(t_eFSS_TYPE_CbCtx* const p_ptCbCtx, uint8_t* const p_puPageBuf,
+                                                        const uint32_t p_uPageL, bool_t* const p_pbIsValid)
 {
 	/* Local variable */
 	e_eFSS_UTILSHLPRV_RES l_eRes;
     t_eFSS_TYPE_PageMeta l_tPagePrm;
     uint32_t l_uCrcCalc;
-    uint32_t l_uTemp;
 
 	/* Check pointer validity */
-	if( ( NULL == p_ptCbCtx ) || ( NULL == pageBuff ) )
+	if( ( NULL == p_ptCbCtx ) || ( NULL == p_puPageBuf ) || ( NULL == p_pbIsValid ) )
 	{
 		l_eRes = e_eFSS_UTILSHLPRV_RES_BADPOINTER;
 	}
 	else
 	{
         /* Check data validity */
-        if( p_pageL < EFSS_PAGEMETASIZE )
+        if( p_uPageL <= EFSS_PAGEMETASIZE )
         {
             l_eRes = e_eFSS_UTILSHLPRV_RES_BADPARAM;
         }
         else
         {
-            /* Get pageBuff param from the ram pageBuff */
-            l_eRes = eFSS_UTILSHLPRV_GetMetaFromBuff(pageBuff, p_pageL, &l_tPagePrm);
+            /* Get p_puPageBuf param from the ram p_puPageBuf */
+            l_eRes = eFSS_UTILSHLPRV_GetMetaFromBuff(p_puPageBuf, p_uPageL, &l_tPagePrm);
 
             if( e_eFSS_UTILSHLPRV_RES_OK == l_eRes )
             {
-                /* Calculate the pageBuff param CRC */
-                l_eRes = eFSS_UTILSHLPRV_CalcMetaCrcInBuff(p_ptCbCtx, pageBuff, p_pageL, &l_uCrcCalc);
+                /* Calculate the p_puPageBuf param CRC */
+                l_eRes = eFSS_UTILSHLPRV_CalcMetaCrcInBuff(p_ptCbCtx, p_puPageBuf, p_uPageL, &l_uCrcCalc);
 
                 if( e_eFSS_UTILSHLPRV_RES_OK == l_eRes )
                 {
@@ -542,12 +500,14 @@ e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_IsValidPageInBuff(t_eFSS_TYPE_CbCtx* const
                     * setted one also */
                     if( (l_uCrcCalc == l_tPagePrm.uPageCrc) && ( EFSS_PAGEMAGICNUMBER == l_tPagePrm.uPageMagicNumber ) )
                     {
-                        l_eRes = e_eFSS_UTILSHLPRV_RES_OK;
+                        *p_pbIsValid = true;
                     }
                     else
                     {
-                        l_eRes = e_eFSS_UTILSHLPRV_RES_NOTVALIDPAGE;
+                        *p_pbIsValid = false;
                     }
+
+                    l_eRes = e_eFSS_UTILSHLPRV_RES_OK;
                 }
             }
         }
@@ -555,6 +515,23 @@ e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_IsValidPageInBuff(t_eFSS_TYPE_CbCtx* const
 
 	return l_eRes;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -676,7 +653,7 @@ e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_WritePagePrmNUpdateCrc(t_eFSS_TYPE_CbCtx* 
         else
         {
             /* Set the page param and CRC in the page buffer */
-            returnVal = eFSS_UTILSHLPRV_SetPageMetaInBuffAndUpdtCrc(pginfo, cbHld, pageBuff, prmPage);
+            returnVal = eFSS_UTILSHLPRV_SetMetaInBuffNUpdCrc(pginfo, cbHld, pageBuff, prmPage);
             if( EFSS_RES_OK == returnVal )
             {
                 /* Erase physical page */
