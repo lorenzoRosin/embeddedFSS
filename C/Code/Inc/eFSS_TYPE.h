@@ -31,8 +31,8 @@ extern "C" {
 #define ECU_SOF                                                                                    ( ( uint8_t ) 0xA1u )
 #define ECU_EOF                                                                                    ( ( uint8_t ) 0xA2u )
 #define ECU_ESC                                                                                    ( ( uint8_t ) 0xA3u )
-#define EFSS_PAGEMETASIZE                                                                          ( ( uint32_t )  32u )
-#define EFSS_PAGEMAGICNUMBER                                                                       ( ( uint32_t )  32u )
+#define EFSS_PAGEMETASIZE                                                                          ( ( uint32_t )  24u )
+#define EFSS_PAGEMAGICNUMBER                                                               ( ( uint32_t )  0xA5A5A5A5u )
 
 
 
@@ -94,11 +94,11 @@ typedef struct
 typedef struct
 {
 
-    uint32_t    uPageType;
-    uint32_t    uPageSubType;
-    uint32_t    uPageVersion;
-    uint32_t    uPageByteFilled;
-    uint32_t    uPagePresentElement;
+    uint8_t     uPageType;
+    uint8_t     uPageSubType;
+    uint16_t    uPageVersion;
+    uint32_t    uPageUseSpecific1;
+    uint32_t    uPageUseSpecific2;
     uint32_t    uPageSequentialN;
     uint32_t    uPageMagicNumber;
     uint32_t    uPageCrc;
