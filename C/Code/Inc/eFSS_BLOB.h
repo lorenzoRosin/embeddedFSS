@@ -121,20 +121,8 @@ e_eCU_BSTF_RES eFSS_BLOB_Format(t_eFSS_BLOB_Ctx* const p_ptCtx);
  * @return      e_eCU_BSTF_RES_BADPOINTER    - In case of bad pointer passed to the function
  *              e_eCU_BSTF_RES_OK            - Operation ended correctly
  */
-e_eCU_BSTF_RES eFSS_BLOB_Read(t_eFSS_BLOB_Ctx* const p_ptCtx, uint8_t* p_puBuff, uint32_t p_uBuffSize,
-                              uint32_t* p_puReaded);
-
-/**
- * @brief       Read Blob
- *
- * @param[in]   p_ptCtx       - Byte stuffer context
- * @param[out]  p_pbIsInit    - Pointer to a bool_t variable that will be filled with true if the lib is initialized
- *
- * @return      e_eCU_BSTF_RES_BADPOINTER    - In case of bad pointer passed to the function
- *              e_eCU_BSTF_RES_OK            - Operation ended correctly
- */
-e_eCU_BSTF_RES eFSS_BLOB_ReadChunk(t_eFSS_BLOB_Ctx* const p_ptCtx, uint32_t p_uOffset, uint8_t* p_puBuff,
-                                   uint32_t p_uBuffSize, uint32_t* p_puReaded);
+e_eCU_BSTF_RES eFSS_BLOB_ReadAllBlob(t_eFSS_BLOB_Ctx* const p_ptCtx, uint8_t* p_puBuff, uint32_t p_uBuffSize,
+                                     uint32_t* p_puReaded);
 
 /**
  * @brief       Write Blob
@@ -145,19 +133,9 @@ e_eCU_BSTF_RES eFSS_BLOB_ReadChunk(t_eFSS_BLOB_Ctx* const p_ptCtx, uint32_t p_uO
  * @return      e_eCU_BSTF_RES_BADPOINTER    - In case of bad pointer passed to the function
  *              e_eCU_BSTF_RES_OK            - Operation ended correctly
  */
-e_eCU_BSTF_RES eFSS_BLOB_Write(t_eFSS_BLOB_Ctx* const p_ptCtx, uint8_t* p_puBuff, uint32_t p_uBuffSize);
+e_eCU_BSTF_RES eFSS_BLOB_WriteAllBlob(t_eFSS_BLOB_Ctx* const p_ptCtx, uint8_t* p_puBuff, uint32_t p_uBuffSize);
 
-/**
- * @brief       Write Blob
- *
- * @param[in]   p_ptCtx       - Byte stuffer context
- * @param[out]  p_pbIsInit    - Pointer to a bool_t variable that will be filled with true if the lib is initialized
- *
- * @return      e_eCU_BSTF_RES_BADPOINTER    - In case of bad pointer passed to the function
- *              e_eCU_BSTF_RES_OK            - Operation ended correctly
- */
-e_eCU_BSTF_RES eFSS_BLOB_WriteChunk(t_eFSS_BLOB_Ctx* const p_ptCtx, uint32_t p_uOffset, uint8_t* p_puBuff,
-                                    uint32_t p_uBuffSize);
+
 
 
 

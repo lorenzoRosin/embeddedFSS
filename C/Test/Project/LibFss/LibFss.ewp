@@ -1108,9 +1108,6 @@
         </file>
         <file>
             <name>$PROJ_DIR$\..\..\..\Code\Inc\eFSS_BLOB.h</name>
-            <excluded>
-                <configuration>Library</configuration>
-            </excluded>
         </file>
         <file>
             <name>$PROJ_DIR$\..\..\..\Code\Inc\eFSS_DB.h</name>
@@ -1162,9 +1159,6 @@
         </file>
         <file>
             <name>$PROJ_DIR$\..\..\..\Code\Src\eFSS_BLOB.c</name>
-            <excluded>
-                <configuration>Library</configuration>
-            </excluded>
         </file>
         <file>
             <name>$PROJ_DIR$\..\..\..\Code\Src\eFSS_DB.c</name>
