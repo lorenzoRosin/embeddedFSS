@@ -788,3 +788,985 @@ bool InOutFlashManager::saveData(DEVICE_INOUT_FLASH *newDataToSave, bool isMainP
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* Includes ------------------------------------------------------------------*/
+#include "CommonLogFlashManager.h"
+#include "Sys_Exception.h"
+
+/* Class Function */
+CommonLogFlashManager::CommonLogFlashManager(KAPI_PARTITION_TYPE logPartition, uint32_t logPatitionSize, LogDescrFlashManager* logDescManager)
+{
+    m_logDescrp = logDescManager;
+    m_logPartition = logPartition;
+    m_logPatitionSize = logPatitionSize;
+    m_logNumPage = (m_logPatitionSize/MINIMUM_PARTITION_SIZE_BYTE);
+    m_SupportPage = NULL;
+}
+
+CommonLogFlashManager::~CommonLogFlashManager()
+{
+
+}
+
+
+bool CommonLogFlashManager::init(uint8_t *supportPage, uint8_t *additionalSupportPage)
+{
+    bool intFlash = false;
+
+    if( m_logDescrp == NULL )
+    {
+        ERROR_LOG("Bad param");
+        SYSTEM_EXCEPTION();
+    }
+
+    if( supportPage == NULL )
+    {
+        ERROR_LOG("Bad param");
+        SYSTEM_EXCEPTION();
+    }
+
+    if( additionalSupportPage == NULL )
+    {
+        ERROR_LOG("Bad param");
+        SYSTEM_EXCEPTION();
+    }
+
+	m_SupportPage = supportPage;
+
+    /* log page, need to retrive from memory the starting point of the current LOG */
+    /* Init it */
+    intFlash = m_logDescrp->init(additionalSupportPage);
+
+	if(intFlash == true)
+	{
+        /* Check if a new version of log are present */
+        bool updatedVersion = true;
+        if( true == verifyCurrentLogVersion() )
+        {
+            /* Log version is updated, nothing to do  */
+            updatedVersion = true;
+        }
+        else
+        {
+            /* New log version, clear old log */
+        	if(true == clearLogPage(0))
+        	{
+        		/* First page cleaned */
+        		/* CLean descriptor */
+                if( true == m_logDescrp->setnewestOldestLogPageLocation( 0, 0 ) )
+                {
+                    /* Log descriptor OK */
+                	updatedVersion = integrityCreatorCurrentLogData();
+                }
+                else
+                {
+                    /* Error */
+                    ERROR_LOG("Error setting new old page location");
+                    updatedVersion = false;
+                }
+        	}
+        	else
+        	{
+                /* Error */
+                ERROR_LOG("Error cleaning first log page");
+                updatedVersion = false;
+        	}
+        }
+
+        if(true == updatedVersion)
+        {
+            /* verify if we have valid data in one of the two flash page, or if this is the first time in this area */
+            /* integrity creator will set all data to default value if crc error is found */
+        	intFlash = integrityCreatorCurrentLogData();
+            if(true == intFlash)
+            {
+            	/* All ok */
+            }
+            else
+            {
+                /* Impossible get current page */
+            	ERROR_LOG("Impossible to create integrity in log page");
+                intFlash = false;
+            }
+        }
+        else
+        {
+            ERROR_LOG("error updating log..");
+            /* error updating log... */
+        }
+    }
+    else
+    {
+		/* Impossible to create integrity in flash.. */
+    	ERROR_LOG("Impossible to create integrity in log desriptor");
+		intFlash = false;
+    }
+
+	/* now we are ready to go */
+	return intFlash;
+}
+
+
+bool CommonLogFlashManager::clearAllLogLight()
+{
+	bool cleared = true;
+    if( m_logDescrp == NULL )
+    {
+        ERROR_LOG("Bad param");
+        SYSTEM_EXCEPTION();
+    }
+
+    /* Clean only first page location */
+
+    /* First align the descriptor. In case of power loss we dont corrupt data in the index page */
+    if( true == clearLogPage( 0 ) )
+    {
+        if( true == m_logDescrp->setnewestOldestLogPageLocation( 0, 0 ) )
+        {
+            /* Log descriptor OK */
+            cleared = integrityCreatorCurrentLogData();
+        }
+        else
+        {
+            /* Error */
+            ERROR_LOG("Error clearing firt page location");
+            cleared = false;
+        }
+    }
+    else
+    {
+        /* Error */
+        ERROR_LOG("Error setting new page location");
+        cleared = false;
+    }
+
+    return cleared;
+}
+
+bool CommonLogFlashManager::eraseAllLogpartition()
+{
+	bool formatted = false;
+
+	/* First erase data page */
+	formatted = eraseLogPagePartition(0);
+
+	if(true == formatted)
+	{
+		/* Now format page descriptor */
+		formatted = m_logDescrp->eraseLogPageLocationPartition();
+
+		if(true == formatted)
+		{
+			/* Can finish */
+			formatted = eraseLogPagePartition(1);
+		}
+		else
+		{
+			ERROR_LOG("Impossible reset partition ");
+		}
+	}
+	else
+	{
+		/* Failed */
+		ERROR_LOG("Impossible reset partition ");
+	}
+
+	return formatted;
+}
+
+bool CommonLogFlashManager::clearLogPage(uint32_t logIndex)
+{
+	bool cleared = false;
+    if( m_logDescrp == NULL )
+    {
+        ERROR_LOG("Bad param");
+        SYSTEM_EXCEPTION();
+    }
+
+    /* Support init */
+    DEVICE_GENERICLOG_FLASH *supportData = (DEVICE_GENERICLOG_FLASH*)m_SupportPage;
+    memset((uint8_t*)supportData, 0, sizeof(DEVICE_GENERICLOG_FLASH));
+
+    /* Set all to default value  */
+    #if GENERICLOG_FLASH_FREE_PARAMETER
+        for(uint32_t i=0; i<GENERICLOG_FLASH_FREE_PARAMETER; i++)
+        {
+        	supportData->notUsedGenericLogPARAM[i].parameter  = 0;
+        	supportData->notUsedGenericLogPARAM[i].parameterVersion = 0;
+        }
+    #endif
+
+    /* Padding */
+    supportData->crc.magicNumber = UINT64_MAGIC_NUMBER;
+
+    /* Crc will be calculated in another function */
+    supportData->crc.crc = 0;
+
+    /* Save data */
+    cleared = saveSinglePageLogData(supportData, logIndex);
+
+    return cleared;
+}
+
+bool CommonLogFlashManager::eraseLogPagePartition(uint32_t logIndex)
+{
+	bool partitionResetted = false;
+
+	WARNING_LOG("ERASING LOG PAGE DATA PARTITION");
+
+	if(UtilsFlashManager::eraseFlashArea(m_logPartition, MINIMUM_PARTITION_SIZE_BYTE*logIndex, MINIMUM_PARTITION_SIZE_BYTE) == true)
+	{
+		/* Page resetted */
+		partitionResetted = true;
+	}
+	else
+	{
+		ERROR_LOG("Impossible reset partition ");
+		partitionResetted = false;
+	}
+
+	return partitionResetted;
+}
+
+
+bool CommonLogFlashManager::getCurrentLogPageIndex(uint32_t *logIndex)
+{
+    bool returned = false;
+    if( (m_logDescrp == NULL) || (logIndex == NULL) )
+    {
+          ERROR_LOG("Bad param");
+          SYSTEM_EXCEPTION();
+          returned = false;
+    }
+
+    if(m_logDescrp->getnewestLogPageLocation(logIndex))
+    {
+        returned = true;
+    }
+    else
+    {
+        /* Error with descr page */
+        returned = false;
+    }
+
+    return returned;
+}
+
+bool CommonLogFlashManager::getOldestLogPageIndex(uint32_t *logIndex)
+{
+    bool returned = false;
+    if( (m_logDescrp == NULL) || (logIndex == NULL) )
+    {
+          ERROR_LOG("Bad param");
+          SYSTEM_EXCEPTION();
+          returned = false;
+    }
+
+    if(m_logDescrp->getoldestLogPageLocation(logIndex))
+    {
+        returned = true;
+    }
+    else
+    {
+        /* Error with descr page */
+        returned = false;
+    }
+
+    return returned;
+}
+
+bool CommonLogFlashManager::getNumberOfLogPageValorized(uint32_t *num)
+{
+    bool returned = false;
+    if( (m_logDescrp == NULL) || (num == NULL) )
+    {
+        ERROR_LOG("Bad param");
+        SYSTEM_EXCEPTION();
+        returned = false;
+    }
+
+    uint32_t newEstIndex = 0;
+    uint32_t oldEstIndex = 0;
+    if(m_logDescrp->getnewestLogPageLocation(&newEstIndex))
+    {
+        if(m_logDescrp->getoldestLogPageLocation(&oldEstIndex))
+        {
+            returned = true;
+
+            if(newEstIndex == oldEstIndex)
+            {
+                /* Only current Log page */
+                *num = 1;
+            }
+            else if(newEstIndex > oldEstIndex)
+            {
+                *num = newEstIndex - oldEstIndex +1;
+            }
+            else
+            {
+                *num = ( m_logNumPage ) - (oldEstIndex -  newEstIndex -1) ;
+            }
+        }
+        else
+        {
+            /* Error with descr page */
+        	ERROR_LOG("Failed load oldest log page");
+            returned = false;
+        }
+    }
+    else
+    {
+        /* Error with descr page */
+    	ERROR_LOG("Failed load newest log page");
+        returned = false;
+    }
+
+    return returned;
+}
+
+
+
+bool CommonLogFlashManager::getLogVersion(uint32_t *logVersion)
+{
+    bool returned = false;
+    if( (m_logDescrp == NULL) || (logVersion == NULL) )
+    {
+        ERROR_LOG("Bad param");
+        SYSTEM_EXCEPTION();
+        returned = false;
+    }
+
+    if(m_logDescrp->getFwLogVersion(logVersion))
+    {
+    	/* Log version getted */
+    	returned = true;
+    }
+    else
+    {
+        /* Error with descr page */
+        returned = false;
+    }
+
+    return returned;
+}
+
+
+bool CommonLogFlashManager::getNumOfTotalLogPage(uint32_t *maxLogPages)
+{
+    bool returned = false;
+    if( (m_logDescrp == NULL) || (maxLogPages == NULL) )
+    {
+        ERROR_LOG("Bad param");
+        SYSTEM_EXCEPTION();
+        returned = false;
+    }
+
+    *maxLogPages = m_logNumPage;
+    returned = true;
+
+    return returned;
+}
+
+/* Increase page counter desriptor, back up it, erase newt log page, and back up it */
+bool CommonLogFlashManager::currentPageFullGoNext()
+{
+    bool returned = false;
+    if(m_logDescrp == NULL)
+    {
+        ERROR_LOG("Bad param");
+        SYSTEM_EXCEPTION();
+        returned = false;
+    }
+
+
+    /* Current page is full, increase */
+    uint32_t currentLogIndex = 0;
+    uint32_t oldestLogIndex = 0;
+
+    uint32_t currentLogIndexNext = 0;
+    uint32_t currentLogBckupIndexNext = 0;
+    uint32_t oldestLogIndexNext = 0;
+    if( true ==  CommonLogFlashManager::getCurrentLogPageIndex(&currentLogIndex) )
+    {
+        if( true ==  CommonLogFlashManager::getOldestLogPageIndex(&oldestLogIndex) )
+        {
+        	/* Remember to survive to power outage! */
+        	/* First, if needed, increase oldest page location, format it, format the full backup page, and after increase current page location */
+            currentLogIndexNext = getNextIndex(currentLogIndex);
+            currentLogBckupIndexNext = getNextIndex(currentLogIndexNext);
+            oldestLogIndexNext = getNextIndex(oldestLogIndex);
+
+            if(currentLogIndex == oldestLogIndex)
+            {
+            	/* No other log page present, first page to be full */
+
+            }
+            else if(currentLogBckupIndexNext == oldestLogIndex)
+            {
+            	/* Circular queue is full, need to increase the oldest value */
+            	m_logDescrp->setoldestLogPageLocation(oldestLogIndexNext);
+
+            }
+            else
+            {
+            	/* Some free page present, no need to increase oldest log position */
+
+            }
+
+            /* Format future backup page and future data page */
+            clearLogPage(currentLogBckupIndexNext);
+            clearLogPage(currentLogIndexNext);
+
+            /* now that all page are cleaared we can increase log descriptor */
+            m_logDescrp->setnewestLogPageLocation(currentLogIndexNext);
+            returned = true;
+
+        }
+        else
+        {
+        	/* Impossible get oldest index! */
+        	ERROR_LOG("Impossible get oldest index");
+        	returned = false;
+        }
+    }
+    else
+    {
+    	/* Impossible get current index! */
+    	ERROR_LOG("Impossible get current index");
+    	returned = false;
+    }
+
+
+    return returned;
+}
+
+
+/* Save log page and back up it */
+bool CommonLogFlashManager::saveCurrentLogPageAndBackUp(uint8_t* logPage)
+{
+    bool returned = false;
+    if( (m_logDescrp == NULL) || (logPage == NULL) )
+    {
+        ERROR_LOG("Bad param");
+        SYSTEM_EXCEPTION();
+        returned = false;
+    }
+
+    /* First, load current index */
+    uint32_t logIndex = 0;
+    if( true == getCurrentLogPageIndex(&logIndex))
+    {
+        if(true == saveSinglePageLogData((DEVICE_GENERICLOG_FLASH*) logPage, logIndex) )
+        {
+        	/* Page saved, create backup!  */
+        	returned = createBackUpPageDataOfIndex(logIndex);
+        }
+        else
+        {
+        	/* Error saving page */
+        	ERROR_LOG("Error saving pages");
+            returned = false;
+        }
+    }
+    else
+    {
+    	/* Error loading current index */
+    	ERROR_LOG("Error loading current index");
+    	returned = false;
+    }
+
+    return returned;
+}
+
+
+/* Load a log page checking CRC */
+bool CommonLogFlashManager::loadALogPage(uint32_t logPageIndex, uint8_t* logPage)
+{
+    bool returned = false;
+    if( (m_logDescrp == NULL) || (logPage == NULL) )
+    {
+        ERROR_LOG("Bad param");
+        SYSTEM_EXCEPTION();
+        returned = false;
+    }
+
+    /* First, is valid? */
+    if( true == isValidPageData(logPageIndex))
+    {
+    	/* Valid page! Load it */
+        returned = UtilsFlashManager::getFlashArea(m_logPartition, MINIMUM_PARTITION_SIZE_BYTE*logPageIndex, logPage, sizeof(DEVICE_GENERICLOG_FLASH));
+
+        if(returned == true)
+        {
+        	/* Page loaded check CRC */
+        	returned = true;
+        }
+        else
+        {
+        	ERROR_LOG("Error loading log page");
+        	returned = false;
+        }
+    }
+    else
+    {
+    	/* Not a valid page... return empty page */
+    	returned = false;
+    }
+
+
+    return returned;
+}
+
+
+/* Load the current log page checking CRC, and backup */
+bool CommonLogFlashManager::loadCurrentLogPage(uint8_t* logPage)
+{
+    bool returned = false;
+    if( (m_logDescrp == NULL) || (logPage == NULL) )
+    {
+        ERROR_LOG("Bad param");
+        SYSTEM_EXCEPTION();
+        returned = false;
+    }
+
+    /* First, load current index */
+    uint32_t logIndex = 0;
+    if( true == getCurrentLogPageIndex(&logIndex))
+    {
+    	/* can now verify integrity and backup copy  */
+    	if(true == integrityCreatorCurrentLogData())
+    	{
+    		/* all ok */
+            returned = UtilsFlashManager::getFlashArea(m_logPartition, MINIMUM_PARTITION_SIZE_BYTE*logIndex, logPage, sizeof(DEVICE_GENERICLOG_FLASH));
+
+            if(returned == true)
+            {
+            	/* Page loaded check CRC */
+            	returned = true;
+            }
+            else
+            {
+            	ERROR_LOG("Error loading log page");
+            	returned = false;
+            }
+    	}
+    	else
+    	{
+        	ERROR_LOG("Error loading current page and create backup version");
+        	returned = false;
+    	}
+    }
+    else
+    {
+    	/* Error loading current index */
+    	ERROR_LOG("Error loading current index");
+    	returned = false;
+    }
+
+
+    return returned;
+}
+
+
+/* ---------------------------------------------------------------------------------------------------------------------------- Private function */
+uint32_t CommonLogFlashManager::getNextIndex(uint32_t currIndex)
+{
+	/* Support functiom, log buffer are circular */
+	uint32_t nextIndex = currIndex;
+
+	if(currIndex >= (m_logNumPage-1) )
+	{
+        /* Circular queue */
+		nextIndex = 0;
+	}
+	else
+	{
+		nextIndex = currIndex + 1 ;
+	}
+    return nextIndex;
+}
+
+
+uint32_t CommonLogFlashManager::getPrevIndex(uint32_t currIndex)
+{
+	/* Support functiom, log buffer are circular */
+	uint32_t prevIndex = currIndex;
+
+	if(currIndex <= 0 )
+	{
+        /* Circular queue */
+		prevIndex = m_logNumPage-1;
+	}
+	else
+	{
+		prevIndex = currIndex - 1 ;
+	}
+    return prevIndex;
+}
+
+
+bool CommonLogFlashManager::saveSinglePageLogData(DEVICE_GENERICLOG_FLASH* devInfoToSave, uint32_t logPageIndex)
+{
+   bool isPageWritten = false;
+
+   /* Calculate crc */
+   uint64_t crcCalculated = UtilsFlashManager::calculateDataCrc((uint8_t*)devInfoToSave, sizeof(DEVICE_GENERICLOG_FLASH)-sizeof(PAGE_CRC));
+
+   /* Set crc and magic number */
+   devInfoToSave->crc.crc = crcCalculated;
+   devInfoToSave->crc.magicNumber = UINT64_MAGIC_NUMBER;
+
+   isPageWritten = UtilsFlashManager::saveFlashArea(m_logPartition, MINIMUM_PARTITION_SIZE_BYTE*logPageIndex, (uint8_t*)devInfoToSave, sizeof(DEVICE_GENERICLOG_FLASH));
+
+   return isPageWritten;
+}
+
+
+
+
+bool CommonLogFlashManager::isValidPageData(uint32_t logPageIndex)
+{
+   bool isPageValid = false;
+
+   uint64_t calculatedCrc = 0;
+
+   /* Calculate CRC */
+   calculatedCrc = UtilsFlashManager::getFlashParameterAreaCrc(m_logPartition, MINIMUM_PARTITION_SIZE_BYTE*logPageIndex, sizeof(DEVICE_GENERICLOG_FLASH));
+
+   /* Get stored CRC */
+   bool readed = false;
+
+   /* Support init */
+   DEVICE_GENERICLOG_FLASH *supportData = (DEVICE_GENERICLOG_FLASH*)m_SupportPage;
+   memset((uint8_t*)supportData, 0, sizeof(DEVICE_GENERICLOG_FLASH));
+
+   readed = UtilsFlashManager::getFlashArea(m_logPartition, MINIMUM_PARTITION_SIZE_BYTE*logPageIndex, (uint8_t*)supportData, sizeof(DEVICE_GENERICLOG_FLASH));
+
+
+   if(readed == true)
+   {
+	   if(supportData->crc.crc != calculatedCrc)
+	   {
+	        /* Crc are different... */
+		    ERROR_LOG("Different crc in ErrorLog page");
+			isPageValid = false;
+	   }
+		else
+	   {
+	      /* Crc are valid, check padding magic number */
+	      if(supportData->crc.magicNumber == UINT64_MAGIC_NUMBER)
+	      {
+	         /* Even magic number are ok*/
+	         isPageValid = true;
+	      }
+	      else
+	      {
+	         /* Magic number not OK */
+	    	 ERROR_LOG("Different magic number in ErrorLog page");
+	         isPageValid = false;
+	      }
+	   }
+   }
+   else
+   {
+	   ERROR_LOG("Error reading ErrorLog partition");
+	   isPageValid = false;
+   }
+   return isPageValid;
+}
+
+
+
+
+bool CommonLogFlashManager::createBackUpPageDataOfIndex(uint32_t logPageIndex)
+{
+	bool created = false;
+	bool readed = false;
+	uint32_t backupindex = getNextIndex(logPageIndex);
+
+	/* Support init */
+	DEVICE_GENERICLOG_FLASH *supportData = (DEVICE_GENERICLOG_FLASH*)m_SupportPage;
+	memset((uint8_t*)supportData, 0, sizeof(DEVICE_GENERICLOG_FLASH));
+
+    readed = UtilsFlashManager::getFlashArea(m_logPartition, MINIMUM_PARTITION_SIZE_BYTE*logPageIndex, (uint8_t*)supportData, sizeof(DEVICE_GENERICLOG_FLASH));
+
+    if(readed == true)
+    {
+    	bool writed = false;
+    	writed = UtilsFlashManager::saveFlashArea(m_logPartition, MINIMUM_PARTITION_SIZE_BYTE*backupindex,  (uint8_t*)supportData, sizeof(DEVICE_GENERICLOG_FLASH));
+
+    	if(writed == true)
+    	{
+    		created = true;
+    	}
+    	else
+    	{
+        	ERROR_LOG("Error writing GenericLog partition");
+        	created = false;
+    	}
+    }
+    else
+    {
+    	ERROR_LOG("Error reading GenericLog partition");
+    	created = false;
+    }
+
+	return created;
+}
+
+
+
+
+bool CommonLogFlashManager::regenerateMainPageDataOfIndex(uint32_t logPageIndex)
+{
+	bool created = false;
+	bool readed = false;
+	uint32_t mainindex = getPrevIndex(logPageIndex);
+
+	/* Support init */
+	DEVICE_GENERICLOG_FLASH *supportData = (DEVICE_GENERICLOG_FLASH*)m_SupportPage;
+	memset((uint8_t*)supportData, 0, sizeof(DEVICE_GENERICLOG_FLASH));
+
+    readed = UtilsFlashManager::getFlashArea(m_logPartition, MINIMUM_PARTITION_SIZE_BYTE*logPageIndex, (uint8_t*)supportData, sizeof(DEVICE_GENERICLOG_FLASH));
+
+    if(readed == true)
+    {
+    	bool writed = false;
+    	writed = UtilsFlashManager::saveFlashArea(m_logPartition, MINIMUM_PARTITION_SIZE_BYTE*mainindex,  (uint8_t*)supportData, sizeof(DEVICE_GENERICLOG_FLASH));
+
+    	if(writed == true)
+    	{
+    		created = true;
+    	}
+    	else
+    	{
+        	ERROR_LOG("Error writing GenericLog partition");
+        	created = false;
+    	}
+    }
+    else
+    {
+    	ERROR_LOG("Error reading GenericLog partition");
+    	created = false;
+    }
+
+	return created;
+}
+
+
+
+bool CommonLogFlashManager::integrityCreatorCurrentLogData()
+{
+	bool integritySuccess = false;
+
+	/* First, get current index page */
+	uint32_t currentLogIndex = 0;
+	if( true == getCurrentLogPageIndex(&currentLogIndex))
+	{
+	    uint32_t logCurrPageIndex = currentLogIndex;
+	    uint32_t logbckupPageIndex = getNextIndex(currentLogIndex);
+
+		if(isValidPageData(logCurrPageIndex) && isValidPageData(logbckupPageIndex))
+		{
+		      /* Both page are OK, but are they equals?*/
+		      bool arePageEquals = false;
+
+		      /* check if data written is equal to the data received... */
+		      arePageEquals = UtilsFlashManager::isFlashAreaEqualsToFlashArea(m_logPartition, MINIMUM_PARTITION_SIZE_BYTE*logCurrPageIndex, m_logPartition, MINIMUM_PARTITION_SIZE_BYTE*logbckupPageIndex, sizeof(DEVICE_GENERICLOG_FLASH));
+
+		      if(arePageEquals)
+		      {
+		         /* all ok, no action is needed */
+		         integritySuccess =  true;
+		      }
+		      else
+		      {
+		         /* Page are different, copy main page in support page */
+		    	 ERROR_LOG("GenericLog page are ok but they are different from main to bckp");
+		         integritySuccess = createBackUpPageDataOfIndex(logCurrPageIndex);
+		      }
+		}
+		else if(isValidPageData(logCurrPageIndex))
+		{
+				/* main page is OK create a backUp */
+				ERROR_LOG("createBackUpPageDataOfIndex");
+				integritySuccess = createBackUpPageDataOfIndex(logCurrPageIndex);
+		}
+		else if(isValidPageData(logbckupPageIndex))
+		{
+		      /* main page is corrupted and back up page is ok, regenerate */
+			  ERROR_LOG("regenerateMainPageDataOfIndex");
+		      integritySuccess = regenerateMainPageDataOfIndex(logbckupPageIndex);
+		}
+		else
+		{
+		    /* no valid page is found... this is the fist time we write in this area, init parameter */
+			WARNING_LOG("No valid page found, regenerate main and bkp pwrd page of the LOG General");
+
+			/* Support init */
+			DEVICE_GENERICLOG_FLASH *supportData = (DEVICE_GENERICLOG_FLASH*)m_SupportPage;
+			memset((uint8_t*)supportData, 0, sizeof(DEVICE_GENERICLOG_FLASH));
+
+
+	        /* Not used counter */
+	        #if GENERICLOG_FLASH_FREE_PARAMETER
+	            /* Set all to default value, name and note  */
+	            for(uint32_t i=0; i<GENERICLOG_FLASH_FREE_PARAMETER; i++)
+	            {
+	            	supportData->notUsedGenericLogPARAM[i].parameter  = 0;
+	            	supportData->notUsedGenericLogPARAM[i].parameterVersion = 0;
+	            }
+	        #endif
+
+		    /* Padding */
+	        supportData->crc.magicNumber = UINT64_MAGIC_NUMBER;
+
+		    /* Crc will be calculated in another function */
+	        supportData->crc.crc = 0;
+
+		    /* Save data */
+		    bool mainOk = saveSinglePageLogData(supportData, logCurrPageIndex);
+		    bool backOk = saveSinglePageLogData(supportData, logbckupPageIndex);
+
+		    integritySuccess =  mainOk&&backOk;
+		}
+	}
+	else
+	{
+		/* Error getting current page */
+		ERROR_LOG("Error getting current page ");
+		integritySuccess = false;
+	}
+
+
+	return integritySuccess;
+}
+
+
+bool CommonLogFlashManager::verifyCurrentLogVersion()
+{
+	/* Single log will not have a parameter version. The version is Stored only in the log descriptor. When version in LOG descriptor changes
+     * we erase all log */
+	bool isUpdatedVersion = false;
+
+    if( m_logDescrp == NULL )
+    {
+        ERROR_LOG("Bad param");
+        SYSTEM_EXCEPTION();
+        isUpdatedVersion = false;
+    }
+
+    uint32_t previousStoredLogVersion = 0;
+    uint32_t currentPresentLogVersion = 0;
+    if( true == m_logDescrp->getStoredLogVersion(&previousStoredLogVersion) )
+    {
+    	if( true == m_logDescrp->getFwLogVersion(&currentPresentLogVersion) )
+    	{
+            /* Are they equals? */
+            if( currentPresentLogVersion == previousStoredLogVersion )
+            {
+                /* Same log version */
+                 isUpdatedVersion = true;
+            }
+            else
+            {
+                /* New log version */
+                 isUpdatedVersion = false;
+            }
+    	}
+    	else
+    	{
+            /* Error reading costant */
+            ERROR_LOG("Impossible read curret log version ");
+            isUpdatedVersion = false;
+    	}
+
+    }
+    else
+    {
+        /* Error reading flash */
+        ERROR_LOG("Impossible read descriptor LOG version ");
+        isUpdatedVersion = false;
+    }
+
+	return isUpdatedVersion;
+}
+
+

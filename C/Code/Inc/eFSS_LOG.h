@@ -1,5 +1,5 @@
 /**
- * @file       eFSS_DB.h
+ * @file       eFSS_LOG.h
  *
  * @brief      High level utils for fail safe storage
  *
@@ -7,8 +7,8 @@
  *
  **********************************************************************************************************************/
 
-#ifndef EFSS_DB_H
-#define EFSS_DB_H
+#ifndef EFSS_LOG_H
+#define EFSS_LOG_H
 
 
 
@@ -30,12 +30,12 @@ extern "C" {
  **********************************************************************************************************************/
 typedef enum
 {
-    e_eFSS_DB_RES_OK = 0,
-    e_eFSS_DB_RES_BADPARAM,
-    e_eFSS_DB_RES_BADPOINTER,
-    e_eFSS_DB_RES_CLBCKREPORTERROR,
-    e_eFSS_DB_RES_NOTVALIDPAGE
-}e_eFSS_DB_RES;
+    e_eFSS_LOG_RES_OK = 0,
+    e_eFSS_LOG_RES_BADPARAM,
+    e_eFSS_LOG_RES_BADPOINTER,
+    e_eFSS_LOG_RES_CLBCKREPORTERROR,
+    e_eFSS_LOG_RES_NOTVALIDPAGE
+}e_eFSS_LOG_RES;
 
 typedef struct
 {
@@ -45,8 +45,8 @@ typedef struct
 	uint8_t* puBuff;
 	uint32_t uBuffL;
     uint32_t uPageSize;
-    t_eFSS_DB_DbStruct tDBS;
-}t_eFSS_DB_Ctx;
+    t_eFSS_LOG_DbStruct tDBS;
+}t_eFSS_LOG_Ctx;
 
 typedef struct
 {
@@ -54,13 +54,13 @@ typedef struct
 	uint16_t uLen;
 	uint16_t uVer;
     uint8_t* puDefVal;
-}t_eFSS_DB_DbElement;
+}t_eFSS_LOG_DbElement;
 
 typedef struct
 {
     uint32_t uNumberOfElement;
-    t_eFSS_DB_DbElement* ptElementList;
-}t_eFSS_DB_DbStruct;
+    t_eFSS_LOG_DbElement* ptElementList;
+}t_eFSS_LOG_DbStruct;
 
 /***********************************************************************************************************************
  * GLOBAL PROTOTYPES
@@ -76,8 +76,8 @@ typedef struct
  *		        e_eCU_BSTF_RES_BADPARAM      - In case of an invalid parameter passed to the function
  *              e_eCU_BSTF_RES_OK            - Operation ended correctly
  */
-e_eCU_BSTF_RES eFSS_DB_InitCtx(t_eFSS_DB_Ctx* const p_ptCtx, t_eFSS_TYPE_CbCtx* const p_ptCtxCb, uint32_t p_uPageToUse,
-                               uint32_t p_uPageSize, uint32_t p_uBuffL, uint8_t p_puBuff, t_eFSS_DB_DbStruct p_tDS);
+e_eCU_BSTF_RES eFSS_LOG_InitCtx(t_eFSS_LOG_Ctx* const p_ptCtx, t_eFSS_TYPE_CbCtx* const p_ptCtxCb, uint32_t p_uPageToUse,
+                               uint32_t p_uPageSize, uint32_t p_uBuffL, uint8_t p_puBuff, t_eFSS_LOG_DbStruct p_tDS);
 
 /**
  * @brief       Check if the lib is initialized
@@ -88,7 +88,7 @@ e_eCU_BSTF_RES eFSS_DB_InitCtx(t_eFSS_DB_Ctx* const p_ptCtx, t_eFSS_TYPE_CbCtx* 
  * @return      e_eCU_BSTF_RES_BADPOINTER    - In case of bad pointer passed to the function
  *              e_eCU_BSTF_RES_OK            - Operation ended correctly
  */
-e_eCU_BSTF_RES eFSS_DB_IsInit(t_eFSS_DB_Ctx* const p_ptCtx, bool_t* p_pbIsInit);
+e_eCU_BSTF_RES eFSS_LOG_IsInit(t_eFSS_LOG_Ctx* const p_ptCtx, bool_t* p_pbIsInit);
 
 /**
  * @brief       Initialize the byte stuffer context
@@ -101,8 +101,20 @@ e_eCU_BSTF_RES eFSS_DB_IsInit(t_eFSS_DB_Ctx* const p_ptCtx, bool_t* p_pbIsInit);
  *		        e_eCU_BSTF_RES_BADPARAM      - In case of an invalid parameter passed to the function
  *              e_eCU_BSTF_RES_OK            - Operation ended correctly
  */
-e_eCU_BSTF_RES eFSS_DB_InitFlash(t_eFSS_DB_Ctx* const p_ptCtx, t_eFSS_TYPE_CbCtx* const p_ptCtxCb, uint32_t p_uPageToUse,
-                               uint32_t p_uPageSize, uint32_t p_uBuffL, uint8_t p_puBuff, t_eFSS_DB_DbStruct p_tDS);
+e_eCU_BSTF_RES eFSS_LOG_GetStorageStatus(t_eFSS_LOG_Ctx* const p_ptCtx, t_eFSS_TYPE_CbCtx* const p_peStatus);
+
+/**
+ * @brief       Initialize the byte stuffer context
+ *
+ * @param[in]   p_ptCtx    - Byte stuffer context
+ * @param[in]   p_puBuff   - Pointer to a memory area that we will use to store data that needs to be stuffed
+ * @param[in]   p_uBuffL   - Dimension in byte of the memory area
+ *
+ * @return      e_eCU_BSTF_RES_BADPOINTER    - In case of bad pointer passed to the function
+ *		        e_eCU_BSTF_RES_BADPARAM      - In case of an invalid parameter passed to the function
+ *              e_eCU_BSTF_RES_OK            - Operation ended correctly
+ */
+e_eCU_BSTF_RES eFSS_LOG_Format(t_eFSS_BLOB_Ctx* const p_ptCtx);
 
 /**
  * @brief       Check if the lib is initialized
@@ -113,118 +125,24 @@ e_eCU_BSTF_RES eFSS_DB_InitFlash(t_eFSS_DB_Ctx* const p_ptCtx, t_eFSS_TYPE_CbCtx
  * @return      e_eCU_BSTF_RES_BADPOINTER    - In case of bad pointer passed to the function
  *              e_eCU_BSTF_RES_OK            - Operation ended correctly
  */
-e_eCU_BSTF_RES eFSS_DB_IsFlashInit(t_eFSS_DB_Ctx* const p_ptCtx, bool_t* p_pbIsInit);
+e_eCU_BSTF_RES eFSS_LOG_AddLog(t_eFSS_LOG_Ctx* const p_ptCtx, uint8_t* p_puLogToSave, uint32_t p_uLogL);
 
-/**
- * @brief       Check if the lib is initialized
- *
- * @param[in]   p_ptCtx       - Byte stuffer context
- * @param[out]  p_pbIsInit    - Pointer to a bool_t variable that will be filled with true if the lib is initialized
- *
- * @return      e_eCU_BSTF_RES_BADPOINTER    - In case of bad pointer passed to the function
- *              e_eCU_BSTF_RES_OK            - Operation ended correctly
- */
-e_eCU_BSTF_RES eFSS_DB_SaveElementRaw(t_eFSS_DB_Ctx* const p_ptCtx, bool_t* p_pbIsInit);
 
-/**
- * @brief       Check if the lib is initialized
- *
- * @param[in]   p_ptCtx       - Byte stuffer context
- * @param[out]  p_pbIsInit    - Pointer to a bool_t variable that will be filled with true if the lib is initialized
- *
- * @return      e_eCU_BSTF_RES_BADPOINTER    - In case of bad pointer passed to the function
- *              e_eCU_BSTF_RES_OK            - Operation ended correctly
- */
-e_eCU_BSTF_RES eFSS_DB_SaveElementU8(t_eFSS_DB_Ctx* const p_ptCtx, bool_t* p_pbIsInit);
+e_eCU_BSTF_RES eFSS_LOG_GetCurrentLogPageIndex(uint32_t *logIndex);
 
-/**
- * @brief       Check if the lib is initialized
- *
- * @param[in]   p_ptCtx       - Byte stuffer context
- * @param[out]  p_pbIsInit    - Pointer to a bool_t variable that will be filled with true if the lib is initialized
- *
- * @return      e_eCU_BSTF_RES_BADPOINTER    - In case of bad pointer passed to the function
- *              e_eCU_BSTF_RES_OK            - Operation ended correctly
- */
-e_eCU_BSTF_RES eFSS_DB_SaveElementU16(t_eFSS_DB_Ctx* const p_ptCtx, bool_t* p_pbIsInit);
 
-/**
- * @brief       Check if the lib is initialized
- *
- * @param[in]   p_ptCtx       - Byte stuffer context
- * @param[out]  p_pbIsInit    - Pointer to a bool_t variable that will be filled with true if the lib is initialized
- *
- * @return      e_eCU_BSTF_RES_BADPOINTER    - In case of bad pointer passed to the function
- *              e_eCU_BSTF_RES_OK            - Operation ended correctly
- */
-e_eCU_BSTF_RES eFSS_DB_SaveElementU32(t_eFSS_DB_Ctx* const p_ptCtx, bool_t* p_pbIsInit);
+e_eCU_BSTF_RES eFSS_LOG_GetOldestLogPageIndex(uint32_t *logIndex);
 
-/**
- * @brief       Check if the lib is initialized
- *
- * @param[in]   p_ptCtx       - Byte stuffer context
- * @param[out]  p_pbIsInit    - Pointer to a bool_t variable that will be filled with true if the lib is initialized
- *
- * @return      e_eCU_BSTF_RES_BADPOINTER    - In case of bad pointer passed to the function
- *              e_eCU_BSTF_RES_OK            - Operation ended correctly
- */
-e_eCU_BSTF_RES eFSS_DB_SaveElementU64(t_eFSS_DB_Ctx* const p_ptCtx, bool_t* p_pbIsInit);
 
-/**
- * @brief       Check if the lib is initialized
- *
- * @param[in]   p_ptCtx       - Byte stuffer context
- * @param[out]  p_pbIsInit    - Pointer to a bool_t variable that will be filled with true if the lib is initialized
- *
- * @return      e_eCU_BSTF_RES_BADPOINTER    - In case of bad pointer passed to the function
- *              e_eCU_BSTF_RES_OK            - Operation ended correctly
- */
-e_eCU_BSTF_RES eFSS_DB_GetElementRaw(t_eFSS_DB_Ctx* const p_ptCtx, bool_t* p_pbIsInit);
+e_eCU_BSTF_RES eFSS_LOG_GetNumberOfLogPageValorized(uint32_t *num);
 
-/**
- * @brief       Check if the lib is initialized
- *
- * @param[in]   p_ptCtx       - Byte stuffer context
- * @param[out]  p_pbIsInit    - Pointer to a bool_t variable that will be filled with true if the lib is initialized
- *
- * @return      e_eCU_BSTF_RES_BADPOINTER    - In case of bad pointer passed to the function
- *              e_eCU_BSTF_RES_OK            - Operation ended correctly
- */
-e_eCU_BSTF_RES eFSS_DB_GetElementU8(t_eFSS_DB_Ctx* const p_ptCtx, bool_t* p_pbIsInit);
 
-/**
- * @brief       Check if the lib is initialized
- *
- * @param[in]   p_ptCtx       - Byte stuffer context
- * @param[out]  p_pbIsInit    - Pointer to a bool_t variable that will be filled with true if the lib is initialized
- *
- * @return      e_eCU_BSTF_RES_BADPOINTER    - In case of bad pointer passed to the function
- *              e_eCU_BSTF_RES_OK            - Operation ended correctly
- */
-e_eCU_BSTF_RES eFSS_DB_GetElementU16(t_eFSS_DB_Ctx* const p_ptCtx, bool_t* p_pbIsInit);
+e_eCU_BSTF_RES eFSS_LOG_GetLogVersion(uint32_t *logVersion);
 
-/**
- * @brief       Check if the lib is initialized
- *
- * @param[in]   p_ptCtx       - Byte stuffer context
- * @param[out]  p_pbIsInit    - Pointer to a bool_t variable that will be filled with true if the lib is initialized
- *
- * @return      e_eCU_BSTF_RES_BADPOINTER    - In case of bad pointer passed to the function
- *              e_eCU_BSTF_RES_OK            - Operation ended correctly
- */
-e_eCU_BSTF_RES eFSS_DB_GetElementU32(t_eFSS_DB_Ctx* const p_ptCtx, bool_t* p_pbIsInit);
 
-/**
- * @brief       Check if the lib is initialized
- *
- * @param[in]   p_ptCtx       - Byte stuffer context
- * @param[out]  p_pbIsInit    - Pointer to a bool_t variable that will be filled with true if the lib is initialized
- *
- * @return      e_eCU_BSTF_RES_BADPOINTER    - In case of bad pointer passed to the function
- *              e_eCU_BSTF_RES_OK            - Operation ended correctly
- */
-e_eCU_BSTF_RES eFSS_DB_GetElementU64(t_eFSS_DB_Ctx* const p_ptCtx, bool_t* p_pbIsInit);
+e_eCU_BSTF_RES eFSS_LOG_GetNumOfTotalLogPage(uint32_t *maxLogPages);
 
+e_eCU_BSTF_RES eFSS_LOG_LogOfASpecificPage(uint32_t *maxLogPages);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -232,7 +150,7 @@ e_eCU_BSTF_RES eFSS_DB_GetElementU64(t_eFSS_DB_Ctx* const p_ptCtx, bool_t* p_pbI
 
 
 
-#endif /* EFSS_DB_H */
+#endif /* EFSS_LOG_H */
 
 
 
@@ -244,31 +162,3 @@ e_eCU_BSTF_RES eFSS_DB_GetElementU64(t_eFSS_DB_Ctx* const p_ptCtx, bool_t* p_pbI
 
 
 
-
-class InOutFlashManager
-{
-  public:
-    InOutFlashManager();
-    ~InOutFlashManager();
-
-    bool init();
-
-    bool saveTempProbeSettings(uint64_t tank_n_wire, uint64_t tank_use470ohm);
-    bool getTempProbeSettings(uint64_t *tank_n_wire, uint64_t *tank_use470ohm);
-
-    bool saveDigitalOutLifeSpawn(uint64_t guarantyCycle, uint64_t guarantyYears);
-    bool getDigitalOutLifeSpawn(uint64_t *guarantyCycle, uint64_t *guarantyYears);
-
-    bool saveAnalogInputCalibrationValue(ANALOG_INPUT_TYPE inputType, float calibValue);
-    bool getAnalogInputCalibrationValue(ANALOG_INPUT_TYPE inputType,  float* calibValue);
-
-
-private:
-
-	bool isValidPageData(bool isMainPage);
-	bool createBackUpPageData();
-	bool regenerateMainPageData();
-	bool integrityCreatorData();
-   bool verifyParameterVersion();
-	bool saveData(DEVICE_INOUT_FLASH *newDataToSave, bool isMainPage);
-};
