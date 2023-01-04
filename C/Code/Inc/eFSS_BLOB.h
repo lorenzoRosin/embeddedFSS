@@ -1,7 +1,7 @@
 /**
  * @file       eFSS_BLOB.h
  *
- * @brief      High level utils for fail safe storage
+ * @brief      Blob large file module
  *
  * @author     Lorenzo Rosin
  *
@@ -21,7 +21,7 @@ extern "C" {
 /***********************************************************************************************************************
  *      INCLUDES
  **********************************************************************************************************************/
-#include "eFSS_UTILSLLPRV.h"
+#include "eFSS_TYPE.h"
 
 
 
@@ -39,12 +39,13 @@ typedef enum
 
 typedef struct
 {
-    bool_t   bIsInitCtx;
-    bool_t   bIsInitFlash;
-    t_eFSS_TYPE_CbCtx* p_ptCtxCb;
+    bool_t   bIsInit;
+    t_eFSS_TYPE_CbCtx* ptCtxCb;
 	uint8_t* puBuff;
 	uint32_t uBuffL;
+    uint32_t uNPage;
     uint32_t uPageSize;
+    uint32_t uReTry;
 }t_eFSS_BLOB_Ctx;
 
 
@@ -53,87 +54,88 @@ typedef struct
  * GLOBAL PROTOTYPES
  **********************************************************************************************************************/
 /**
+ * @brief       Initialize the blob module context
+ *
+ * @param[in]   p_ptCtx       - Blob context
+ * @param[in]   p_ptCtxCb     - All callback collection context
+ * @param[in]   p_uPageToUse  - How many page use for the blob module
+ * @param[in]   p_uPageSize   - Size of the used pages
+ * @param[in]   p_puBuff      - Pointer to a buffer used by the modules to make calc
+ * @param[in]   p_uBuffL      - Size of p_puBuff
+ *
+ * @return      e_eFSS_BLOB_RES_BADPOINTER    - In case of bad pointer passed to the function
+ *		        e_eFSS_BLOB_RES_BADPARAM      - In case of an invalid parameter passed to the function
+ *              e_eFSS_BLOB_RES_OK            - Operation ended correctly
+ */
+e_eFSS_BLOB_RES eFSS_BLOB_InitCtx(t_eFSS_BLOB_Ctx* const p_ptCtx, t_eFSS_TYPE_CbCtx* const p_ptCtxCb,
+                                  const uint32_t p_uPageToUse, const uint32_t p_uPageSize, uint8_t* const p_puBuff,
+                                  uint32_t p_uBuffL);
+
+/**
+ * @brief       Check if the lib is initialized
+ *
+ * @param[in]   p_ptCtx       - Blob context
+ * @param[out]  p_pbIsInit    - Pointer to a bool_t variable that will be filled with true if the lib is initialized
+ *
+ * @return      e_eFSS_BLOB_RES_BADPOINTER    - In case of bad pointer passed to the function
+ *              e_eFSS_BLOB_RES_OK            - Operation ended correctly
+ */
+e_eFSS_BLOB_RES eFSS_BLOB_IsInit(t_eFSS_BLOB_Ctx* const p_ptCtx, bool_t* p_pbIsInit);
+
+/**
  * @brief       Initialize the byte stuffer context
  *
- * @param[in]   p_ptCtx    - Byte stuffer context
- * @param[in]   p_puBuff   - Pointer to a memory area that we will use to store data that needs to be stuffed
- * @param[in]   p_uBuffL   - Dimension in byte of the memory area
+ * @param[in]   p_ptCtx    - Blob context
  *
- * @return      e_eCU_BSTF_RES_BADPOINTER    - In case of bad pointer passed to the function
- *		        e_eCU_BSTF_RES_BADPARAM      - In case of an invalid parameter passed to the function
- *              e_eCU_BSTF_RES_OK            - Operation ended correctly
+ * @return      e_eFSS_BLOB_RES_BADPOINTER    - In case of bad pointer passed to the function
+ *		        e_eFSS_BLOB_RES_BADPARAM      - In case of an invalid parameter passed to the function
+ *              e_eFSS_BLOB_RES_OK            - Operation ended correctly
  */
-e_eCU_BSTF_RES eFSS_BLOB_InitCtx(t_eFSS_BLOB_Ctx* const p_ptCtx, t_eFSS_TYPE_CbCtx* const p_ptCtxCb, uint32_t p_uPageToUse,
-                               uint32_t p_uPageSize, uint32_t p_uBuffL, uint8_t p_puBuff);
+e_eFSS_BLOB_RES eFSS_BLOB_GetStorageStatus(t_eFSS_BLOB_Ctx* const p_ptCtx);
 
 /**
- * @brief       Check if the lib is initialized
+ * @brief       Format the memory used for the blob and all data
  *
- * @param[in]   p_ptCtx       - Byte stuffer context
+ * @param[in]   p_ptCtx    - Blob context
+ *
+ * @return      e_eFSS_BLOB_RES_BADPOINTER    - In case of bad pointer passed to the function
+ *              e_eFSS_BLOB_RES_OK            - Operation ended correctly
+ */
+e_eFSS_BLOB_RES eFSS_BLOB_Format(t_eFSS_BLOB_Ctx* const p_ptCtx);
+
+/**
+ * @brief       Get info about the stored blob
+ *
+ * @param[in]   p_ptCtx      - Blob context
+ * @param[out]  p_puBlobSize - Pointer to a uint32_t that will be filled with the size of the blob
+ *
+ * @return      e_eFSS_BLOB_RES_BADPOINTER    - In case of bad pointer passed to the function
+ *              e_eFSS_BLOB_RES_OK            - Operation ended correctly
+ */
+e_eFSS_BLOB_RES eFSS_BLOB_GetInfo(t_eFSS_BLOB_Ctx* const p_ptCtx, bool_t* p_puBlobSize);
+
+/**
+ * @brief       Read the whole blob
+ *
+ * @param[in]   p_ptCtx    - Blob context
  * @param[out]  p_pbIsInit    - Pointer to a bool_t variable that will be filled with true if the lib is initialized
  *
- * @return      e_eCU_BSTF_RES_BADPOINTER    - In case of bad pointer passed to the function
- *              e_eCU_BSTF_RES_OK            - Operation ended correctly
+ * @return      e_eFSS_BLOB_RES_BADPOINTER    - In case of bad pointer passed to the function
+ *              e_eFSS_BLOB_RES_OK            - Operation ended correctly
  */
-e_eCU_BSTF_RES eFSS_BLOB_IsInit(t_eFSS_BLOB_Ctx* const p_ptCtx, bool_t* p_pbIsInit);
-
-/**
- * @brief       Initialize the byte stuffer context
- *
- * @param[in]   p_ptCtx    - Byte stuffer context
- * @param[in]   p_puBuff   - Pointer to a memory area that we will use to store data that needs to be stuffed
- * @param[in]   p_uBuffL   - Dimension in byte of the memory area
- *
- * @return      e_eCU_BSTF_RES_BADPOINTER    - In case of bad pointer passed to the function
- *		        e_eCU_BSTF_RES_BADPARAM      - In case of an invalid parameter passed to the function
- *              e_eCU_BSTF_RES_OK            - Operation ended correctly
- */
-e_eCU_BSTF_RES eFSS_BLOB_GetStorageStatus(t_eFSS_BLOB_Ctx* const p_ptCtx, t_eFSS_TYPE_CbCtx* const p_peStatus);
-
-/**
- * @brief       Check if the lib is initialized
- *
- * @param[in]   p_ptCtx       - Byte stuffer context
- * @param[out]  p_pbIsInit    - Pointer to a bool_t variable that will be filled with true if the lib is initialized
- *
- * @return      e_eCU_BSTF_RES_BADPOINTER    - In case of bad pointer passed to the function
- *              e_eCU_BSTF_RES_OK            - Operation ended correctly
- */
-e_eCU_BSTF_RES eFSS_BLOB_GetInfo(t_eFSS_BLOB_Ctx* const p_ptCtx, bool_t* p_pbIsInit);
-
-/**
- * @brief       Check if the lib is initialized
- *
- * @param[in]   p_ptCtx       - Byte stuffer context
- * @param[out]  p_pbIsInit    - Pointer to a bool_t variable that will be filled with true if the lib is initialized
- *
- * @return      e_eCU_BSTF_RES_BADPOINTER    - In case of bad pointer passed to the function
- *              e_eCU_BSTF_RES_OK            - Operation ended correctly
- */
-e_eCU_BSTF_RES eFSS_BLOB_Format(t_eFSS_BLOB_Ctx* const p_ptCtx);
-
-/**
- * @brief       Read Blob
- *
- * @param[in]   p_ptCtx       - Byte stuffer context
- * @param[out]  p_pbIsInit    - Pointer to a bool_t variable that will be filled with true if the lib is initialized
- *
- * @return      e_eCU_BSTF_RES_BADPOINTER    - In case of bad pointer passed to the function
- *              e_eCU_BSTF_RES_OK            - Operation ended correctly
- */
-e_eCU_BSTF_RES eFSS_BLOB_ReadAllBlob(t_eFSS_BLOB_Ctx* const p_ptCtx, uint8_t* p_puBuff, uint32_t p_uBuffSize,
+e_eFSS_BLOB_RES eFSS_BLOB_ReadAllBlob(t_eFSS_BLOB_Ctx* const p_ptCtx, uint8_t* p_puBuff, uint32_t p_uBuffSize,
                                      uint32_t* p_puReaded);
 
 /**
- * @brief       Write Blob
+ * @brief       Write the whole blob
  *
- * @param[in]   p_ptCtx       - Byte stuffer context
+ * @param[in]   p_ptCtx    - Blob context
  * @param[out]  p_pbIsInit    - Pointer to a bool_t variable that will be filled with true if the lib is initialized
  *
- * @return      e_eCU_BSTF_RES_BADPOINTER    - In case of bad pointer passed to the function
- *              e_eCU_BSTF_RES_OK            - Operation ended correctly
+ * @return      e_eFSS_BLOB_RES_BADPOINTER    - In case of bad pointer passed to the function
+ *              e_eFSS_BLOB_RES_OK            - Operation ended correctly
  */
-e_eCU_BSTF_RES eFSS_BLOB_WriteAllBlob(t_eFSS_BLOB_Ctx* const p_ptCtx, uint8_t* p_puBuff, uint32_t p_uBuffSize);
+e_eFSS_BLOB_RES eFSS_BLOB_WriteAllBlob(t_eFSS_BLOB_Ctx* const p_ptCtx, uint8_t* p_puBuff, uint32_t p_uBuffSize);
 
 
 
@@ -148,4 +150,3 @@ e_eCU_BSTF_RES eFSS_BLOB_WriteAllBlob(t_eFSS_BLOB_Ctx* const p_ptCtx, uint8_t* p
 
 
 #endif /* EFSS_BLOB_H */
-

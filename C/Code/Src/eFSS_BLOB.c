@@ -1,7 +1,7 @@
 /**
- * @file       eFSS_DB.c
+ * @file       eFSS_BLOB.c
  *
- * @brief      High level utils for fail safe storage
+ * @brief      Blob large file module
  *
  * @author     Lorenzo Rosin
  *
@@ -12,185 +12,174 @@
 /***********************************************************************************************************************
  *      INCLUDES
  **********************************************************************************************************************/
-#include "eFSS_DB.h"
+#include "eFSS_BLOB.h"
+#include "eFSS_UTILSHLPRV.h"
+
+
+
+/***********************************************************************************************************************
+ *  PRIVATE STATIC FUNCTION DECLARATION
+ **********************************************************************************************************************/
+static bool_t eFSS_BLOB_IsStatusStillCoherent(const t_eFSS_BLOB_Ctx* p_ptCtx);
+static e_eFSS_BLOB_RES eFSS_BLOB_AreOriValid(const t_eFSS_BLOB_Ctx* p_ptCtx, bool_t* p_pbAreValid, uint32_t* p_puCtr);
+static e_eFSS_BLOB_RES eFSS_BLOB_AreBckUpValid(const t_eFSS_BLOB_Ctx* p_ptCtx, bool_t* p_pbAreValid, uint32_t* p_puCtr);
 
 
 
 /***********************************************************************************************************************
  *   GLOBAL FUNCTIONS
  **********************************************************************************************************************/
-e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_GetMetaFromBuff(const uint8_t* pageBuff, const uint32_t p_pageL,
-                                                      t_eFSS_TYPE_PageMeta* const pagePrm)
+e_eFSS_BLOB_RES eFSS_BLOB_InitCtx(t_eFSS_BLOB_Ctx* const p_ptCtx, t_eFSS_TYPE_CbCtx* const p_ptCtxCb,
+                                  const uint32_t p_uPageToUse, const uint32_t p_uPageSize, uint8_t* const p_puBuff,
+                                  uint32_t p_uBuffL)
 {
-	/* Local variable */
-	e_eFSS_UTILSHLPRV_RES l_eRes;
-    uint32_t l_uComulIndx;
-    uint32_t l_uTemp;
+    e_eFSS_BLOB_RES l_eRes;
 
 	/* Check pointer validity */
-	if( ( NULL == pageBuff ) || ( NULL == pagePrm )  )
+	if( ( NULL == p_ptCtx ) || ( NULL == p_ptCtxCb ) || ( NULL == p_puBuff ) )
 	{
-		l_eRes = e_eFSS_UTILSHLPRV_RES_BADPOINTER;
+		l_eRes = e_eFSS_BLOB_RES_BADPOINTER;
 	}
 	else
 	{
-        /* Check data validity */
-        if( p_pageL < EFSS_PAGEMETASIZE )
+        /* Check pointer validity */
+        if( ( NULL == p_ptCtxCb->ptCtxErase ) || ( NULL == p_ptCtxCb->fErase ) ||
+            ( NULL == p_ptCtxCb->ptCtxWrite ) || ( NULL == p_ptCtxCb->fWrite ) ||
+            ( NULL == p_ptCtxCb->ptCtxRead  ) || ( NULL == p_ptCtxCb->fRead  ) ||
+            ( NULL == p_ptCtxCb->ptCtxCrc32 ) || ( NULL == p_ptCtxCb->fCrc32 ) )
         {
-            l_eRes = e_eFSS_UTILSHLPRV_RES_BADPARAM;
+            l_eRes = e_eFSS_BLOB_RES_BADPOINTER;
         }
         else
         {
-            /* Initialize internal status */
-            l_uComulIndx = p_pageL - EFSS_PAGEMETASIZE;
+            /* Check data validity */
+            if( ( p_uPageToUse <= 2u ) || ( p_uPageSize <= EFSS_PAGEMETASIZE ) || ( p_uPageSize != p_uBuffL ) )
+            {
+                l_eRes = e_eFSS_BLOB_RES_BADPARAM;
+            }
+            else
+            {
+                /* Fill context */
+                p_ptCtx->bIsInit = true;
+                p_ptCtx->ptCtxCb = p_ptCtxCb;
+                p_ptCtx->puBuff = p_puBuff;
+                p_ptCtx->uBuffL = p_uBuffL;
+                p_ptCtx->uNPage = p_uPageToUse;
+                p_ptCtx->uPageSize = p_uPageSize;
+            }
+        }
+    }
 
-            /* Init return data */
-            pagePrm->uPageType = 0u;
-            pagePrm->uPageSubType = 0u;
-            pagePrm->uPageVersion = 0u;
-            pagePrm->uPageByteFilled = 0u;
-            pagePrm->uPagePresentElement = 0u;
-            pagePrm->uPageSequentialN = 0u;
-            pagePrm->uPageMagicNumber = 0u;
-            pagePrm->uPageCrc = 0u;
+    return l_eRes;
+}
 
-            /* Copy data Little endian */
-            l_uTemp = (uint32_t) pageBuff[l_uComulIndx];
-            pagePrm->uPageType |= ( l_uTemp & 0x000000FFu );
-            l_uComulIndx++;
 
-            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 8u  );
-            pagePrm->uPageType |= ( l_uTemp & 0x0000FF00u );
-            l_uComulIndx++;
+e_eFSS_BLOB_RES eFSS_BLOB_IsInit(t_eFSS_BLOB_Ctx* const p_ptCtx, bool_t* p_pbIsInit)
+{
+	/* Local variable */
+	e_eFSS_BLOB_RES l_eRes;
 
-            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 16u  );
-            pagePrm->uPageType |= ( l_uTemp & 0x00FF0000u );
-            l_uComulIndx++;
+	/* Check pointer validity */
+	if( ( NULL == p_ptCtx ) || ( NULL == p_pbIsInit ) )
+	{
+		l_eRes = e_eFSS_BLOB_RES_BADPOINTER;
+	}
+	else
+	{
+        *p_pbIsInit = p_ptCtx->bIsInit;
+        l_eRes = e_eFSS_BLOB_RES_OK;
+	}
 
-            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 24u  );
-            pagePrm->uPageType |= ( l_uTemp & 0xFF000000u );
-            l_uComulIndx++;
+	return l_eRes;
+}
 
-            /* Copy data Little endian */
-            l_uTemp = (uint32_t) pageBuff[l_uComulIndx];
-            pagePrm->uPageSubType |= ( l_uTemp & 0x000000FFu );
-            l_uComulIndx++;
+/***********************************************************************************************************************
+ *  PRIVATE FUNCTION
+ **********************************************************************************************************************/
+static bool_t eFSS_BLOB_IsStatusStillCoherent(const t_eFSS_BLOB_Ctx* p_ptCtx)
+{
+    bool_t l_eRes;
 
-            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 8u  );
-            pagePrm->uPageSubType |= ( l_uTemp & 0x0000FF00u );
-            l_uComulIndx++;
+	/* Check context validity */
+	if( (  NULL == p_ptCtx->ptCtxCb ) || ( NULL == p_ptCtx->puBuff ) )
+	{
+		l_eRes = false;
+	}
+	else
+	{
+        l_eRes = true;
+	}
 
-            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 16u  );
-            pagePrm->uPageSubType |= ( l_uTemp & 0x00FF0000u );
-            l_uComulIndx++;
+    return l_eRes;
+}
 
-            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 24u  );
-            pagePrm->uPageSubType |= ( l_uTemp & 0xFF000000u );
-            l_uComulIndx++;
 
-            /* Copy data Little endian */
-            l_uTemp = (uint32_t) pageBuff[l_uComulIndx];
-            pagePrm->uPageVersion |= ( l_uTemp & 0x000000FFu );
-            l_uComulIndx++;
+static e_eFSS_BLOB_RES eFSS_BLOB_AreOriValid(const t_eFSS_BLOB_Ctx* p_ptCtx, bool_t* p_pbAreValid, uint32_t* p_puCtr)
+{
+	/* Local variable return */
+	e_eFSS_BLOB_RES l_eRes;
+    e_eFSS_UTILSHLPRV_RES l_eHlRes;
 
-            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 8u  );
-            pagePrm->uPageVersion |= ( l_uTemp & 0x0000FF00u );
-            l_uComulIndx++;
+    /* Local variable Cycle data */
+    uint32_t l_i;
+    t_eFSS_TYPE_PageMeta p_ptPagePrm;
+    bool_t l_pbIsValidPage;
 
-            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 16u  );
-            pagePrm->uPageVersion |= ( l_uTemp & 0x00FF0000u );
-            l_uComulIndx++;
+    /* Local variable return data */
+    uint32_t l_uValidCtr;
+    uint32_t l_uLastReadInc;
 
-            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 24u  );
-            pagePrm->uPageVersion |= ( l_uTemp & 0xFF000000u );
-            l_uComulIndx++;
 
-            /* Copy data Little endian */
-            l_uTemp = (uint32_t) pageBuff[l_uComulIndx];
-            pagePrm->uPageByteFilled |= ( l_uTemp & 0x000000FFu );
-            l_uComulIndx++;
 
-            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 8u  );
-            pagePrm->uPageByteFilled |= ( l_uTemp & 0x0000FF00u );
-            l_uComulIndx++;
+	/* Check pointer validity */
+	if( ( NULL == p_ptCtx ) || ( NULL == p_pbAreValid ) || ( NULL == p_puCtr ) )
+	{
+		l_eRes = e_eFSS_BLOB_RES_BADPOINTER;
+	}
+	else
+	{
+        l_eRes = e_eFSS_BLOB_RES_OK;
 
-            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 16u  );
-            pagePrm->uPageByteFilled |= ( l_uTemp & 0x00FF0000u );
-            l_uComulIndx++;
+        for( l_i = 0u; l_i < p_ptCtx->uNPage / 2u; l_i++)
+        {
+            /* Read a page */
+            l_eHlRes = eFSS_UTILSHLPRV_ReadPageNPrm(p_ptCtx->ptCtxCb, l_i,  p_ptCtx->puBuff, p_ptCtx->uBuffL,
+                                                    &p_ptPagePrm, p_ptCtx->uReTry);
+            if( e_eFSS_UTILSHLPRV_RES_OK == l_eHlRes )
+            {
+                /* Verify if correct */
+                l_eHlRes = eFSS_UTILSHLPRV_IsValidPageInBuff(p_ptCtx->ptCtxCb, p_ptCtx->puBuff, p_ptCtx->uBuffL,
+                                                             &l_pbIsValidPage);
+                if( e_eFSS_UTILSHLPRV_RES_OK == l_eHlRes )
+                {
+                    if( true == l_pbIsValidPage)
+                    {
+                        l_uValidCtr++;
 
-            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 24u  );
-            pagePrm->uPageByteFilled |= ( l_uTemp & 0xFF000000u );
-            l_uComulIndx++;
+                        if( 0u == l_i )
+                        {
+                            /* First run, save seq number  */
+                            l_uLastReadInc = p_ptPagePrm.uPageSequentialN;
+                        }
+                        else
+                        {
+                            if( p_ptPagePrm.uPageSequentialN != l_uLastReadInc)
+                            {
+                                /* Not valid */
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
-            /* Copy data Little endian */
-            l_uTemp = (uint32_t) pageBuff[l_uComulIndx];
-            pagePrm->uPagePresentElement |= ( l_uTemp & 0x000000FFu );
-            l_uComulIndx++;
-
-            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 8u  );
-            pagePrm->uPagePresentElement |= ( l_uTemp & 0x0000FF00u );
-            l_uComulIndx++;
-
-            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 16u  );
-            pagePrm->uPagePresentElement |= ( l_uTemp & 0x00FF0000u );
-            l_uComulIndx++;
-
-            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 24u  );
-            pagePrm->uPagePresentElement |= ( l_uTemp & 0xFF000000u );
-            l_uComulIndx++;
-
-            /* Copy data Little endian */
-            l_uTemp = (uint32_t) pageBuff[l_uComulIndx];
-            pagePrm->uPageSequentialN |= ( l_uTemp & 0x000000FFu );
-            l_uComulIndx++;
-
-            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 8u  );
-            pagePrm->uPageSequentialN |= ( l_uTemp & 0x0000FF00u );
-            l_uComulIndx++;
-
-            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 16u  );
-            pagePrm->uPageSequentialN |= ( l_uTemp & 0x00FF0000u );
-            l_uComulIndx++;
-
-            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 24u  );
-            pagePrm->uPageSequentialN |= ( l_uTemp & 0xFF000000u );
-            l_uComulIndx++;
-
-            /* Copy data Little endian */
-            l_uTemp = (uint32_t) pageBuff[l_uComulIndx];
-            pagePrm->uPageMagicNumber |= ( l_uTemp & 0x000000FFu );
-            l_uComulIndx++;
-
-            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 8u  );
-            pagePrm->uPageMagicNumber |= ( l_uTemp & 0x0000FF00u );
-            l_uComulIndx++;
-
-            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 16u  );
-            pagePrm->uPageMagicNumber |= ( l_uTemp & 0x00FF0000u );
-            l_uComulIndx++;
-
-            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 24u  );
-            pagePrm->uPageMagicNumber |= ( l_uTemp & 0xFF000000u );
-            l_uComulIndx++;
-
-            /* Copy data Little endian */
-            l_uTemp = (uint32_t) pageBuff[l_uComulIndx];
-            pagePrm->uPageCrc |= ( l_uTemp & 0x000000FFu );
-            l_uComulIndx++;
-
-            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 8u  );
-            pagePrm->uPageCrc |= ( l_uTemp & 0x0000FF00u );
-            l_uComulIndx++;
-
-            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 16u  );
-            pagePrm->uPageCrc |= ( l_uTemp & 0x00FF0000u );
-            l_uComulIndx++;
-
-            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 24u  );
-            pagePrm->uPageCrc |= ( l_uTemp & 0xFF000000u );
-            l_uComulIndx++;
-
-            l_eRes = e_eFSS_UTILSHLPRV_RES_OK;
+        if( e_eFSS_BLOB_RES_OK == l_eRes )
+        {
+            if()
+            {
+                *p_pbAreValid = true;
+                *p_puCtr = l_uLastReadInc;
+            }
         }
 	}
 
@@ -198,953 +187,7 @@ e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_GetMetaFromBuff(const uint8_t* pageBuff, c
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/***********************************************************************************************************************
- *   PRIVATE FUNCTIONS DECLARATION
- **********************************************************************************************************************/
-static e_eFSS_Res checkMemStatRawWithBkp(const s_eFSS_Ctx* prmCntx);
-static e_eFSS_Res checkMemStatRawNoBkp(const s_eFSS_Ctx* prmCntx);
-
-
-
-/***********************************************************************************************************************
- *   GLOBAL FUNCTIONS
- **********************************************************************************************************************/
-e_eFSS_Res checkMemStatRaw(const s_eFSS_Ctx* prmCntx)
+static e_eFSS_BLOB_RES eFSS_BLOB_AreBckUpValid(const t_eFSS_BLOB_Ctx* p_ptCtx, bool_t* p_pbAreValid, uint32_t* p_puCtr)
 {
-    /* Local variable */
-    e_eFSS_Res returnVal;
 
-    /* Check for NULL pointer */
-    if( NULL == prmCntx )
-    {
-        returnVal = EFSS_RES_BADPOINTER;
-    }
-    else
-    {
-        if( true == prmCntx->pageInfo.pageBkp )
-        {
-            /* Back up page init */
-            returnVal = checkMemStatRawWithBkp(prmCntx);
-        }
-        else
-        {
-            /* Init without backup page */
-            returnVal = checkMemStatRawNoBkp(prmCntx);
-        }
-    }
-    return returnVal;
 }
-
-
-
-/***********************************************************************************************************************
- *   PRIVATE FUNCTIONS
- **********************************************************************************************************************/
-e_eFSS_Res checkMemStatRawNoBkp(const s_eFSS_Ctx* prmCntx)
-{
-    /* Local variable */
-    e_eFSS_Res returnVal;
-    uint32_t iterator;
-    uint32_t nonValidPageCounter;
-    uint8_t aligmenentNumberFound;
-    s_prv_pagePrm pagePrm;
-
-    /* Check for NULL pointer */
-    if( NULL == prmCntx )
-    {
-        returnVal = EFSS_RES_BADPOINTER;
-    }
-    else
-    {
-        /* Check for parameter validity */
-        if( ( 0u == prmCntx->pageInfo.nOfPages ) || ( EFSS_PAGETYPE_RAW != prmCntx->pageInfo.pageType ) ||
-            ( NULL == prmCntx->memPoolPointer ) )
-        {
-            returnVal = EFSS_RES_BADPARAM;
-        }
-        else
-        {
-            /* Check if it is first init: all page are corrupted  */
-            /* Check if it is all ok: No corruption and all pages has same allPageAlignmentNumber */
-            /* Check if there is something corrupted: all ok but some pages has different allPageAlignmentNumber, or
-            *                                        some pages are invalid */
-            iterator = 0u;
-            nonValidPageCounter = 0u;
-            aligmenentNumberFound = 0u;
-            returnVal = EFSS_RES_OK;
-
-            while( ( iterator < prmCntx->pageInfo.nOfPages ) && ( EFSS_RES_OK == returnVal ) )
-            {
-                returnVal = isValidPage( prmCntx->pageInfo, prmCntx->cbHolder, prmCntx->memPoolPointer, iterator);
-
-                if( EFSS_RES_NOTVALIDPAGE == returnVal)
-                {
-                    nonValidPageCounter++;
-                    returnVal = EFSS_RES_OK;
-                }
-                else if( EFSS_RES_OK == returnVal )
-                {
-                    /* Page is Ok, where previous page ok? */
-                    if( 0u != nonValidPageCounter )
-                    {
-                        /* Previous page where invalid, this page is valid, we dont need to proceeed: this is not
-                         * the first init, and we have some corruption */
-                        returnVal = EFSS_RES_CORRUPTMEM;
-                    }
-                    else
-                    {
-                        /* Page till now were correct, check param validity */
-                        returnVal = getPagePrmFromBuff( prmCntx->pageInfo, prmCntx->memPoolPointer, &pagePrm);
-
-                        if( EFSS_RES_OK == returnVal )
-                        {
-                            /* Save first alignment number */
-                            if( 0u == iterator )
-                            {
-                                aligmenentNumberFound = pagePrm.allPageAlignmentNumber;
-                            }
-
-                            /* Check if alignment number are always equals */
-                            if(pagePrm.allPageAlignmentNumber != aligmenentNumberFound)
-                            {
-                                /* Page are not aligned, we have mem corruption */
-                                returnVal = EFSS_RES_CORRUPTMEM;
-                            }
-                            else
-                            {
-                                /* Check every page validity */
-                                if( EFSS_PAGETYPE_RAW != pagePrm.pageType )
-                                {
-                                    returnVal = EFSS_RES_CORRUPTMEM;
-                                }
-                                else if( prmCntx->pageLogVer.rawPageVersion != pagePrm.pageVersion )
-                                {
-                                    returnVal = EFSS_RES_NEWVERFOUND;
-                                }
-                            }
-                        }
-                    }
-                }
-
-                iterator++;
-            }
-
-            /* Information parsing procedure ended */
-            if( EFSS_RES_OK == returnVal)
-            {
-                if( prmCntx->pageInfo.nOfPages == nonValidPageCounter )
-                {
-                    /* First init because not valid page found */
-                    returnVal = EFSS_RES_NOTINITMEM;
-                }
-                else if( 0u != nonValidPageCounter )
-                {
-                    /* Some pages are corrupted */
-                    returnVal = EFSS_RES_CORRUPTMEM;
-                }
-            }
-        }
-    }
-
-    return returnVal;
-}
-
-
-
-
-
-e_eFSS_Res checkMemStatRawWithBkp(const s_eFSS_Ctx* prmCntx)
-{
-    /* Local variable */
-    e_eFSS_Res returnVal;
-    uint32_t iterator;
-    uint32_t nonValidPageCounter;
-    uint32_t rcvredBkupPageCounter;
-    uint8_t aligmenentNumberFound;
-    s_prv_pagePrm pagePrm;
-
-    /* Local variable offset */
-    uint32_t backUpOffset;
-    uint8_t* buff1;
-    uint8_t* buff2;
-
-    /* Check for NULL pointer */
-    if( NULL == prmCntx )
-    {
-        returnVal = EFSS_RES_BADPOINTER;
-    }
-    else
-    {
-        /* Check for parameter validity */
-        if( ( prmCntx->pageInfo.nOfPages < 2u ) || ( EFSS_PAGETYPE_RAW != prmCntx->pageInfo.pageType ) ||
-            ( NULL == prmCntx->memPoolPointer ) || ( 0 != ( prmCntx->pageInfo.nOfPages % 2u ) ) )
-        {
-            returnVal = EFSS_RES_BADPARAM;
-        }
-        else
-        {
-            /* Check if it is first init: all page are corrupted  */
-            /* Check if it is all ok: No corruption and all pages has same allPageAlignmentNumber */
-            /* Check if there is something corrupted: all ok but some pages has different allPageAlignmentNumber, or
-            *                                        some pages are invalid */
-
-            /* Init variable */
-            iterator = 0u;
-            nonValidPageCounter = 0u;
-            aligmenentNumberFound = 0u;
-            rcvredBkupPageCounter = 0u;
-            returnVal = EFSS_RES_OK;
-
-            /* Init offset */
-            backUpOffset = prmCntx->pageInfo.nOfPages / 2u;
-            buff1 = &prmCntx->memPoolPointer[0u];
-            buff2 = &prmCntx->memPoolPointer[prmCntx->pageInfo.pageSize];
-
-            while( ( iterator < prmCntx->pageInfo.nOfPages ) && ( EFSS_RES_OK == returnVal ) )
-            {
-                returnVal = verifyAndRipristinateBkup( prmCntx->pageInfo, prmCntx->cbHolder, buff1,
-                                                       buff2, iterator, ( iterator + backUpOffset) );
-
-                if( EFSS_RES_NOTVALIDPAGE == returnVal)
-                {
-                    /* Both origin and backup are invalid */
-                    nonValidPageCounter++;
-                    returnVal = EFSS_RES_OK;
-                }
-                else if( ( EFSS_RES_OK == returnVal ) || (EFSS_RES_OKBKPRCVRD == returnVal ) )
-                {
-                    if( (EFSS_RES_OKBKPRCVRD == returnVal )
-                    {
-                        /* Recovered a page, but it's all ok */
-                        rcvredBkupPageCounter++;
-                        returnVal = EFSS_RES_OK;
-                    }
-
-                    /* Page is Ok, where previous page ok? */
-                    if( 0u != nonValidPageCounter )
-                    {
-                        /* Previous page where invalid, this page is valid, we dont need to proceeed: this is not
-                         * the first init, and we have some corruption */
-                        returnVal = EFSS_RES_CORRUPTMEM;
-                    }
-                    else
-                    {
-                        returnVal = readPageNPrm(prmCntx->pageInfo, prmCntx->cbHolder, buff1, iterator, &pagePrm);
-
-                        if( EFSS_RES_OK == returnVal )
-                        {
-                            /* Save first alignment number */
-                            if( 0u == iterator )
-                            {
-                                aligmenentNumberFound = pagePrm.allPageAlignmentNumber;
-                            }
-
-                            /* Check if alignment number are always equals */
-                            if(pagePrm.allPageAlignmentNumber != aligmenentNumberFound)
-                            {
-                                /* Page are not aligned, we have mem corruption */
-                                returnVal = EFSS_RES_CORRUPTMEM;
-                            }
-                            else
-                            {
-                                /* Check every page validity */
-                                if( EFSS_PAGETYPE_RAW != pagePrm.pageType )
-                                {
-                                    returnVal = EFSS_RES_CORRUPTMEM;
-                                }
-                                else if( prmCntx->pageLogVer.rawPageVersion != pagePrm.pageVersion )
-                                {
-                                    returnVal = EFSS_RES_NEWVERFOUND;
-                                }
-                            }
-                        }
-                    }
-                }
-
-                iterator++;
-            }
-
-            /* Information parsing procedure ended */
-            if( EFSS_RES_OK == returnVal)
-            {
-                if( prmCntx->pageInfo.nOfPages == nonValidPageCounter )
-                {
-                    /* First init because not valid page found */
-                    returnVal = EFSS_RES_NOTINITMEM;
-                }
-                else if( 0u != nonValidPageCounter )
-                {
-                    /* Some pages are corrupted */
-                    returnVal = EFSS_RES_CORRUPTMEM;
-                }
-            }
-        }
-    }
-
-    return returnVal;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-bool InOutFlashManager::init()
-{
-	/* verify if we have valid data in one of the two flash page, or if this is the first startup */
-   /* integrity creator will set all daa to default value if crc error is ofund */
-	bool intFlash = integrityCreatorData();
-
-   /* Data in the flash is OK, not check i we have never version of the parameter */
-   if(intFlash == true)
-   {
-      /* Data in the flash is OK, not check i we have never version of the parameter */
-      intFlash = verifyParameterVersion();
-
-      if(intFlash == true)
-      {
-         /* Parameter updated correctly*/
-         intFlash = true;
-      }
-      else
-      {
-         /* Error uptading parameter version */
-         intFlash = false;
-      }
-   }
-   else
-   {
-      /* Impossible to create integrity in flash.. */
-      intFlash = false;
-   }
-
-	/* now we are ready to go */
-	return intFlash;
-}
-
-bool InOutFlashManager::saveTempProbeSettings(uint64_t tank_n_wire, uint64_t tank_use470ohm)
-{
-   bool success = false;
-	if(integrityCreatorData() == false)
-   {
-      /* Problem with the data flash integrity */
-      success = false;
-   }
-   else
-   {
-      DEVICE_INOUT_FLASH myStruct = *((DEVICE_INOUT_FLASH*)ADDRESS_IN_OUT_STORAGE_PAGE);
-
-      /* Parameter check */
-      if((tank_n_wire > 4) || (tank_n_wire < 2))
-      {
-         /* Invalid parameter */
-        tank_n_wire = 3;
-      }
-
-      myStruct.tank_n_wire.parameter = tank_n_wire;
-      myStruct.tank_use470ohm.parameter = tank_use470ohm;
-      bool mainOk = saveData(&myStruct, MAIN_PAGE);
-      bool backOk = saveData(&myStruct, BACK_UP_PAGE);
-      success = mainOk&&backOk;
-   }
-
-   return success;
-}
-
-
-bool InOutFlashManager::getTempProbeSettings(uint64_t *tank_n_wire, uint64_t *tank_use470ohm)
-{
-   bool success = false;
-
-   /* Check parameter */
-   if( (tank_n_wire == NULL) || (tank_use470ohm == NULL ) )
-   {
-      SYSTEM_EXCEPTION();
-   }
-
-	if(integrityCreatorData() == false)
-   {
-      /* Problem with the data flash integrity */
-      success = false;
-   }
-   else
-   {
-      *tank_use470ohm = ((DEVICE_INOUT_FLASH*)ADDRESS_IN_OUT_STORAGE_PAGE)->tank_use470ohm.parameter;
-      *tank_n_wire = ((DEVICE_INOUT_FLASH*)ADDRESS_IN_OUT_STORAGE_PAGE)->tank_n_wire.parameter;
-      success = true;
-   }
-
-   return success;
-}
-
-
-
-bool InOutFlashManager::saveDigitalOutLifeSpawn(uint64_t guarantyCycle, uint64_t guarantyYears)
-{
-   bool success = false;
-	if(integrityCreatorData() == false)
-   {
-      /* Problem with the data flash integrity */
-      success = false;
-   }
-   else
-   {
-      DEVICE_INOUT_FLASH myStruct = *((DEVICE_INOUT_FLASH*)ADDRESS_IN_OUT_STORAGE_PAGE);
-
-      /* Parameter check */
-      if(guarantyYears > 5)
-      {
-         /* Invalid parameter */
-        guarantyYears = 5;
-      }
-
-      /* Parameter check */
-      if(guarantyYears < 2)
-      {
-         /* Invalid parameter */
-        guarantyYears = 2;
-      }
-
-      /* Parameter check */
-      if(guarantyCycle > 1000000)
-      {
-         /* Invalid parameter */
-        guarantyCycle = 1000000;
-      }
-
-      /* Parameter check */
-      if(guarantyCycle < 100000)
-      {
-         /* Invalid parameter */
-        guarantyCycle = 100000;
-      }
-
-      myStruct.guarantyCycle.parameter = guarantyCycle;
-      myStruct.guarantyYears.parameter = guarantyYears;
-
-      bool mainOk = saveData(&myStruct, MAIN_PAGE);
-      bool backOk = saveData(&myStruct, BACK_UP_PAGE);
-      success = mainOk&&backOk;
-   }
-
-   return success;
-}
-
-
-bool InOutFlashManager::getDigitalOutLifeSpawn(uint64_t *guarantyCycle, uint64_t *guarantyYears)
-{
-   bool success = false;
-
-   /* Check parameter */
-   if( (guarantyCycle == NULL) || (guarantyYears == NULL ) )
-   {
-      SYSTEM_EXCEPTION();
-   }
-
-	if(integrityCreatorData() == false)
-   {
-      /* Problem with the data flash integrity */
-      success = false;
-   }
-   else
-   {
-      *guarantyCycle = ((DEVICE_INOUT_FLASH*)ADDRESS_IN_OUT_STORAGE_PAGE)->guarantyCycle.parameter;
-      *guarantyYears = ((DEVICE_INOUT_FLASH*)ADDRESS_IN_OUT_STORAGE_PAGE)->guarantyYears.parameter;
-      success = true;
-   }
-
-   return success;
-}
-
-
-
-
-
-bool InOutFlashManager::saveAnalogInputCalibrationValue(ANALOG_INPUT_TYPE inputType, float calibValue)
-{
-   bool success = false;
-	if(integrityCreatorData() == false)
-   {
-      /* Problem with the data flash integrity */
-      success = false;
-   }
-   else
-   {
-         uint32_t posArray = 0;
-
-         if(GET_POSITION_BY_ITEM(&posArray, ANALOG_PRESENT_INPUT, inputType))
-         {
-            DEVICE_INOUT_FLASH myStruct = *((DEVICE_INOUT_FLASH*)ADDRESS_IN_OUT_STORAGE_PAGE);
-
-            /* Parameter check */
-            if(calibValue <= -5.0)
-            {
-               /* Invalid parameter */
-               calibValue = -5.0;
-            }
-
-            /* Parameter check */
-            if(calibValue > 5.0)
-            {
-               /* Invalid parameter */
-               calibValue = 5.0;
-            }
-
-            #if ANALOG_PRESENT_INPUT_SIZE
-            myStruct.calibValAnalogInput[posArray].parameter = calibValue;
-            #endif
-
-            bool mainOk = saveData(&myStruct, MAIN_PAGE);
-            bool backOk = saveData(&myStruct, BACK_UP_PAGE);
-            success = mainOk&&backOk;
-         }
-         else
-         {
-            /* Searched output is not present in this configuration*/
-            success = true;
-         }
-   }
-
-   return success;
-}
-
-
-bool InOutFlashManager::getAnalogInputCalibrationValue(ANALOG_INPUT_TYPE inputType,  float* calibValue)
-{
-   bool success = false;
-
-   /* Check parameter */
-   if( calibValue == NULL )
-   {
-      SYSTEM_EXCEPTION();
-   }
-
-	if(integrityCreatorData() == false)
-   {
-      /* Problem with the data flash integrity */
-      success = false;
-   }
-   else
-   {
-      uint32_t posArray = 0;
-
-      if(GET_POSITION_BY_ITEM(&posArray, ANALOG_PRESENT_INPUT, inputType))
-      {
-         #if ANALOG_PRESENT_INPUT_SIZE
-         *calibValue = ((DEVICE_INOUT_FLASH*)ADDRESS_IN_OUT_STORAGE_PAGE)->calibValAnalogInput[posArray].parameter;
-         #endif
-         success = true;
-      }
-      else
-      {
-         /* Searched output is not present in this configuration*/
-         success = true;
-      }
-   }
-
-   return success;
-}
-
-
-
-/* ------------------------------------------------------------------------------------------------------------------------ Private utils function, for internal usage */
-/* ------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
-
-bool InOutFlashManager::integrityCreatorData()
-{
-   bool integritySuccess = false;
-   if(isValidPageData(MAIN_PAGE) && isValidPageData(BACK_UP_PAGE))
-   {
-      /* Both page are OK, but are they equals?*/
-      bool arePageEquals = false;
-
-      /* check if data written is equal to the data received... */
-      arePageEquals = UtilsFlashManager::isFlashPageEqualsToFlashPage((uint32_t)(ADDRESS_IN_OUT_STORAGE_PAGE), (uint32_t)(ADDRESS_BACKUP_IN_OUT_STORAGE_PAGE));
-
-      if(arePageEquals)
-      {
-         /* all ok, no action is needed */
-         integritySuccess =  true;
-      }
-      else
-      {
-         /* Page are different, copy main page in support page */
-         integritySuccess = createBackUpPageData();
-      }
-	}
-   else if(isValidPageData(MAIN_PAGE))
-   {
-		/* main page is OK create a backUp */
-		integritySuccess = createBackUpPageData();
-	}
-   else if(isValidPageData(BACK_UP_PAGE))
-   {
-      /* main page is corrupted and back up page is ok, regenerate */
-      integritySuccess = regenerateMainPageData();
-	}
-   else
-   {
-      /* no valid page is found... this is the fist power up, erase all page and init parameter */
-
-		/* set defaultValue */
-		DEVICE_INOUT_FLASH defaultValue;
-      memset((uint8_t*)&defaultValue, sizeof(DEVICE_INOUT_FLASH), 0);
-
-      /* Temp sensor settings */
-      defaultValue.tank_n_wire.parameter = 3;
-      defaultValue.tank_n_wire.parameterVersion = 1;
-
-      defaultValue.tank_use470ohm.parameter = 1;
-      defaultValue.tank_use470ohm.parameterVersion = 1;
-
-      /* Digital Output life spawn */
-      defaultValue.guarantyCycle.parameter = 100000;
-      defaultValue.guarantyCycle.parameterVersion = 1;
-
-      defaultValue.guarantyYears.parameter = 2;
-      defaultValue.guarantyYears.parameterVersion = 1;
-
-
-      /* Analog output counter */
-      #if ANALOG_PRESENT_INPUT_SIZE
-         for(uint32_t i=0; i<ANALOG_PRESENT_INPUT_SIZE ; i++)
-         {
-            defaultValue.calibValAnalogInput[i].parameter = 0;
-            defaultValue.calibValAnalogInput[i].parameterVersion = 1;
-         }
-      #endif
-
-      /* Not used counter */
-      #if IN_OUT_FLASH_FREE_PARAMETER
-         for(uint32_t i=0; i<IN_OUT_FLASH_FREE_PARAMETER ; i++)
-         {
-            defaultValue.inOutNotUsed[i].parameter = 0;
-            defaultValue.inOutNotUsed[i].parameterVersion = 0;
-         }
-      #endif
-
-      /* Padding */
-      defaultValue.crc.magicNumber = UINT64_MAGIC_NUMBER;
-
-      /* Crc will be calculated in another function */
-      defaultValue.crc.crc = 0;
-
-      /* Save data */
-		bool mainOk = saveData(&defaultValue, MAIN_PAGE);
-		bool backOk = saveData(&defaultValue, BACK_UP_PAGE);
-
-      integritySuccess =  mainOk&&backOk;
-	}
-
-   return integritySuccess;
-}
-
-bool InOutFlashManager::verifyParameterVersion()
-{
-   /* Verify if saved parameter need to be updated based on their version */
-   bool isUpdatedVersion = false;
-
-   /* Verifity data integrity */
-   isUpdatedVersion = integrityCreatorData();
-
-   if(isUpdatedVersion == true)
-   {
-      /* Page are ok, check parameter */
-      DEVICE_INOUT_FLASH *myStruct = NULL;
-
-      myStruct = ((DEVICE_INOUT_FLASH*)ADDRESS_IN_OUT_STORAGE_PAGE);
-
-
-      /* Copy data in RAM */
-      DEVICE_INOUT_FLASH ramValue = *myStruct;
-
-      /* Padding */
-      ramValue.crc.magicNumber = UINT64_MAGIC_NUMBER;
-
-      /* Crc will be calculated in another function */
-      ramValue.crc.crc = 0;
-
-
-      if(myStruct->tank_n_wire.parameterVersion == 1)
-      {
-         /* Updated */
-      }
-      else
-      {
-         /* New version found  */
-         isUpdatedVersion = false;
-         ramValue.tank_n_wire.parameter = 3;
-         ramValue.tank_n_wire.parameterVersion = 1;
-      }
-
-      if(myStruct->tank_use470ohm.parameterVersion == 1)
-      {
-         /* Updated */
-      }
-      else
-      {
-         /* New version found  */
-         isUpdatedVersion = false;
-         ramValue.tank_use470ohm.parameter = 1;
-         ramValue.tank_use470ohm.parameterVersion = 1;
-      }
-
-      if(myStruct->guarantyCycle.parameterVersion == 1)
-      {
-         /* Updated */
-      }
-      else
-      {
-         /* New version found  */
-         isUpdatedVersion = false;
-         ramValue.guarantyCycle.parameter = 100000;
-         ramValue.guarantyCycle.parameterVersion = 1;
-      }
-
-      if(myStruct->guarantyYears.parameterVersion == 1)
-      {
-         /* Updated */
-      }
-      else
-      {
-         /* New version found  */
-         isUpdatedVersion = false;
-         ramValue.guarantyYears.parameter = 2;
-         ramValue.guarantyYears.parameterVersion = 1;
-      }
-
-      /* Analog input calibration value */
-      #if ANALOG_PRESENT_INPUT_SIZE
-         for(uint32_t i=0; i<ANALOG_PRESENT_INPUT_SIZE ; i++)
-         {
-            if(myStruct->calibValAnalogInput[i].parameterVersion == 1)
-            {
-               /* Updated */
-            }
-            else
-            {
-               /* Need to update */
-               isUpdatedVersion = false;
-               ramValue.calibValAnalogInput[i].parameter = 0;
-               ramValue.calibValAnalogInput[i].parameterVersion = 1;
-            }
-         }
-      #endif
-
-      /* Not used counter */
-      #if IN_OUT_FLASH_FREE_PARAMETER
-         for(uint32_t i=0; i<IN_OUT_FLASH_FREE_PARAMETER ; i++)
-         {
-            if(myStruct->inOutNotUsed[i].parameterVersion == 0)
-            {
-               /* Updated */
-            }
-            else
-            {
-               /* Need to update */
-               isUpdatedVersion = false;
-               ramValue.inOutNotUsed[i].parameter = 0;
-               ramValue.inOutNotUsed[i].parameterVersion = 0;
-            }
-         }
-      #endif
-
-      if(isUpdatedVersion)
-      {
-         /* all ok, no action is needed */
-         isUpdatedVersion =  true;
-      }
-      else
-      {
-         /* Page have different parameter version, save new parameter and create a backup */
-         /* Save data */
-         bool mainOk = saveData(&ramValue, MAIN_PAGE);
-         bool backOk = saveData(&ramValue, BACK_UP_PAGE);
-
-         isUpdatedVersion =  mainOk&&backOk;
-      }
-   }
-   else
-   {
-      /* Impossible create integrity and so update parameter */
-      isUpdatedVersion = false;
-   }
-
-   return isUpdatedVersion;
-}
-
-bool InOutFlashManager::isValidPageData(bool isMainPage)
-{
-   bool isPageValid = false;
-
-   DEVICE_INOUT_FLASH *myStruct = NULL;
-
-   if(isMainPage)
-   {
-      myStruct = ((DEVICE_INOUT_FLASH*)ADDRESS_IN_OUT_STORAGE_PAGE);
-   }
-   else
-   {
-      myStruct = ((DEVICE_INOUT_FLASH*)(ADDRESS_BACKUP_IN_OUT_STORAGE_PAGE));
-   }
-
-   uint64_t crcCalculated = UtilsFlashManager::getFlashParameterPageCrc(isMainPage?(uint32_t)ADDRESS_IN_OUT_STORAGE_PAGE:(uint32_t)ADDRESS_BACKUP_IN_OUT_STORAGE_PAGE);
-
-	if(myStruct->crc.crc != crcCalculated)
-   {
-      /* Crc are different... */
-		isPageValid = false;
-   }
-	else
-   {
-      /* Crc are valid, check padding magic number */
-      if(myStruct->crc.magicNumber == UINT64_MAGIC_NUMBER)
-      {
-         /* Even magic number are ok*/
-         isPageValid = true;
-      }
-      else
-      {
-         /* Magic number not OK */
-         isPageValid = false;
-      }
-   }
-
-   return isPageValid;
-}
-
-bool InOutFlashManager::createBackUpPageData()
-{
-	DEVICE_INOUT_FLASH *myStruct = ((DEVICE_INOUT_FLASH*)ADDRESS_IN_OUT_STORAGE_PAGE);
-	return saveData(myStruct, BACK_UP_PAGE);
-}
-
-
-bool InOutFlashManager::regenerateMainPageData()
-{
-	DEVICE_INOUT_FLASH *myStruct = ((DEVICE_INOUT_FLASH*)ADDRESS_BACKUP_IN_OUT_STORAGE_PAGE);
-	return saveData(myStruct, MAIN_PAGE);
-}
-
-
-bool InOutFlashManager::saveData(DEVICE_INOUT_FLASH *newDataToSave, bool isMainPage)
-{
-   bool isPageWritten = false;
-
-   /* Create the union struct */
-   DEVICE_INOUT_FLASH toSave = *newDataToSave;
-
-   /* Set magic number */
-   toSave.crc.magicNumber = UINT64_MAGIC_NUMBER;
-
-   /* Calculate crc */
-   uint64_t crcCalculated = UtilsFlashManager::calculateDataCrc((uint8_t*)&toSave, sizeof(DEVICE_INOUT_FLASH)-8);
-
-   /* Set crc */
-   toSave.crc.crc = crcCalculated;
-
-   isPageWritten = UtilsFlashManager::saveFlashPage((uint8_t*)&toSave, sizeof(DEVICE_INOUT_FLASH), isMainPage?(uint32_t)ADDRESS_IN_OUT_STORAGE_PAGE:(uint32_t)ADDRESS_BACKUP_IN_OUT_STORAGE_PAGE );
-
-   return isPageWritten;
-}
-
-

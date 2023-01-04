@@ -220,8 +220,8 @@ e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_WritePageNUpCrc(t_eFSS_TYPE_CbCtx* const p
  * @param[in]   p_ptPagePrm   - Pointer to the page metadata that need to be filled
  * @param[in]   p_uReTry      - How many times we can retry if some error happens
  *
- * @return      e_eFSS_UTILSLLPRV_RES_OK                - Operation ended successfully
- *              e_eFSS_UTILSLLPRV_RES_BADPOINTER        - In case of bad pointer passed to the function
+ * @return      e_eFSS_UTILSHLPRV_RES_OK                - Operation ended successfully
+ *              e_eFSS_UTILSHLPRV_RES_BADPOINTER        - In case of bad pointer passed to the function
  *              e_eFSS_UTILSHLPRV_RES_BADPARAM          - In case of bad parameter passed to the function
  *              e_eFSS_UTILSHLPRV_RES_CLBCKREADERR      - Error reported from the callback
  */
