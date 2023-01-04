@@ -137,86 +137,145 @@ e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_SetMetaInBuffNUpdCrc(uint8_t* const p_puPa
 e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_IsValidPageInBuff(t_eFSS_TYPE_CbCtx* const p_ptCbCtx, uint8_t* const p_puPageBuf,
                                                         const uint32_t p_uPageL, bool_t* const p_pbIsValid);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /**
- * @brief       Erase a specified page
+ * @brief       Is the page present in the passed buffer valid? ( Crc check and magic number )
  *
- * @param[in]   p_ptCbCtx       - Erase function context
- * @param[in]   p_uPageIndx   - Page index we want to erase
- * @param[in]   p_uReTry      - Erase function pointer
+ * @param[in]   p_ptCbCtx     - Pointer to all callback context
+ * @param[in]   p_uPageIndx   - Page index we want to validate
+ * @param[in]   p_puPageBuf   - Pointer to a buffer used to read the indicated page
+ * @param[in]   p_uPageL      - Size of the p_puPageBuf buffer
+ * @param[in]   p_uReTry      - How many times we can retry if some error happens
+ * @param[in]   p_pbIsValid   - Pointer to a bool_t where the result will be placed
  *
  * @return      e_eFSS_UTILSLLPRV_RES_OK                - Operation ended successfully
  *              e_eFSS_UTILSLLPRV_RES_BADPOINTER        - In case of bad pointer passed to the function
- *              e_eFSS_UTILSLLPRV_RES_CLBCKREPORTERROR  - Error reported from the callback
+ *              e_eFSS_UTILSHLPRV_RES_BADPARAM          - In case of bad parameter passed to the function
+ *              e_eFSS_UTILSHLPRV_RES_CLBCKCRCERR       - Error reported from the callback
  */
-e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_IsValidPage(t_eFSS_TYPE_CbCtx* const p_ptCbCtx, const uint32_t p_uPageIdx,
-                                                  uint8_t* const pageBuff, const uint32_t p_pageL, const uint32_t p_uReTry );
+e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_IsValidPage(t_eFSS_TYPE_CbCtx* const p_ptCbCtx, const uint32_t p_uPageIndx,
+                                                  uint8_t* const p_puPageBuf, const uint32_t p_uPageL,
+                                                  const uint32_t p_uReTry, bool_t* const p_pbIsValid);
 
 /**
- * Erase and write a page with the param passed, and automatically update the CRC of the page it self
+ * @brief       Erase, write and verify a page with the passed params, and automatically update the CRC of the page
+ *
+ * @param[in]   p_ptCbCtx     - Pointer to all callback context
+ * @param[in]   p_uPageIndx   - Page index we want to write
+ * @param[in]   p_puDataW     - Pointer to the data we want to write
+ * @param[in]   p_uDataWLen   - size of the p_puDataW buffer
+ * @param[in]   p_puDataR     - Pointer to support buffer used to verify the data just written
+ * @param[in]   p_uDataRLen   - size of the p_puDataR buffer
+ * @param[in]   p_ptPagePrm   - Pointer to the page metadata that need to be inserted
+ * @param[in]   p_uReTry      - How many times we can retry if some error happens
+ *
+ * @return      e_eFSS_UTILSLLPRV_RES_OK                - Operation ended successfully
+ *              e_eFSS_UTILSLLPRV_RES_BADPOINTER        - In case of bad pointer passed to the function
+ *              e_eFSS_UTILSHLPRV_RES_BADPARAM          - In case of bad parameter passed to the function
+ *              e_eFSS_UTILSHLPRV_RES_CLBCKCRCERR       - Error reported from the callback
+ *              e_eFSS_UTILSHLPRV_RES_CLBCKERASEERR     - Error reported from the callback
+ *              e_eFSS_UTILSHLPRV_RES_CLBCKWRITEERR     - Error reported from the callback
+ *              e_eFSS_UTILSHLPRV_RES_CLBCKREADERR      - Error reported from the callback
+ *              e_eFSS_UTILSHLPRV_RES_WRITENOMATCHREAD  - For some unknow reason data write dosent match data readed
+ */
+e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_WritePagePrmNUpCrc(t_eFSS_TYPE_CbCtx* const p_ptCbCtx, const uint32_t p_uPageIndx,
+                                                         uint8_t* const p_puDataW, const uint32_t p_uDataWLen,
+                                                         uint8_t* const p_puDataR, const uint32_t p_uDataRLen,
+                                                         t_eFSS_TYPE_PageMeta* const p_ptPagePrm,
+                                                         const uint32_t p_uReTry);
+
+/**
+ * @brief       Erase, write and verify a page and automatically update the CRC of the page
+ *
+ * @param[in]   p_ptCbCtx     - Pointer to all callback context
+ * @param[in]   p_uPageIndx   - Page index we want to write
+ * @param[in]   p_puDataW     - Pointer to the data we want to write
+ * @param[in]   p_uDataWLen   - size of the p_puDataW buffer
+ * @param[in]   p_puDataR     - Pointer to support buffer used to verify the data just written
+ * @param[in]   p_uDataRLen   - size of the p_puDataR buffer
+ * @param[in]   p_uReTry      - How many times we can retry if some error happens
+ *
+ * @return      e_eFSS_UTILSLLPRV_RES_OK                - Operation ended successfully
+ *              e_eFSS_UTILSLLPRV_RES_BADPOINTER        - In case of bad pointer passed to the function
+ *              e_eFSS_UTILSHLPRV_RES_BADPARAM          - In case of bad parameter passed to the function
+ *              e_eFSS_UTILSHLPRV_RES_CLBCKCRCERR       - Error reported from the callback
+ *              e_eFSS_UTILSHLPRV_RES_CLBCKERASEERR     - Error reported from the callback
+ *              e_eFSS_UTILSHLPRV_RES_CLBCKWRITEERR     - Error reported from the callback
+ *              e_eFSS_UTILSHLPRV_RES_CLBCKREADERR      - Error reported from the callback
+ *              e_eFSS_UTILSHLPRV_RES_WRITENOMATCHREAD  - For some unknow reason data write dosent match data readed
+ */
+e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_WritePageNUpCrc(t_eFSS_TYPE_CbCtx* const p_ptCbCtx, const uint32_t p_uPageIndx,
+                                                         uint8_t* const p_puDataW, const uint32_t p_uDataWLen,
+                                                         uint8_t* const p_puDataR, const uint32_t p_uDataRLen,
+                                                         const uint32_t p_uReTry);
+
+/**
+ * @brief       Read a page and load it in the passed buffer, and copy data param in pagePrm also
+ *
+ * @param[in]   p_ptCbCtx     - Pointer to all callback context
+ * @param[in]   p_uPageIndx   - Page index we want to read
+ * @param[in]   p_puDataR     - Pointer to the buffer where we want to copy data
+ * @param[in]   p_uDataRLen   - size of the p_puDataR buffer
+ * @param[in]   p_ptPagePrm   - Pointer to the page metadata that need to be filled
+ * @param[in]   p_uReTry      - How many times we can retry if some error happens
+ *
+ * @return      e_eFSS_UTILSLLPRV_RES_OK                - Operation ended successfully
+ *              e_eFSS_UTILSLLPRV_RES_BADPOINTER        - In case of bad pointer passed to the function
+ *              e_eFSS_UTILSHLPRV_RES_BADPARAM          - In case of bad parameter passed to the function
+ *              e_eFSS_UTILSHLPRV_RES_CLBCKREADERR      - Error reported from the callback
+ */
+e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_ReadPageNPrm(t_eFSS_TYPE_CbCtx* const p_ptCbCtx, const uint32_t p_uPageIndx,
+                                                   uint8_t* const p_puDataR, const uint32_t p_uDataRLen,
+                                                   t_eFSS_TYPE_PageMeta* const p_ptPagePrm, const uint32_t p_uReTry);
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**
+ * Clone a page from origIndx to destIndx
  * @param pginfo Information about memory and pages
  * @param cbHld Struct containing all callback reference
- * @param pageBuff Pointer to a buffer containing the data that we want to write in the page
+ * @param pageBuff Support buffer to do the calculation, must be atleast a page size
  * @param suppBuff Support buffer to do the calculation, must be atleast a page size
- * @param pageIndex Index of the page to write
- * @param prmPage Param that we want to write in the page
+ * @param origIndx Index of the original page
+ * @param destIndx Index of the destination page
  * @return EFSS_RES_BADPOINTER in case of bad pointer
  *         EFSS_RES_BADPARAM in case of a wrong param passed
- *         EFSS_RES_NOTVALIDPAGE the page is not valid, crc or somethings else dosent return
  *         EFSS_RES_ERRORWRITE error reported from write callback
  *         EFSS_RES_ERRORERASE error reported from erase callback
+ *         EFSS_RES_ERRORREAD error reported from read callback
  *         EFSS_RES_OK operation ended successfully
  */
-e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_WritePagePrmNUpdateCrc(t_eFSS_TYPE_CbCtx* const p_ptCbCtx, const uint32_t p_uPageIdx, uint8_t* const pageBuff,
-                                   uint8_t* const p_pageL, const s_prv_pagePrm* prmPage, uint8_t* const pageBuffS, uint8_t* const p_pageLS, const uint32_t p_uReTry);
+e_eFSS_Res cloneAPage(const t_eFSS_TYPE_PageMeta pginfo, const s_eFSS_Cb cbHld, uint8_t* const pageBuff,
+                      uint8_t* const suppBuff, const uint32_t origIndx, const uint32_t destIndx);
 
-/**
- * Read a page and load it in the buffer, and copy data param in pagePrm also
- * @param pginfo Information about memory and pages
- * @param cbHld Struct containing all callback reference
- * @param pageBuff Pointer to a buffer that will be filled with data from the page
- * @param pageIndex Index of the page to read
- * @param prmPage Param that we fill with the information readed in the page
- * @return EFSS_RES_BADPOINTER in case of bad pointer
- *         EFSS_RES_BADPARAM in case of a wrong param passed
- *         EFSS_RES_NOTVALIDPAGE the page is not valid, crc or somethings else dosent return
- *         EFSS_RES_ERRORWRITE error reported from write callback
- *         EFSS_RES_ERRORERASE error reported from erase callback
- *         EFSS_RES_OK operation ended successfully
- */
-e_eFSS_Res readPageNPrm(const t_eFSS_TYPE_PageMeta pginfo, const s_eFSS_Cb cbHld, uint8_t* const pageBuff,
-                        const uint32_t pageIndx, s_prv_pagePrm* const pagePrm);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /**
  * Verify the validity of the page in origIndx and backupIndx.
@@ -242,23 +301,7 @@ e_eFSS_Res readPageNPrm(const t_eFSS_TYPE_PageMeta pginfo, const s_eFSS_Cb cbHld
 e_eFSS_Res verifyAndRipristinateBkup(const t_eFSS_TYPE_PageMeta pginfo, const s_eFSS_Cb cbHld, uint8_t* const pageOrig,
                                      uint8_t* const pageBkup, const uint32_t origIndx, const uint32_t backupIndx);
 
-/**
- * Clone a page from origIndx to destIndx
- * @param pginfo Information about memory and pages
- * @param cbHld Struct containing all callback reference
- * @param pageBuff Support buffer to do the calculation, must be atleast a page size
- * @param suppBuff Support buffer to do the calculation, must be atleast a page size
- * @param origIndx Index of the original page
- * @param destIndx Index of the destination page
- * @return EFSS_RES_BADPOINTER in case of bad pointer
- *         EFSS_RES_BADPARAM in case of a wrong param passed
- *         EFSS_RES_ERRORWRITE error reported from write callback
- *         EFSS_RES_ERRORERASE error reported from erase callback
- *         EFSS_RES_ERRORREAD error reported from read callback
- *         EFSS_RES_OK operation ended successfully
- */
-e_eFSS_Res cloneAPage(const t_eFSS_TYPE_PageMeta pginfo, const s_eFSS_Cb cbHld, uint8_t* const pageBuff,
-                      uint8_t* const suppBuff, const uint32_t origIndx, const uint32_t destIndx);
+
 
 
 

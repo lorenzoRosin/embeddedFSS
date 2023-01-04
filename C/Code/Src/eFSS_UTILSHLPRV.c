@@ -211,7 +211,6 @@ e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_SetMetaInBuff(uint8_t* const p_puPageBuf, 
 	/* Local variable */
 	e_eFSS_UTILSHLPRV_RES l_eRes;
     uint32_t l_uComulIndx;
-    uint32_t l_uTemp;
 
 	/* Check pointer validity */
 	if( ( NULL == p_puPageBuf ) || ( NULL == p_ptPagePrm )  )
@@ -348,7 +347,6 @@ e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_SetCrcMetaInBuff(uint8_t* const p_puPageBu
 	/* Local variable */
 	e_eFSS_UTILSHLPRV_RES l_eRes;
     uint32_t l_uComulIndx;
-    uint32_t l_uTemp;
 
 	/* Check pointer validity */
 	if( NULL == p_puPageBuf )
@@ -516,115 +514,36 @@ e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_IsValidPageInBuff(t_eFSS_TYPE_CbCtx* const
 	return l_eRes;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_IsValidPage(t_eFSS_TYPE_CbCtx* const p_ptCbCtx, const uint32_t p_uPageIdx,
-                                                  uint8_t* const pageBuff, const uint32_t p_pageL, const uint32_t p_uReTry  )
+e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_IsValidPage(t_eFSS_TYPE_CbCtx* const p_ptCbCtx, const uint32_t p_uPageIndx,
+                                                  uint8_t* const p_puPageBuf, const uint32_t p_uPageL,
+                                                  const uint32_t p_uReTry, bool_t* const p_pbIsValid)
 {
 	/* Local variable */
 	e_eFSS_UTILSHLPRV_RES l_eRes;
-    t_eFSS_TYPE_PageMeta l_tPagePrm;
-    uint32_t l_uCrcCalc;
-    uint32_t l_uTemp;
+    e_eFSS_UTILSLLPRV_RES l_eResLL;
 
 	/* Check pointer validity */
-	if( ( NULL == p_ptCbCtx ) || ( NULL == pageBuff ) )
+	if( ( NULL == p_ptCbCtx ) || ( NULL == p_puPageBuf ) || ( NULL == p_pbIsValid ) )
 	{
 		l_eRes = e_eFSS_UTILSHLPRV_RES_BADPOINTER;
 	}
 	else
 	{
         /* Check data validity */
-        if( p_pageL < EFSS_PAGEMETASIZE )
+        if( p_uPageL <= EFSS_PAGEMETASIZE )
         {
             l_eRes = e_eFSS_UTILSHLPRV_RES_BADPARAM;
         }
         else
         {
             /* Get pageBuff param from the ram pageBuff */
-            l_eRes = eFSS_UTILSLLPRV_ReadPage( p_ptCbCtx, p_uPageIdx, pageBuff, p_pageL, p_uReTry );
+            l_eResLL = eFSS_UTILSLLPRV_ReadPage( p_ptCbCtx, p_uPageIndx, p_puPageBuf, p_uPageL, p_uReTry );
+            l_eRes = eFSS_UTILSHLPRV_LLtoHLRes(l_eResLL);
 
             if( e_eFSS_UTILSHLPRV_RES_OK == l_eRes )
             {
                 /* Calculate the pageBuff param CRC */
-                l_eRes = eFSS_UTILSHLPRV_IsValidPageInBuff(p_ptCbCtx, pageBuff, p_pageL);
+                l_eRes = eFSS_UTILSHLPRV_IsValidPageInBuff(p_ptCbCtx, p_puPageBuf, p_uPageL, p_pbIsValid);
             }
         }
 	}
@@ -632,36 +551,178 @@ e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_IsValidPage(t_eFSS_TYPE_CbCtx* const p_ptC
 	return l_eRes;
 }
 
-e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_WritePagePrmNUpdateCrc(t_eFSS_TYPE_CbCtx* const p_ptCbCtx, const uint32_t p_uPageIdx, uint8_t* const pageBuff,
-                                   uint8_t* const p_pageL, const s_prv_pagePrm* prmPage, uint8_t* const pageBuffS, uint8_t* const p_pageLS, const uint32_t p_uReTry)
+e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_WritePagePrmNUpCrc(t_eFSS_TYPE_CbCtx* const p_ptCbCtx, const uint32_t p_uPageIndx,
+                                                         uint8_t* const p_puDataW, const uint32_t p_uDataWLen,
+                                                         uint8_t* const p_puDataR, const uint32_t p_uDataRLen,
+                                                         t_eFSS_TYPE_PageMeta* const p_ptPagePrm,
+                                                         const uint32_t p_uReTry)
+{
+    /* Local variable */
+	e_eFSS_UTILSHLPRV_RES l_eRes;
+    e_eFSS_UTILSLLPRV_RES l_eResLL;
+
+	/* Check pointer validity */
+	if( ( NULL == p_ptCbCtx ) || ( NULL == p_puDataW ) || ( NULL == p_puDataR ) || ( NULL == p_ptPagePrm ) )
+	{
+		l_eRes = e_eFSS_UTILSHLPRV_RES_BADPOINTER;
+	}
+    else
+    {
+        /* Check data validity */
+        if( ( p_uDataWLen <= EFSS_PAGEMETASIZE ) || ( p_uDataRLen <= EFSS_PAGEMETASIZE ) ||
+            ( p_uDataRLen != p_uDataWLen ) || ( p_uReTry <= 0u ) )
+        {
+            l_eRes = e_eFSS_UTILSHLPRV_RES_BADPARAM;
+        }
+        else
+        {
+            /* Set the page param and CRC in the page buffer */
+            l_eRes = eFSS_UTILSHLPRV_SetMetaInBuffNUpdCrc(p_puDataW, p_uDataWLen, p_ptPagePrm, p_ptCbCtx);
+
+            if( e_eFSS_UTILSHLPRV_RES_OK == l_eRes )
+            {
+                /* Write the page */
+                l_eResLL = eFSS_UTILSLLPRV_WritePage(p_ptCbCtx, p_puDataW, p_uDataWLen, p_puDataR, p_uDataRLen,
+                                                     p_uPageIndx, p_uReTry);
+                l_eRes = eFSS_UTILSHLPRV_LLtoHLRes(l_eResLL);
+            }
+        }
+    }
+
+    return l_eRes;
+}
+
+e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_WritePageNUpCrc(t_eFSS_TYPE_CbCtx* const p_ptCbCtx, const uint32_t p_uPageIndx,
+                                                         uint8_t* const p_puDataW, const uint32_t p_uDataWLen,
+                                                         uint8_t* const p_puDataR, const uint32_t p_uDataRLen,
+                                                         const uint32_t p_uReTry)
+{
+    /* Local variable */
+	e_eFSS_UTILSHLPRV_RES l_eRes;
+    e_eFSS_UTILSLLPRV_RES l_eResLL;
+    uint32_t l_uCrcCalc;
+
+	/* Check pointer validity */
+	if( ( NULL == p_ptCbCtx ) || ( NULL == p_puDataW ) || ( NULL == p_puDataR ) )
+	{
+		l_eRes = e_eFSS_UTILSHLPRV_RES_BADPOINTER;
+	}
+    else
+    {
+        /* Check data validity */
+        if( ( p_uDataWLen <= EFSS_PAGEMETASIZE ) || ( p_uDataRLen <= EFSS_PAGEMETASIZE ) ||
+            ( p_uDataRLen != p_uDataWLen ) || ( p_uReTry <= 0u ) )
+        {
+            l_eRes = e_eFSS_UTILSHLPRV_RES_BADPARAM;
+        }
+        else
+        {
+            /* Set the page param and CRC in the page buffer */
+            l_eRes = eFSS_UTILSHLPRV_CalcMetaCrcInBuff(p_ptCbCtx, p_puDataW, p_uDataWLen, &l_uCrcCalc);
+
+            if( e_eFSS_UTILSHLPRV_RES_OK == l_eRes)
+            {
+                /* Crc calculated, set it */
+                l_eRes = eFSS_UTILSHLPRV_SetCrcMetaInBuff(p_puDataW, p_uDataWLen, l_uCrcCalc);
+
+                if( e_eFSS_UTILSHLPRV_RES_OK == l_eRes )
+                {
+                    /* Write the page */
+                    l_eResLL = eFSS_UTILSLLPRV_WritePage(p_ptCbCtx, p_puDataW, p_uDataWLen, p_puDataR, p_uDataRLen,
+                                                         p_uPageIndx, p_uReTry);
+                    l_eRes = eFSS_UTILSHLPRV_LLtoHLRes(l_eResLL);
+                }
+            }
+        }
+    }
+
+    return l_eRes;
+}
+
+e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_ReadPageNPrm(t_eFSS_TYPE_CbCtx* const p_ptCbCtx, const uint32_t p_uPageIndx,
+                                                   uint8_t* const p_puDataR, const uint32_t p_uDataRLen,
+                                                   t_eFSS_TYPE_PageMeta* const p_ptPagePrm, const uint32_t p_uReTry)
+{
+    /* Local variable */
+	e_eFSS_UTILSHLPRV_RES l_eRes;
+    e_eFSS_UTILSLLPRV_RES l_eResLL;
+
+	/* Check pointer validity */
+	if( ( NULL == p_ptCbCtx ) || ( NULL == p_puDataR ) || ( NULL == p_ptPagePrm )  )
+	{
+		l_eRes = e_eFSS_UTILSHLPRV_RES_BADPOINTER;
+	}
+    else
+    {
+        /* Check data validity */
+        if( p_uDataRLen <= EFSS_PAGEMETASIZE )
+        {
+            l_eRes = e_eFSS_UTILSHLPRV_RES_BADPARAM;
+        }
+        else
+        {
+            /* Read the page */
+            l_eResLL = eFSS_UTILSLLPRV_ReadPage(p_ptCbCtx, p_uPageIndx, p_puDataR, p_uDataRLen, p_uReTry);
+            l_eRes = eFSS_UTILSHLPRV_LLtoHLRes(l_eResLL);
+
+            if( e_eFSS_UTILSHLPRV_RES_OK == l_eRes )
+            {
+                /* Copy poge param */
+                l_eRes = eFSS_UTILSHLPRV_GetMetaFromBuff(p_puDataR, p_uDataRLen, p_ptPagePrm);
+            }
+        }
+    }
+
+    return l_eRes;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+e_eFSS_Res cloneAPage(const s_eFSS_PgInfo pginfo, const s_eFSS_Cb cbHld, uint8_t* const pageBuff,
+                      uint8_t* const suppBuff, const uint32_t origIndx, const uint32_t destIndx)
 {
     /* Local variable */
     e_eFSS_Res returnVal;
 
     /* Check for NULL pointer */
-    if( ( NULL == pageBuff ) || ( NULL == prmPage ) )
+    if( ( NULL == pageBuff )|| ( NULL == suppBuff ) )
     {
         returnVal = EFSS_RES_BADPOINTER;
     }
     else
     {
         /* Check for parameter validity */
-        if( pageIndx >= pginfo.nOfPages )
+        if( ( origIndx >= pginfo.nOfPages ) || ( destIndx >= pginfo.nOfPages )  || ( origIndx == destIndx ) )
         {
             returnVal = EFSS_RES_BADPARAM;
         }
         else
         {
-            /* Set the page param and CRC in the page buffer */
-            returnVal = eFSS_UTILSHLPRV_SetMetaInBuffNUpdCrc(pginfo, cbHld, pageBuff, prmPage);
+            /* Read the page that need to be cloned */
+            returnVal = readPageLL( pginfo, cbHld, origIndx, pageBuff );
+
             if( EFSS_RES_OK == returnVal )
             {
                 /* Erase physical page */
-                returnVal = erasePageLL(pginfo, cbHld, pageIndx);
+                returnVal = erasePageLL(pginfo, cbHld, destIndx );
                 if( EFSS_RES_OK == returnVal )
                 {
                     /* Write the pageBuff in the physical page */
-                    returnVal = writePageLL(pginfo, cbHld, pageIndx, pageBuff, suppBuff );
+                    returnVal = writePageLL(pginfo, cbHld, destIndx, pageBuff, suppBuff );
                 }
             }
         }
@@ -681,39 +742,34 @@ e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_WritePagePrmNUpdateCrc(t_eFSS_TYPE_CbCtx* 
 
 
 
-e_eFSS_Res readPageNPrm(const s_eFSS_PgInfo pginfo, const s_eFSS_Cb cbHld, uint8_t* const pageBuff,
-                        const uint32_t pageIndx, s_prv_pagePrm* const pagePrm)
-{
-    /* Local variable */
-    e_eFSS_Res returnVal;
 
-    /* Check for NULL pointer */
-    if( ( NULL == pageBuff ) || ( NULL == pagePrm ) )
-    {
-        returnVal = EFSS_RES_BADPOINTER;
-    }
-    else
-    {
-        /* Check for parameter validity */
-        if( pageIndx >= pginfo.nOfPages )
-        {
-            returnVal = EFSS_RES_BADPARAM;
-        }
-        else
-        {
-            /* Get pageBuff */
-            returnVal = readPageLL( pginfo, cbHld, pageIndx, pageBuff );
 
-            if( EFSS_RES_OK == returnVal )
-            {
-                /* Fill even param only for comodity */
-                returnVal = getPagePrmFromBuff(pginfo, pageBuff, pagePrm);
-            }
-        }
-    }
 
-    return returnVal;
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 e_eFSS_Res verifyAndRipristinateBkup(const s_eFSS_PgInfo pginfo, const s_eFSS_Cb cbHld, uint8_t* const pageOrig,
                                      uint8_t* const pageBkup, const uint32_t origIndx, const uint32_t backupIndx)
@@ -807,44 +863,7 @@ e_eFSS_Res verifyAndRipristinateBkup(const s_eFSS_PgInfo pginfo, const s_eFSS_Cb
     return returnVal;
 }
 
-e_eFSS_Res cloneAPage(const s_eFSS_PgInfo pginfo, const s_eFSS_Cb cbHld, uint8_t* const pageBuff,
-                      uint8_t* const suppBuff, const uint32_t origIndx, const uint32_t destIndx)
-{
-    /* Local variable */
-    e_eFSS_Res returnVal;
 
-    /* Check for NULL pointer */
-    if( ( NULL == pageBuff )|| ( NULL == suppBuff ) )
-    {
-        returnVal = EFSS_RES_BADPOINTER;
-    }
-    else
-    {
-        /* Check for parameter validity */
-        if( ( origIndx >= pginfo.nOfPages ) || ( destIndx >= pginfo.nOfPages )  || ( origIndx == destIndx ) )
-        {
-            returnVal = EFSS_RES_BADPARAM;
-        }
-        else
-        {
-            /* Read the page that need to be cloned */
-            returnVal = readPageLL( pginfo, cbHld, origIndx, pageBuff );
-
-            if( EFSS_RES_OK == returnVal )
-            {
-                /* Erase physical page */
-                returnVal = erasePageLL(pginfo, cbHld, destIndx );
-                if( EFSS_RES_OK == returnVal )
-                {
-                    /* Write the pageBuff in the physical page */
-                    returnVal = writePageLL(pginfo, cbHld, destIndx, pageBuff, suppBuff );
-                }
-            }
-        }
-    }
-
-    return returnVal;
-}
 
 
 
