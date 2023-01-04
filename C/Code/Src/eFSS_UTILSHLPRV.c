@@ -676,59 +676,51 @@ e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_ReadPageNPrm(t_eFSS_TYPE_CbCtx* const p_pt
     return l_eRes;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-e_eFSS_Res cloneAPage(const s_eFSS_PgInfo pginfo, const s_eFSS_Cb cbHld, uint8_t* const pageBuff,
-                      uint8_t* const suppBuff, const uint32_t origIndx, const uint32_t destIndx)
+e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_ClonePage( t_eFSS_TYPE_CbCtx* const p_ptCbCtx, const uint32_t p_uReTry,
+                                                 uint8_t* const p_puDataW, const uint32_t p_uDataWLen,
+                                                 uint8_t* const p_puDataR, const uint32_t p_uDataRLen,
+                                                 const uint32_t p_uOrigIndx, const uint32_t p_uDestIndx )
 {
     /* Local variable */
-    e_eFSS_Res returnVal;
+	e_eFSS_UTILSHLPRV_RES l_eRes;
+    e_eFSS_UTILSLLPRV_RES l_eResLL;
+    uint32_t l_uCrcCalc;
 
-    /* Check for NULL pointer */
-    if( ( NULL == pageBuff )|| ( NULL == suppBuff ) )
-    {
-        returnVal = EFSS_RES_BADPOINTER;
-    }
+	/* Check pointer validity */
+	if( ( NULL == p_ptCbCtx ) || ( NULL == p_puDataW ) || ( NULL == p_puDataR ) )
+	{
+		l_eRes = e_eFSS_UTILSHLPRV_RES_BADPOINTER;
+	}
     else
     {
-        /* Check for parameter validity */
-        if( ( origIndx >= pginfo.nOfPages ) || ( destIndx >= pginfo.nOfPages )  || ( origIndx == destIndx ) )
+        /* Check data validity */
+        if( ( p_uDataWLen <= EFSS_PAGEMETASIZE ) || ( p_uDataRLen <= EFSS_PAGEMETASIZE ) ||
+            ( p_uDataRLen != p_uDataWLen ) || ( p_uReTry <= 0u ) || ( p_uOrigIndx == p_uDestIndx) )
         {
-            returnVal = EFSS_RES_BADPARAM;
+            l_eRes = e_eFSS_UTILSHLPRV_RES_BADPARAM;
         }
         else
         {
-            /* Read the page that need to be cloned */
-            returnVal = readPageLL( pginfo, cbHld, origIndx, pageBuff );
-
-            if( EFSS_RES_OK == returnVal )
+            /* Read the page to clone */
+            l_eResLL = eFSS_UTILSLLPRV_ReadPage(p_ptCbCtx, p_uOrigIndx, p_puDataR, p_uDataRLen, p_uReTry);
+            l_eRes = eFSS_UTILSHLPRV_LLtoHLRes(l_eResLL);
+            if( e_eFSS_UTILSHLPRV_RES_OK == l_eRes)
             {
-                /* Erase physical page */
-                returnVal = erasePageLL(pginfo, cbHld, destIndx );
-                if( EFSS_RES_OK == returnVal )
+                /* Crc calculated, set it */
+                l_eRes = eFSS_UTILSHLPRV_SetCrcMetaInBuff(p_puDataW, p_uDataWLen, l_uCrcCalc);
+
+                if( e_eFSS_UTILSHLPRV_RES_OK == l_eRes )
                 {
-                    /* Write the pageBuff in the physical page */
-                    returnVal = writePageLL(pginfo, cbHld, destIndx, pageBuff, suppBuff );
+                    /* Write the page */
+                    l_eResLL = eFSS_UTILSLLPRV_WritePage(p_ptCbCtx, p_puDataR, p_uDataRLen, p_puDataW, p_uDataWLen,
+                                                         p_uDestIndx, p_uReTry);
+                    l_eRes = eFSS_UTILSHLPRV_LLtoHLRes(l_eResLL);
                 }
             }
         }
     }
 
-    return returnVal;
+    return l_eRes;
 }
 
 
@@ -771,28 +763,77 @@ e_eFSS_Res cloneAPage(const s_eFSS_PgInfo pginfo, const s_eFSS_Cb cbHld, uint8_t
 
 
 
-e_eFSS_Res verifyAndRipristinateBkup(const s_eFSS_PgInfo pginfo, const s_eFSS_Cb cbHld, uint8_t* const pageOrig,
-                                     uint8_t* const pageBkup, const uint32_t origIndx, const uint32_t backupIndx)
+e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_VerifyNRipristBkup( t_eFSS_TYPE_CbCtx* const p_ptCbCtx, const uint32_t p_uReTry,
+                                                          uint8_t* const p_puDataW, const uint32_t p_uDataWLen,
+                                                          uint8_t* const p_puDataR, const uint32_t p_uDataRLen,
+                                                          const uint32_t p_uOrigIndx, const uint32_t p_uBackupIndx )
 {
     /* Local variable */
-    e_eFSS_Res returnVal;
-    e_eFSS_Res readRetValOr;
-    e_eFSS_Res readRetValBk;
+	e_eFSS_UTILSHLPRV_RES l_eRes;
+    e_eFSS_UTILSLLPRV_RES l_eResLL;
 
-    /* Check for NULL pointer */
-    if( ( NULL == pageOrig )|| ( NULL == pageBkup ) )
-    {
-        returnVal = EFSS_RES_BADPOINTER;
-    }
+	/* Check pointer validity */
+	if( ( NULL == p_ptCbCtx ) || ( NULL == p_puDataW ) || ( NULL == p_puDataR ) )
+	{
+		l_eRes = e_eFSS_UTILSHLPRV_RES_BADPOINTER;
+	}
     else
     {
-        /* Check for parameter validity */
-        if( ( origIndx >= pginfo.nOfPages ) || ( backupIndx >= pginfo.nOfPages )  || ( backupIndx == origIndx ) )
+        /* Check data validity */
+        if( ( p_uDataWLen <= EFSS_PAGEMETASIZE ) || ( p_uDataRLen <= EFSS_PAGEMETASIZE ) ||
+            ( p_uDataRLen != p_uDataWLen ) || ( p_uReTry <= 0u ) || ( p_uOrigIndx == p_uBackupIndx) )
         {
-            returnVal = EFSS_RES_BADPARAM;
+            l_eRes = e_eFSS_UTILSHLPRV_RES_BADPARAM;
         }
         else
         {
+
+        }
+    }
+
+    return l_eRes;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    e_eFSS_Res readRetValOr;
+    e_eFSS_Res readRetValBk;
+
+
             /* Read all pages before start doing test */
             readRetValOr = readPageLL( pginfo, cbHld, origIndx, pageOrig );
             readRetValBk = readPageLL( pginfo, cbHld, backupIndx, pageBkup );
@@ -857,8 +898,8 @@ e_eFSS_Res verifyAndRipristinateBkup(const s_eFSS_PgInfo pginfo, const s_eFSS_Cb
             {
                 returnVal = EFSS_RES_ERRORREAD;
             }
-        }
-    }
+
+
 
     return returnVal;
 }

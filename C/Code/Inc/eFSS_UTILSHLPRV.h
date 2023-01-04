@@ -31,6 +31,8 @@ extern "C" {
 typedef enum
 {
     e_eFSS_UTILSHLPRV_RES_OK = 0,
+    e_eFSS_UTILSLLPRV_RES_NOTVALIDPAGE,
+    e_eFSS_UTILSLLPRV_RES_OK_BKP_RCVRD,
     e_eFSS_UTILSHLPRV_RES_BADPARAM,
     e_eFSS_UTILSHLPRV_RES_BADPOINTER,
     e_eFSS_UTILSHLPRV_RES_CLBCKERASEERR,
@@ -227,81 +229,64 @@ e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_ReadPageNPrm(t_eFSS_TYPE_CbCtx* const p_pt
                                                    uint8_t* const p_puDataR, const uint32_t p_uDataRLen,
                                                    t_eFSS_TYPE_PageMeta* const p_ptPagePrm, const uint32_t p_uReTry);
 
-
-
-
-
-
-
-
-
-
-
-
+/**
+ * @brief       Clone a page from p_uOrigIndx to p_uDestIndx
+ *
+ * @param[in]   p_ptCbCtx     - Pointer to all callback context
+ * @param[in]   p_uReTry      - How many times we can retry if some error happens
+ * @param[in]   p_puDataW     - Buffer used for write operation
+ * @param[in]   p_uDataWLen   - size of the p_puDataW buffer
+ * @param[in]   p_puDataR     - Buffer used for read operation
+ * @param[in]   p_uDataRLen   - size of the p_puDataR buffer
+ * @param[in]   p_uOrigIndx   - Page index we want to clone
+ * @param[in]   p_uDestIndx   - Destination indexof the cloned page
+ *
+ * @return      e_eFSS_UTILSLLPRV_RES_OK                - Operation ended successfully
+ *              e_eFSS_UTILSLLPRV_RES_BADPOINTER        - In case of bad pointer passed to the function
+ *              e_eFSS_UTILSHLPRV_RES_BADPARAM          - In case of bad parameter passed to the function
+ *              e_eFSS_UTILSHLPRV_RES_CLBCKERASEERR     - Error reported from the callback
+ *              e_eFSS_UTILSHLPRV_RES_CLBCKWRITEERR     - Error reported from the callback
+ *              e_eFSS_UTILSHLPRV_RES_CLBCKREADERR      - Error reported from the callback
+ *              e_eFSS_UTILSHLPRV_RES_WRITENOMATCHREAD  - For some unknow reason data write dosent match data readed
+ */
+e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_ClonePage( t_eFSS_TYPE_CbCtx* const p_ptCbCtx, const uint32_t p_uReTry,
+                                                 uint8_t* const p_puDataW, const uint32_t p_uDataWLen,
+                                                 uint8_t* const p_puDataR, const uint32_t p_uDataRLen,
+                                                 const uint32_t p_uOrigIndx, const uint32_t p_uDestIndx );
 
 /**
- * Clone a page from origIndx to destIndx
- * @param pginfo Information about memory and pages
- * @param cbHld Struct containing all callback reference
- * @param pageBuff Support buffer to do the calculation, must be atleast a page size
- * @param suppBuff Support buffer to do the calculation, must be atleast a page size
- * @param origIndx Index of the original page
- * @param destIndx Index of the destination page
- * @return EFSS_RES_BADPOINTER in case of bad pointer
- *         EFSS_RES_BADPARAM in case of a wrong param passed
- *         EFSS_RES_ERRORWRITE error reported from write callback
- *         EFSS_RES_ERRORERASE error reported from erase callback
- *         EFSS_RES_ERRORREAD error reported from read callback
- *         EFSS_RES_OK operation ended successfully
+ * @brief       Verify the validity of the page in p_uOrigIndx and p_uBackupIndx.
+ *              1 - If p_uOrigIndx and p_uBackupIndx are valid, verify if they are equals. If not copy p_uOrigIndx
+ *                  in p_uBackupIndx
+ *              2 - If p_uOrigIndx is not valid copy p_uBackupIndx in p_uOrigIndx
+ *              3 - If p_uBackupIndx is not valid copy p_uOrigIndx in p_uBackupIndx
+ *              4 - If p_uOrigIndx and p_uBackupIndx are not valid we cann not do nothing
+ *
+ * @param[in]   p_ptCbCtx     - Pointer to all callback context
+ * @param[in]   p_uReTry      - How many times we can retry if some error happens
+ * @param[in]   p_puDataW     - Buffer used for write operation
+ * @param[in]   p_uDataWLen   - size of the p_puDataW buffer
+ * @param[in]   p_puDataR     - Buffer used for read operation
+ * @param[in]   p_uDataRLen   - size of the p_puDataR buffer
+ * @param[in]   p_uOrigIndx   - Page index of the original data
+ * @param[in]   p_uBackupIndx - Page index of the backup data
+ *
+ * @return      e_eFSS_UTILSLLPRV_RES_OK                - Operation ended successfully, page are correct
+ *              e_eFSS_UTILSLLPRV_RES_NOTVALIDPAGE      - both origin and backup pages are corrupted
+ *              e_eFSS_UTILSLLPRV_RES_OK_BKP_RCVRD      - operation ended successfully recovering a backup or an origin
+ *                                                        page
+ *              e_eFSS_UTILSLLPRV_RES_BADPOINTER        - In case of bad pointer passed to the function
+ *              e_eFSS_UTILSHLPRV_RES_BADPARAM          - In case of bad parameter passed to the function
+ *              e_eFSS_UTILSHLPRV_RES_CLBCKCRCERR       - Error reported from the callback
+ *              e_eFSS_UTILSHLPRV_RES_CLBCKERASEERR     - Error reported from the callback
+ *              e_eFSS_UTILSHLPRV_RES_CLBCKWRITEERR     - Error reported from the callback
+ *              e_eFSS_UTILSHLPRV_RES_CLBCKREADERR      - Error reported from the callback
+ *              e_eFSS_UTILSHLPRV_RES_WRITENOMATCHREAD  - For some unknow reason data write dosent match data readed
  */
-e_eFSS_Res cloneAPage(const t_eFSS_TYPE_PageMeta pginfo, const s_eFSS_Cb cbHld, uint8_t* const pageBuff,
-                      uint8_t* const suppBuff, const uint32_t origIndx, const uint32_t destIndx);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/**
- * Verify the validity of the page in origIndx and backupIndx.
- * 1 - If origIndx and backupIndx are valid, verify if they are equals. If not copy origIndx in backupIndx
- * 2 - If origIndx is not valid copy backupIndx in origIndx
- * 3 - If backupIndx is not valid copy origIndx in backupIndx
- * 4 - If origIndx and backupIndx are not valid we cann not do nothing
- * @param pginfo Information about memory and pages
- * @param cbHld Struct containing all callback reference
- * @param pageOrig Support buffer to do the calculation, must be atleast a page size
- * @param pageBkup Support buffer to do the calculation, must be atleast a page size
- * @param origIndx Index of the original page
- * @param backupIndx Index of the backup page
- * @return EFSS_RES_BADPOINTER in case of bad pointer
- *         EFSS_RES_BADPARAM in case of a wrong param passed
- *         EFSS_RES_NOTVALIDPAGE both origin and backup pages are corrupted
- *         EFSS_RES_ERRORWRITE error reported from write callback
- *         EFSS_RES_ERRORERASE error reported from erase callback
- *         EFSS_RES_ERRORREAD error reported from read callback
- *         EFSS_RES_OK_BKP_RCVRD operation ended successfully recovering a backup or an origin page
- *         EFSS_RES_OK operation ended successfully
- */
-e_eFSS_Res verifyAndRipristinateBkup(const t_eFSS_TYPE_PageMeta pginfo, const s_eFSS_Cb cbHld, uint8_t* const pageOrig,
-                                     uint8_t* const pageBkup, const uint32_t origIndx, const uint32_t backupIndx);
-
-
+e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_VerifyNRipristBkup( t_eFSS_TYPE_CbCtx* const p_ptCbCtx, const uint32_t p_uReTry,
+                                                          uint8_t* const p_puDataW, const uint32_t p_uDataWLen,
+                                                          uint8_t* const p_puDataR, const uint32_t p_uDataRLen,
+                                                          const uint32_t p_uOrigIndx, const uint32_t p_uBackupIndx );
 
 
 
