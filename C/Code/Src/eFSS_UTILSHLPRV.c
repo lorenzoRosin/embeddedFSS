@@ -205,61 +205,8 @@ e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_GetMetaFromBuff(const uint8_t* p_puPageBuf
 	return l_eRes;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_SetMetaInBuff(uint8_t* const pageBuff, const uint32_t p_pageL,
-                                                      t_eFSS_TYPE_PageMeta* const pagePrm)
+e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_SetMetaInBuff(uint8_t* const p_puPageBuf, const uint32_t p_uPageL,
+                                                    t_eFSS_TYPE_PageMeta* const p_ptPagePrm)
 {
 	/* Local variable */
 	e_eFSS_UTILSHLPRV_RES l_eRes;
@@ -267,113 +214,127 @@ e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_SetMetaInBuff(uint8_t* const pageBuff, con
     uint32_t l_uTemp;
 
 	/* Check pointer validity */
-	if( ( NULL == pageBuff ) || ( NULL == pagePrm )  )
+	if( ( NULL == p_puPageBuf ) || ( NULL == p_ptPagePrm )  )
 	{
 		l_eRes = e_eFSS_UTILSHLPRV_RES_BADPOINTER;
 	}
 	else
 	{
         /* Check data validity */
-        if( p_pageL < EFSS_PAGEMETASIZE )
+        if( p_uPageL <= EFSS_PAGEMETASIZE )
         {
             l_eRes = e_eFSS_UTILSHLPRV_RES_BADPARAM;
         }
         else
         {
             /* Initialize internal status */
-            l_uComulIndx = p_pageL - EFSS_PAGEMETASIZE;
+            l_uComulIndx = p_uPageL - EFSS_PAGEMETASIZE;
 
-            /* Copy data Little endian */
-            pageBuff[l_uComulIndx] = (uint8_t) ( ( pagePrm->uPageType        ) & 0x000000FFu );
+            /* --- Copy data Little endian */
+            p_puPageBuf[l_uComulIndx] = (uint8_t) ( ( p_ptPagePrm->uPageType        ) & 0x000000FFu );
             l_uComulIndx++;
 
-            pageBuff[l_uComulIndx] = (uint8_t) ( ( pagePrm->uPageType >> 8u  ) & 0x000000FFu );
+            p_puPageBuf[l_uComulIndx] = (uint8_t) ( ( p_ptPagePrm->uPageType >> 8u  ) & 0x000000FFu );
             l_uComulIndx++;
 
-            pageBuff[l_uComulIndx] = (uint8_t) ( ( pagePrm->uPageType >> 16u ) & 0x000000FFu );
+            p_puPageBuf[l_uComulIndx] = (uint8_t) ( ( p_ptPagePrm->uPageType >> 16u ) & 0x000000FFu );
             l_uComulIndx++;
 
-            pageBuff[l_uComulIndx] = (uint8_t) ( ( pagePrm->uPageType >> 24u ) & 0x000000FFu );
+            p_puPageBuf[l_uComulIndx] = (uint8_t) ( ( p_ptPagePrm->uPageType >> 24u ) & 0x000000FFu );
             l_uComulIndx++;
 
-            /* Copy data Little endian */
-            pageBuff[l_uComulIndx] = (uint8_t) ( ( pagePrm->uPageType        ) & 0x000000FFu );
+            /* --- Copy data Little endian */
+            p_puPageBuf[l_uComulIndx] = (uint8_t) ( ( p_ptPagePrm->uPageSubType        ) & 0x000000FFu );
             l_uComulIndx++;
 
-            pageBuff[l_uComulIndx] = (uint8_t) ( ( pagePrm->uPageType >> 8u  ) & 0x000000FFu );
+            p_puPageBuf[l_uComulIndx] = (uint8_t) ( ( p_ptPagePrm->uPageSubType >> 8u  ) & 0x000000FFu );
             l_uComulIndx++;
 
-            pageBuff[l_uComulIndx] = (uint8_t) ( ( pagePrm->uPageType >> 16u ) & 0x000000FFu );
+            p_puPageBuf[l_uComulIndx] = (uint8_t) ( ( p_ptPagePrm->uPageSubType >> 16u ) & 0x000000FFu );
             l_uComulIndx++;
 
-            pageBuff[l_uComulIndx] = (uint8_t) ( ( pagePrm->uPageType >> 24u ) & 0x000000FFu );
+            p_puPageBuf[l_uComulIndx] = (uint8_t) ( ( p_ptPagePrm->uPageSubType >> 24u ) & 0x000000FFu );
             l_uComulIndx++;
 
-            /* Copy data Little endian */
-            pageBuff[l_uComulIndx] = (uint8_t) ( ( pagePrm->uPageType        ) & 0x000000FFu );
+            /* --- Copy data Little endian */
+            p_puPageBuf[l_uComulIndx] = (uint8_t) ( ( p_ptPagePrm->uPageVersion        ) & 0x000000FFu );
             l_uComulIndx++;
 
-            pageBuff[l_uComulIndx] = (uint8_t) ( ( pagePrm->uPageType >> 8u  ) & 0x000000FFu );
+            p_puPageBuf[l_uComulIndx] = (uint8_t) ( ( p_ptPagePrm->uPageVersion >> 8u  ) & 0x000000FFu );
             l_uComulIndx++;
 
-            pageBuff[l_uComulIndx] = (uint8_t) ( ( pagePrm->uPageType >> 16u ) & 0x000000FFu );
+            p_puPageBuf[l_uComulIndx] = (uint8_t) ( ( p_ptPagePrm->uPageVersion >> 16u ) & 0x000000FFu );
             l_uComulIndx++;
 
-            pageBuff[l_uComulIndx] = (uint8_t) ( ( pagePrm->uPageType >> 24u ) & 0x000000FFu );
+            p_puPageBuf[l_uComulIndx] = (uint8_t) ( ( p_ptPagePrm->uPageVersion >> 24u ) & 0x000000FFu );
             l_uComulIndx++;
 
-            /* Copy data Little endian */
-            pageBuff[l_uComulIndx] = (uint8_t) ( ( pagePrm->uPageType        ) & 0x000000FFu );
+            /* --- Copy data Little endian */
+            p_puPageBuf[l_uComulIndx] = (uint8_t) ( ( p_ptPagePrm->uPageUseSpecific1        ) & 0x000000FFu );
             l_uComulIndx++;
 
-            pageBuff[l_uComulIndx] = (uint8_t) ( ( pagePrm->uPageType >> 8u  ) & 0x000000FFu );
+            p_puPageBuf[l_uComulIndx] = (uint8_t) ( ( p_ptPagePrm->uPageUseSpecific1 >> 8u  ) & 0x000000FFu );
             l_uComulIndx++;
 
-            pageBuff[l_uComulIndx] = (uint8_t) ( ( pagePrm->uPageType >> 16u ) & 0x000000FFu );
+            p_puPageBuf[l_uComulIndx] = (uint8_t) ( ( p_ptPagePrm->uPageUseSpecific1 >> 16u ) & 0x000000FFu );
             l_uComulIndx++;
 
-            pageBuff[l_uComulIndx] = (uint8_t) ( ( pagePrm->uPageType >> 24u ) & 0x000000FFu );
+            p_puPageBuf[l_uComulIndx] = (uint8_t) ( ( p_ptPagePrm->uPageUseSpecific1 >> 24u ) & 0x000000FFu );
             l_uComulIndx++;
 
-            /* Copy data Little endian */
-            pageBuff[l_uComulIndx] = (uint8_t) ( ( pagePrm->uPageType        ) & 0x000000FFu );
+            /* --- Copy data Little endian */
+            p_puPageBuf[l_uComulIndx] = (uint8_t) ( ( p_ptPagePrm->uPageUseSpecific2        ) & 0x000000FFu );
             l_uComulIndx++;
 
-            pageBuff[l_uComulIndx] = (uint8_t) ( ( pagePrm->uPageType >> 8u  ) & 0x000000FFu );
+            p_puPageBuf[l_uComulIndx] = (uint8_t) ( ( p_ptPagePrm->uPageUseSpecific2 >> 8u  ) & 0x000000FFu );
             l_uComulIndx++;
 
-            pageBuff[l_uComulIndx] = (uint8_t) ( ( pagePrm->uPageType >> 16u ) & 0x000000FFu );
+            p_puPageBuf[l_uComulIndx] = (uint8_t) ( ( p_ptPagePrm->uPageUseSpecific2 >> 16u ) & 0x000000FFu );
             l_uComulIndx++;
 
-            pageBuff[l_uComulIndx] = (uint8_t) ( ( pagePrm->uPageType >> 24u ) & 0x000000FFu );
+            p_puPageBuf[l_uComulIndx] = (uint8_t) ( ( p_ptPagePrm->uPageUseSpecific2 >> 24u ) & 0x000000FFu );
             l_uComulIndx++;
 
-            /* Copy data Little endian */
-            pageBuff[l_uComulIndx] = (uint8_t) ( ( pagePrm->uPageType        ) & 0x000000FFu );
+            /* --- Copy data Little endian */
+            p_puPageBuf[l_uComulIndx] = (uint8_t) ( ( p_ptPagePrm->uPageSequentialN        ) & 0x000000FFu );
             l_uComulIndx++;
 
-            pageBuff[l_uComulIndx] = (uint8_t) ( ( pagePrm->uPageType >> 8u  ) & 0x000000FFu );
+            p_puPageBuf[l_uComulIndx] = (uint8_t) ( ( p_ptPagePrm->uPageSequentialN >> 8u  ) & 0x000000FFu );
             l_uComulIndx++;
 
-            pageBuff[l_uComulIndx] = (uint8_t) ( ( pagePrm->uPageType >> 16u ) & 0x000000FFu );
+            p_puPageBuf[l_uComulIndx] = (uint8_t) ( ( p_ptPagePrm->uPageSequentialN >> 16u ) & 0x000000FFu );
             l_uComulIndx++;
 
-            pageBuff[l_uComulIndx] = (uint8_t) ( ( pagePrm->uPageType >> 24u ) & 0x000000FFu );
+            p_puPageBuf[l_uComulIndx] = (uint8_t) ( ( p_ptPagePrm->uPageSequentialN >> 24u ) & 0x000000FFu );
             l_uComulIndx++;
 
-            /* Copy data Little endian */
-            pageBuff[l_uComulIndx] = (uint8_t) ( ( pagePrm->uPageType        ) & 0x000000FFu );
+            /* --- Copy data Little endian */
+            p_puPageBuf[l_uComulIndx] = (uint8_t) ( ( p_ptPagePrm->uPageMagicNumber        ) & 0x000000FFu );
             l_uComulIndx++;
 
-            pageBuff[l_uComulIndx] = (uint8_t) ( ( pagePrm->uPageType >> 8u  ) & 0x000000FFu );
+            p_puPageBuf[l_uComulIndx] = (uint8_t) ( ( p_ptPagePrm->uPageMagicNumber >> 8u  ) & 0x000000FFu );
             l_uComulIndx++;
 
-            pageBuff[l_uComulIndx] = (uint8_t) ( ( pagePrm->uPageType >> 16u ) & 0x000000FFu );
+            p_puPageBuf[l_uComulIndx] = (uint8_t) ( ( p_ptPagePrm->uPageMagicNumber >> 16u ) & 0x000000FFu );
             l_uComulIndx++;
 
-            pageBuff[l_uComulIndx] = (uint8_t) ( ( pagePrm->uPageType >> 24u ) & 0x000000FFu );
+            p_puPageBuf[l_uComulIndx] = (uint8_t) ( ( p_ptPagePrm->uPageMagicNumber >> 24u ) & 0x000000FFu );
             l_uComulIndx++;
 
+            /* --- Copy data Little endian */
+            p_puPageBuf[l_uComulIndx] = (uint8_t) ( ( p_ptPagePrm->uPageCrc        ) & 0x000000FFu );
+            l_uComulIndx++;
+
+            p_puPageBuf[l_uComulIndx] = (uint8_t) ( ( p_ptPagePrm->uPageCrc >> 8u  ) & 0x000000FFu );
+            l_uComulIndx++;
+
+            p_puPageBuf[l_uComulIndx] = (uint8_t) ( ( p_ptPagePrm->uPageCrc >> 16u ) & 0x000000FFu );
+            l_uComulIndx++;
+
+            p_puPageBuf[l_uComulIndx] = (uint8_t) ( ( p_ptPagePrm->uPageCrc >> 24u ) & 0x000000FFu );
+            l_uComulIndx++;
+
+            /* All ok */
             l_eRes = e_eFSS_UTILSHLPRV_RES_OK;
         }
 	}
@@ -381,8 +342,7 @@ e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_SetMetaInBuff(uint8_t* const pageBuff, con
 	return l_eRes;
 }
 
-
-e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_SetCrcMetaInBuff(uint8_t* const pageBuff, const uint32_t p_pageL,
+e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_SetCrcMetaInBuff(uint8_t* const p_puPageBuf, const uint32_t p_uPageL,
                                                        const uint32_t p_uCrcToSet)
 {
 	/* Local variable */
@@ -391,35 +351,36 @@ e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_SetCrcMetaInBuff(uint8_t* const pageBuff, 
     uint32_t l_uTemp;
 
 	/* Check pointer validity */
-	if( NULL == pageBuff )
+	if( NULL == p_puPageBuf )
 	{
 		l_eRes = e_eFSS_UTILSHLPRV_RES_BADPOINTER;
 	}
 	else
 	{
         /* Check data validity */
-        if( p_pageL < EFSS_PAGEMETASIZE )
+        if( p_uPageL <= EFSS_PAGEMETASIZE )
         {
             l_eRes = e_eFSS_UTILSHLPRV_RES_BADPARAM;
         }
         else
         {
             /* Initialize internal status */
-            l_uComulIndx = p_pageL - sizeof(uint32_t);
+            l_uComulIndx = p_uPageL - sizeof(uint32_t);
 
-            /* Copy data Little endian */
-            pageBuff[l_uComulIndx] = (uint8_t) ( ( p_uCrcToSet        ) & 0x000000FFu );
+            /* --- Copy data Little endian */
+            p_puPageBuf[l_uComulIndx] = (uint8_t) ( ( p_uCrcToSet        ) & 0x000000FFu );
             l_uComulIndx++;
 
-            pageBuff[l_uComulIndx] = (uint8_t) ( ( p_uCrcToSet >> 8u  ) & 0x000000FFu );
+            p_puPageBuf[l_uComulIndx] = (uint8_t) ( ( p_uCrcToSet >> 8u  ) & 0x000000FFu );
             l_uComulIndx++;
 
-            pageBuff[l_uComulIndx] = (uint8_t) ( ( p_uCrcToSet >> 16u ) & 0x000000FFu );
+            p_puPageBuf[l_uComulIndx] = (uint8_t) ( ( p_uCrcToSet >> 16u ) & 0x000000FFu );
             l_uComulIndx++;
 
-            pageBuff[l_uComulIndx] = (uint8_t) ( ( p_uCrcToSet >> 24u ) & 0x000000FFu );
+            p_puPageBuf[l_uComulIndx] = (uint8_t) ( ( p_uCrcToSet >> 24u ) & 0x000000FFu );
             l_uComulIndx++;
 
+            /* All ok */
             l_eRes = e_eFSS_UTILSHLPRV_RES_OK;
         }
 	}
@@ -427,37 +388,79 @@ e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_SetCrcMetaInBuff(uint8_t* const pageBuff, 
 	return l_eRes;
 }
 
-e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_CalcPageMetaCrcInBuff(t_eFSS_TYPE_CbCtx* const p_ptCtx, uint8_t* const pageBuff,
-                                                            const uint32_t p_pageL, uint32_t* const p_puCrcCalc)
+e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_CalcMetaCrcInBuff(t_eFSS_TYPE_CbCtx* const p_ptCbCtx, uint8_t* const p_puPageBuf,
+                                                        const uint32_t p_uPageL, uint32_t* const p_puCrcCalc)
 {
 	/* Local variable */
 	e_eFSS_UTILSHLPRV_RES l_eRes;
+    e_eFSS_UTILSLLPRV_RES l_eResLL;
     uint32_t l_uTemp;
 
 	/* Check pointer validity */
-	if( ( NULL == p_ptCtx ) || ( NULL == pageBuff ) || ( NULL == p_puCrcCalc ) )
+	if( ( NULL == p_ptCbCtx ) || ( NULL == p_puPageBuf ) || ( NULL == p_puCrcCalc ) )
 	{
 		l_eRes = e_eFSS_UTILSHLPRV_RES_BADPOINTER;
 	}
 	else
 	{
         /* Check data validity */
-        if( p_pageL < EFSS_PAGEMETASIZE )
+        if( p_uPageL <= EFSS_PAGEMETASIZE )
         {
             l_eRes = e_eFSS_UTILSHLPRV_RES_BADPARAM;
         }
         else
         {
             /* Esclude from the calculation the CRC, that is placed in the last 4 byte */
-            l_uTemp = p_pageL - sizeof(uint32_t);
+            l_uTemp = p_uPageL - sizeof(uint32_t);
 
             /* Calculate CRC */
-            l_eRes = eFSS_UTILSLLPRV_CalcCrc32(p_ptCtx, pageBuff, l_uTemp, p_puCrcCalc);
+            l_eResLL = eFSS_UTILSLLPRV_CalcCrc32(p_ptCbCtx, p_puPageBuf, l_uTemp, p_puCrcCalc);
+            l_eRes = eFSS_UTILSHLPRV_LLtoHLRes(l_eResLL);
         }
 	}
 
 	return l_eRes;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_SetPageMetaInBuffAndUpdtCrc(uint8_t* const pageBuff, const uint32_t p_pageL,
                                                       t_eFSS_TYPE_PageMeta* const pagePrm)
@@ -487,7 +490,7 @@ e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_SetPageMetaInBuffAndUpdtCrc(uint8_t* const
             if( e_eFSS_UTILSLLPRV_RES_OK == l_eRes)
             {
                 /* Calc crc value of the page */
-                l_eRes = eFSS_UTILSHLPRV_CalcPageMetaCrcInBuff(pginfo, cbHld, pageBuff, &crcCalc);
+                l_eRes = eFSS_UTILSHLPRV_CalcMetaCrcInBuff(pginfo, cbHld, pageBuff, &crcCalc);
 
                 if( e_eFSS_UTILSLLPRV_RES_OK == l_eRes)
                 {
@@ -502,7 +505,7 @@ e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_SetPageMetaInBuffAndUpdtCrc(uint8_t* const
 }
 
 
-e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_IsValidPageInBuff(t_eFSS_TYPE_CbCtx* const p_ptCtx, uint8_t* const pageBuff,
+e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_IsValidPageInBuff(t_eFSS_TYPE_CbCtx* const p_ptCbCtx, uint8_t* const pageBuff,
                                                         const uint32_t p_pageL )
 {
 	/* Local variable */
@@ -512,7 +515,7 @@ e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_IsValidPageInBuff(t_eFSS_TYPE_CbCtx* const
     uint32_t l_uTemp;
 
 	/* Check pointer validity */
-	if( ( NULL == p_ptCtx ) || ( NULL == pageBuff ) )
+	if( ( NULL == p_ptCbCtx ) || ( NULL == pageBuff ) )
 	{
 		l_eRes = e_eFSS_UTILSHLPRV_RES_BADPOINTER;
 	}
@@ -531,7 +534,7 @@ e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_IsValidPageInBuff(t_eFSS_TYPE_CbCtx* const
             if( e_eFSS_UTILSHLPRV_RES_OK == l_eRes )
             {
                 /* Calculate the pageBuff param CRC */
-                l_eRes = eFSS_UTILSHLPRV_CalcPageMetaCrcInBuff(p_ptCtx, pageBuff, p_pageL, &l_uCrcCalc);
+                l_eRes = eFSS_UTILSHLPRV_CalcMetaCrcInBuff(p_ptCbCtx, pageBuff, p_pageL, &l_uCrcCalc);
 
                 if( e_eFSS_UTILSHLPRV_RES_OK == l_eRes )
                 {
@@ -554,7 +557,68 @@ e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_IsValidPageInBuff(t_eFSS_TYPE_CbCtx* const
 }
 
 
-e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_IsValidPage(t_eFSS_TYPE_CbCtx* const p_ptCtx, const uint32_t p_uPageIdx,
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_IsValidPage(t_eFSS_TYPE_CbCtx* const p_ptCbCtx, const uint32_t p_uPageIdx,
                                                   uint8_t* const pageBuff, const uint32_t p_pageL, const uint32_t p_uReTry  )
 {
 	/* Local variable */
@@ -564,7 +628,7 @@ e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_IsValidPage(t_eFSS_TYPE_CbCtx* const p_ptC
     uint32_t l_uTemp;
 
 	/* Check pointer validity */
-	if( ( NULL == p_ptCtx ) || ( NULL == pageBuff ) )
+	if( ( NULL == p_ptCbCtx ) || ( NULL == pageBuff ) )
 	{
 		l_eRes = e_eFSS_UTILSHLPRV_RES_BADPOINTER;
 	}
@@ -578,12 +642,12 @@ e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_IsValidPage(t_eFSS_TYPE_CbCtx* const p_ptC
         else
         {
             /* Get pageBuff param from the ram pageBuff */
-            l_eRes = eFSS_UTILSLLPRV_ReadPage( p_ptCtx, p_uPageIdx, pageBuff, p_pageL, p_uReTry );
+            l_eRes = eFSS_UTILSLLPRV_ReadPage( p_ptCbCtx, p_uPageIdx, pageBuff, p_pageL, p_uReTry );
 
             if( e_eFSS_UTILSHLPRV_RES_OK == l_eRes )
             {
                 /* Calculate the pageBuff param CRC */
-                l_eRes = eFSS_UTILSHLPRV_IsValidPageInBuff(p_ptCtx, pageBuff, p_pageL);
+                l_eRes = eFSS_UTILSHLPRV_IsValidPageInBuff(p_ptCbCtx, pageBuff, p_pageL);
             }
         }
 	}
@@ -591,7 +655,7 @@ e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_IsValidPage(t_eFSS_TYPE_CbCtx* const p_ptC
 	return l_eRes;
 }
 
-e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_WritePagePrmNUpdateCrc(t_eFSS_TYPE_CbCtx* const p_ptCtx, const uint32_t p_uPageIdx, uint8_t* const pageBuff,
+e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_WritePagePrmNUpdateCrc(t_eFSS_TYPE_CbCtx* const p_ptCbCtx, const uint32_t p_uPageIdx, uint8_t* const pageBuff,
                                    uint8_t* const p_pageL, const s_prv_pagePrm* prmPage, uint8_t* const pageBuffS, uint8_t* const p_pageLS, const uint32_t p_uReTry)
 {
     /* Local variable */

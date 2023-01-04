@@ -60,74 +60,80 @@ typedef enum
 e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_GetMetaFromBuff(const uint8_t* p_puPageBuf, const uint32_t p_uPageL,
                                                       t_eFSS_TYPE_PageMeta* const p_ptPagePrm);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /**
- * @brief       Erase a specified page
+ * @brief       Set the metadata of a page inside a buffer
  *
- * @param[in]   p_ptCtx       - Erase function context
- * @param[in]   p_uPageIndx   - Page index we want to erase
- * @param[in]   p_uReTry      - Erase function pointer
+ * @param[in]   p_puPageBuf   - Pointer to a buffer page
+ * @param[in]   p_uPageL      - Size of the p_puPageBuf buffer
+ * @param[in]   p_ptPagePrm   - Pointer to the page metadata that need to be inserted
  *
  * @return      e_eFSS_UTILSLLPRV_RES_OK                - Operation ended successfully
  *              e_eFSS_UTILSLLPRV_RES_BADPOINTER        - In case of bad pointer passed to the function
- *              e_eFSS_UTILSLLPRV_RES_CLBCKREPORTERROR  - Error reported from the callback
+ *              e_eFSS_UTILSHLPRV_RES_BADPARAM          - In case of bad parameter passed to the function
  */
-e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_SetMetaInBuff(uint8_t* const pageBuff, const uint32_t p_pageL,
-                                                      t_eFSS_TYPE_PageMeta* const pagePrm);
+e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_SetMetaInBuff(uint8_t* const p_puPageBuf, const uint32_t p_uPageL,
+                                                    t_eFSS_TYPE_PageMeta* const p_ptPagePrm);
+
 /**
- * @brief       Erase a specified page
+ * @brief       Set the crc field of metadata inside a passed buffer
  *
- * @param[in]   p_ptCtx       - Erase function context
- * @param[in]   p_uPageIndx   - Page index we want to erase
- * @param[in]   p_uReTry      - Erase function pointer
+ * @param[in]   p_puPageBuf   - Pointer to a buffer page
+ * @param[in]   p_uPageL      - Size of the p_puPageBuf buffer
+ * @param[in]   p_uCrcToSet   - Crc to set in the page metadata
  *
  * @return      e_eFSS_UTILSLLPRV_RES_OK                - Operation ended successfully
  *              e_eFSS_UTILSLLPRV_RES_BADPOINTER        - In case of bad pointer passed to the function
- *              e_eFSS_UTILSLLPRV_RES_CLBCKREPORTERROR  - Error reported from the callback
+ *              e_eFSS_UTILSHLPRV_RES_BADPARAM          - In case of bad parameter passed to the function
  */
-e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_SetCrcMetaInBuff(uint8_t* const pageBuff, const uint32_t p_pageL,
+e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_SetCrcMetaInBuff(uint8_t* const p_puPageBuf, const uint32_t p_uPageL,
                                                        const uint32_t p_uCrcToSet);
 
 /**
- * @brief       Erase a specified page
+ * @brief       Calculate the CRC value that must be saved toghether with the page metadata from a buffer of the page
  *
- * @param[in]   p_ptCtx       - Erase function context
- * @param[in]   p_uPageIndx   - Page index we want to erase
- * @param[in]   p_uReTry      - Erase function pointer
+ * @param[in]   p_ptCbCtx     - Pointer to all callback context
+ * @param[in]   p_puPageBuf   - Pointer to a buffer page
+ * @param[in]   p_uPageL      - Size of the p_puPageBuf buffer
+ * @param[out]  p_puCrcCalc   - Pointer where the calculated CRC will be placed
  *
  * @return      e_eFSS_UTILSLLPRV_RES_OK                - Operation ended successfully
  *              e_eFSS_UTILSLLPRV_RES_BADPOINTER        - In case of bad pointer passed to the function
- *              e_eFSS_UTILSLLPRV_RES_CLBCKREPORTERROR  - Error reported from the callback
+ *              e_eFSS_UTILSHLPRV_RES_BADPARAM          - In case of bad parameter passed to the function
+ *              e_eFSS_UTILSHLPRV_RES_CLBCKCRCERR       - Error reported from the callback
  */
-e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_CalcPageMetaCrcInBuff(t_eFSS_TYPE_CbCtx* const p_ptCtx, uint8_t* const pageBuff,
-                                                            const uint32_t p_pageL, uint32_t* const p_puCrcCalc);
+e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_CalcMetaCrcInBuff(t_eFSS_TYPE_CbCtx* const p_ptCbCtx, uint8_t* const p_puPageBuf,
+                                                        const uint32_t p_uPageL, uint32_t* const p_puCrcCalc);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /**
  * @brief       Erase a specified page
  *
- * @param[in]   p_ptCtx       - Erase function context
+ * @param[in]   p_ptCbCtx       - Erase function context
  * @param[in]   p_uPageIndx   - Page index we want to erase
  * @param[in]   p_uReTry      - Erase function pointer
  *
@@ -142,7 +148,7 @@ e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_SetPageMetaInBuffAndUpdtCrc(uint8_t* const
 /**
  * @brief       Erase a specified page
  *
- * @param[in]   p_ptCtx       - Erase function context
+ * @param[in]   p_ptCbCtx       - Erase function context
  * @param[in]   p_uPageIndx   - Page index we want to erase
  * @param[in]   p_uReTry      - Erase function pointer
  *
@@ -150,13 +156,45 @@ e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_SetPageMetaInBuffAndUpdtCrc(uint8_t* const
  *              e_eFSS_UTILSLLPRV_RES_BADPOINTER        - In case of bad pointer passed to the function
  *              e_eFSS_UTILSLLPRV_RES_CLBCKREPORTERROR  - Error reported from the callback
  */
-e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_IsValidPageInBuff(t_eFSS_TYPE_CbCtx* const p_ptCtx, uint8_t* const pageBuff,
+e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_IsValidPageInBuff(t_eFSS_TYPE_CbCtx* const p_ptCbCtx, uint8_t* const pageBuff,
                                                         const uint32_t p_pageL );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /**
  * @brief       Erase a specified page
  *
- * @param[in]   p_ptCtx       - Erase function context
+ * @param[in]   p_ptCbCtx       - Erase function context
  * @param[in]   p_uPageIndx   - Page index we want to erase
  * @param[in]   p_uReTry      - Erase function pointer
  *
@@ -164,33 +202,8 @@ e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_IsValidPageInBuff(t_eFSS_TYPE_CbCtx* const
  *              e_eFSS_UTILSLLPRV_RES_BADPOINTER        - In case of bad pointer passed to the function
  *              e_eFSS_UTILSLLPRV_RES_CLBCKREPORTERROR  - Error reported from the callback
  */
-e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_IsValidPage(t_eFSS_TYPE_CbCtx* const p_ptCtx, const uint32_t p_uPageIdx,
+e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_IsValidPage(t_eFSS_TYPE_CbCtx* const p_ptCbCtx, const uint32_t p_uPageIdx,
                                                   uint8_t* const pageBuff, const uint32_t p_pageL, const uint32_t p_uReTry );
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 /**
  * Erase and write a page with the param passed, and automatically update the CRC of the page it self
@@ -207,32 +220,8 @@ e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_IsValidPage(t_eFSS_TYPE_CbCtx* const p_ptC
  *         EFSS_RES_ERRORERASE error reported from erase callback
  *         EFSS_RES_OK operation ended successfully
  */
-e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_WritePagePrmNUpdateCrc(t_eFSS_TYPE_CbCtx* const p_ptCtx, const uint32_t p_uPageIdx, uint8_t* const pageBuff,
+e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_WritePagePrmNUpdateCrc(t_eFSS_TYPE_CbCtx* const p_ptCbCtx, const uint32_t p_uPageIdx, uint8_t* const pageBuff,
                                    uint8_t* const p_pageL, const s_prv_pagePrm* prmPage, uint8_t* const pageBuffS, uint8_t* const p_pageLS, const uint32_t p_uReTry);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 /**
  * Read a page and load it in the buffer, and copy data param in pagePrm also
