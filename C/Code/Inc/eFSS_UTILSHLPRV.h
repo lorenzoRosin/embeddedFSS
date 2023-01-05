@@ -288,7 +288,6 @@ e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_VerifyNRipristBkup( t_eFSS_TYPE_CbCtx* con
                                                           uint8_t* const p_puDataR, const uint32_t p_uDataRLen,
                                                           const uint32_t p_uOrigIndx, const uint32_t p_uBackupIndx );
 
-
 /**
  * @brief       Digest a crc using a seed (first calc) or the previous Crc (digest)
  *

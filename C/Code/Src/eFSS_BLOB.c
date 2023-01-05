@@ -21,8 +21,9 @@
  *  PRIVATE STATIC FUNCTION DECLARATION
  **********************************************************************************************************************/
 static bool_t eFSS_BLOB_IsStatusStillCoherent(const t_eFSS_BLOB_Ctx* p_ptCtx);
-static e_eFSS_BLOB_RES eFSS_BLOB_AreOriValid(const t_eFSS_BLOB_Ctx* p_ptCtx, bool_t* p_pbAreValid, uint32_t* p_puCtr);
-static e_eFSS_BLOB_RES eFSS_BLOB_AreBckUpValid(const t_eFSS_BLOB_Ctx* p_ptCtx, bool_t* p_pbAreValid, uint32_t* p_puCtr);
+static e_eFSS_BLOB_RES eFSS_BLOB_HLtoBLOBRes(const e_eFSS_UTILSHLPRV_RES p_eHLRes);
+static e_eFSS_BLOB_RES eFSS_BLOB_AreOriValid(const t_eFSS_BLOB_Ctx* p_ptCtx, bool_t* p_pbAreValid, t_eFSS_TYPE_PageMeta* p_ptMeta);
+static e_eFSS_BLOB_RES eFSS_BLOB_AreBckUpValid(const t_eFSS_BLOB_Ctx* p_ptCtx, bool_t* p_pbAreValid, t_eFSS_TYPE_PageMeta* p_ptMeta);
 
 
 
@@ -113,8 +114,13 @@ static bool_t eFSS_BLOB_IsStatusStillCoherent(const t_eFSS_BLOB_Ctx* p_ptCtx)
     return l_eRes;
 }
 
+static e_eFSS_BLOB_RES eFSS_BLOB_HLtoBLOBRes(const e_eFSS_UTILSHLPRV_RES p_eHLRes)
+{
 
-static e_eFSS_BLOB_RES eFSS_BLOB_AreOriValid(const t_eFSS_BLOB_Ctx* p_ptCtx, bool_t* p_pbAreValid, uint32_t* p_puCtr)
+
+}
+
+static e_eFSS_BLOB_RES eFSS_BLOB_AreOriValid(const t_eFSS_BLOB_Ctx* p_ptCtx, bool_t* p_pbAreValid, t_eFSS_TYPE_PageMeta* p_ptMeta)
 {
 	/* Local variable return */
 	e_eFSS_BLOB_RES l_eRes;
@@ -123,62 +129,101 @@ static e_eFSS_BLOB_RES eFSS_BLOB_AreOriValid(const t_eFSS_BLOB_Ctx* p_ptCtx, boo
     /* Local variable Cycle data */
     uint32_t l_i;
     t_eFSS_TYPE_PageMeta p_ptPagePrm;
+    t_eFSS_TYPE_PageMeta p_ptPagePrmFirst;
     bool_t l_pbIsValidPage;
-
-    /* Local variable return data */
-    uint32_t l_uValidCtr;
-    uint32_t l_uLastReadInc;
-
-
+    bool_t l_pbIsValidSequence;
+    uint32_t l_uDigestCrc32;
 
 	/* Check pointer validity */
-	if( ( NULL == p_ptCtx ) || ( NULL == p_pbAreValid ) || ( NULL == p_puCtr ) )
+	if( ( NULL == p_ptCtx ) || ( NULL == p_pbAreValid ) || ( NULL == p_ptMeta ) )
 	{
 		l_eRes = e_eFSS_BLOB_RES_BADPOINTER;
 	}
 	else
 	{
+        /* Init variable */
         l_eRes = e_eFSS_BLOB_RES_OK;
+        l_pbIsValidSequence = true;
+        l_i = 0u;
 
-        for( l_i = 0u; l_i < p_ptCtx->uNPage / 2u; l_i++)
+        while( (l_i < p_ptCtx->uNPage / 2u)  && ( true == l_pbIsValidSequence ) )
         {
             /* Read a page */
             l_eHlRes = eFSS_UTILSHLPRV_ReadPageNPrm(p_ptCtx->ptCtxCb, l_i,  p_ptCtx->puBuff, p_ptCtx->uBuffL,
                                                     &p_ptPagePrm, p_ptCtx->uReTry);
-            if( e_eFSS_UTILSHLPRV_RES_OK == l_eHlRes )
+            l_eRes = eFSS_BLOB_HLtoBLOBRes(l_eHlRes);
+            if( e_eFSS_BLOB_RES_OK == l_eRes )
             {
                 /* Verify if correct */
                 l_eHlRes = eFSS_UTILSHLPRV_IsValidPageInBuff(p_ptCtx->ptCtxCb, p_ptCtx->puBuff, p_ptCtx->uBuffL,
                                                              &l_pbIsValidPage);
-                if( e_eFSS_UTILSHLPRV_RES_OK == l_eHlRes )
+                l_eRes = eFSS_BLOB_HLtoBLOBRes(l_eHlRes);
+                if( e_eFSS_BLOB_RES_OK == l_eRes )
                 {
                     if( true == l_pbIsValidPage)
                     {
-                        l_uValidCtr++;
-
                         if( 0u == l_i )
                         {
                             /* First run, save seq number  */
-                            l_uLastReadInc = p_ptPagePrm.uPageSequentialN;
+                            p_ptPagePrmFirst = p_ptPagePrm;
+
+                            /* Calc CRC of whole data starting from here */
+                            l_eHlRes = eFSS_UTILSHLPRV_CrcDigest(p_ptCtx->ptCtxCb, MAX_UINT32VAL, p_ptCtx->puBuff , p_ptCtx->uBuffL - EFSS_PAGEMETASIZE, &l_uDigestCrc32);
+                            l_eRes = eFSS_BLOB_HLtoBLOBRes(l_eHlRes);
+                            if( e_eFSS_BLOB_RES_OK != l_eRes )
+                            {
+                                l_pbIsValidSequence = false;
+                            }
                         }
                         else
                         {
-                            if( p_ptPagePrm.uPageSequentialN != l_uLastReadInc)
+                            if( ( p_ptPagePrm.uPageSequentialN != p_ptPagePrmFirst.uPageSequentialN ) ||
+                                ( p_ptPagePrm.uPageUseSpecific1 != p_ptPagePrmFirst.uPageUseSpecific1 ) ||
+                                ( p_ptPagePrm.uPageUseSpecific2 != p_ptPagePrmFirst.uPageUseSpecific2 ) )
                             {
                                 /* Not valid */
+                                l_pbIsValidSequence = false;
+                            }
+                            else
+                            {
+                                /* Calculate the whole CRC */
+                                l_eHlRes = eFSS_UTILSHLPRV_CrcDigest(p_ptCtx->ptCtxCb, l_uDigestCrc32, p_ptCtx->puBuff , p_ptCtx->uBuffL - EFSS_PAGEMETASIZE, &l_uDigestCrc32);
+                                l_eRes = eFSS_BLOB_HLtoBLOBRes(l_eHlRes);
+                                if( e_eFSS_BLOB_RES_OK != l_eRes )
+                                {
+                                    l_pbIsValidSequence = false;
+                                }
                             }
                         }
                     }
+                    else
+                    {
+                        l_pbIsValidSequence = false;
+                    }
+                }
+                else
+                {
+                    l_pbIsValidSequence = false;
                 }
             }
+            else
+            {
+                l_pbIsValidSequence = false;
+            }
+
+            l_i++;
         }
 
-        if( e_eFSS_BLOB_RES_OK == l_eRes )
+        if( true == l_pbIsValidSequence )
         {
-            if()
+            if( p_ptPagePrmFirst.uPageUseSpecific2 == l_uDigestCrc32 )
             {
                 *p_pbAreValid = true;
-                *p_puCtr = l_uLastReadInc;
+                *p_ptMeta = p_ptPagePrmFirst;
+            }
+            else
+            {
+                *p_pbAreValid = false;
             }
         }
 	}
@@ -187,7 +232,113 @@ static e_eFSS_BLOB_RES eFSS_BLOB_AreOriValid(const t_eFSS_BLOB_Ctx* p_ptCtx, boo
 }
 
 
-static e_eFSS_BLOB_RES eFSS_BLOB_AreBckUpValid(const t_eFSS_BLOB_Ctx* p_ptCtx, bool_t* p_pbAreValid, uint32_t* p_puCtr)
+static e_eFSS_BLOB_RES eFSS_BLOB_AreBckUpValid(const t_eFSS_BLOB_Ctx* p_ptCtx, bool_t* p_pbAreValid, t_eFSS_TYPE_PageMeta* p_ptMeta)
 {
+	/* Local variable return */
+	e_eFSS_BLOB_RES l_eRes;
+    e_eFSS_UTILSHLPRV_RES l_eHlRes;
 
+    /* Local variable Cycle data */
+    uint32_t l_i;
+    t_eFSS_TYPE_PageMeta p_ptPagePrm;
+    t_eFSS_TYPE_PageMeta p_ptPagePrmFirst;
+    bool_t l_pbIsValidPage;
+    bool_t l_pbIsValidSequence;
+    uint32_t l_uDigestCrc32;
+
+	/* Check pointer validity */
+	if( ( NULL == p_ptCtx ) || ( NULL == p_pbAreValid ) || ( NULL == p_ptMeta ) )
+	{
+		l_eRes = e_eFSS_BLOB_RES_BADPOINTER;
+	}
+	else
+	{
+        /* Init variable */
+        l_eRes = e_eFSS_BLOB_RES_OK;
+        l_pbIsValidSequence = true;
+        l_i = 0u;
+
+        while( (l_i < p_ptCtx->uNPage / 2u)  && ( true == l_pbIsValidSequence ) )
+        {
+            /* Read a page */
+            l_eHlRes = eFSS_UTILSHLPRV_ReadPageNPrm(p_ptCtx->ptCtxCb, l_i,  p_ptCtx->puBuff, p_ptCtx->uBuffL,
+                                                    &p_ptPagePrm, p_ptCtx->uReTry);
+            l_eRes = eFSS_BLOB_HLtoBLOBRes(l_eHlRes);
+            if( e_eFSS_BLOB_RES_OK == l_eRes )
+            {
+                /* Verify if correct */
+                l_eHlRes = eFSS_UTILSHLPRV_IsValidPageInBuff(p_ptCtx->ptCtxCb, p_ptCtx->puBuff, p_ptCtx->uBuffL,
+                                                             &l_pbIsValidPage);
+                l_eRes = eFSS_BLOB_HLtoBLOBRes(l_eHlRes);
+                if( e_eFSS_BLOB_RES_OK == l_eRes )
+                {
+                    if( true == l_pbIsValidPage)
+                    {
+                        if( 0u == l_i )
+                        {
+                            /* First run, save seq number  */
+                            p_ptPagePrmFirst = p_ptPagePrm;
+
+                            /* Calc CRC of whole data starting from here */
+                            l_eHlRes = eFSS_UTILSHLPRV_CrcDigest(p_ptCtx->ptCtxCb, MAX_UINT32VAL, p_ptCtx->puBuff , p_ptCtx->uBuffL - EFSS_PAGEMETASIZE, &l_uDigestCrc32);
+                            l_eRes = eFSS_BLOB_HLtoBLOBRes(l_eHlRes);
+                            if( e_eFSS_BLOB_RES_OK != l_eRes )
+                            {
+                                l_pbIsValidSequence = false;
+                            }
+                        }
+                        else
+                        {
+                            if( ( p_ptPagePrm.uPageSequentialN != p_ptPagePrmFirst.uPageSequentialN ) ||
+                                ( p_ptPagePrm.uPageUseSpecific1 != p_ptPagePrmFirst.uPageUseSpecific1 ) ||
+                                ( p_ptPagePrm.uPageUseSpecific2 != p_ptPagePrmFirst.uPageUseSpecific2 ) )
+                            {
+                                /* Not valid */
+                                l_pbIsValidSequence = false;
+                            }
+                            else
+                            {
+                                /* Calculate the whole CRC */
+                                l_eHlRes = eFSS_UTILSHLPRV_CrcDigest(p_ptCtx->ptCtxCb, l_uDigestCrc32, p_ptCtx->puBuff , p_ptCtx->uBuffL - EFSS_PAGEMETASIZE, &l_uDigestCrc32);
+                                l_eRes = eFSS_BLOB_HLtoBLOBRes(l_eHlRes);
+                                if( e_eFSS_BLOB_RES_OK != l_eRes )
+                                {
+                                    l_pbIsValidSequence = false;
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        l_pbIsValidSequence = false;
+                    }
+                }
+                else
+                {
+                    l_pbIsValidSequence = false;
+                }
+            }
+            else
+            {
+                l_pbIsValidSequence = false;
+            }
+
+            l_i++;
+        }
+
+        if( true == l_pbIsValidSequence )
+        {
+            if( p_ptPagePrmFirst.uPageUseSpecific2 == l_uDigestCrc32 )
+            {
+                *p_pbAreValid = true;
+                *p_ptMeta = p_ptPagePrmFirst;
+            }
+            else
+            {
+                *p_pbAreValid = false;
+            }
+        }
+	}
+
+	return l_eRes;
 }

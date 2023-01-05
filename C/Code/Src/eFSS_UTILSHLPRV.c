@@ -834,6 +834,36 @@ e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_VerifyNRipristBkup( t_eFSS_TYPE_CbCtx* con
     return l_eRes;
 }
 
+e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_CrcDigest( t_eFSS_TYPE_CbCtx* const p_ptCbCtx, const uint32_t p_uSeedOrCrc,
+                                                 uint8_t* const p_puData, const uint32_t p_uDataLen,
+                                                 uint32_t* const p_puCrcCal )
+{
+    /* Local variable */
+	e_eFSS_UTILSHLPRV_RES l_eRes;
+    e_eFSS_UTILSLLPRV_RES l_eResLL;
+
+	/* Check pointer validity */
+	if( ( NULL == p_ptCbCtx ) || ( NULL == p_puData ) || ( NULL == p_puCrcCal ) )
+	{
+		l_eRes = e_eFSS_UTILSHLPRV_RES_BADPOINTER;
+	}
+    else
+    {
+        /* Check data validity */
+        if( p_uDataLen <= 0u )
+        {
+            l_eRes = e_eFSS_UTILSHLPRV_RES_BADPARAM;
+        }
+        else
+        {
+            /* Read the page to clone */
+            l_eResLL = eFSS_UTILSLLPRV_CalcCrc32CS(p_ptCbCtx, p_uSeedOrCrc, p_puData, p_uDataLen, p_puCrcCal);
+            l_eRes = eFSS_UTILSHLPRV_LLtoHLRes(l_eResLL);
+        }
+    }
+
+    return l_eRes;
+}
 
 
 /***********************************************************************************************************************
