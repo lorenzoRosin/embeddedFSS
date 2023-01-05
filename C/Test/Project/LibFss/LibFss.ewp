@@ -1111,9 +1111,6 @@
         </file>
         <file>
             <name>$PROJ_DIR$\..\..\..\Code\Inc\eFSS_DB.h</name>
-            <excluded>
-                <configuration>Library</configuration>
-            </excluded>
         </file>
         <file>
             <name>$PROJ_DIR$\..\..\..\Code\Inc\eFSS_LOG.h</name>
@@ -1159,9 +1156,6 @@
         </file>
         <file>
             <name>$PROJ_DIR$\..\..\..\Code\Src\eFSS_DB.c</name>
-            <excluded>
-                <configuration>Library</configuration>
-            </excluded>
         </file>
         <file>
             <name>$PROJ_DIR$\..\..\..\Code\Src\eFSS_LOG.c</name>

@@ -1,7 +1,7 @@
 /**
  * @file       eFSS_LOG.h
  *
- * @brief      High level utils for fail safe storage
+ * @brief      LOG module
  *
  * @author     Lorenzo Rosin
  *
@@ -31,20 +31,26 @@ extern "C" {
 typedef enum
 {
     e_eFSS_LOG_RES_OK = 0,
+    e_eFSS_LOG_RES_OK_BKP_RCVRD,
     e_eFSS_LOG_RES_BADPARAM,
     e_eFSS_LOG_RES_BADPOINTER,
     e_eFSS_LOG_RES_CLBCKREPORTERROR,
-    e_eFSS_LOG_RES_NOTVALIDPAGE
+    e_eFSS_LOG_RES_NOTVALIDBLOB,
+    e_eFSS_LOG_RES_CORRUPTCTX,
+    e_eFSS_LOG_RES_NOINITLIB,
 }e_eFSS_LOG_RES;
 
 typedef struct
 {
-    bool_t   bIsInitCtx;
-    t_eFSS_TYPE_CbCtx* p_ptCtxCb;
-	uint8_t* puBuff;
-	uint32_t uBuffL;
+    bool_t   bIsInit;
+    t_eFSS_TYPE_CbCtx* ptCtxCb;
+	uint8_t* puBuff1;
+	uint32_t uBuff1L;
+	uint8_t* puBuff2;
+	uint32_t uBuff2L;
+    uint32_t uNPage;
     uint32_t uPageSize;
-    uint32_t uTotalPage
+    uint32_t uReTry;
     uint32_t uNewestPage;
     uint32_t uOldestPage;
     uint32_t uLogVersion;
@@ -67,8 +73,9 @@ typedef struct
  *		        e_eFSS_LOG_RES_BADPARAM      - In case of an invalid parameter passed to the function
  *              e_eFSS_LOG_RES_OK            - Operation ended correctly
  */
-e_eFSS_LOG_RES eFSS_LOG_InitCtx(t_eFSS_LOG_Ctx* const p_ptCtx, t_eFSS_TYPE_CbCtx* const p_ptCtxCb, uint32_t p_uPageToUse,
-                               uint32_t p_uPageSize, uint8_t* p_puBuff, uint32_t p_uBuffL);
+e_eFSS_LOG_RES eFSS_LOG_InitCtx(t_eFSS_LOG_Ctx* const p_ptCtx, t_eFSS_TYPE_CbCtx* const p_ptCtxCb,
+                                const uint32_t p_uPageToUse, const uint32_t p_uPageSize, uint8_t* const p_puBuff,
+                                uint32_t p_uBuffL);
 
 /**
  * @brief       Check if the lib is initialized
@@ -105,7 +112,20 @@ e_eFSS_LOG_RES eFSS_LOG_GetStorageStatus(t_eFSS_LOG_Ctx* const p_ptCtx, t_eFSS_T
  *		        e_eFSS_LOG_RES_BADPARAM      - In case of an invalid parameter passed to the function
  *              e_eFSS_LOG_RES_OK            - Operation ended correctly
  */
-e_eFSS_LOG_RES eFSS_LOG_Format(t_eFSS_BLOB_Ctx* const p_ptCtx);
+e_eFSS_LOG_RES eFSS_LOG_Format(t_eFSS_LOG_Ctx* const p_ptCtx);
+
+
+/**
+ * @brief       Check if the lib is initialized
+ *
+ * @param[in]   p_ptCtx       - Byte stuffer context
+ * @param[out]  p_pbIsInit    - Pointer to a bool_t variable that will be filled with true if the lib is initialized
+ *
+ * @return      e_eFSS_LOG_RES_BADPOINTER    - In case of bad pointer passed to the function
+ *              e_eFSS_LOG_RES_OK            - Operation ended correctly
+ */
+e_eFSS_LOG_RES eFSS_LOG_GetLogInfo(t_eFSS_LOG_Ctx* const p_ptCtx, uint32_t *NewlogIndex, uint32_t *OldlogIndex,
+                                   uint32_t *NpageValorized, uint32_t *NpageUtilizable, uint32_t *LogVersion);
 
 /**
  * @brief       Check if the lib is initialized
@@ -119,21 +139,17 @@ e_eFSS_LOG_RES eFSS_LOG_Format(t_eFSS_BLOB_Ctx* const p_ptCtx);
 e_eFSS_LOG_RES eFSS_LOG_AddLog(t_eFSS_LOG_Ctx* const p_ptCtx, uint8_t* p_puLogToSave, uint32_t p_uLogL);
 
 
-e_eFSS_LOG_RES eFSS_LOG_GetCurrentLogPageIndex(uint32_t *logIndex);
-
-
-e_eFSS_LOG_RES eFSS_LOG_GetOldestLogPageIndex(uint32_t *logIndex);
-
-
-e_eFSS_LOG_RES eFSS_LOG_GetNumberOfLogPageValorized(uint32_t *num);
-
-
-e_eFSS_LOG_RES eFSS_LOG_GetLogVersion(uint32_t *logVersion);
-
-
-e_eFSS_LOG_RES eFSS_LOG_GetNumOfTotalLogPage(uint32_t *maxLogPages);
-
-e_eFSS_LOG_RES eFSS_LOG_LogOfASpecificPage(uint32_t *maxLogPages);
+/**
+ * @brief       Check if the lib is initialized
+ *
+ * @param[in]   p_ptCtx       - Byte stuffer context
+ * @param[out]  p_pbIsInit    - Pointer to a bool_t variable that will be filled with true if the lib is initialized
+ *
+ * @return      e_eFSS_LOG_RES_BADPOINTER    - In case of bad pointer passed to the function
+ *              e_eFSS_LOG_RES_OK            - Operation ended correctly
+ */
+e_eFSS_LOG_RES eFSS_LOG_GetLogOfASpecificPage(t_eFSS_LOG_Ctx* const p_ptCtx, uint8_t* p_puLogBuff, uint32_t* p_puLogBuffL,
+                                              uint32_t *p_puNLogGetted);
 
 #ifdef __cplusplus
 } /* extern "C" */

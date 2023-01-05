@@ -124,7 +124,7 @@ e_eCU_BSTF_RES eFSS_DB_IsFlashInit(t_eFSS_DB_Ctx* const p_ptCtx, bool_t* p_pbIsI
  * @return      e_eCU_BSTF_RES_BADPOINTER    - In case of bad pointer passed to the function
  *              e_eCU_BSTF_RES_OK            - Operation ended correctly
  */
-e_eCU_BSTF_RES eFSS_DB_SaveElementRaw(t_eFSS_DB_Ctx* const p_ptCtx, bool_t* p_pbIsInit);
+e_eCU_BSTF_RES eFSS_DB_SaveElemen(t_eFSS_DB_Ctx* const p_ptCtx, bool_t* p_pbIsInit);
 
 /**
  * @brief       Check if the lib is initialized
@@ -135,95 +135,8 @@ e_eCU_BSTF_RES eFSS_DB_SaveElementRaw(t_eFSS_DB_Ctx* const p_ptCtx, bool_t* p_pb
  * @return      e_eCU_BSTF_RES_BADPOINTER    - In case of bad pointer passed to the function
  *              e_eCU_BSTF_RES_OK            - Operation ended correctly
  */
-e_eCU_BSTF_RES eFSS_DB_SaveElementU8(t_eFSS_DB_Ctx* const p_ptCtx, bool_t* p_pbIsInit);
+e_eCU_BSTF_RES eFSS_DB_GetElement(t_eFSS_DB_Ctx* const p_ptCtx, bool_t* p_pbIsInit);
 
-/**
- * @brief       Check if the lib is initialized
- *
- * @param[in]   p_ptCtx       - Byte stuffer context
- * @param[out]  p_pbIsInit    - Pointer to a bool_t variable that will be filled with true if the lib is initialized
- *
- * @return      e_eCU_BSTF_RES_BADPOINTER    - In case of bad pointer passed to the function
- *              e_eCU_BSTF_RES_OK            - Operation ended correctly
- */
-e_eCU_BSTF_RES eFSS_DB_SaveElementU16(t_eFSS_DB_Ctx* const p_ptCtx, bool_t* p_pbIsInit);
-
-/**
- * @brief       Check if the lib is initialized
- *
- * @param[in]   p_ptCtx       - Byte stuffer context
- * @param[out]  p_pbIsInit    - Pointer to a bool_t variable that will be filled with true if the lib is initialized
- *
- * @return      e_eCU_BSTF_RES_BADPOINTER    - In case of bad pointer passed to the function
- *              e_eCU_BSTF_RES_OK            - Operation ended correctly
- */
-e_eCU_BSTF_RES eFSS_DB_SaveElementU32(t_eFSS_DB_Ctx* const p_ptCtx, bool_t* p_pbIsInit);
-
-/**
- * @brief       Check if the lib is initialized
- *
- * @param[in]   p_ptCtx       - Byte stuffer context
- * @param[out]  p_pbIsInit    - Pointer to a bool_t variable that will be filled with true if the lib is initialized
- *
- * @return      e_eCU_BSTF_RES_BADPOINTER    - In case of bad pointer passed to the function
- *              e_eCU_BSTF_RES_OK            - Operation ended correctly
- */
-e_eCU_BSTF_RES eFSS_DB_SaveElementU64(t_eFSS_DB_Ctx* const p_ptCtx, bool_t* p_pbIsInit);
-
-/**
- * @brief       Check if the lib is initialized
- *
- * @param[in]   p_ptCtx       - Byte stuffer context
- * @param[out]  p_pbIsInit    - Pointer to a bool_t variable that will be filled with true if the lib is initialized
- *
- * @return      e_eCU_BSTF_RES_BADPOINTER    - In case of bad pointer passed to the function
- *              e_eCU_BSTF_RES_OK            - Operation ended correctly
- */
-e_eCU_BSTF_RES eFSS_DB_GetElementRaw(t_eFSS_DB_Ctx* const p_ptCtx, bool_t* p_pbIsInit);
-
-/**
- * @brief       Check if the lib is initialized
- *
- * @param[in]   p_ptCtx       - Byte stuffer context
- * @param[out]  p_pbIsInit    - Pointer to a bool_t variable that will be filled with true if the lib is initialized
- *
- * @return      e_eCU_BSTF_RES_BADPOINTER    - In case of bad pointer passed to the function
- *              e_eCU_BSTF_RES_OK            - Operation ended correctly
- */
-e_eCU_BSTF_RES eFSS_DB_GetElementU8(t_eFSS_DB_Ctx* const p_ptCtx, bool_t* p_pbIsInit);
-
-/**
- * @brief       Check if the lib is initialized
- *
- * @param[in]   p_ptCtx       - Byte stuffer context
- * @param[out]  p_pbIsInit    - Pointer to a bool_t variable that will be filled with true if the lib is initialized
- *
- * @return      e_eCU_BSTF_RES_BADPOINTER    - In case of bad pointer passed to the function
- *              e_eCU_BSTF_RES_OK            - Operation ended correctly
- */
-e_eCU_BSTF_RES eFSS_DB_GetElementU16(t_eFSS_DB_Ctx* const p_ptCtx, bool_t* p_pbIsInit);
-
-/**
- * @brief       Check if the lib is initialized
- *
- * @param[in]   p_ptCtx       - Byte stuffer context
- * @param[out]  p_pbIsInit    - Pointer to a bool_t variable that will be filled with true if the lib is initialized
- *
- * @return      e_eCU_BSTF_RES_BADPOINTER    - In case of bad pointer passed to the function
- *              e_eCU_BSTF_RES_OK            - Operation ended correctly
- */
-e_eCU_BSTF_RES eFSS_DB_GetElementU32(t_eFSS_DB_Ctx* const p_ptCtx, bool_t* p_pbIsInit);
-
-/**
- * @brief       Check if the lib is initialized
- *
- * @param[in]   p_ptCtx       - Byte stuffer context
- * @param[out]  p_pbIsInit    - Pointer to a bool_t variable that will be filled with true if the lib is initialized
- *
- * @return      e_eCU_BSTF_RES_BADPOINTER    - In case of bad pointer passed to the function
- *              e_eCU_BSTF_RES_OK            - Operation ended correctly
- */
-e_eCU_BSTF_RES eFSS_DB_GetElementU64(t_eFSS_DB_Ctx* const p_ptCtx, bool_t* p_pbIsInit);
 
 
 #ifdef __cplusplus
@@ -233,42 +146,3 @@ e_eCU_BSTF_RES eFSS_DB_GetElementU64(t_eFSS_DB_Ctx* const p_ptCtx, bool_t* p_pbI
 
 
 #endif /* EFSS_DB_H */
-
-
-
-
-
-
-
-
-
-
-
-
-class InOutFlashManager
-{
-  public:
-    InOutFlashManager();
-    ~InOutFlashManager();
-
-    bool init();
-
-    bool saveTempProbeSettings(uint64_t tank_n_wire, uint64_t tank_use470ohm);
-    bool getTempProbeSettings(uint64_t *tank_n_wire, uint64_t *tank_use470ohm);
-
-    bool saveDigitalOutLifeSpawn(uint64_t guarantyCycle, uint64_t guarantyYears);
-    bool getDigitalOutLifeSpawn(uint64_t *guarantyCycle, uint64_t *guarantyYears);
-
-    bool saveAnalogInputCalibrationValue(ANALOG_INPUT_TYPE inputType, float calibValue);
-    bool getAnalogInputCalibrationValue(ANALOG_INPUT_TYPE inputType,  float* calibValue);
-
-
-private:
-
-	bool isValidPageData(bool isMainPage);
-	bool createBackUpPageData();
-	bool regenerateMainPageData();
-	bool integrityCreatorData();
-   bool verifyParameterVersion();
-	bool saveData(DEVICE_INOUT_FLASH *newDataToSave, bool isMainPage);
-};
