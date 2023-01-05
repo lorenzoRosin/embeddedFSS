@@ -290,4 +290,53 @@ e_eFSS_UTILSLLPRV_RES eFSS_UTILSLLPRV_CalcCrc32( t_eFSS_TYPE_CbCtx* const p_ptCb
 	return l_eRes;
 }
 
+e_eFSS_UTILSLLPRV_RES eFSS_UTILSLLPRV_CalcCrc32CS( t_eFSS_TYPE_CbCtx* const p_ptCbCtx, uint32_t p_uSeed,
+                                                   uint8_t* const p_puData, const uint32_t p_uDataLen,
+                                                   uint32_t* const p_puCrcCal )
+{
+	/* Local variable */
+	e_eFSS_UTILSLLPRV_RES l_eRes;
+    bool_t l_bCbRes;
 
+	/* Check pointer validity */
+	if( ( NULL == p_ptCbCtx ) || ( NULL == p_puData ) || ( NULL == p_puCrcCal ) )
+	{
+		l_eRes = e_eFSS_UTILSLLPRV_RES_BADPOINTER;
+	}
+	else
+	{
+        /* Check pointer validity */
+        if( ( NULL == p_ptCbCtx->ptCtxErase ) || ( NULL == p_ptCbCtx->fErase ) ||
+            ( NULL == p_ptCbCtx->ptCtxWrite ) || ( NULL == p_ptCbCtx->fWrite ) ||
+            ( NULL == p_ptCbCtx->ptCtxRead  ) || ( NULL == p_ptCbCtx->fRead  ) ||
+            ( NULL == p_ptCbCtx->ptCtxCrc32 ) || ( NULL == p_ptCbCtx->fCrc32 ) )
+        {
+            l_eRes = e_eFSS_UTILSLLPRV_RES_BADPOINTER;
+        }
+        else
+        {
+            /* Check data validity */
+            if( p_uDataLen <= 0u )
+            {
+                l_eRes = e_eFSS_UTILSLLPRV_RES_BADPARAM;
+            }
+            else
+            {
+                /* Read */
+                l_bCbRes = (*(p_ptCbCtx->fCrc32))(p_ptCbCtx->ptCtxCrc32, p_uSeed, p_puData, p_uDataLen,
+                                                  p_puCrcCal);
+
+                if( false == l_bCbRes )
+                {
+                    l_eRes = e_eFSS_UTILSLLPRV_RES_CLBCKCRCERR;
+                }
+                else
+                {
+                    l_eRes = e_eFSS_UTILSLLPRV_RES_OK;
+                }
+            }
+        }
+	}
+
+	return l_eRes;
+}

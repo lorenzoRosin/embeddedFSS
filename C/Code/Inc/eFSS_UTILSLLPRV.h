@@ -119,6 +119,23 @@ e_eFSS_UTILSLLPRV_RES eFSS_UTILSLLPRV_CalcCrc32( t_eFSS_TYPE_CbCtx* const p_ptCb
                                                  uint8_t* const p_puData, const uint32_t p_uDataLen,
                                                  uint32_t* const p_puCrcCal );
 
+/**
+ * @brief       Calculate the CRC 32 of a passed buffer using custom seed
+ *
+ * @param[in]   p_ptCbCtx     - Call back functions contexts
+ * @param[in]   p_puData      - Pointer to the data we want to calculate the CRC
+ * @param[in]   p_uDataLen    - size of the p_puData buffer
+ * @param[out]  p_puCrcCal    - Pointer where the calculated CRc result will be saved
+ *
+ * @return      e_eFSS_UTILSLLPRV_RES_OK                - Operation ended successfully
+ *              e_eFSS_UTILSLLPRV_RES_BADPOINTER        - In case of bad pointer passed to the function
+ *              e_eFSS_UTILSLLPRV_RES_BADPARAM          - In case of bad param passed to the function
+ *              e_eFSS_UTILSLLPRV_RES_CLBCKCRCERR       - Error reported from the callback
+ */
+e_eFSS_UTILSLLPRV_RES eFSS_UTILSLLPRV_CalcCrc32CS( t_eFSS_TYPE_CbCtx* const p_ptCbCtx, uint32_t p_uSeed,
+                                                   uint8_t* const p_puData, const uint32_t p_uDataLen,
+                                                   uint32_t* const p_puCrcCal );
+
 
 
 #ifdef __cplusplus

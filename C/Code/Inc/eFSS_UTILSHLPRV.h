@@ -289,6 +289,23 @@ e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_VerifyNRipristBkup( t_eFSS_TYPE_CbCtx* con
                                                           const uint32_t p_uOrigIndx, const uint32_t p_uBackupIndx );
 
 
+/**
+ * @brief       Digest a crc using a seed (first calc) or the previous Crc (digest)
+ *
+ * @param[in]   p_ptCbCtx     - Pointer to all callback context
+ * @param[in]   p_uSeedOrCrc  - Seed or previous CRC calcualted
+ * @param[in]   p_puData      - Data to calc crc
+ * @param[in]   p_uDataLen    - size of the p_puData buffer
+ * @param[in]   p_puCrcCal    - Returned CRC
+ *
+ * @return      e_eFSS_UTILSLLPRV_RES_OK                - Operation ended successfully, page are correct
+ *              e_eFSS_UTILSLLPRV_RES_BADPOINTER        - In case of bad pointer passed to the function
+ *              e_eFSS_UTILSHLPRV_RES_BADPARAM          - In case of bad parameter passed to the function
+ *              e_eFSS_UTILSHLPRV_RES_CLBCKCRCERR       - Error reported from the callback
+ */
+e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_CrcDigest( t_eFSS_TYPE_CbCtx* const p_ptCbCtx, const uint32_t p_uSeedOrCrc,
+                                                 uint8_t* const p_puData, const uint32_t p_uDataLen,
+                                                 uint32_t* const p_puCrcCal );
 
 #ifdef __cplusplus
 } /* extern "C" */
