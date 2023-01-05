@@ -31,18 +31,23 @@ extern "C" {
 typedef enum
 {
     e_eFSS_BLOB_RES_OK = 0,
+    e_eFSS_BLOB_RES_OK_BKP_RCVRD,
     e_eFSS_BLOB_RES_BADPARAM,
     e_eFSS_BLOB_RES_BADPOINTER,
     e_eFSS_BLOB_RES_CLBCKREPORTERROR,
-    e_eFSS_BLOB_RES_NOTVALIDPAGE
+    e_eFSS_BLOB_RES_NOTVALIDBLOB,
+    e_eFSS_BLOB_RES_CORRUPTCTX,
+    e_eFSS_BLOB_RES_NOINITLIB,
 }e_eFSS_BLOB_RES;
 
 typedef struct
 {
     bool_t   bIsInit;
     t_eFSS_TYPE_CbCtx* ptCtxCb;
-	uint8_t* puBuff;
-	uint32_t uBuffL;
+	uint8_t* puBuff1;
+	uint32_t uBuff1L;
+	uint8_t* puBuff2;
+	uint32_t uBuff2L;
     uint32_t uNPage;
     uint32_t uPageSize;
     uint32_t uReTry;
@@ -124,7 +129,7 @@ e_eFSS_BLOB_RES eFSS_BLOB_GetInfo(t_eFSS_BLOB_Ctx* const p_ptCtx, bool_t* p_puBl
  *              e_eFSS_BLOB_RES_OK            - Operation ended correctly
  */
 e_eFSS_BLOB_RES eFSS_BLOB_ReadAllBlob(t_eFSS_BLOB_Ctx* const p_ptCtx, uint8_t* p_puBuff, uint32_t p_uBuffSize,
-                                     uint32_t* p_puReaded);
+                                      uint32_t* p_puReaded);
 
 /**
  * @brief       Write the whole blob

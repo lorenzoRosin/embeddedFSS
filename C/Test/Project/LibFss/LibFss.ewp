@@ -1117,9 +1117,6 @@
         </file>
         <file>
             <name>$PROJ_DIR$\..\..\..\Code\Inc\eFSS_LOG.h</name>
-            <excluded>
-                <configuration>Library</configuration>
-            </excluded>
         </file>
         <file>
             <name>$PROJ_DIR$\..\..\..\Code\Inc\eFSS_STANDARDTYPE.h</name>
@@ -1168,9 +1165,6 @@
         </file>
         <file>
             <name>$PROJ_DIR$\..\..\..\Code\Src\eFSS_LOG.c</name>
-            <excluded>
-                <configuration>Library</configuration>
-            </excluded>
         </file>
         <file>
             <name>$PROJ_DIR$\..\..\..\Code\Src\eFSS_UTILSHLPRV.c</name>

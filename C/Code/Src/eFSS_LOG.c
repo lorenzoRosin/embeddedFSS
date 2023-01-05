@@ -20,10 +20,12 @@
  *  PRIVATE STATIC FUNCTION DECLARATION
  **********************************************************************************************************************/
 static bool_t eFSS_LOG_IsStatusStillCoherent(const t_eFSS_LOG_Ctx* p_ptCtx);
+static e_eFSS_LOG_RES eFSS_LOG_HLtoLogRes(const e_eFSS_UTILSHLPRV_RES p_eHLRes);
 static bool_t eFSS_LOG_LoadIndex(const t_eFSS_LOG_Ctx* p_ptCtx);
 static bool_t eFSS_LOG_LoadIndexFromCache(const t_eFSS_LOG_Ctx* p_ptCtx);
 static bool_t eFSS_LOG_LoadIndexBySearch(const t_eFSS_LOG_Ctx* p_ptCtx);
 static bool_t eFSS_LOG_VerifyVersion(const t_eFSS_LOG_Ctx* p_ptCtx);
+
 
 
 /***********************************************************************************************************************
@@ -143,6 +145,89 @@ static bool_t eFSS_LOG_IsStatusStillCoherent(const t_eFSS_LOG_Ctx* p_ptCtx)
 
     return l_eRes;
 }
+
+static e_eFSS_LOG_RES eFSS_LOG_HLtoLogRes(const e_eFSS_UTILSHLPRV_RES p_eHLRes)
+{
+    e_eFSS_BLOB_RES l_eRes;
+
+    switch(p_eHLRes)
+    {
+        case e_eFSS_UTILSHLPRV_RES_OK:
+        {
+            l_eRes = e_eFSS_BLOB_RES_OK;
+            break;
+        }
+
+        case e_eFSS_UTILSHLPRV_RES_NOTVALIDPAGE:
+        {
+            l_eRes = e_eFSS_BLOB_RES_BADPARAM;
+            break;
+        }
+
+        case e_eFSS_UTILSHLPRV_RES_OK_BKP_RCVRD:
+        {
+            l_eRes = e_eFSS_BLOB_RES_BADPARAM;
+            break;
+        }
+
+        case e_eFSS_UTILSHLPRV_RES_BADPARAM:
+        {
+            l_eRes = e_eFSS_BLOB_RES_BADPARAM;
+            break;
+        }
+
+        case e_eFSS_UTILSHLPRV_RES_BADPOINTER:
+        {
+            l_eRes = e_eFSS_BLOB_RES_BADPOINTER;
+            break;
+        }
+
+        case e_eFSS_UTILSHLPRV_RES_CLBCKERASEERR:
+        {
+            l_eRes = e_eFSS_BLOB_RES_BADPARAM;
+            break;
+        }
+
+        case e_eFSS_UTILSHLPRV_RES_CLBCKWRITEERR:
+        {
+            l_eRes = e_eFSS_BLOB_RES_BADPARAM;
+            break;
+        }
+
+        case e_eFSS_UTILSHLPRV_RES_CLBCKREADERR:
+        {
+            l_eRes = e_eFSS_BLOB_RES_BADPARAM;
+            break;
+        }
+
+        case e_eFSS_UTILSHLPRV_RES_CLBCKCRCERR:
+        {
+            l_eRes = e_eFSS_BLOB_RES_BADPARAM;
+            break;
+        }
+
+        case e_eFSS_UTILSHLPRV_RES_WRITENOMATCHREAD:
+        {
+            l_eRes = e_eFSS_BLOB_RES_BADPARAM;
+            break;
+        }
+
+        case e_eFSS_UTILSHLPRV_RES_CORRUPT:
+        {
+            l_eRes = e_eFSS_BLOB_RES_BADPARAM;
+            break;
+        }
+
+        default:
+        {
+            l_eRes = e_eFSS_BLOB_RES_BADPARAM;
+            break;
+        }
+    }
+
+    return l_eRes;
+}
+
 
 static bool_t eFSS_LOG_LoadIndex(const t_eFSS_LOG_Ctx* p_ptCtx)
 {

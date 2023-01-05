@@ -791,7 +791,7 @@ e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_VerifyNRipristBkup( t_eFSS_TYPE_CbCtx* con
 
                                     if( e_eFSS_UTILSHLPRV_RES_OK == l_eRes )
                                     {
-                                        l_eRes = e_eFSS_UTILSLLPRV_RES_OK_BKP_RCVRD;
+                                        l_eRes = e_eFSS_UTILSHLPRV_RES_OK_BKP_RCVRD;
                                     }
                                 }
                             }
@@ -804,7 +804,7 @@ e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_VerifyNRipristBkup( t_eFSS_TYPE_CbCtx* con
 
                                 if( e_eFSS_UTILSHLPRV_RES_OK == l_eRes )
                                 {
-                                    l_eRes = e_eFSS_UTILSLLPRV_RES_OK_BKP_RCVRD;
+                                    l_eRes = e_eFSS_UTILSHLPRV_RES_OK_BKP_RCVRD;
                                 }
                             }
                             else if( ( true == isOriginValid ) && ( false == isBackupValid ) )
@@ -816,13 +816,13 @@ e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_VerifyNRipristBkup( t_eFSS_TYPE_CbCtx* con
 
                                 if( e_eFSS_UTILSHLPRV_RES_OK == l_eRes )
                                 {
-                                    l_eRes = e_eFSS_UTILSLLPRV_RES_OK_BKP_RCVRD;
+                                    l_eRes = e_eFSS_UTILSHLPRV_RES_OK_BKP_RCVRD;
                                 }
                             }
                             else
                             {
                                 /* No a single valid pages found */
-                                l_eRes = e_eFSS_UTILSLLPRV_RES_NOTVALIDPAGE;
+                                l_eRes = e_eFSS_UTILSHLPRV_RES_NOTVALIDPAGE;
                             }
                         }
                     }
