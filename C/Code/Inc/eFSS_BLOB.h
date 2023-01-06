@@ -32,12 +32,17 @@ typedef enum
 {
     e_eFSS_BLOB_RES_OK = 0,
     e_eFSS_BLOB_RES_OK_BKP_RCVRD,
+    e_eFSS_BLOB_RES_NOTVALIDBLOB,
+    e_eFSS_BLOB_RES_NEWVERSIONBLOB,
+    e_eFSS_BLOB_RES_NOINITLIB,
     e_eFSS_BLOB_RES_BADPARAM,
     e_eFSS_BLOB_RES_BADPOINTER,
-    e_eFSS_BLOB_RES_CLBCKREPORTERROR,
-    e_eFSS_BLOB_RES_NOTVALIDBLOB,
     e_eFSS_BLOB_RES_CORRUPTCTX,
-    e_eFSS_BLOB_RES_NOINITLIB,
+    e_eFSS_BLOB_RES_CLBCKERASEERR,
+    e_eFSS_BLOB_RES_CLBCKWRITEERR,
+    e_eFSS_BLOB_RES_CLBCKREADERR,
+    e_eFSS_BLOB_RES_CLBCKCRCERR,
+    e_eFSS_BLOB_RES_WRITENOMATCHREAD,
 }e_eFSS_BLOB_RES;
 
 typedef struct
@@ -61,12 +66,14 @@ typedef struct
 /**
  * @brief       Initialize the blob module context
  *
- * @param[in]   p_ptCtx       - Blob context
- * @param[in]   p_ptCtxCb     - All callback collection context
- * @param[in]   p_uPageToUse  - How many page use for the blob module
- * @param[in]   p_uPageSize   - Size of the used pages
- * @param[in]   p_puBuff      - Pointer to a buffer used by the modules to make calc
- * @param[in]   p_uBuffL      - Size of p_puBuff
+ * @param[in]   p_ptCtx        - Blob context
+ * @param[in]   p_ptCtxCb      - All callback collection context
+ * @param[in]   p_uPageToUse   - How many page use for the blob module
+ * @param[in]   p_uPageSize    - Size of the used pages
+ * @param[in]   p_puBuff       - Pointer to a buffer used by the modules to make calc
+ * @param[in]   p_uBuffL       - Size of p_puBuff
+ * @param[in]   p_uBlobVersion - Version of the Blob
+ * @param[in]   p_uRetry       - How many time retry basic read write erase operation if error occour
  *
  * @return      e_eFSS_BLOB_RES_BADPOINTER    - In case of bad pointer passed to the function
  *		        e_eFSS_BLOB_RES_BADPARAM      - In case of an invalid parameter passed to the function
@@ -74,7 +81,7 @@ typedef struct
  */
 e_eFSS_BLOB_RES eFSS_BLOB_InitCtx(t_eFSS_BLOB_Ctx* const p_ptCtx, t_eFSS_TYPE_CbCtx* const p_ptCtxCb,
                                   const uint32_t p_uPageToUse, const uint32_t p_uPageSize, uint8_t* const p_puBuff,
-                                  uint32_t p_uBuffL);
+                                  uint32_t p_uBuffL, uint16_t p_uBlobVersion, uint32_t p_uRetry);
 
 /**
  * @brief       Check if the lib is initialized
@@ -88,13 +95,22 @@ e_eFSS_BLOB_RES eFSS_BLOB_InitCtx(t_eFSS_BLOB_Ctx* const p_ptCtx, t_eFSS_TYPE_Cb
 e_eFSS_BLOB_RES eFSS_BLOB_IsInit(t_eFSS_BLOB_Ctx* const p_ptCtx, bool_t* p_pbIsInit);
 
 /**
- * @brief       Initialize the byte stuffer context
+ * @brief       Get the status of the storage
  *
  * @param[in]   p_ptCtx    - Blob context
  *
- * @return      e_eFSS_BLOB_RES_BADPOINTER    - In case of bad pointer passed to the function
- *		        e_eFSS_BLOB_RES_BADPARAM      - In case of an invalid parameter passed to the function
- *              e_eFSS_BLOB_RES_OK            - Operation ended correctly
+ * @return      e_eFSS_BLOB_RES_BADPOINTER         - In case of bad pointer passed to the function
+ *              e_eFSS_BLOB_RES_OK                 - Operation ended correctly
+ *              e_eFSS_BLOB_RES_OK_BKP_RCVRD       - All ok, but some page where recovered
+ *              e_eFSS_BLOB_RES_NOTVALIDBLOB       - No valid blob founded
+ *              e_eFSS_BLOB_RES_NEWVERSIONBLOB     - New version of the blob requested
+ *              e_eFSS_BLOB_RES_NOINITLIB          - Need to init the lib before calling this function
+ *              e_eFSS_BLOB_RES_CORRUPTCTX         - Context is corrupted
+ *              e_eFSS_BLOB_RES_CLBCKERASEERR      - Erase callback returned error
+ *              e_eFSS_BLOB_RES_CLBCKWRITEERR      - Write callback returned error
+ *              e_eFSS_BLOB_RES_CLBCKREADERR       - Read callback returned error
+ *              e_eFSS_BLOB_RES_CLBCKCRCERR        - Crc callback returned error
+ *              e_eFSS_BLOB_RES_WRITENOMATCHREAD   - After Write operation the Read operation readed different data
  */
 e_eFSS_BLOB_RES eFSS_BLOB_GetStorageStatus(t_eFSS_BLOB_Ctx* const p_ptCtx);
 
@@ -103,8 +119,18 @@ e_eFSS_BLOB_RES eFSS_BLOB_GetStorageStatus(t_eFSS_BLOB_Ctx* const p_ptCtx);
  *
  * @param[in]   p_ptCtx    - Blob context
  *
- * @return      e_eFSS_BLOB_RES_BADPOINTER    - In case of bad pointer passed to the function
- *              e_eFSS_BLOB_RES_OK            - Operation ended correctly
+ * @return      e_eFSS_BLOB_RES_BADPOINTER         - In case of bad pointer passed to the function
+ *              e_eFSS_BLOB_RES_OK                 - Operation ended correctly
+ *              e_eFSS_BLOB_RES_OK_BKP_RCVRD       - All ok, but some page where recovered
+ *              e_eFSS_BLOB_RES_NOTVALIDBLOB       - No valid blob founded
+ *              e_eFSS_BLOB_RES_NEWVERSIONBLOB     - New version of the blob requested
+ *              e_eFSS_BLOB_RES_NOINITLIB          - Need to init the lib before calling this function
+ *              e_eFSS_BLOB_RES_CORRUPTCTX         - Context is corrupted
+ *              e_eFSS_BLOB_RES_CLBCKERASEERR      - Erase callback returned error
+ *              e_eFSS_BLOB_RES_CLBCKWRITEERR      - Write callback returned error
+ *              e_eFSS_BLOB_RES_CLBCKREADERR       - Read callback returned error
+ *              e_eFSS_BLOB_RES_CLBCKCRCERR        - Crc callback returned error
+ *              e_eFSS_BLOB_RES_WRITENOMATCHREAD   - After Write operation the Read operation readed different data
  */
 e_eFSS_BLOB_RES eFSS_BLOB_Format(t_eFSS_BLOB_Ctx* const p_ptCtx);
 
@@ -114,8 +140,18 @@ e_eFSS_BLOB_RES eFSS_BLOB_Format(t_eFSS_BLOB_Ctx* const p_ptCtx);
  * @param[in]   p_ptCtx      - Blob context
  * @param[out]  p_puBlobSize - Pointer to a uint32_t that will be filled with the size of the blob
  *
- * @return      e_eFSS_BLOB_RES_BADPOINTER    - In case of bad pointer passed to the function
- *              e_eFSS_BLOB_RES_OK            - Operation ended correctly
+ * @return      e_eFSS_BLOB_RES_BADPOINTER         - In case of bad pointer passed to the function
+ *              e_eFSS_BLOB_RES_OK                 - Operation ended correctly
+ *              e_eFSS_BLOB_RES_OK_BKP_RCVRD       - All ok, but some page where recovered
+ *              e_eFSS_BLOB_RES_NOTVALIDBLOB       - No valid blob founded
+ *              e_eFSS_BLOB_RES_NEWVERSIONBLOB     - New version of the blob requested
+ *              e_eFSS_BLOB_RES_NOINITLIB          - Need to init the lib before calling this function
+ *              e_eFSS_BLOB_RES_CORRUPTCTX         - Context is corrupted
+ *              e_eFSS_BLOB_RES_CLBCKERASEERR      - Erase callback returned error
+ *              e_eFSS_BLOB_RES_CLBCKWRITEERR      - Write callback returned error
+ *              e_eFSS_BLOB_RES_CLBCKREADERR       - Read callback returned error
+ *              e_eFSS_BLOB_RES_CLBCKCRCERR        - Crc callback returned error
+ *              e_eFSS_BLOB_RES_WRITENOMATCHREAD   - After Write operation the Read operation readed different data
  */
 e_eFSS_BLOB_RES eFSS_BLOB_GetInfo(t_eFSS_BLOB_Ctx* const p_ptCtx, bool_t* p_puBlobSize);
 
@@ -123,28 +159,47 @@ e_eFSS_BLOB_RES eFSS_BLOB_GetInfo(t_eFSS_BLOB_Ctx* const p_ptCtx, bool_t* p_puBl
  * @brief       Read the whole blob
  *
  * @param[in]   p_ptCtx    - Blob context
- * @param[out]  p_pbIsInit    - Pointer to a bool_t variable that will be filled with true if the lib is initialized
+ * @param[in]   p_puBuff   - Pointer to a buffer where to copy readed data
+ * @param[in]   p_uBuffL   - Size of p_puBuff
+ * @param[in]   p_puReaded - Size of the readed data from the blob
  *
- * @return      e_eFSS_BLOB_RES_BADPOINTER    - In case of bad pointer passed to the function
- *              e_eFSS_BLOB_RES_OK            - Operation ended correctly
+ * @return      e_eFSS_BLOB_RES_BADPOINTER         - In case of bad pointer passed to the function
+ *              e_eFSS_BLOB_RES_OK                 - Operation ended correctly
+ *              e_eFSS_BLOB_RES_OK_BKP_RCVRD       - All ok, but some page where recovered
+ *              e_eFSS_BLOB_RES_NOTVALIDBLOB       - No valid blob founded
+ *              e_eFSS_BLOB_RES_NEWVERSIONBLOB     - New version of the blob requested
+ *              e_eFSS_BLOB_RES_NOINITLIB          - Need to init the lib before calling this function
+ *              e_eFSS_BLOB_RES_CORRUPTCTX         - Context is corrupted
+ *              e_eFSS_BLOB_RES_CLBCKERASEERR      - Erase callback returned error
+ *              e_eFSS_BLOB_RES_CLBCKWRITEERR      - Write callback returned error
+ *              e_eFSS_BLOB_RES_CLBCKREADERR       - Read callback returned error
+ *              e_eFSS_BLOB_RES_CLBCKCRCERR        - Crc callback returned error
+ *              e_eFSS_BLOB_RES_WRITENOMATCHREAD   - After Write operation the Read operation readed different data
  */
-e_eFSS_BLOB_RES eFSS_BLOB_ReadAllBlob(t_eFSS_BLOB_Ctx* const p_ptCtx, uint8_t* p_puBuff, uint32_t p_uBuffSize,
+e_eFSS_BLOB_RES eFSS_BLOB_ReadAllBlob(t_eFSS_BLOB_Ctx* const p_ptCtx, uint8_t* p_puBuff, uint32_t p_uBuffL,
                                       uint32_t* p_puReaded);
 
 /**
  * @brief       Write the whole blob
  *
  * @param[in]   p_ptCtx    - Blob context
- * @param[out]  p_pbIsInit    - Pointer to a bool_t variable that will be filled with true if the lib is initialized
+ * @param[in]   p_puBuff   - Pointer to a buffer that must be write in the storage area
+ * @param[in]   p_uBuffL   - Size of p_puBuff
  *
- * @return      e_eFSS_BLOB_RES_BADPOINTER    - In case of bad pointer passed to the function
- *              e_eFSS_BLOB_RES_OK            - Operation ended correctly
+ * @return      e_eFSS_BLOB_RES_BADPOINTER         - In case of bad pointer passed to the function
+ *              e_eFSS_BLOB_RES_OK                 - Operation ended correctly
+ *              e_eFSS_BLOB_RES_OK_BKP_RCVRD       - All ok, but some page where recovered
+ *              e_eFSS_BLOB_RES_NOTVALIDBLOB       - No valid blob founded
+ *              e_eFSS_BLOB_RES_NEWVERSIONBLOB     - New version of the blob requested
+ *              e_eFSS_BLOB_RES_NOINITLIB          - Need to init the lib before calling this function
+ *              e_eFSS_BLOB_RES_CORRUPTCTX         - Context is corrupted
+ *              e_eFSS_BLOB_RES_CLBCKERASEERR      - Erase callback returned error
+ *              e_eFSS_BLOB_RES_CLBCKWRITEERR      - Write callback returned error
+ *              e_eFSS_BLOB_RES_CLBCKREADERR       - Read callback returned error
+ *              e_eFSS_BLOB_RES_CLBCKCRCERR        - Crc callback returned error
+ *              e_eFSS_BLOB_RES_WRITENOMATCHREAD   - After Write operation the Read operation readed different data
  */
-e_eFSS_BLOB_RES eFSS_BLOB_WriteAllBlob(t_eFSS_BLOB_Ctx* const p_ptCtx, uint8_t* p_puBuff, uint32_t p_uBuffSize);
-
-
-
-
+e_eFSS_BLOB_RES eFSS_BLOB_WriteAllBlob(t_eFSS_BLOB_Ctx* const p_ptCtx, uint8_t* p_puBuff, uint32_t p_uBuffL);
 
 
 
