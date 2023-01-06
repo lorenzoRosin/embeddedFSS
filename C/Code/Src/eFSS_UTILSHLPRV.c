@@ -412,7 +412,7 @@ e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_CalcMetaCrcInBuff(t_eFSS_TYPE_CbCtx* const
             l_uTemp = p_uPageL - sizeof(uint32_t);
 
             /* Calculate CRC */
-            l_eResLL = eFSS_UTILSLLPRV_CalcCrc32(p_ptCbCtx, p_puPageBuf, l_uTemp, p_puCrcCalc);
+            l_eResLL = eFSS_UTILSLLPRV_CalcCrc32CS(p_ptCbCtx, MAX_UINT32VAL, p_puPageBuf, l_uTemp, p_puCrcCalc);
             l_eRes = eFSS_UTILSHLPRV_LLtoHLRes(l_eResLL);
         }
 	}

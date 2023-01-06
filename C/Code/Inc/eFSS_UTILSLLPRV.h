@@ -45,22 +45,6 @@ typedef enum
 /***********************************************************************************************************************
  * GLOBAL PROTOTYPES
  **********************************************************************************************************************/
-
-/**
- * @brief       Erase a specified page
- *
- * @param[in]   p_ptCbCtx     - Call back functions contexts
- * @param[in]   p_uPageIndx   - Page index we want to erase
- * @param[in]   p_uReTry      - How many times we can retry if some error happens
- *
- * @return      e_eFSS_UTILSLLPRV_RES_OK                - Operation ended successfully
- *              e_eFSS_UTILSLLPRV_RES_BADPOINTER        - In case of bad pointer passed to the function
- *              e_eFSS_UTILSLLPRV_RES_BADPARAM          - In case of bad param passed to the function
- *              e_eFSS_UTILSLLPRV_RES_CLBCKERASEERR     - Error reported from the callback
- */
-e_eFSS_UTILSLLPRV_RES eFSS_UTILSLLPRV_ErasePage( t_eFSS_TYPE_CbCtx* const p_ptCbCtx, const uint32_t p_uPageIndx,
-                                                 const uint32_t p_uReTry);
-
 /**
  * @brief       Erase then Write a specified page and verify the operation by reading the data back
  *
@@ -101,23 +85,6 @@ e_eFSS_UTILSLLPRV_RES eFSS_UTILSLLPRV_WritePage( t_eFSS_TYPE_CbCtx* const p_ptCb
 e_eFSS_UTILSLLPRV_RES eFSS_UTILSLLPRV_ReadPage( t_eFSS_TYPE_CbCtx* const p_ptCbCtx, const uint32_t p_uPageIndx,
                                                 uint8_t* const p_puDataR, const uint32_t p_uDataRLen,
                                                 const uint32_t p_uReTry );
-
-/**
- * @brief       Calculate the CRC 32 of a passed buffer using 0xFFFFFFFF as seed
- *
- * @param[in]   p_ptCbCtx     - Call back functions contexts
- * @param[in]   p_puData      - Pointer to the data we want to calculate the CRC
- * @param[in]   p_uDataLen    - size of the p_puData buffer
- * @param[out]  p_puCrcCal    - Pointer where the calculated CRc result will be saved
- *
- * @return      e_eFSS_UTILSLLPRV_RES_OK                - Operation ended successfully
- *              e_eFSS_UTILSLLPRV_RES_BADPOINTER        - In case of bad pointer passed to the function
- *              e_eFSS_UTILSLLPRV_RES_BADPARAM          - In case of bad param passed to the function
- *              e_eFSS_UTILSLLPRV_RES_CLBCKCRCERR       - Error reported from the callback
- */
-e_eFSS_UTILSLLPRV_RES eFSS_UTILSLLPRV_CalcCrc32( t_eFSS_TYPE_CbCtx* const p_ptCbCtx,
-                                                 uint8_t* const p_puData, const uint32_t p_uDataLen,
-                                                 uint32_t* const p_puCrcCal );
 
 /**
  * @brief       Calculate the CRC 32 of a passed buffer using custom seed
