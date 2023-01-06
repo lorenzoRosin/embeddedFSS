@@ -114,7 +114,6 @@ e_eFSS_LOG_RES eFSS_LOG_GetStorageStatus(t_eFSS_LOG_Ctx* const p_ptCtx, t_eFSS_T
  */
 e_eFSS_LOG_RES eFSS_LOG_Format(t_eFSS_LOG_Ctx* const p_ptCtx);
 
-
 /**
  * @brief       Check if the lib is initialized
  *

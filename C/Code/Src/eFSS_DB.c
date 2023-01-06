@@ -1,7 +1,7 @@
 /**
  * @file       eFSS_DB.c
  *
- * @brief      High level utils for fail safe storage
+ * @brief      Database module
  *
  * @author     Lorenzo Rosin
  *
@@ -13,189 +13,212 @@
  *      INCLUDES
  **********************************************************************************************************************/
 #include "eFSS_DB.h"
+#include "eFSS_UTILSHLPRV.h"
+
+
+
+/***********************************************************************************************************************
+ *  PRIVATE STATIC FUNCTION DECLARATION
+ **********************************************************************************************************************/
+static bool_t eFSS_DB_IsStatusStillCoherent(const t_eFSS_DB_Ctx* p_ptCtx);
+static e_eFSS_DB_RES eFSS_DB_HLtoDBRes(const e_eFSS_UTILSHLPRV_RES p_eHLRes);
 
 
 
 /***********************************************************************************************************************
  *   GLOBAL FUNCTIONS
  **********************************************************************************************************************/
-e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_GetMetaFromBuff(const uint8_t* pageBuff, const uint32_t p_pageL,
-                                                      t_eFSS_TYPE_PageMeta* const pagePrm)
+e_eFSS_DB_RES eFSS_DB_InitCtx(t_eFSS_DB_Ctx* const p_ptCtx, t_eFSS_TYPE_CbCtx* const p_ptCtxCb,
+                                  const uint32_t p_uPageToUse, const uint32_t p_uPageSize, uint8_t* const p_puBuff,
+                                  uint32_t p_uBuffL, t_eFSS_DB_DbStruct p_tDBS)
 {
-	/* Local variable */
-	e_eFSS_UTILSHLPRV_RES l_eRes;
-    uint32_t l_uComulIndx;
-    uint32_t l_uTemp;
+    e_eFSS_DB_RES l_eRes;
 
 	/* Check pointer validity */
-	if( ( NULL == pageBuff ) || ( NULL == pagePrm )  )
+	if( ( NULL == p_ptCtx ) || ( NULL == p_ptCtxCb ) || ( NULL == p_puBuff ) )
 	{
-		l_eRes = e_eFSS_UTILSHLPRV_RES_BADPOINTER;
+		l_eRes = e_eFSS_DB_RES_BADPOINTER;
 	}
 	else
 	{
-        /* Check data validity */
-        if( p_pageL < EFSS_PAGEMETASIZE )
+        /* Check pointer validity */
+        if( ( NULL == p_ptCtxCb->ptCtxErase ) || ( NULL == p_ptCtxCb->fErase ) ||
+            ( NULL == p_ptCtxCb->ptCtxWrite ) || ( NULL == p_ptCtxCb->fWrite ) ||
+            ( NULL == p_ptCtxCb->ptCtxRead  ) || ( NULL == p_ptCtxCb->fRead  ) ||
+            ( NULL == p_ptCtxCb->ptCtxCrc32 ) || ( NULL == p_ptCtxCb->fCrc32 ) )
         {
-            l_eRes = e_eFSS_UTILSHLPRV_RES_BADPARAM;
+            l_eRes = e_eFSS_DB_RES_BADPOINTER;
         }
         else
         {
-            /* Initialize internal status */
-            l_uComulIndx = p_pageL - EFSS_PAGEMETASIZE;
-
-            /* Init return data */
-            pagePrm->uPageType = 0u;
-            pagePrm->uPageSubType = 0u;
-            pagePrm->uPageVersion = 0u;
-            pagePrm->uPageByteFilled = 0u;
-            pagePrm->uPagePresentElement = 0u;
-            pagePrm->uPageSequentialN = 0u;
-            pagePrm->uPageMagicNumber = 0u;
-            pagePrm->uPageCrc = 0u;
-
-            /* Copy data Little endian */
-            l_uTemp = (uint32_t) pageBuff[l_uComulIndx];
-            pagePrm->uPageType |= ( l_uTemp & 0x000000FFu );
-            l_uComulIndx++;
-
-            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 8u  );
-            pagePrm->uPageType |= ( l_uTemp & 0x0000FF00u );
-            l_uComulIndx++;
-
-            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 16u  );
-            pagePrm->uPageType |= ( l_uTemp & 0x00FF0000u );
-            l_uComulIndx++;
-
-            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 24u  );
-            pagePrm->uPageType |= ( l_uTemp & 0xFF000000u );
-            l_uComulIndx++;
-
-            /* Copy data Little endian */
-            l_uTemp = (uint32_t) pageBuff[l_uComulIndx];
-            pagePrm->uPageSubType |= ( l_uTemp & 0x000000FFu );
-            l_uComulIndx++;
-
-            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 8u  );
-            pagePrm->uPageSubType |= ( l_uTemp & 0x0000FF00u );
-            l_uComulIndx++;
-
-            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 16u  );
-            pagePrm->uPageSubType |= ( l_uTemp & 0x00FF0000u );
-            l_uComulIndx++;
-
-            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 24u  );
-            pagePrm->uPageSubType |= ( l_uTemp & 0xFF000000u );
-            l_uComulIndx++;
-
-            /* Copy data Little endian */
-            l_uTemp = (uint32_t) pageBuff[l_uComulIndx];
-            pagePrm->uPageVersion |= ( l_uTemp & 0x000000FFu );
-            l_uComulIndx++;
-
-            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 8u  );
-            pagePrm->uPageVersion |= ( l_uTemp & 0x0000FF00u );
-            l_uComulIndx++;
-
-            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 16u  );
-            pagePrm->uPageVersion |= ( l_uTemp & 0x00FF0000u );
-            l_uComulIndx++;
-
-            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 24u  );
-            pagePrm->uPageVersion |= ( l_uTemp & 0xFF000000u );
-            l_uComulIndx++;
-
-            /* Copy data Little endian */
-            l_uTemp = (uint32_t) pageBuff[l_uComulIndx];
-            pagePrm->uPageByteFilled |= ( l_uTemp & 0x000000FFu );
-            l_uComulIndx++;
-
-            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 8u  );
-            pagePrm->uPageByteFilled |= ( l_uTemp & 0x0000FF00u );
-            l_uComulIndx++;
-
-            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 16u  );
-            pagePrm->uPageByteFilled |= ( l_uTemp & 0x00FF0000u );
-            l_uComulIndx++;
-
-            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 24u  );
-            pagePrm->uPageByteFilled |= ( l_uTemp & 0xFF000000u );
-            l_uComulIndx++;
-
-            /* Copy data Little endian */
-            l_uTemp = (uint32_t) pageBuff[l_uComulIndx];
-            pagePrm->uPagePresentElement |= ( l_uTemp & 0x000000FFu );
-            l_uComulIndx++;
-
-            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 8u  );
-            pagePrm->uPagePresentElement |= ( l_uTemp & 0x0000FF00u );
-            l_uComulIndx++;
-
-            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 16u  );
-            pagePrm->uPagePresentElement |= ( l_uTemp & 0x00FF0000u );
-            l_uComulIndx++;
-
-            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 24u  );
-            pagePrm->uPagePresentElement |= ( l_uTemp & 0xFF000000u );
-            l_uComulIndx++;
-
-            /* Copy data Little endian */
-            l_uTemp = (uint32_t) pageBuff[l_uComulIndx];
-            pagePrm->uPageSequentialN |= ( l_uTemp & 0x000000FFu );
-            l_uComulIndx++;
-
-            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 8u  );
-            pagePrm->uPageSequentialN |= ( l_uTemp & 0x0000FF00u );
-            l_uComulIndx++;
-
-            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 16u  );
-            pagePrm->uPageSequentialN |= ( l_uTemp & 0x00FF0000u );
-            l_uComulIndx++;
-
-            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 24u  );
-            pagePrm->uPageSequentialN |= ( l_uTemp & 0xFF000000u );
-            l_uComulIndx++;
-
-            /* Copy data Little endian */
-            l_uTemp = (uint32_t) pageBuff[l_uComulIndx];
-            pagePrm->uPageMagicNumber |= ( l_uTemp & 0x000000FFu );
-            l_uComulIndx++;
-
-            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 8u  );
-            pagePrm->uPageMagicNumber |= ( l_uTemp & 0x0000FF00u );
-            l_uComulIndx++;
-
-            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 16u  );
-            pagePrm->uPageMagicNumber |= ( l_uTemp & 0x00FF0000u );
-            l_uComulIndx++;
-
-            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 24u  );
-            pagePrm->uPageMagicNumber |= ( l_uTemp & 0xFF000000u );
-            l_uComulIndx++;
-
-            /* Copy data Little endian */
-            l_uTemp = (uint32_t) pageBuff[l_uComulIndx];
-            pagePrm->uPageCrc |= ( l_uTemp & 0x000000FFu );
-            l_uComulIndx++;
-
-            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 8u  );
-            pagePrm->uPageCrc |= ( l_uTemp & 0x0000FF00u );
-            l_uComulIndx++;
-
-            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 16u  );
-            pagePrm->uPageCrc |= ( l_uTemp & 0x00FF0000u );
-            l_uComulIndx++;
-
-            l_uTemp =  (uint32_t) ( ( (uint32_t) pageBuff[l_uComulIndx] ) << 24u  );
-            pagePrm->uPageCrc |= ( l_uTemp & 0xFF000000u );
-            l_uComulIndx++;
-
-            l_eRes = e_eFSS_UTILSHLPRV_RES_OK;
+            /* Check data validity */
+            if( ( p_uPageToUse <= 2u ) || ( p_uPageSize <= EFSS_PAGEMETASIZE ) || ( ( p_uPageSize * 2u ) != p_uBuffL ) )
+            {
+                l_eRes = e_eFSS_DB_RES_BADPARAM;
+            }
+            else
+            {
+                /* Fill context */
+                p_ptCtx->bIsInit = true;
+                p_ptCtx->ptCtxCb = p_ptCtxCb;
+                p_ptCtx->puBuff1 = p_puBuff;
+                p_ptCtx->uBuff1L = p_uBuffL / 2u;
+                p_ptCtx->puBuff2 = &p_puBuff[p_ptCtx->uBuff1L];
+                p_ptCtx->uBuff2L = p_uBuffL / 2u;
+                p_ptCtx->uNPage = p_uPageToUse;
+                p_ptCtx->uPageSize = p_uPageSize;
+            }
         }
+    }
+
+    return l_eRes;
+}
+
+
+e_eFSS_DB_RES eFSS_DB_IsInit(t_eFSS_DB_Ctx* const p_ptCtx, bool_t* p_pbIsInit)
+{
+	/* Local variable */
+	e_eFSS_DB_RES l_eRes;
+
+	/* Check pointer validity */
+	if( ( NULL == p_ptCtx ) || ( NULL == p_pbIsInit ) )
+	{
+		l_eRes = e_eFSS_DB_RES_BADPOINTER;
+	}
+	else
+	{
+        *p_pbIsInit = p_ptCtx->bIsInit;
+        l_eRes = e_eFSS_DB_RES_OK;
 	}
 
 	return l_eRes;
 }
 
+e_eFSS_DB_RES eFSS_DB_GetStorageStatus(t_eFSS_DB_Ctx* const p_ptCtx, t_eFSS_TYPE_CbCtx* const p_peStatus)
+{
+
+}
 
 
+e_eFSS_DB_RES eFSS_DB_Format(t_eFSS_DB_Ctx* const p_ptCtx)
+{
+
+
+}
+
+
+e_eFSS_DB_RES eFSS_DB_SaveElemen(t_eFSS_DB_Ctx* const p_ptCtx, uint32_t p_uPos, uint8_t* p_puBuff, uint32_t p_uBuffL)
+{
+
+
+}
+
+
+e_eFSS_DB_RES eFSS_DB_GetElement(t_eFSS_DB_Ctx* const p_ptCtx, uint32_t p_uPos, uint8_t* p_puBuff, uint8_t* p_puBuffL)
+{
+
+
+}
+
+
+/***********************************************************************************************************************
+ *  PRIVATE FUNCTION
+ **********************************************************************************************************************/
+static bool_t eFSS_DB_IsStatusStillCoherent(const t_eFSS_DB_Ctx* p_ptCtx)
+{
+    bool_t l_eRes;
+
+	/* Check context validity */
+	if( (  NULL == p_ptCtx->ptCtxCb ) || ( NULL == p_ptCtx->puBuff1 ) )
+	{
+		l_eRes = false;
+	}
+	else
+	{
+        l_eRes = true;
+	}
+
+    return l_eRes;
+}
+
+static e_eFSS_DB_RES eFSS_BLOB_HLtoBLOBRes(const e_eFSS_UTILSHLPRV_RES p_eHLRes)
+{
+    e_eFSS_DB_RES l_eRes;
+
+    switch(p_eHLRes)
+    {
+        case e_eFSS_UTILSHLPRV_RES_OK:
+        {
+            l_eRes = e_eFSS_DB_RES_OK;
+            break;
+        }
+
+        case e_eFSS_UTILSHLPRV_RES_NOTVALIDPAGE:
+        {
+            l_eRes = e_eFSS_DB_RES_BADPARAM;
+            break;
+        }
+
+        case e_eFSS_UTILSHLPRV_RES_OK_BKP_RCVRD:
+        {
+            l_eRes = e_eFSS_DB_RES_BADPARAM;
+            break;
+        }
+
+        case e_eFSS_UTILSHLPRV_RES_BADPARAM:
+        {
+            l_eRes = e_eFSS_DB_RES_BADPARAM;
+            break;
+        }
+
+        case e_eFSS_UTILSHLPRV_RES_BADPOINTER:
+        {
+            l_eRes = e_eFSS_DB_RES_BADPOINTER;
+            break;
+        }
+
+        case e_eFSS_UTILSHLPRV_RES_CLBCKERASEERR:
+        {
+            l_eRes = e_eFSS_DB_RES_BADPARAM;
+            break;
+        }
+
+        case e_eFSS_UTILSHLPRV_RES_CLBCKWRITEERR:
+        {
+            l_eRes = e_eFSS_DB_RES_BADPARAM;
+            break;
+        }
+
+        case e_eFSS_UTILSHLPRV_RES_CLBCKREADERR:
+        {
+            l_eRes = e_eFSS_DB_RES_BADPARAM;
+            break;
+        }
+
+        case e_eFSS_UTILSHLPRV_RES_CLBCKCRCERR:
+        {
+            l_eRes = e_eFSS_DB_RES_BADPARAM;
+            break;
+        }
+
+        case e_eFSS_UTILSHLPRV_RES_WRITENOMATCHREAD:
+        {
+            l_eRes = e_eFSS_DB_RES_BADPARAM;
+            break;
+        }
+
+        case e_eFSS_UTILSHLPRV_RES_CORRUPT:
+        {
+            l_eRes = e_eFSS_DB_RES_BADPARAM;
+            break;
+        }
+
+        default:
+        {
+            l_eRes = e_eFSS_DB_RES_BADPARAM;
+            break;
+        }
+    }
+
+    return l_eRes;
+}
