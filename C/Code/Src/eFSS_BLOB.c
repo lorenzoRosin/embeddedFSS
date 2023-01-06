@@ -22,6 +22,18 @@
  **********************************************************************************************************************/
 static bool_t eFSS_BLOB_IsStatusStillCoherent(const t_eFSS_BLOB_Ctx* p_ptCtx);
 static e_eFSS_BLOB_RES eFSS_BLOB_HLtoBLOBRes(const e_eFSS_UTILSHLPRV_RES p_eHLRes);
+
+
+
+
+
+
+
+
+
+
+
+
 static e_eFSS_BLOB_RES eFSS_BLOB_AreOriValid(const t_eFSS_BLOB_Ctx* p_ptCtx, bool_t* p_pbAreValid, t_eFSS_TYPE_PageMeta* p_ptMeta);
 static e_eFSS_BLOB_RES eFSS_BLOB_AreBckUpValid(const t_eFSS_BLOB_Ctx* p_ptCtx, bool_t* p_pbAreValid, t_eFSS_TYPE_PageMeta* p_ptMeta);
 static e_eFSS_BLOB_RES eFSS_BLOB_OriginBackupAligner(const t_eFSS_BLOB_Ctx* p_ptCtx);
@@ -120,6 +132,18 @@ e_eFSS_BLOB_RES eFSS_BLOB_IsInit(t_eFSS_BLOB_Ctx* const p_ptCtx, bool_t* p_pbIsI
 
 	return l_eRes;
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -453,6 +477,28 @@ e_eFSS_BLOB_RES eFSS_BLOB_WriteAllBlob(t_eFSS_BLOB_Ctx* const p_ptCtx, uint8_t* 
 	return l_eRes;
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /***********************************************************************************************************************
  *  PRIVATE FUNCTION
  **********************************************************************************************************************/
@@ -461,14 +507,48 @@ static bool_t eFSS_BLOB_IsStatusStillCoherent(const t_eFSS_BLOB_Ctx* p_ptCtx)
     bool_t l_eRes;
 
 	/* Check context validity */
-	if( (  NULL == p_ptCtx->ptCtxCb ) || ( NULL == p_ptCtx->puBuff1 ) )
-	{
-		l_eRes = false;
-	}
-	else
-	{
-        l_eRes = true;
-	}
+    if( ( NULL == p_ptCtx->ptCtxCb->ptCtxErase ) || ( NULL == p_ptCtx->ptCtxCb->fErase ) ||
+        ( NULL == p_ptCtx->ptCtxCb->ptCtxWrite ) || ( NULL == p_ptCtx->ptCtxCb->fWrite ) ||
+        ( NULL == p_ptCtx->ptCtxCb->ptCtxRead  ) || ( NULL == p_ptCtx->ptCtxCb->fRead  ) ||
+        ( NULL == p_ptCtx->ptCtxCb->ptCtxCrc32 ) || ( NULL == p_ptCtx->ptCtxCb->fCrc32 ) )
+    {
+        l_eRes = false;
+    }
+    else
+    {
+        /* Check data validity */
+        if( ( p_ptCtx->uNPage < 2u ) || ( 0u != ( p_ptCtx->uNPage % 2u ) ) )
+        {
+            l_eRes = false;
+        }
+        else
+        {
+            /* Check data validity */
+            if( ( p_ptCtx->uPageSize <= EFSS_PAGEMETASIZE ) || ( 0u != ( p_ptCtx->uPageSize % 2u ) ) )
+            {
+                l_eRes = false;
+            }
+            else
+            {
+                if( ( p_ptCtx->uPageSize != p_ptCtx->uBuff1L ) || ( p_ptCtx->uPageSize != p_ptCtx->uBuff2L ) )
+                {
+                    l_eRes = false;
+                }
+                else
+                {
+                    /* Check data validity */
+                    if( p_ptCtx->uReTry <= 0u )
+                    {
+                        l_eRes = false;
+                    }
+                    else
+                    {
+                        l_eRes = true;
+                    }
+                }
+            }
+        }
+    }
 
     return l_eRes;
 }
@@ -487,13 +567,13 @@ static e_eFSS_BLOB_RES eFSS_BLOB_HLtoBLOBRes(const e_eFSS_UTILSHLPRV_RES p_eHLRe
 
         case e_eFSS_UTILSHLPRV_RES_NOTVALIDPAGE:
         {
-            l_eRes = e_eFSS_BLOB_RES_BADPARAM;
+            l_eRes = e_eFSS_BLOB_RES_NOTVALIDBLOB;
             break;
         }
 
         case e_eFSS_UTILSHLPRV_RES_OK_BKP_RCVRD:
         {
-            l_eRes = e_eFSS_BLOB_RES_BADPARAM;
+            l_eRes = e_eFSS_BLOB_RES_OK_BKP_RCVRD;
             break;
         }
 
@@ -511,49 +591,83 @@ static e_eFSS_BLOB_RES eFSS_BLOB_HLtoBLOBRes(const e_eFSS_UTILSHLPRV_RES p_eHLRe
 
         case e_eFSS_UTILSHLPRV_RES_CLBCKERASEERR:
         {
-            l_eRes = e_eFSS_BLOB_RES_BADPARAM;
+            l_eRes = e_eFSS_BLOB_RES_CLBCKERASEERR;
             break;
         }
 
         case e_eFSS_UTILSHLPRV_RES_CLBCKWRITEERR:
         {
-            l_eRes = e_eFSS_BLOB_RES_BADPARAM;
+            l_eRes = e_eFSS_BLOB_RES_CLBCKWRITEERR;
             break;
         }
 
         case e_eFSS_UTILSHLPRV_RES_CLBCKREADERR:
         {
-            l_eRes = e_eFSS_BLOB_RES_BADPARAM;
+            l_eRes = e_eFSS_BLOB_RES_CLBCKREADERR;
             break;
         }
 
         case e_eFSS_UTILSHLPRV_RES_CLBCKCRCERR:
         {
-            l_eRes = e_eFSS_BLOB_RES_BADPARAM;
+            l_eRes = e_eFSS_BLOB_RES_CLBCKCRCERR;
             break;
         }
 
         case e_eFSS_UTILSHLPRV_RES_WRITENOMATCHREAD:
         {
-            l_eRes = e_eFSS_BLOB_RES_BADPARAM;
+            l_eRes = e_eFSS_BLOB_RES_WRITENOMATCHREAD;
             break;
         }
 
         case e_eFSS_UTILSHLPRV_RES_CORRUPT:
         {
-            l_eRes = e_eFSS_BLOB_RES_BADPARAM;
+            l_eRes = e_eFSS_BLOB_RES_CORRUPTCTX;
             break;
         }
 
         default:
         {
-            l_eRes = e_eFSS_BLOB_RES_BADPARAM;
+            l_eRes = e_eFSS_BLOB_RES_CORRUPTCTX;
             break;
         }
     }
 
     return l_eRes;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 static e_eFSS_BLOB_RES eFSS_BLOB_AreOriValid(const t_eFSS_BLOB_Ctx* p_ptCtx, bool_t* p_pbAreValid, t_eFSS_TYPE_PageMeta* p_ptMeta)
 {
