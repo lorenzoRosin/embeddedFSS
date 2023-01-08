@@ -7,7 +7,12 @@
  *
  **********************************************************************************************************************/
 
-
+/* In this module the page field has the following meaning:
+ * - uPageUseSpecific1 -> Size of the stored blob
+ * - uPageUseSpecific2 -> Crc of the stored blob
+ * - uPageUseSpecific3 -> Total page given during formatting
+ * - uPageUseSpecific4 -> Sequential number of the page
+ */
 
 /***********************************************************************************************************************
  *      INCLUDES
@@ -262,9 +267,10 @@ e_eFSS_BLOB_RES eFSS_BLOB_Format(t_eFSS_BLOB_Ctx* const p_ptCtx)
                         l_tPagePrmToWrite.uPageType = EFSS_PAGETYPE_BLOB;
                         l_tPagePrmToWrite.uPageSubType = EFSS_PAGESUBTYPE_BLOB;
                         l_tPagePrmToWrite.uPageVersion = p_ptCtx->uVersion;
-                        l_tPagePrmToWrite.uPageUseSpecific1 = 0u;
-                        l_tPagePrmToWrite.uPageUseSpecific2 = l_uCrcZeroBlob;
-                        l_tPagePrmToWrite.uPageSequentialN = 0u;
+                        l_tPagePrmToWrite.uPageUseSpecific1 = 0u;               /* Size blob */
+                        l_tPagePrmToWrite.uPageUseSpecific2 = l_uCrcZeroBlob;   /* Crc blob */
+                        l_tPagePrmToWrite.uPageUseSpecific3 = p_ptCtx->uNPage;  /* Total Page given */
+                        l_tPagePrmToWrite.uPageUseSpecific4 = 0u;               /* Sequential number */
                         l_tPagePrmToWrite.uPageMagicNumber = EFSS_PAGEMAGICNUMBER;
                         l_tPagePrmToWrite.uPageCrc = 0u;
 
@@ -452,7 +458,7 @@ e_eFSS_BLOB_RES eFSS_BLOB_WriteAllBlob(t_eFSS_BLOB_Ctx* const p_ptCtx, uint8_t* 
                             if( e_eFSS_BLOB_RES_OK == l_eRes )
                             {
                                 /* Increase sequence number at every blob write */
-                                l_uNweSeq = l_tPagePrm.uPageSequentialN + 1u;
+                                l_uNweSeq = l_tPagePrm.uPageUseSpecific4 + 1u;
 
                                 /* init cycle variable */
                                 l_uI = 0u;
@@ -486,7 +492,7 @@ e_eFSS_BLOB_RES eFSS_BLOB_WriteAllBlob(t_eFSS_BLOB_Ctx* const p_ptCtx, uint8_t* 
                                     l_tPagePrm.uPageVersion = p_ptCtx->uVersion;
                                     l_tPagePrm.uPageUseSpecific1 = p_uBuffL;
                                     l_tPagePrm.uPageUseSpecific2 = l_uCrcZeroBlob;
-                                    l_tPagePrm.uPageSequentialN = l_uNweSeq;
+                                    l_tPagePrm.uPageUseSpecific4 = l_uNweSeq;
                                     l_tPagePrm.uPageMagicNumber = EFSS_PAGEMAGICNUMBER;
                                     l_tPagePrm.uPageCrc = 0u;
 
@@ -815,7 +821,7 @@ static e_eFSS_BLOB_RES eFSS_BLOB_OriginBackupAligner(const t_eFSS_BLOB_Ctx* p_pt
                 else
                 {
                     /* Both backup and origin data are valid, verify if they are equals */
-                    if( ( l_tMetaBkp.uPageSequentialN != l_tMetaOri.uPageSequentialN ) ||
+                    if( ( l_tMetaBkp.uPageUseSpecific4 != l_tMetaOri.uPageUseSpecific4 ) ||
                         ( l_tMetaBkp.uPageUseSpecific1 != l_tMetaOri.uPageUseSpecific1 ) ||
                         ( l_tMetaBkp.uPageUseSpecific2 != l_tMetaOri.uPageUseSpecific2 ) )
                     {
@@ -949,7 +955,7 @@ static e_eFSS_BLOB_RES eFSS_BLOB_ArePagesValid(const t_eFSS_BLOB_Ctx* p_ptCtx, u
                                 else
                                 {
                                     /* Validate the metada of the current page against the one of the first */
-                                    if( ( l_tPagePrm.uPageSequentialN != l_tPagePrmFirst.uPageSequentialN ) ||
+                                    if( ( l_tPagePrm.uPageUseSpecific4 != l_tPagePrmFirst.uPageUseSpecific4 ) ||
                                         ( l_tPagePrm.uPageUseSpecific1 != l_tPagePrmFirst.uPageUseSpecific1 ) ||
                                         ( l_tPagePrm.uPageUseSpecific2 != l_tPagePrmFirst.uPageUseSpecific2 ) )
                                     {

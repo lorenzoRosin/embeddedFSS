@@ -31,7 +31,7 @@ extern "C" {
 #define ECU_SOF                                                                                    ( ( uint8_t ) 0xA1u )
 #define ECU_EOF                                                                                    ( ( uint8_t ) 0xA2u )
 #define ECU_ESC                                                                                    ( ( uint8_t ) 0xA3u )
-#define EFSS_PAGEMETASIZE                                                                          ( ( uint32_t )  24u )
+#define EFSS_PAGEMETASIZE                                                                          ( ( uint32_t )  28u )
 #define EFSS_PAGEMAGICNUMBER                                                               ( ( uint32_t )  0xA5A5A5A5u )
 #define EFSS_PAGETYPE_BLOB                                                                       ( ( uint32_t )  0x01u )
 #define EFSS_PAGETYPE_LOG                                                                        ( ( uint32_t )  0x02u )
@@ -39,7 +39,7 @@ extern "C" {
 #define EFSS_PAGESUBTYPE_BLOB                                                                    ( ( uint32_t )  0x01u )
 #define EFSS_PAGESUBTYPE_LOG                                                                     ( ( uint32_t )  0x01u )
 #define EFSS_PAGESUBTYPE_LOGNEWEST                                                               ( ( uint32_t )  0x02u )
-#define EFSS_PAGESUBTYPE_LOGBACKUP                                                               ( ( uint32_t )  0x03u )
+#define EFSS_PAGESUBTYPE_LOGNEWESTBKP                                                            ( ( uint32_t )  0x03u )
 #define EFSS_PAGESUBTYPE_DB                                                                      ( ( uint32_t )  0x01u )
 
 
@@ -101,16 +101,17 @@ typedef struct
 
 typedef struct
 {
-
     uint8_t     uPageType;
     uint8_t     uPageSubType;
     uint16_t    uPageVersion;
     uint32_t    uPageUseSpecific1;
     uint32_t    uPageUseSpecific2;
-    uint32_t    uPageSequentialN;
+    uint32_t    uPageUseSpecific3;
+    uint32_t    uPageUseSpecific4;
     uint32_t    uPageMagicNumber;
     uint32_t    uPageCrc;
 }t_eFSS_TYPE_PageMeta;
+
 
 
 #ifdef __cplusplus

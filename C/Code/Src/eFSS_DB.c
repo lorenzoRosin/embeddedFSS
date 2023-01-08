@@ -234,7 +234,7 @@ e_eFSS_DB_RES eFSS_DB_Format(t_eFSS_DB_Ctx* const p_ptCtx)
                     l_tPagePrmToWrite.uPageVersion = 0u;
                     l_tPagePrmToWrite.uPageUseSpecific1 = 0u;
                     l_tPagePrmToWrite.uPageUseSpecific2 = l_uCrcZeroBlob;
-                    l_tPagePrmToWrite.uPageSequentialN = 0u;
+                    l_tPagePrmToWrite.uPageUseSpecific3 = 0u;
                     l_tPagePrmToWrite.uPageMagicNumber = EFSS_PAGEMAGICNUMBER;
                     l_tPagePrmToWrite.uPageCrc = 0u;
 
@@ -259,7 +259,7 @@ e_eFSS_DB_RES eFSS_DB_Format(t_eFSS_DB_Ctx* const p_ptCtx)
                         l_tPagePrmToWrite.uPageVersion = 0u;
                         l_tPagePrmToWrite.uPageUseSpecific1 = 0u;
                         l_tPagePrmToWrite.uPageUseSpecific2 = l_uCrcZeroBlob;
-                        l_tPagePrmToWrite.uPageSequentialN = 0u;
+                        l_tPagePrmToWrite.uPageUseSpecific3 = 0u;
                         l_tPagePrmToWrite.uPageMagicNumber = EFSS_PAGEMAGICNUMBER;
                         l_tPagePrmToWrite.uPageCrc = 0u;
 
