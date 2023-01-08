@@ -33,7 +33,8 @@ static bool_t eFSS_LOG_VerifyVersion(t_eFSS_LOG_Ctx* const p_ptCtx);
  **********************************************************************************************************************/
 e_eFSS_LOG_RES eFSS_LOG_InitCtx(t_eFSS_LOG_Ctx* const p_ptCtx, t_eFSS_TYPE_CbCtx* const p_ptCtxCb,
                                 const uint32_t p_uPageToUse, const uint32_t p_uPageSize, uint8_t* const p_puBuff,
-                                uint32_t p_uBuffL)
+                                uint32_t p_uBuffL, uint16_t p_uLogVersion, uint32_t p_uRetry,
+                                bool_t p_bUseFlashCache, bool_t p_bUseFullBckup, uint32_t p_uLogL)
 {
     e_eFSS_LOG_RES l_eRes;
 
@@ -96,22 +97,22 @@ e_eFSS_LOG_RES eFSS_LOG_IsInit(t_eFSS_LOG_Ctx* const p_ptCtx, bool_t* p_pbIsInit
 	return l_eRes;
 }
 
-e_eFSS_LOG_RES eFSS_LOG_GetStorageStatus(t_eFSS_LOG_Ctx* const p_ptCtx, t_eFSS_TYPE_CbCtx* const p_peStatus)
+e_eFSS_LOG_RES eFSS_LOG_GetStorageStatus(t_eFSS_LOG_Ctx* const p_ptCtx)
 {
+
+
+}
+
+e_eFSS_LOG_RES eFSS_LOG_GetLogInfo(t_eFSS_LOG_Ctx* const p_ptCtx, uint32_t *p_puNewLogI, uint32_t *p_puOldLogI,
+                                   uint32_t *p_puNpageUsed, uint32_t *p_puLogVer)
+{
+
 
 
 }
 
 e_eFSS_LOG_RES eFSS_LOG_Format(t_eFSS_LOG_Ctx* const p_ptCtx)
 {
-
-
-}
-
-e_eFSS_LOG_RES eFSS_LOG_GetLogInfo(t_eFSS_LOG_Ctx* const p_ptCtx, uint32_t *NewlogIndex, uint32_t *OldlogIndex,
-                                   uint32_t *NpageValorized, uint32_t *NpageUtilizable, uint32_t *LogVersion)
-{
-
 
 
 }
@@ -137,9 +138,7 @@ e_eFSS_LOG_RES eFSS_LOG_AddLog(t_eFSS_LOG_Ctx* const p_ptCtx, uint8_t* p_puLogTo
     /* Return */
 }
 
-
-
-e_eFSS_LOG_RES eFSS_LOG_GetLogOfASpecificPage(t_eFSS_LOG_Ctx* const p_ptCtx, uint8_t* p_puLogBuff, uint32_t* p_puLogBuffL,
+e_eFSS_LOG_RES eFSS_LOG_GetLogOfASpecificPage(t_eFSS_LOG_Ctx* const p_ptCtx, uint8_t* p_puLogBuf, uint32_t* p_uLogBufL,
                                               uint32_t *p_puNLogGetted)
 {
 
@@ -253,7 +252,7 @@ static e_eFSS_LOG_RES eFSS_LOG_HLtoLogRes(const e_eFSS_UTILSHLPRV_RES p_eHLRes)
 static bool_t eFSS_LOG_LoadIndex(t_eFSS_LOG_Ctx* const p_ptCtx)
 {
     /* Search for index of oldest and newest page */
-    if( true == p_ptCtx->bUseIndexingFlashCache )
+    if( true == p_ptCtx->bUseFlashCache )
     {
         /* Load index from cache */
         eFSS_LOG_LoadIndexFromCache(p_ptCtx);
