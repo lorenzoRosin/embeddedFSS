@@ -56,6 +56,7 @@ typedef struct
     uint32_t uNPage;
     uint32_t uPageSize;
     uint32_t uReTry;
+    uint32_t uVersion;
 }t_eFSS_BLOB_Ctx;
 
 

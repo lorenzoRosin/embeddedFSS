@@ -33,6 +33,14 @@ extern "C" {
 #define ECU_ESC                                                                                    ( ( uint8_t ) 0xA3u )
 #define EFSS_PAGEMETASIZE                                                                          ( ( uint32_t )  24u )
 #define EFSS_PAGEMAGICNUMBER                                                               ( ( uint32_t )  0xA5A5A5A5u )
+#define EFSS_PAGETYPE_BLOB                                                                       ( ( uint32_t )  0x01u )
+#define EFSS_PAGETYPE_LOG                                                                        ( ( uint32_t )  0x02u )
+#define EFSS_PAGETYPE_DB                                                                         ( ( uint32_t )  0x03u )
+#define EFSS_PAGESUBTYPE_BLOB                                                                    ( ( uint32_t )  0x01u )
+#define EFSS_PAGESUBTYPE_LOG                                                                     ( ( uint32_t )  0x01u )
+#define EFSS_PAGESUBTYPE_LOGNEWEST                                                               ( ( uint32_t )  0x02u )
+#define EFSS_PAGESUBTYPE_LOGBACKUP                                                               ( ( uint32_t )  0x03u )
+#define EFSS_PAGESUBTYPE_DB                                                                      ( ( uint32_t )  0x01u )
 
 
 

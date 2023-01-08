@@ -22,6 +22,8 @@
  **********************************************************************************************************************/
 static bool_t eFSS_BLOB_IsStatusStillCoherent(const t_eFSS_BLOB_Ctx* p_ptCtx);
 static e_eFSS_BLOB_RES eFSS_BLOB_HLtoBLOBRes(const e_eFSS_UTILSHLPRV_RES p_eHLRes);
+static e_eFSS_BLOB_RES eFSS_BLOB_CrcBlobFull(const t_eFSS_BLOB_Ctx* p_ptCtx, uint8_t* p_puBlob, uint32_t p_uBlobL,
+                                             uint32_t* p_puBlobCrc);
 static e_eFSS_BLOB_RES eFSS_BLOB_OriginBackupAligner(const t_eFSS_BLOB_Ctx* p_ptCtx);
 static e_eFSS_BLOB_RES eFSS_BLOB_ArePagesValid(const t_eFSS_BLOB_Ctx* p_ptCtx, uint32_t p_uStartIdx, uint32_t p_uEndIdx,
                                                bool_t* p_pbAreValid, t_eFSS_TYPE_PageMeta* p_ptMeta);
@@ -121,38 +123,6 @@ e_eFSS_BLOB_RES eFSS_BLOB_IsInit(t_eFSS_BLOB_Ctx* const p_ptCtx, bool_t* p_pbIsI
 	return l_eRes;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 e_eFSS_BLOB_RES eFSS_BLOB_GetStorageStatus(t_eFSS_BLOB_Ctx* const p_ptCtx)
 {
 	/* Local variable */
@@ -187,7 +157,6 @@ e_eFSS_BLOB_RES eFSS_BLOB_GetStorageStatus(t_eFSS_BLOB_Ctx* const p_ptCtx)
 	return l_eRes;
 }
 
-
 e_eFSS_BLOB_RES eFSS_BLOB_Format(t_eFSS_BLOB_Ctx* const p_ptCtx)
 {
 	/* Local variable */
@@ -219,7 +188,21 @@ e_eFSS_BLOB_RES eFSS_BLOB_Format(t_eFSS_BLOB_Ctx* const p_ptCtx)
             else
             {
                 /* Calculate the CRC of the zero data blob */
-                l_uCrcZeroBlob = 10u;
+                memset(p_ptCtx->puBuff1, 0u, p_ptCtx->uBuff1L);
+                l_uCrcZeroBlob = 0u;
+                for(l_i = 0u; l_i < p_ptCtx->uNPage / 2u; l_i++)
+                {
+                    if( 0u == l_i )
+                    {
+                        l_eHLRes = eFSS_UTILSHLPRV_CrcDigest(p_ptCtx->ptCtxCb, MAX_UINT32VAL, p_ptCtx->puBuff1 , p_ptCtx->uBuff1L - EFSS_PAGEMETASIZE, &l_uCrcZeroBlob);
+                    }
+                    else
+                    {
+                        l_eHLRes = eFSS_UTILSHLPRV_CrcDigest(p_ptCtx->ptCtxCb, l_uCrcZeroBlob, p_ptCtx->puBuff1 , p_ptCtx->uBuff1L - EFSS_PAGEMETASIZE, &l_uCrcZeroBlob);
+                    }
+
+                    l_eRes = eFSS_BLOB_HLtoBLOBRes(l_eHLRes);
+                }
 
                 /* Format to zero everything */
 
@@ -339,7 +322,7 @@ e_eFSS_BLOB_RES eFSS_BLOB_ReadAllBlob(t_eFSS_BLOB_Ctx* const p_ptCtx, uint8_t* p
     uint32_t l_uReaded;
 
 	/* Check pointer validity */
-	if( ( NULL == p_ptCtx ) || ( NULL == p_puBuff ) )
+	if( ( NULL == p_ptCtx ) || ( NULL == p_puBuff ) || ( NULL == p_puReaded ) )
 	{
 		l_eRes = e_eFSS_BLOB_RES_BADPOINTER;
 	}
@@ -406,6 +389,8 @@ e_eFSS_BLOB_RES eFSS_BLOB_WriteAllBlob(t_eFSS_BLOB_Ctx* const p_ptCtx, uint8_t* 
     e_eFSS_UTILSHLPRV_RES l_eHLRes;
     uint32_t l_i;
     uint32_t l_uWritten;
+    t_eFSS_TYPE_PageMeta p_ptPagePrm;
+    uint32_t l_uCrcZeroBlob;
 
 	/* Check pointer validity */
 	if( ( NULL == p_ptCtx ) || ( NULL == p_puBuff ) )
@@ -440,6 +425,14 @@ e_eFSS_BLOB_RES eFSS_BLOB_WriteAllBlob(t_eFSS_BLOB_Ctx* const p_ptCtx, uint8_t* 
 
                     if( ( e_eFSS_BLOB_RES_OK == l_eRes ) || ( e_eFSS_BLOB_RES_OK_BKP_RCVRD == l_eRes ) )
                     {
+                        /* Calculate the CRC of the data blob */
+                        l_eRes = eFSS_BLOB_CrcBlobFull(p_ptCtx, p_puBuff, p_uBuffL, &l_uCrcZeroBlob);
+
+                        /* Read a page in order to get the seqeuntial number */
+                        l_eHLRes = eFSS_UTILSHLPRV_ReadPageNPrm(p_ptCtx->ptCtxCb, 0u,  p_ptCtx->puBuff1, p_ptCtx->uBuff1L,
+                                                                &p_ptPagePrm, p_ptCtx->uReTry);
+                        l_eRes = eFSS_BLOB_HLtoBLOBRes(l_eHLRes);
+
                         /* First format the original pages, update blob size and CRC value  */
                         l_i = 0u;
                         l_uWritten = 0u;
@@ -447,14 +440,20 @@ e_eFSS_BLOB_RES eFSS_BLOB_WriteAllBlob(t_eFSS_BLOB_Ctx* const p_ptCtx, uint8_t* 
                         /* Read all pages */
                         while( (l_i < p_ptCtx->uNPage / 2u)  && ( e_eFSS_BLOB_RES_OK == l_eRes ) && ( l_uWritten < p_uBuffL) && ( l_uWritten < p_uBuffL) )
                         {
-                            l_eHLRes = eFSS_UTILSHLPRV_WritePageNUpCrc(p_ptCtx->ptCtxCb, l_i,  p_ptCtx->puBuff1, p_ptCtx->uBuff1L, p_ptCtx->puBuff2, p_ptCtx->uBuff2L,
-                                                                       p_ptCtx->uReTry);
+                            memcpy(&p_puBuff[l_uWritten], p_ptCtx->puBuff1, p_ptCtx->uPageSize - EFSS_PAGEMETASIZE );
+                            p_ptPagePrm.uPageType = EFSS_PAGETYPE_BLOB;
+                            p_ptPagePrm.uPageSubType = EFSS_PAGESUBTYPE_BLOB;
+                            p_ptPagePrm.uPageVersion = p_ptCtx->uVersion;
+                            p_ptPagePrm.uPageUseSpecific1 = p_uBuffL;
+                            p_ptPagePrm.uPageUseSpecific2 = l_uCrcZeroBlob;
+                            p_ptPagePrm.uPageSequentialN = p_ptPagePrm.uPageSequentialN +1u;
+                            p_ptPagePrm.uPageMagicNumber = EFSS_PAGEMAGICNUMBER;
+                            p_ptPagePrm.uPageCrc = 0u;
+
+                            l_eHLRes = eFSS_UTILSHLPRV_WritePagePrmNUpCrc(p_ptCtx->ptCtxCb, l_i,  p_ptCtx->puBuff1, p_ptCtx->uBuff1L, p_ptCtx->puBuff2, p_ptCtx->uBuff2L,
+                                                                       &p_ptPagePrm, p_ptCtx->uReTry);
+                            l_uWritten += p_ptCtx->uPageSize - EFSS_PAGEMETASIZE;
                             l_eRes = eFSS_BLOB_HLtoBLOBRes(l_eHLRes);
-                            if( e_eFSS_BLOB_RES_OK != l_eRes )
-                            {
-                                memcpy(&p_puBuff[l_uWritten], p_ptCtx->puBuff1, p_ptCtx->uPageSize - EFSS_PAGEMETASIZE );
-                                l_uWritten += p_ptCtx->uPageSize - EFSS_PAGEMETASIZE;
-                            }
                         }
                     }
                 }
@@ -464,27 +463,6 @@ e_eFSS_BLOB_RES eFSS_BLOB_WriteAllBlob(t_eFSS_BLOB_Ctx* const p_ptCtx, uint8_t* 
 
 	return l_eRes;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 /***********************************************************************************************************************
@@ -623,11 +601,69 @@ static e_eFSS_BLOB_RES eFSS_BLOB_HLtoBLOBRes(const e_eFSS_UTILSHLPRV_RES p_eHLRe
     return l_eRes;
 }
 
+static e_eFSS_BLOB_RES eFSS_BLOB_CrcBlobFull(const t_eFSS_BLOB_Ctx* p_ptCtx, uint8_t* p_puBlob, uint32_t p_uBlobL,
+                                             uint32_t* p_puBlobCrc)
+{
+	/* Local variable */
+	e_eFSS_BLOB_RES l_eRes;
+    e_eFSS_UTILSHLPRV_RES l_eHLRes;
+    uint32_t l_uUnusedByte;
+    uint32_t l_uCrcDigested;
+
+	/* Check pointer validity */
+	if( ( NULL == p_ptCtx ) || ( NULL == p_puBlob ) || ( NULL == p_puBlobCrc ) )
+	{
+		l_eRes = e_eFSS_BLOB_RES_BADPOINTER;
+	}
+	else
+	{
+        l_uUnusedByte = ( p_ptCtx->uNPage / 2u ) * ( p_ptCtx->uPageSize - EFSS_PAGEMETASIZE ) - p_uBlobL;
+        l_uCrcDigested = MAX_UINT32VAL;
+
+        if( 0u != p_uBlobL )
+        {
+            l_eHLRes = eFSS_UTILSHLPRV_CrcDigest(p_ptCtx->ptCtxCb, l_uCrcDigested, p_puBlob , p_uBlobL, &l_uCrcDigested);
+            l_eRes = eFSS_BLOB_HLtoBLOBRes(l_eHLRes);
+        }
+
+        if( e_eFSS_BLOB_RES_OK == l_eRes )
+        {
+            if( 0u != l_uUnusedByte )
+            {
+                /* Calculate the remainings using zero as data */
+                memset(p_ptCtx->puBuff1, 0u, p_ptCtx->uBuff1L);
+
+                while( ( l_uUnusedByte > 0u) && ( e_eFSS_BLOB_RES_OK == l_eRes ) )
+                {
+                    if( l_uUnusedByte >= p_ptCtx->uBuff1L )
+                    {
+                        l_eHLRes = eFSS_UTILSHLPRV_CrcDigest(p_ptCtx->ptCtxCb, l_uCrcDigested, p_ptCtx->puBuff1 , p_ptCtx->uBuff1L, &l_uCrcDigested);
+                        l_eRes = eFSS_BLOB_HLtoBLOBRes(l_eHLRes);
+                        if( e_eFSS_BLOB_RES_OK == l_eRes )
+                        {
+                            l_uUnusedByte -= p_ptCtx->uBuff1L;
+                        }
+                    }
+                    else
+                    {
+                        l_eHLRes = eFSS_UTILSHLPRV_CrcDigest(p_ptCtx->ptCtxCb, l_uCrcDigested, p_ptCtx->puBuff1 , l_uUnusedByte, &l_uCrcDigested);
+                        l_eRes = eFSS_BLOB_HLtoBLOBRes(l_eHLRes);
+                        if( e_eFSS_BLOB_RES_OK == l_eRes )
+                        {
+                            l_uUnusedByte = 0u;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 static e_eFSS_BLOB_RES eFSS_BLOB_OriginBackupAligner(const t_eFSS_BLOB_Ctx* p_ptCtx)
 {
 	/* Local variable */
 	e_eFSS_BLOB_RES l_eRes;
-    e_eFSS_UTILSHLPRV_RES l_eHlRes;
+    e_eFSS_UTILSHLPRV_RES l_eHLRes;
 
     bool_t l_bIsOriginValid;
     t_eFSS_TYPE_PageMeta l_tMetaOrigin;
@@ -663,11 +699,11 @@ static e_eFSS_BLOB_RES eFSS_BLOB_OriginBackupAligner(const t_eFSS_BLOB_Ctx* p_pt
 
                     while( (l_i <= ( (p_ptCtx->uNPage/2u) - 1u) )  && ( e_eFSS_BLOB_RES_OK == l_eRes ) )
                     {
-                        l_eHlRes = eFSS_UTILSHLPRV_ClonePage(p_ptCtx->ptCtxCb, p_ptCtx->uReTry,
+                        l_eHLRes = eFSS_UTILSHLPRV_ClonePage(p_ptCtx->ptCtxCb, p_ptCtx->uReTry,
                                                  p_ptCtx->puBuff1, p_ptCtx->uBuff1L,
                                                  p_ptCtx->puBuff2, p_ptCtx->uBuff2L,
                                                  l_i, ( l_i + (p_ptCtx->uNPage/2u) ) );
-                        l_eRes = eFSS_BLOB_HLtoBLOBRes(l_eHlRes);
+                        l_eRes = eFSS_BLOB_HLtoBLOBRes(l_eHLRes);
                     }
 
                     if( e_eFSS_BLOB_RES_OK == l_eRes )
@@ -683,11 +719,11 @@ static e_eFSS_BLOB_RES eFSS_BLOB_OriginBackupAligner(const t_eFSS_BLOB_Ctx* p_pt
 
                     while( (l_i <= ( (p_ptCtx->uNPage/2u) - 1u) )  && ( e_eFSS_BLOB_RES_OK == l_eRes ) )
                     {
-                        l_eHlRes = eFSS_UTILSHLPRV_ClonePage(p_ptCtx->ptCtxCb, p_ptCtx->uReTry,
+                        l_eHLRes = eFSS_UTILSHLPRV_ClonePage(p_ptCtx->ptCtxCb, p_ptCtx->uReTry,
                                                  p_ptCtx->puBuff1, p_ptCtx->uBuff1L,
                                                  p_ptCtx->puBuff2, p_ptCtx->uBuff2L,
                                                  ( l_i + (p_ptCtx->uNPage/2u) ), l_i);
-                        l_eRes = eFSS_BLOB_HLtoBLOBRes(l_eHlRes);
+                        l_eRes = eFSS_BLOB_HLtoBLOBRes(l_eHLRes);
                     }
 
                     if( e_eFSS_BLOB_RES_OK == l_eRes )
@@ -699,6 +735,38 @@ static e_eFSS_BLOB_RES eFSS_BLOB_OriginBackupAligner(const t_eFSS_BLOB_Ctx* p_pt
                 else
                 {
                     /* Both backup and origin data are valid, verify if they are equals */
+                    l_i = 0u;
+
+                    while( (l_i <= ( (p_ptCtx->uNPage/2u) - 1u) )  && ( e_eFSS_BLOB_RES_OK == l_eRes ) )
+                    {
+                        l_eHLRes = eFSS_UTILSHLPRV_ReadPageNPrm(p_ptCtx->ptCtxCb, l_i,  p_ptCtx->puBuff1, p_ptCtx->uBuff1L,
+                                                                &l_tMetaOrigin, p_ptCtx->uReTry);
+                        l_eRes = eFSS_BLOB_HLtoBLOBRes(l_eHLRes);
+
+                        if( e_eFSS_BLOB_RES_OK == l_eRes )
+                        {
+                            l_eHLRes = eFSS_UTILSHLPRV_ReadPageNPrm(p_ptCtx->ptCtxCb, l_i,  p_ptCtx->puBuff2, p_ptCtx->uBuff2L,
+                                                                    &l_tMetaBackUp, p_ptCtx->uReTry);
+                            l_eRes = eFSS_BLOB_HLtoBLOBRes(l_eHLRes);
+                            if( e_eFSS_BLOB_RES_OK == l_eRes )
+                            {
+                                if( 0u != memcmp(p_ptCtx->puBuff1, p_ptCtx->puBuff2, p_ptCtx->uBuff1L) )
+                                {
+                                    l_eHLRes = eFSS_UTILSHLPRV_ClonePage(p_ptCtx->ptCtxCb, p_ptCtx->uReTry,
+                                                                         p_ptCtx->puBuff1, p_ptCtx->uBuff1L,
+                                                                         p_ptCtx->puBuff2, p_ptCtx->uBuff2L,
+                                                                         ( l_i + (p_ptCtx->uNPage/2u) ), l_i);
+                                    l_eRes = eFSS_BLOB_HLtoBLOBRes(l_eHLRes);
+                                }
+                            }
+                        }
+                    }
+
+                    if( e_eFSS_BLOB_RES_OK == l_eRes )
+                    {
+                        /* Original recovered */
+                        l_eRes = e_eFSS_BLOB_RES_OK_BKP_RCVRD;
+                    }
                 }
             }
         }
@@ -712,7 +780,7 @@ static e_eFSS_BLOB_RES eFSS_BLOB_ArePagesValid(const t_eFSS_BLOB_Ctx* p_ptCtx, u
 {
 	/* Local variable return */
 	e_eFSS_BLOB_RES l_eRes;
-    e_eFSS_UTILSHLPRV_RES l_eHlRes;
+    e_eFSS_UTILSHLPRV_RES l_eHLRes;
 
     /* Local variable Cycle data */
     uint32_t l_i;
@@ -752,15 +820,15 @@ static e_eFSS_BLOB_RES eFSS_BLOB_ArePagesValid(const t_eFSS_BLOB_Ctx* p_ptCtx, u
                 while( (l_i <= p_uEndIdx )  && ( true == l_bIsValidSequence ) && ( e_eFSS_BLOB_RES_OK == l_eRes ) )
                 {
                     /* Read a page, verify if it's valid and digest the CRC of the related BLOB */
-                    l_eHlRes = eFSS_UTILSHLPRV_ReadPageNPrm(p_ptCtx->ptCtxCb, l_i,  p_ptCtx->puBuff1, p_ptCtx->uBuff1L,
+                    l_eHLRes = eFSS_UTILSHLPRV_ReadPageNPrm(p_ptCtx->ptCtxCb, l_i,  p_ptCtx->puBuff1, p_ptCtx->uBuff1L,
                                                             &l_tPagePrm, p_ptCtx->uReTry);
-                    l_eRes = eFSS_BLOB_HLtoBLOBRes(l_eHlRes);
+                    l_eRes = eFSS_BLOB_HLtoBLOBRes(l_eHLRes);
                     if( e_eFSS_BLOB_RES_OK == l_eRes )
                     {
                         /* Verify if page is correct */
-                        l_eHlRes = eFSS_UTILSHLPRV_IsValidPageInBuff(p_ptCtx->ptCtxCb, p_ptCtx->puBuff1, p_ptCtx->uBuff1L,
+                        l_eHLRes = eFSS_UTILSHLPRV_IsValidPageInBuff(p_ptCtx->ptCtxCb, p_ptCtx->puBuff1, p_ptCtx->uBuff1L,
                                                                      &l_bIsValidPage);
-                        l_eRes = eFSS_BLOB_HLtoBLOBRes(l_eHlRes);
+                        l_eRes = eFSS_BLOB_HLtoBLOBRes(l_eHLRes);
                         if( e_eFSS_BLOB_RES_OK == l_eRes )
                         {
                             if( true == l_bIsValidPage)
@@ -771,8 +839,8 @@ static e_eFSS_BLOB_RES eFSS_BLOB_ArePagesValid(const t_eFSS_BLOB_Ctx* p_ptCtx, u
                                     l_tPagePrmFirst = l_tPagePrm;
 
                                     /* Calc CRC of whole data starting from here */
-                                    l_eHlRes = eFSS_UTILSHLPRV_CrcDigest(p_ptCtx->ptCtxCb, MAX_UINT32VAL, p_ptCtx->puBuff1 , p_ptCtx->uBuff1L - EFSS_PAGEMETASIZE, &l_uDigestCrc32);
-                                    l_eRes = eFSS_BLOB_HLtoBLOBRes(l_eHlRes);
+                                    l_eHLRes = eFSS_UTILSHLPRV_CrcDigest(p_ptCtx->ptCtxCb, MAX_UINT32VAL, p_ptCtx->puBuff1 , p_ptCtx->uBuff1L - EFSS_PAGEMETASIZE, &l_uDigestCrc32);
+                                    l_eRes = eFSS_BLOB_HLtoBLOBRes(l_eHLRes);
                                 }
                                 else
                                 {
@@ -786,8 +854,8 @@ static e_eFSS_BLOB_RES eFSS_BLOB_ArePagesValid(const t_eFSS_BLOB_Ctx* p_ptCtx, u
                                     else
                                     {
                                         /* Calculate the whole CRC */
-                                        l_eHlRes = eFSS_UTILSHLPRV_CrcDigest(p_ptCtx->ptCtxCb, l_uDigestCrc32, p_ptCtx->puBuff1 , p_ptCtx->uBuff1L - EFSS_PAGEMETASIZE, &l_uDigestCrc32);
-                                        l_eRes = eFSS_BLOB_HLtoBLOBRes(l_eHlRes);
+                                        l_eHLRes = eFSS_UTILSHLPRV_CrcDigest(p_ptCtx->ptCtxCb, l_uDigestCrc32, p_ptCtx->puBuff1 , p_ptCtx->uBuff1L - EFSS_PAGEMETASIZE, &l_uDigestCrc32);
+                                        l_eRes = eFSS_BLOB_HLtoBLOBRes(l_eHLRes);
                                     }
                                 }
                             }
