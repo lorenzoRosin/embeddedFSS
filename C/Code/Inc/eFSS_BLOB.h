@@ -116,26 +116,6 @@ e_eFSS_BLOB_RES eFSS_BLOB_IsInit(t_eFSS_BLOB_Ctx* const p_ptCtx, bool_t* p_pbIsI
 e_eFSS_BLOB_RES eFSS_BLOB_GetStorageStatus(t_eFSS_BLOB_Ctx* const p_ptCtx);
 
 /**
- * @brief       Format the memory used for the blob and all data
- *
- * @param[in]   p_ptCtx    - Blob context
- *
- * @return      e_eFSS_BLOB_RES_BADPOINTER         - In case of bad pointer passed to the function
- *              e_eFSS_BLOB_RES_OK                 - Operation ended correctly
- *              e_eFSS_BLOB_RES_OK_BKP_RCVRD       - All ok, but some page where recovered
- *              e_eFSS_BLOB_RES_NOTVALIDBLOB       - No valid blob founded
- *              e_eFSS_BLOB_RES_NEWVERSIONBLOB     - New version of the blob requested
- *              e_eFSS_BLOB_RES_NOINITLIB          - Need to init the lib before calling this function
- *              e_eFSS_BLOB_RES_CORRUPTCTX         - Context is corrupted
- *              e_eFSS_BLOB_RES_CLBCKERASEERR      - Erase callback returned error
- *              e_eFSS_BLOB_RES_CLBCKWRITEERR      - Write callback returned error
- *              e_eFSS_BLOB_RES_CLBCKREADERR       - Read callback returned error
- *              e_eFSS_BLOB_RES_CLBCKCRCERR        - Crc callback returned error
- *              e_eFSS_BLOB_RES_WRITENOMATCHREAD   - After Write operation the Read operation readed different data
- */
-e_eFSS_BLOB_RES eFSS_BLOB_Format(t_eFSS_BLOB_Ctx* const p_ptCtx);
-
-/**
  * @brief       Get info about the stored blob
  *
  * @param[in]   p_ptCtx      - Blob context
@@ -154,7 +134,27 @@ e_eFSS_BLOB_RES eFSS_BLOB_Format(t_eFSS_BLOB_Ctx* const p_ptCtx);
  *              e_eFSS_BLOB_RES_CLBCKCRCERR        - Crc callback returned error
  *              e_eFSS_BLOB_RES_WRITENOMATCHREAD   - After Write operation the Read operation readed different data
  */
-e_eFSS_BLOB_RES eFSS_BLOB_GetInfo(t_eFSS_BLOB_Ctx* const p_ptCtx, bool_t* p_puBlobSize);
+e_eFSS_BLOB_RES eFSS_BLOB_GetInfo(t_eFSS_BLOB_Ctx* const p_ptCtx, bool_t* p_pbBlobSize);
+
+/**
+ * @brief       Format the memory used for the blob and all data
+ *
+ * @param[in]   p_ptCtx    - Blob context
+ *
+ * @return      e_eFSS_BLOB_RES_BADPOINTER         - In case of bad pointer passed to the function
+ *              e_eFSS_BLOB_RES_OK                 - Operation ended correctly
+ *              e_eFSS_BLOB_RES_OK_BKP_RCVRD       - All ok, but some page where recovered
+ *              e_eFSS_BLOB_RES_NOTVALIDBLOB       - No valid blob founded
+ *              e_eFSS_BLOB_RES_NEWVERSIONBLOB     - New version of the blob requested
+ *              e_eFSS_BLOB_RES_NOINITLIB          - Need to init the lib before calling this function
+ *              e_eFSS_BLOB_RES_CORRUPTCTX         - Context is corrupted
+ *              e_eFSS_BLOB_RES_CLBCKERASEERR      - Erase callback returned error
+ *              e_eFSS_BLOB_RES_CLBCKWRITEERR      - Write callback returned error
+ *              e_eFSS_BLOB_RES_CLBCKREADERR       - Read callback returned error
+ *              e_eFSS_BLOB_RES_CLBCKCRCERR        - Crc callback returned error
+ *              e_eFSS_BLOB_RES_WRITENOMATCHREAD   - After Write operation the Read operation readed different data
+ */
+e_eFSS_BLOB_RES eFSS_BLOB_Format(t_eFSS_BLOB_Ctx* const p_ptCtx);
 
 /**
  * @brief       Read the whole blob
