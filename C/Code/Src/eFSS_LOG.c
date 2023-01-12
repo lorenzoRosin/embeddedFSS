@@ -26,7 +26,7 @@
  **********************************************************************************************************************/
 static bool_t eFSS_LOG_IsStatusStillCoherent(const t_eFSS_LOG_Ctx* p_ptCtx);
 static e_eFSS_LOG_RES eFSS_LOG_HLtoLogRes(const e_eFSS_UTILSHLPRV_RES p_eHLRes);
-static e_eFSS_LOG_RES eFSS_LOG_LoadIndex(t_eFSS_LOG_Ctx* const p_ptCtx);
+static e_eFSS_LOG_RES eFSS_LOG_LoadIndexNRepair(t_eFSS_LOG_Ctx* const p_ptCtx);
 static e_eFSS_LOG_RES eFSS_LOG_LoadIndexFromCache(t_eFSS_LOG_Ctx* const p_ptCtx);
 static e_eFSS_LOG_RES eFSS_LOG_LoadIndxBySearch(t_eFSS_LOG_Ctx* const p_ptCtx);
 static uint32_t eFSS_LOG_GetNextIndex(uint32_t p_uCurrIdx, uint32_t p_uTotPage);
@@ -129,7 +129,7 @@ e_eFSS_LOG_RES eFSS_LOG_GetStorageStatus(t_eFSS_LOG_Ctx* const p_ptCtx)
             }
             else
             {
-                // l_eRes = eFSS_BLOB_OriginBackupAligner(p_ptCtx);
+                l_eRes = eFSS_LOG_LoadIndexNRepair(p_ptCtx);
             }
 		}
 	}
@@ -166,8 +166,8 @@ e_eFSS_LOG_RES eFSS_LOG_GetLogInfo(t_eFSS_LOG_Ctx* const p_ptCtx, uint32_t *p_pu
             }
             else
             {
-                // /* Fix any memory problem */
-                // l_eRes = eFSS_BLOB_OriginBackupAligner(p_ptCtx);
+                /* Fix any memory problem and load index */
+                l_eRes = eFSS_LOG_LoadIndexNRepair(p_ptCtx);
                 //
                 // if( ( e_eFSS_BLOB_RES_OK == l_eRes ) || ( e_eFSS_BLOB_RES_OK_BKP_RCVRD == l_eRes ) )
                 // {
@@ -328,7 +328,7 @@ static e_eFSS_LOG_RES eFSS_LOG_HLtoLogRes(const e_eFSS_UTILSHLPRV_RES p_eHLRes)
 }
 
 
-static e_eFSS_LOG_RES eFSS_LOG_LoadIndex(t_eFSS_LOG_Ctx* const p_ptCtx)
+static e_eFSS_LOG_RES eFSS_LOG_LoadIndexNRepair(t_eFSS_LOG_Ctx* const p_ptCtx)
 {
     e_eFSS_LOG_RES l_eRes;
 
@@ -483,10 +483,30 @@ static e_eFSS_LOG_RES eFSS_LOG_LoadIndxBySearch(t_eFSS_LOG_Ctx* const p_ptCtx)
 
 static uint32_t eFSS_LOG_GetNextIndex(uint32_t p_uCurrIdx, uint32_t p_uTotPage)
 {
-    return 0;
+    uint32_t l_uNextIdx;
+
+    if( p_uCurrIdx >= ( p_uTotPage-1u ) )
+    {
+        l_uNextIdx = 0u;
+    }
+    else
+    {
+        l_uNextIdx = p_uCurrIdx + 1u;
+    }
+    return l_uNextIdx;
 }
 
 static uint32_t eFSS_LOG_GetPrevIndex(uint32_t p_uCurrIdx, uint32_t p_uTotPage)
 {
-    return 0;
+    uint32_t l_uPrevIdx;
+
+    if( p_uCurrIdx <= 0u )
+    {
+        p_uCurrIdx = p_uTotPage - 1u;
+    }
+    else
+    {
+        l_uPrevIdx = p_uCurrIdx - 1u;
+    }
+    return l_uPrevIdx;
 }
