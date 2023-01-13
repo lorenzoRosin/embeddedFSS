@@ -40,6 +40,8 @@ extern "C" {
 #define EFSS_PAGESUBTYPE_LOG                                                                     ( ( uint32_t )  0x01u )
 #define EFSS_PAGESUBTYPE_LOGNEWEST                                                               ( ( uint32_t )  0x02u )
 #define EFSS_PAGESUBTYPE_LOGNEWESTBKP                                                            ( ( uint32_t )  0x03u )
+#define EFSS_PAGESUBTYPE_LOGCACHEORI                                                             ( ( uint32_t )  0x04u )
+#define EFSS_PAGESUBTYPE_LOGCACHEBKP                                                             ( ( uint32_t )  0x05u )
 #define EFSS_PAGESUBTYPE_DB                                                                      ( ( uint32_t )  0x01u )
 
 
