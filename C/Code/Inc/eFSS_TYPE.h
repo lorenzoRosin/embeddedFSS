@@ -31,18 +31,30 @@ extern "C" {
 #define ECU_SOF                                                                                    ( ( uint8_t ) 0xA1u )
 #define ECU_EOF                                                                                    ( ( uint8_t ) 0xA2u )
 #define ECU_ESC                                                                                    ( ( uint8_t ) 0xA3u )
+
+/* Pages Metadata values */
 #define EFSS_PAGEMETASIZE                                                                          ( ( uint32_t )  28u )
 #define EFSS_PAGEMAGICNUMBER                                                               ( ( uint32_t )  0xA5A5A5A5u )
+
+/* Pages type */
 #define EFSS_PAGETYPE_BLOB                                                                       ( ( uint32_t )  0x01u )
 #define EFSS_PAGETYPE_LOG                                                                        ( ( uint32_t )  0x02u )
 #define EFSS_PAGETYPE_DB                                                                         ( ( uint32_t )  0x03u )
+
+/* Page BLOB subtypes */
 #define EFSS_PAGESUBTYPE_BLOB                                                                    ( ( uint32_t )  0x01u )
+
+/* Page LOG subtypes */
 #define EFSS_PAGESUBTYPE_LOG                                                                     ( ( uint32_t )  0x01u )
 #define EFSS_PAGESUBTYPE_LOGNEWEST                                                               ( ( uint32_t )  0x02u )
 #define EFSS_PAGESUBTYPE_LOGNEWESTBKP                                                            ( ( uint32_t )  0x03u )
 #define EFSS_PAGESUBTYPE_LOGCACHEORI                                                             ( ( uint32_t )  0x04u )
 #define EFSS_PAGESUBTYPE_LOGCACHEBKP                                                             ( ( uint32_t )  0x05u )
+
+/* Page DB subtypes */
 #define EFSS_PAGESUBTYPE_DB                                                                      ( ( uint32_t )  0x01u )
+
+
 
 
 
@@ -114,6 +126,13 @@ typedef struct
     uint32_t    uPageCrc;
 }t_eFSS_TYPE_PageMeta;
 
+typedef struct
+{
+    uint32_t    uTotPages;
+    uint32_t    uPagesLen;
+    uint32_t    uStorageVer;
+    uint32_t    uRDERetry;
+}t_eFSS_TYPE_StorageSettings;
 
 
 #ifdef __cplusplus

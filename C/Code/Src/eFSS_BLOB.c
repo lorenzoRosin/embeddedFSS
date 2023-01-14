@@ -39,8 +39,7 @@ static e_eFSS_BLOB_RES eFSS_BLOB_ArePagesValid(const t_eFSS_BLOB_Ctx* p_ptCtx, u
  *   GLOBAL FUNCTIONS
  **********************************************************************************************************************/
 e_eFSS_BLOB_RES eFSS_BLOB_InitCtx(t_eFSS_BLOB_Ctx* const p_ptCtx, t_eFSS_TYPE_CbCtx* const p_ptCtxCb,
-                                  const uint32_t p_uPageToUse, const uint32_t p_uPageSize, uint8_t* const p_puBuff,
-                                  uint32_t p_uBuffL, uint16_t p_uBlobVersion, uint32_t p_uRetry)
+                                  uint8_t* const p_puBuff, uint32_t p_uBuffL, t_eFSS_TYPE_StorageSettings p_tStorSet)
 {
     e_eFSS_BLOB_RES l_eRes;
 
@@ -62,28 +61,28 @@ e_eFSS_BLOB_RES eFSS_BLOB_InitCtx(t_eFSS_BLOB_Ctx* const p_ptCtx, t_eFSS_TYPE_Cb
         else
         {
             /* Check data validity */
-            if( ( p_uPageToUse < 2u ) || ( 0u != ( p_uPageToUse % 2u ) ) )
+            if( p_uBuffL != ( 2u * p_tStorSet.uPagesLen ) )
             {
                 l_eRes = e_eFSS_BLOB_RES_BADPARAM;
             }
             else
             {
                 /* Check data validity */
-                if( ( p_uPageSize <= EFSS_PAGEMETASIZE ) || ( 0u != ( p_uPageSize % 2u ) ) )
+                if( ( p_tStorSet.uTotPages < 2u ) || ( 0u != ( p_tStorSet.uTotPages % 2u ) ) )
                 {
                     l_eRes = e_eFSS_BLOB_RES_BADPARAM;
                 }
                 else
                 {
                     /* Check data validity */
-                    if( p_uBuffL != ( 2u * p_uPageSize ) )
+                    if( ( p_tStorSet.uPagesLen <= EFSS_PAGEMETASIZE ) || ( 0u != ( p_tStorSet.uPagesLen % 2u ) ) )
                     {
                         l_eRes = e_eFSS_BLOB_RES_BADPARAM;
                     }
                     else
                     {
                         /* Check data validity */
-                        if( p_uRetry <= 0u )
+                        if( p_tStorSet.uRDERetry <= 0u )
                         {
                             l_eRes = e_eFSS_BLOB_RES_BADPARAM;
                         }
@@ -96,10 +95,7 @@ e_eFSS_BLOB_RES eFSS_BLOB_InitCtx(t_eFSS_BLOB_Ctx* const p_ptCtx, t_eFSS_TYPE_Cb
                             p_ptCtx->uBuff1L = p_uBuffL / 2u;
                             p_ptCtx->puBuff2 = &p_puBuff[p_ptCtx->uBuff1L];
                             p_ptCtx->uBuff2L = p_uBuffL / 2u;
-                            p_ptCtx->uNPage = p_uPageToUse;
-                            p_ptCtx->uPageSize = p_uPageSize;
-                            p_ptCtx->uReTry = p_uRetry;
-                            p_ptCtx->uVersion = p_uBlobVersion;
+                            p_ptCtx->tStorSett = p_tStorSet;
                         }
                     }
                 }
@@ -198,7 +194,7 @@ e_eFSS_BLOB_RES eFSS_BLOB_GetInfo(t_eFSS_BLOB_Ctx* const p_ptCtx, bool_t* p_pbBl
                 {
                     /* Retrive info from the first page */
                     l_eHLRes = eFSS_UTILSHLPRV_ReadPageNPrm(p_ptCtx->ptCtxCb, 0u,  p_ptCtx->puBuff1, p_ptCtx->uBuff1L,
-                                                            &l_tPagePrm, p_ptCtx->uReTry);
+                                                            &l_tPagePrm, p_ptCtx->tStorSett.uRDERetry);
 
                     if( e_eFSS_UTILSHLPRV_RES_OK != l_eHLRes )
                     {
@@ -258,7 +254,7 @@ e_eFSS_BLOB_RES eFSS_BLOB_Format(t_eFSS_BLOB_Ctx* const p_ptCtx)
                      * to the nackup pages  */
                     l_uI = 0u;
 
-                    while( ( l_uI < p_ptCtx->uNPage )  && ( e_eFSS_BLOB_RES_OK == l_eRes ) )
+                    while( ( l_uI < p_ptCtx->tStorSett.uTotPages )  && ( e_eFSS_BLOB_RES_OK == l_eRes ) )
                     {
                         /* Clear buffer */
                         memset(p_ptCtx->puBuff1, 0u, p_ptCtx->uBuff1L);
@@ -266,10 +262,10 @@ e_eFSS_BLOB_RES eFSS_BLOB_Format(t_eFSS_BLOB_Ctx* const p_ptCtx)
                         /* Setup metadata */
                         l_tPagePrmToWrite.uPageType = EFSS_PAGETYPE_BLOB;
                         l_tPagePrmToWrite.uPageSubType = EFSS_PAGESUBTYPE_BLOB;
-                        l_tPagePrmToWrite.uPageVersion = p_ptCtx->uVersion;
+                        l_tPagePrmToWrite.uPageVersion = p_ptCtx->tStorSett.uStorageVer;
                         l_tPagePrmToWrite.uPageUseSpecific1 = 0u;               /* Size blob */
                         l_tPagePrmToWrite.uPageUseSpecific2 = l_uCrcZeroBlob;   /* Crc blob */
-                        l_tPagePrmToWrite.uPageUseSpecific3 = p_ptCtx->uNPage;  /* Total Page given */
+                        l_tPagePrmToWrite.uPageUseSpecific3 = p_ptCtx->tStorSett.uTotPages;  /* Total Page given */
                         l_tPagePrmToWrite.uPageUseSpecific4 = 0u;               /* Sequential number */
                         l_tPagePrmToWrite.uPageMagicNumber = EFSS_PAGEMAGICNUMBER;
                         l_tPagePrmToWrite.uPageCrc = 0u;
@@ -278,7 +274,7 @@ e_eFSS_BLOB_RES eFSS_BLOB_Format(t_eFSS_BLOB_Ctx* const p_ptCtx)
                         l_eHLRes =  eFSS_UTILSHLPRV_WritePagePrmNUpCrc(p_ptCtx->ptCtxCb, l_uI,
                                                                        p_ptCtx->puBuff1, p_ptCtx->uBuff1L,
                                                                        p_ptCtx->puBuff2, p_ptCtx->uBuff2L,
-                                                                       &l_tPagePrmToWrite, p_ptCtx->uReTry);
+                                                                       &l_tPagePrmToWrite, p_ptCtx->tStorSett.uRDERetry);
                         l_eRes = eFSS_BLOB_HLtoBLOBRes(l_eHLRes);
                     }
                 }
@@ -336,7 +332,7 @@ e_eFSS_BLOB_RES eFSS_BLOB_ReadAllBlob(t_eFSS_BLOB_Ctx* const p_ptCtx, uint8_t* p
                     {
                         /* Read first pages of the blob to check it's size */
                         l_eHLRes = eFSS_UTILSHLPRV_ReadPageNPrm(p_ptCtx->ptCtxCb, 0u, p_ptCtx->puBuff1,
-                                                                p_ptCtx->uBuff1L, &l_tPagePrm, p_ptCtx->uReTry);
+                                                                p_ptCtx->uBuff1L, &l_tPagePrm, p_ptCtx->tStorSett.uRDERetry);
                         l_eRes = eFSS_BLOB_HLtoBLOBRes(l_eHLRes);
                         if( e_eFSS_BLOB_RES_OK == l_eRes )
                         {
@@ -353,17 +349,17 @@ e_eFSS_BLOB_RES eFSS_BLOB_ReadAllBlob(t_eFSS_BLOB_Ctx* const p_ptCtx, uint8_t* p
                             }
 
                             /* Calculate the raw space for data in every page */
-                            l_uRawDataP = p_ptCtx->uPageSize - EFSS_PAGEMETASIZE;
+                            l_uRawDataP = p_ptCtx->tStorSett.uPagesLen - EFSS_PAGEMETASIZE;
 
                             /* Pages are ok, read till we have data or till the buffer is full */
                             l_uI = 0u;
 
                             /* Read all pages */
-                            while( ( l_uI < p_ptCtx->uNPage / 2u )  && ( e_eFSS_BLOB_RES_OK == l_eRes ) &&
+                            while( ( l_uI < p_ptCtx->tStorSett.uTotPages / 2u )  && ( e_eFSS_BLOB_RES_OK == l_eRes ) &&
                                    ( l_uRemToRead > 0) )
                             {
                                 l_eHLRes = eFSS_UTILSHLPRV_ReadPageNPrm(p_ptCtx->ptCtxCb, l_uI, p_ptCtx->puBuff1,
-                                                                        p_ptCtx->uBuff1L, &l_tPagePrm, p_ptCtx->uReTry);
+                                                                        p_ptCtx->uBuff1L, &l_tPagePrm, p_ptCtx->tStorSett.uRDERetry);
                                 l_eRes = eFSS_BLOB_HLtoBLOBRes(l_eHLRes);
                                 if( e_eFSS_BLOB_RES_OK == l_eRes )
                                 {
@@ -432,8 +428,8 @@ e_eFSS_BLOB_RES eFSS_BLOB_WriteAllBlob(t_eFSS_BLOB_Ctx* const p_ptCtx, uint8_t* 
                 else
                 {
                     /* Calculate the raw space for data in every page */
-                    l_uRawDataP = p_ptCtx->uPageSize - EFSS_PAGEMETASIZE;
-                    l_uRawDataWhole = l_uRawDataP * ( p_ptCtx->uNPage / 2u );
+                    l_uRawDataP = p_ptCtx->tStorSett.uPagesLen - EFSS_PAGEMETASIZE;
+                    l_uRawDataWhole = l_uRawDataP * ( p_ptCtx->tStorSett.uTotPages / 2u );
 
                     if( p_uBuffL >= l_uRawDataWhole )
                     {
@@ -451,7 +447,7 @@ e_eFSS_BLOB_RES eFSS_BLOB_WriteAllBlob(t_eFSS_BLOB_Ctx* const p_ptCtx, uint8_t* 
 
                             /* Read a page in order to get the seqeuntial number */
                             l_eHLRes = eFSS_UTILSHLPRV_ReadPageNPrm(p_ptCtx->ptCtxCb, 0u,  p_ptCtx->puBuff1,
-                                                                    p_ptCtx->uBuff1L, &l_tPagePrm, p_ptCtx->uReTry);
+                                                                    p_ptCtx->uBuff1L, &l_tPagePrm, p_ptCtx->tStorSett.uRDERetry);
                             l_eRes = eFSS_BLOB_HLtoBLOBRes(l_eHLRes);
 
 
@@ -465,7 +461,7 @@ e_eFSS_BLOB_RES eFSS_BLOB_WriteAllBlob(t_eFSS_BLOB_Ctx* const p_ptCtx, uint8_t* 
                                 l_uToWrite = p_uBuffL;
 
                                 /* write blob data, and empty data using 0 */
-                                while( ( l_uI < p_ptCtx->uNPage / 2u )  && ( e_eFSS_BLOB_RES_OK == l_eRes ) )
+                                while( ( l_uI < p_ptCtx->tStorSett.uTotPages / 2u )  && ( e_eFSS_BLOB_RES_OK == l_eRes ) )
                                 {
                                     memset(p_ptCtx->puBuff1, 0u, p_ptCtx->uBuff1L);
 
@@ -489,7 +485,7 @@ e_eFSS_BLOB_RES eFSS_BLOB_WriteAllBlob(t_eFSS_BLOB_Ctx* const p_ptCtx, uint8_t* 
 
                                     l_tPagePrm.uPageType = EFSS_PAGETYPE_BLOB;
                                     l_tPagePrm.uPageSubType = EFSS_PAGESUBTYPE_BLOB;
-                                    l_tPagePrm.uPageVersion = p_ptCtx->uVersion;
+                                    l_tPagePrm.uPageVersion = p_ptCtx->tStorSett.uStorageVer;
                                     l_tPagePrm.uPageUseSpecific1 = p_uBuffL;
                                     l_tPagePrm.uPageUseSpecific2 = l_uCrcZeroBlob;
                                     l_tPagePrm.uPageUseSpecific4 = l_uNweSeq;
@@ -499,7 +495,7 @@ e_eFSS_BLOB_RES eFSS_BLOB_WriteAllBlob(t_eFSS_BLOB_Ctx* const p_ptCtx, uint8_t* 
                                     l_eHLRes = eFSS_UTILSHLPRV_WritePagePrmNUpCrc(p_ptCtx->ptCtxCb, l_uI,
                                                                                   p_ptCtx->puBuff1, p_ptCtx->uBuff1L,
                                                                                   p_ptCtx->puBuff2, p_ptCtx->uBuff2L,
-                                                                                  &l_tPagePrm, p_ptCtx->uReTry);
+                                                                                  &l_tPagePrm, p_ptCtx->tStorSett.uRDERetry);
                                     l_eRes = eFSS_BLOB_HLtoBLOBRes(l_eHLRes);
                                 }
                             }
@@ -533,27 +529,27 @@ static bool_t eFSS_BLOB_IsStatusStillCoherent(const t_eFSS_BLOB_Ctx* p_ptCtx)
     else
     {
         /* Check data validity */
-        if( ( p_ptCtx->uNPage < 2u ) || ( 0u != ( p_ptCtx->uNPage % 2u ) ) )
+        if( ( p_ptCtx->tStorSett.uTotPages < 2u ) || ( 0u != ( p_ptCtx->tStorSett.uTotPages % 2u ) ) )
         {
             l_eRes = false;
         }
         else
         {
             /* Check data validity */
-            if( ( p_ptCtx->uPageSize <= EFSS_PAGEMETASIZE ) || ( 0u != ( p_ptCtx->uPageSize % 2u ) ) )
+            if( ( p_ptCtx->tStorSett.uPagesLen <= EFSS_PAGEMETASIZE ) || ( 0u != ( p_ptCtx->tStorSett.uPagesLen % 2u ) ) )
             {
                 l_eRes = false;
             }
             else
             {
-                if( ( p_ptCtx->uPageSize != p_ptCtx->uBuff1L ) || ( p_ptCtx->uPageSize != p_ptCtx->uBuff2L ) )
+                if( ( p_ptCtx->tStorSett.uPagesLen != p_ptCtx->uBuff1L ) || ( p_ptCtx->tStorSett.uPagesLen != p_ptCtx->uBuff2L ) )
                 {
                     l_eRes = false;
                 }
                 else
                 {
                     /* Check data validity */
-                    if( p_ptCtx->uReTry <= 0u )
+                    if( p_ptCtx->tStorSett.uRDERetry <= 0u )
                     {
                         l_eRes = false;
                     }
@@ -670,8 +666,8 @@ static e_eFSS_BLOB_RES eFSS_BLOB_CrcBlobFull(const t_eFSS_BLOB_Ctx* p_ptCtx, uin
 	else
 	{
         /* Calculate the raw space for data in every page */
-        l_uRawDataP = p_ptCtx->uPageSize - EFSS_PAGEMETASIZE;
-        l_uRawDataWhole = l_uRawDataP * ( p_ptCtx->uNPage / 2u );
+        l_uRawDataP = p_ptCtx->tStorSett.uPagesLen - EFSS_PAGEMETASIZE;
+        l_uRawDataWhole = l_uRawDataP * ( p_ptCtx->tStorSett.uTotPages / 2u );
 
         if( l_uRawDataWhole < p_uBlobL )
         {
@@ -752,11 +748,11 @@ static e_eFSS_BLOB_RES eFSS_BLOB_OriginBackupAligner(const t_eFSS_BLOB_Ctx* p_pt
 	else
 	{
         /* Verify the validity of original sequence and backup sequence  */
-        l_eRes = eFSS_BLOB_ArePagesValid(p_ptCtx, 0u, ( ( p_ptCtx->uNPage/2u ) - 1u), &l_bIsOriginValid, &l_tMetaOri);
+        l_eRes = eFSS_BLOB_ArePagesValid(p_ptCtx, 0u, ( ( p_ptCtx->tStorSett.uTotPages/2u ) - 1u), &l_bIsOriginValid, &l_tMetaOri);
 
         if( e_eFSS_BLOB_RES_OK == l_eRes )
         {
-            l_eRes = eFSS_BLOB_ArePagesValid(p_ptCtx, ( p_ptCtx->uNPage/2u ), ( p_ptCtx->uNPage - 1u ),
+            l_eRes = eFSS_BLOB_ArePagesValid(p_ptCtx, ( p_ptCtx->tStorSett.uTotPages/2u ), ( p_ptCtx->tStorSett.uTotPages - 1u ),
                                              &l_bIsBackupValid, &l_tMetaBkp);
 
             if( e_eFSS_BLOB_RES_OK == l_eRes )
@@ -771,12 +767,12 @@ static e_eFSS_BLOB_RES eFSS_BLOB_OriginBackupAligner(const t_eFSS_BLOB_Ctx* p_pt
                     /* Need to recover backup */
                     l_uI = 0u;
 
-                    while( (l_uI <= ( (p_ptCtx->uNPage/2u) - 1u) )  && ( e_eFSS_BLOB_RES_OK == l_eRes ) )
+                    while( (l_uI <= ( (p_ptCtx->tStorSett.uTotPages/2u) - 1u) )  && ( e_eFSS_BLOB_RES_OK == l_eRes ) )
                     {
-                        l_eHLRes = eFSS_UTILSHLPRV_ClonePage(p_ptCtx->ptCtxCb, p_ptCtx->uReTry,
+                        l_eHLRes = eFSS_UTILSHLPRV_ClonePage(p_ptCtx->ptCtxCb, p_ptCtx->tStorSett.uRDERetry,
                                                              p_ptCtx->puBuff1, p_ptCtx->uBuff1L,
                                                              p_ptCtx->puBuff2, p_ptCtx->uBuff2L,
-                                                             l_uI, ( l_uI + (p_ptCtx->uNPage/2u) ) );
+                                                             l_uI, ( l_uI + (p_ptCtx->tStorSett.uTotPages/2u) ) );
                         l_eRes = eFSS_BLOB_HLtoBLOBRes(l_eHLRes);
                     }
 
@@ -785,7 +781,7 @@ static e_eFSS_BLOB_RES eFSS_BLOB_OriginBackupAligner(const t_eFSS_BLOB_Ctx* p_pt
                         /* Backup recovered */
                         l_eRes = e_eFSS_BLOB_RES_OK_BKP_RCVRD;
 
-                        if( p_ptCtx->uVersion != l_tMetaOri.uPageVersion )
+                        if( p_ptCtx->tStorSett.uStorageVer != l_tMetaOri.uPageVersion )
                         {
                             /* New version found */
                             l_eRes = e_eFSS_BLOB_RES_NEWVERSIONBLOB;
@@ -797,12 +793,12 @@ static e_eFSS_BLOB_RES eFSS_BLOB_OriginBackupAligner(const t_eFSS_BLOB_Ctx* p_pt
                     /* Need to recover original data */
                     l_uI = 0u;
 
-                    while( (l_uI <= ( (p_ptCtx->uNPage/2u) - 1u) )  && ( e_eFSS_BLOB_RES_OK == l_eRes ) )
+                    while( (l_uI <= ( (p_ptCtx->tStorSett.uTotPages/2u) - 1u) )  && ( e_eFSS_BLOB_RES_OK == l_eRes ) )
                     {
-                        l_eHLRes = eFSS_UTILSHLPRV_ClonePage(p_ptCtx->ptCtxCb, p_ptCtx->uReTry,
+                        l_eHLRes = eFSS_UTILSHLPRV_ClonePage(p_ptCtx->ptCtxCb, p_ptCtx->tStorSett.uRDERetry,
                                                              p_ptCtx->puBuff1, p_ptCtx->uBuff1L,
                                                              p_ptCtx->puBuff2, p_ptCtx->uBuff2L,
-                                                             ( l_uI + (p_ptCtx->uNPage/2u) ), l_uI);
+                                                             ( l_uI + (p_ptCtx->tStorSett.uTotPages/2u) ), l_uI);
                         l_eRes = eFSS_BLOB_HLtoBLOBRes(l_eHLRes);
                     }
 
@@ -811,7 +807,7 @@ static e_eFSS_BLOB_RES eFSS_BLOB_OriginBackupAligner(const t_eFSS_BLOB_Ctx* p_pt
                         /* Original recovered */
                         l_eRes = e_eFSS_BLOB_RES_OK_BKP_RCVRD;
 
-                        if( p_ptCtx->uVersion != l_tMetaBkp.uPageVersion )
+                        if( p_ptCtx->tStorSett.uStorageVer != l_tMetaBkp.uPageVersion )
                         {
                             /* New version found */
                             l_eRes = e_eFSS_BLOB_RES_NEWVERSIONBLOB;
@@ -828,12 +824,12 @@ static e_eFSS_BLOB_RES eFSS_BLOB_OriginBackupAligner(const t_eFSS_BLOB_Ctx* p_pt
                         /* They are different, copy from origin to backup */
                         l_uI = 0u;
 
-                        while( (l_uI <= ( (p_ptCtx->uNPage/2u) - 1u) )  && ( e_eFSS_BLOB_RES_OK == l_eRes ) )
+                        while( (l_uI <= ( (p_ptCtx->tStorSett.uTotPages/2u) - 1u) )  && ( e_eFSS_BLOB_RES_OK == l_eRes ) )
                         {
-                            l_eHLRes = eFSS_UTILSHLPRV_ClonePage(p_ptCtx->ptCtxCb, p_ptCtx->uReTry,
+                            l_eHLRes = eFSS_UTILSHLPRV_ClonePage(p_ptCtx->ptCtxCb, p_ptCtx->tStorSett.uRDERetry,
                                                                  p_ptCtx->puBuff1, p_ptCtx->uBuff1L,
                                                                  p_ptCtx->puBuff2, p_ptCtx->uBuff2L,
-                                                                 l_uI, ( l_uI + (p_ptCtx->uNPage/2u) ) );
+                                                                 l_uI, ( l_uI + (p_ptCtx->tStorSett.uTotPages/2u) ) );
                             l_eRes = eFSS_BLOB_HLtoBLOBRes(l_eHLRes);
                         }
 
@@ -842,7 +838,7 @@ static e_eFSS_BLOB_RES eFSS_BLOB_OriginBackupAligner(const t_eFSS_BLOB_Ctx* p_pt
                             /* Backup recovered */
                             l_eRes = e_eFSS_BLOB_RES_OK_BKP_RCVRD;
 
-                            if( p_ptCtx->uVersion != l_tMetaOri.uPageVersion )
+                            if( p_ptCtx->tStorSett.uStorageVer != l_tMetaOri.uPageVersion )
                             {
                                 /* New version found */
                                 l_eRes = e_eFSS_BLOB_RES_NEWVERSIONBLOB;
@@ -852,7 +848,7 @@ static e_eFSS_BLOB_RES eFSS_BLOB_OriginBackupAligner(const t_eFSS_BLOB_Ctx* p_pt
                     else
                     {
                         /* They are equals */
-                        if( p_ptCtx->uVersion != l_tMetaOri.uPageVersion )
+                        if( p_ptCtx->tStorSett.uStorageVer != l_tMetaOri.uPageVersion )
                         {
                             /* New version found */
                             l_eRes = e_eFSS_BLOB_RES_NEWVERSIONBLOB;
@@ -898,15 +894,15 @@ static e_eFSS_BLOB_RES eFSS_BLOB_ArePagesValid(const t_eFSS_BLOB_Ctx* p_ptCtx, u
         else
         {
             /* Check data validity */
-            if( ( p_uEndIdx - p_uStartIdx ) > p_ptCtx->uNPage )
+            if( ( p_uEndIdx - p_uStartIdx ) > p_ptCtx->tStorSett.uTotPages )
             {
                 l_eRes = e_eFSS_BLOB_RES_BADPARAM;
             }
             else
             {
                 /* Calculate the raw space for data in every page */
-                l_uRawDataP = p_ptCtx->uPageSize - EFSS_PAGEMETASIZE;
-                l_uRawDataWhole = l_uRawDataP * ( p_ptCtx->uNPage / 2u );
+                l_uRawDataP = p_ptCtx->tStorSett.uPagesLen - EFSS_PAGEMETASIZE;
+                l_uRawDataWhole = l_uRawDataP * ( p_ptCtx->tStorSett.uTotPages / 2u );
 
                 /* Init variable */
                 l_uI = p_uStartIdx;
@@ -918,7 +914,7 @@ static e_eFSS_BLOB_RES eFSS_BLOB_ArePagesValid(const t_eFSS_BLOB_Ctx* p_ptCtx, u
                 {
                     /* Read a page, verify if it's valid and digest the CRC of the related BLOB */
                     l_eHLR = eFSS_UTILSHLPRV_ReadPageNPrm(p_ptCtx->ptCtxCb, l_uI,  p_ptCtx->puBuff1, p_ptCtx->uBuff1L,
-                                                          &l_tPagePrm, p_ptCtx->uReTry);
+                                                          &l_tPagePrm, p_ptCtx->tStorSett.uRDERetry);
                     l_eRes = eFSS_BLOB_HLtoBLOBRes(l_eHLR);
                     if( e_eFSS_BLOB_RES_OK == l_eRes )
                     {

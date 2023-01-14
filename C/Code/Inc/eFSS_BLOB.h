@@ -49,14 +49,18 @@ typedef struct
 {
     bool_t   bIsInit;
     t_eFSS_TYPE_CbCtx* ptCtxCb;
+    t_eFSS_TYPE_StorageSettings tStorSett;
+	uint8_t* puBuf;
+	uint32_t uBufL;
+
+
+
+
+
 	uint8_t* puBuff1;
 	uint32_t uBuff1L;
 	uint8_t* puBuff2;
 	uint32_t uBuff2L;
-    uint32_t uNPage;
-    uint32_t uPageSize;
-    uint32_t uReTry;
-    uint32_t uVersion;
 }t_eFSS_BLOB_Ctx;
 
 
@@ -69,20 +73,16 @@ typedef struct
  *
  * @param[in]   p_ptCtx        - Blob context
  * @param[in]   p_ptCtxCb      - All callback collection context
- * @param[in]   p_uPageToUse   - How many page use for the blob module
- * @param[in]   p_uPageSize    - Size of the used pages
  * @param[in]   p_puBuff       - Pointer to a buffer used by the modules to make calc
  * @param[in]   p_uBuffL       - Size of p_puBuff
- * @param[in]   p_uBlobVersion - Version of the Blob
- * @param[in]   p_uRetry       - How many time retry basic read write erase operation if error occour
+ * @param[in]   p_tStorSet     - Storage settings
  *
  * @return      e_eFSS_BLOB_RES_BADPOINTER    - In case of bad pointer passed to the function
  *		        e_eFSS_BLOB_RES_BADPARAM      - In case of an invalid parameter passed to the function
  *              e_eFSS_BLOB_RES_OK            - Operation ended correctly
  */
 e_eFSS_BLOB_RES eFSS_BLOB_InitCtx(t_eFSS_BLOB_Ctx* const p_ptCtx, t_eFSS_TYPE_CbCtx* const p_ptCtxCb,
-                                  const uint32_t p_uPageToUse, const uint32_t p_uPageSize, uint8_t* const p_puBuff,
-                                  uint32_t p_uBuffL, uint16_t p_uBlobVersion, uint32_t p_uRetry);
+                                  uint8_t* const p_puBuff, uint32_t p_uBuffL, t_eFSS_TYPE_StorageSettings p_tStorSet);
 
 /**
  * @brief       Check if the lib is initialized
