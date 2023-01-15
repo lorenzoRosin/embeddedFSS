@@ -230,7 +230,6 @@ e_eFSS_BLOB_RES eFSS_BLOB_Format(t_eFSS_BLOB_Ctx* const p_ptCtx)
 {
 	/* Local variable for result */
 	e_eFSS_BLOB_RES l_eRes;
-    e_eFSS_BLOB_RES l_eResSub;
 
     /* Local calc variable */
     uint32_t l_uCrcZeroBlob;
@@ -1113,53 +1112,46 @@ static e_eFSS_BLOB_RES eFSS_BLOB_WriteBlobNPrm(t_eFSS_BLOB_Ctx* const p_ptCtx, u
                 l_puBuF2 = &p_ptCtx->puBuf[l_uBuF1L];
                 l_uBuF2L = p_ptCtx->uBufL / 2u ;
 
-                if( ( e_eFSS_BLOB_RES_OK == l_eRes ) || ( e_eFSS_BLOB_RES_OK_BKP_RCVRD == l_eRes ) )
+                /* Calculate the CRC of the data blob */
+                l_eRes = eFSS_BLOB_CrcBlobFull(p_ptCtx, p_puBuff, p_uBuffL, &l_uCrcBlob);
+
+                if( e_eFSS_BLOB_RES_OK == l_eRes )
                 {
-                    /* Calculate the CRC of the data blob */
-                    l_eRes = eFSS_BLOB_CrcBlobFull(p_ptCtx, p_puBuff, p_uBuffL, &l_uCrcBlob);
+                    /* init cycle variable */
+                    l_uI = 0u;
+                    l_uToWrite = p_uBuffL;
 
-                    if( e_eFSS_UTILSHLPRV_RES_OK != l_eHLRes )
+                    /* write blob data in original area, and un used space is setted to zero. After
+                        that write the same things in the backup area */
+                    while( ( l_uI < p_uNPages )  &&
+                           ( ( e_eFSS_BLOB_RES_OK == l_eRes ) || ( e_eFSS_BLOB_RES_OK_BKP_RCVRD == l_eRes ) ) )
                     {
-                        l_eRes = eFSS_BLOB_HLtoBLOBRes(l_eHLRes);
-                    }
-                    else
-                    {
-                        /* init cycle variable */
-                        l_uI = 0u;
-                        l_uToWrite = p_uBuffL;
+                        memset(l_puBuF1, 0u, l_uBuF1L);
 
-                        /* write blob data in original area, and un used space is setted to zero. After
-                            that write the same things in the backup area */
-                        while( ( l_uI < p_uNPages )  &&
-                               ( ( e_eFSS_BLOB_RES_OK == l_eRes ) || ( e_eFSS_BLOB_RES_OK_BKP_RCVRD == l_eRes ) ) )
+                        if( l_uToWrite > 0u )
                         {
-                            memset(l_puBuF1, 0u, l_uBuF1L);
-
-                            if( l_uToWrite > 0u )
+                            if( l_uToWrite >= l_uRawDataP )
                             {
-                                if( l_uToWrite >= l_uRawDataP )
-                                {
-                                    memcpy(&p_puBuff[ p_uBuffL - l_uToWrite ], l_puBuF1, l_uRawDataP );
-                                    l_uToWrite -= l_uRawDataP;
-                                }
-                                else
-                                {
-                                    memcpy(&p_puBuff[ p_uBuffL - l_uToWrite ], l_puBuF1, l_uToWrite );
-                                    l_uToWrite = 0u;
-                                }
+                                memcpy(&p_puBuff[ p_uBuffL - l_uToWrite ], l_puBuF1, l_uRawDataP );
+                                l_uToWrite -= l_uRawDataP;
                             }
                             else
                             {
-                                /* No blob data related avaiable, just write the zeros */
+                                memcpy(&p_puBuff[ p_uBuffL - l_uToWrite ], l_puBuF1, l_uToWrite );
+                                l_uToWrite = 0u;
                             }
+                        }
+                        else
+                        {
+                            /* No blob data related avaiable, just write the zeros */
+                        }
 
-                            l_eHLRes = eFSS_UTILSHLPRV_WritePagePrmNUpCrc(&p_ptCtx->tCtxCb, l_uI, l_puBuF1,
-                                                                          l_uBuF1L, l_puBuF2, l_uBuF2L, p_ptMeta,
-                                                                          p_ptCtx->tStorSett.uRWERetry);
-                            if( e_eFSS_UTILSHLPRV_RES_OK != l_eHLRes )
-                            {
-                                l_eRes = eFSS_BLOB_HLtoBLOBRes(l_eHLRes);
-                            }
+                        l_eHLRes = eFSS_UTILSHLPRV_WritePagePrmNUpCrc(&p_ptCtx->tCtxCb, l_uI, l_puBuF1,
+                                                                      l_uBuF1L, l_puBuF2, l_uBuF2L, p_ptMeta,
+                                                                      p_ptCtx->tStorSett.uRWERetry);
+                        if( e_eFSS_UTILSHLPRV_RES_OK != l_eHLRes )
+                        {
+                            l_eRes = eFSS_BLOB_HLtoBLOBRes(l_eHLRes);
                         }
                     }
                 }
