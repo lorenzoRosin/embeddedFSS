@@ -12,6 +12,12 @@
  * - uPageUseSpecific2 -> Crc of the stored blob
  * - uPageUseSpecific3 -> Total page given during formatting
  * - uPageUseSpecific4 -> Sequential number of the page
+ *
+ * In this module the original pages are written before the backup pages
+ *
+ * In this module the storage is organizated as follow :
+ * - [ 0                 -    ( uTotPages / 2 ) - 1 ]  -> Original pages
+ * - [ ( uTotPages / 2 ) -    uTotPages - 1 ]          -> Backup pages
  */
 
 /***********************************************************************************************************************
@@ -281,7 +287,14 @@ e_eFSS_BLOB_RES eFSS_BLOB_Format(t_eFSS_BLOB_Ctx* const p_ptCtx)
 
                         /* Setup metadata */
                         l_tPagePrmToW.uPageType = EFSS_PAGETYPE_BLOB;
-                        l_tPagePrmToW.uPageSubType = EFSS_PAGESUBTYPE_BLOB;
+                        if( l_uI < ( p_ptCtx->tStorSett.uTotPages / 2u ) )
+                        {
+                            l_tPagePrmToW.uPageSubType = EFSS_PAGESUBTYPE_BLOBORI;
+                        }
+                        else
+                        {
+                            l_tPagePrmToW.uPageSubType = EFSS_PAGESUBTYPE_BLOBBKP;
+                        }
                         l_tPagePrmToW.uPageVersion = p_ptCtx->tStorSett.uStorageVer;
                         l_tPagePrmToW.uPageUseSpecific1 = 0u;               /* Size blob */
                         l_tPagePrmToW.uPageUseSpecific2 = l_uCrcZeroBlob;   /* Crc blob */
@@ -307,12 +320,17 @@ e_eFSS_BLOB_RES eFSS_BLOB_Format(t_eFSS_BLOB_Ctx* const p_ptCtx)
 e_eFSS_BLOB_RES eFSS_BLOB_ReadAllBlob(t_eFSS_BLOB_Ctx* const p_ptCtx, uint8_t* p_puBuff, uint32_t p_uBuffL,
                                       uint32_t* p_puReaded)
 {
-	/* Local variable */
+	/* Local variable for result */
 	e_eFSS_BLOB_RES l_eRes;
     e_eFSS_UTILSHLPRV_RES l_eHLRes;
+
+    /* Local calc variable */
+    uint8_t* l_puBuF1;
+    uint32_t l_uBuF1L;
     t_eFSS_TYPE_PageMeta l_tPagePrm;
     uint32_t l_uI;
     uint32_t l_uRemToRead;
+    uint32_t l_uRemToReadCtr;
     uint32_t l_uBlobL;
     uint32_t l_uRawDataP;
 
@@ -344,16 +362,24 @@ e_eFSS_BLOB_RES eFSS_BLOB_ReadAllBlob(t_eFSS_BLOB_Ctx* const p_ptCtx, uint8_t* p
                 }
                 else
                 {
+                    /* Get buffer for calculation */
+                    l_puBuF1 = p_ptCtx->puBuf;
+                    l_uBuF1L = p_ptCtx->uBufL / 2u ;
+
                     /* Fix any memory problem */
                     l_eRes = eFSS_BLOB_OriginBackupAligner(p_ptCtx);
 
                     if( ( e_eFSS_BLOB_RES_OK == l_eRes ) || ( e_eFSS_BLOB_RES_OK_BKP_RCVRD == l_eRes ) )
                     {
                         /* Read first pages of the blob to check it's size */
-                        l_eHLRes = eFSS_UTILSHLPRV_ReadPageNPrm(p_ptCtx->ptCtxCb, 0u, p_ptCtx->puBuff1,
-                                                                p_ptCtx->uBuff1L, &l_tPagePrm, p_ptCtx->tStorSett.uRWERetry);
-                        l_eRes = eFSS_BLOB_HLtoBLOBRes(l_eHLRes);
-                        if( e_eFSS_BLOB_RES_OK == l_eRes )
+                        l_eHLRes = eFSS_UTILSHLPRV_ReadPageNPrm(&p_ptCtx->tCtxCb, 0u, l_puBuF1, l_uBuF1L, &l_tPagePrm,
+                                                                p_ptCtx->tStorSett.uRWERetry);
+
+                        if( e_eFSS_UTILSHLPRV_RES_OK != l_eHLRes )
+                        {
+                            l_eRes = eFSS_BLOB_HLtoBLOBRes(l_eHLRes);
+                        }
+                        else
                         {
                             /* Calculate how many byte we have to read */
                             l_uBlobL = l_tPagePrm.uPageUseSpecific1;
@@ -361,10 +387,12 @@ e_eFSS_BLOB_RES eFSS_BLOB_ReadAllBlob(t_eFSS_BLOB_Ctx* const p_ptCtx, uint8_t* p
                             if( l_uBlobL >= p_uBuffL )
                             {
                                 l_uRemToRead = p_uBuffL;
+                                l_uRemToReadCtr = p_uBuffL;
                             }
                             else
                             {
                                 l_uRemToRead = l_uBlobL;
+                                l_uRemToReadCtr = l_uBlobL;
                             }
 
                             /* Calculate the raw space for data in every page */
@@ -374,26 +402,40 @@ e_eFSS_BLOB_RES eFSS_BLOB_ReadAllBlob(t_eFSS_BLOB_Ctx* const p_ptCtx, uint8_t* p
                             l_uI = 0u;
 
                             /* Read all pages */
-                            while( ( l_uI < p_ptCtx->tStorSett.uTotPages / 2u )  && ( e_eFSS_BLOB_RES_OK == l_eRes ) &&
-                                   ( l_uRemToRead > 0) )
+                            while( ( l_uI < ( p_ptCtx->tStorSett.uTotPages / 2u ) )  &&
+                                   ( ( e_eFSS_BLOB_RES_OK == l_eRes ) || ( e_eFSS_BLOB_RES_OK_BKP_RCVRD == l_eRes ) ) &&
+                                   ( l_uRemToReadCtr > 0 ) )
                             {
-                                l_eHLRes = eFSS_UTILSHLPRV_ReadPageNPrm(p_ptCtx->ptCtxCb, l_uI, p_ptCtx->puBuff1,
-                                                                        p_ptCtx->uBuff1L, &l_tPagePrm, p_ptCtx->tStorSett.uRWERetry);
-                                l_eRes = eFSS_BLOB_HLtoBLOBRes(l_eHLRes);
-                                if( e_eFSS_BLOB_RES_OK == l_eRes )
-                                {
+                                l_eHLRes = eFSS_UTILSHLPRV_ReadPageNPrm(&p_ptCtx->tCtxCb, l_uI, l_puBuF1, l_uBuF1L,
+                                                                        &l_tPagePrm, p_ptCtx->tStorSett.uRWERetry);
 
-                                    if( l_uRemToRead >= l_uRawDataP )
+                                if( e_eFSS_UTILSHLPRV_RES_OK != l_eHLRes )
+                                {
+                                    l_eRes = eFSS_BLOB_HLtoBLOBRes(l_eHLRes);
+                                }
+                                else
+                                {
+                                    if( l_uRemToReadCtr >= l_uRawDataP )
                                     {
-                                        memcpy(&p_puBuff[p_uBuffL-l_uRemToRead], p_ptCtx->puBuff1, l_uRawDataP );
-                                        l_uRemToRead -= l_uRawDataP;
+                                        memcpy(&p_puBuff[l_uRemToRead-l_uRemToReadCtr], l_puBuF1, l_uRawDataP );
+                                        l_uRemToReadCtr -= l_uRawDataP;
                                     }
                                     else
                                     {
-                                        memcpy(&p_puBuff[p_uBuffL-l_uRemToRead], p_ptCtx->puBuff1, l_uRemToRead );
-                                        l_uRemToRead = 0u;
+                                        memcpy(&p_puBuff[l_uRemToRead-l_uRemToReadCtr], l_puBuF1, l_uRemToReadCtr );
+                                        l_uRemToReadCtr = 0u;
                                     }
                                 }
+                            }
+
+                            if( ( e_eFSS_BLOB_RES_OK == l_eRes ) || ( e_eFSS_BLOB_RES_OK_BKP_RCVRD == l_eRes ) )
+                            {
+                                /* Read complete */
+                                *p_puReaded = l_uRemToRead - l_uRemToReadCtr;
+                            }
+                            else
+                            {
+                                *p_puReaded = 0u;
                             }
                         }
                     }

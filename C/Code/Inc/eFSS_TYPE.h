@@ -42,7 +42,8 @@ extern "C" {
 #define EFSS_PAGETYPE_DB                                                                         ( ( uint32_t )  0x03u )
 
 /* Page BLOB subtypes */
-#define EFSS_PAGESUBTYPE_BLOB                                                                    ( ( uint32_t )  0x01u )
+#define EFSS_PAGESUBTYPE_BLOBORI                                                                 ( ( uint32_t )  0x01u )
+#define EFSS_PAGESUBTYPE_BLOBBKP                                                                 ( ( uint32_t )  0x02u )
 
 /* Page LOG subtypes */
 #define EFSS_PAGESUBTYPE_LOG                                                                     ( ( uint32_t )  0x01u )
