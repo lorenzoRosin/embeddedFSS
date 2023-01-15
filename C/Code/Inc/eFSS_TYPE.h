@@ -131,7 +131,7 @@ typedef struct
     uint32_t    uTotPages;
     uint32_t    uPagesLen;
     uint32_t    uStorageVer;
-    uint32_t    uRDERetry;
+    uint32_t    uRWERetry;
 }t_eFSS_TYPE_StorageSettings;
 
 

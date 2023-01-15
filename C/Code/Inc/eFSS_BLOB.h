@@ -48,19 +48,10 @@ typedef enum
 typedef struct
 {
     bool_t   bIsInit;
-    t_eFSS_TYPE_CbCtx* ptCtxCb;
+    t_eFSS_TYPE_CbCtx tCtxCb;
     t_eFSS_TYPE_StorageSettings tStorSett;
 	uint8_t* puBuf;
 	uint32_t uBufL;
-
-
-
-
-
-	uint8_t* puBuff1;
-	uint32_t uBuff1L;
-	uint8_t* puBuff2;
-	uint32_t uBuff2L;
 }t_eFSS_BLOB_Ctx;
 
 
@@ -81,7 +72,7 @@ typedef struct
  *		        e_eFSS_BLOB_RES_BADPARAM      - In case of an invalid parameter passed to the function
  *              e_eFSS_BLOB_RES_OK            - Operation ended correctly
  */
-e_eFSS_BLOB_RES eFSS_BLOB_InitCtx(t_eFSS_BLOB_Ctx* const p_ptCtx, t_eFSS_TYPE_CbCtx* const p_ptCtxCb,
+e_eFSS_BLOB_RES eFSS_BLOB_InitCtx(t_eFSS_BLOB_Ctx* const p_ptCtx, const t_eFSS_TYPE_CbCtx p_tCtxCb,
                                   uint8_t* const p_puBuff, uint32_t p_uBuffL, t_eFSS_TYPE_StorageSettings p_tStorSet);
 
 /**
@@ -134,7 +125,7 @@ e_eFSS_BLOB_RES eFSS_BLOB_GetStorageStatus(t_eFSS_BLOB_Ctx* const p_ptCtx);
  *              e_eFSS_BLOB_RES_CLBCKCRCERR        - Crc callback returned error
  *              e_eFSS_BLOB_RES_WRITENOMATCHREAD   - After Write operation the Read operation readed different data
  */
-e_eFSS_BLOB_RES eFSS_BLOB_GetInfo(t_eFSS_BLOB_Ctx* const p_ptCtx, bool_t* p_pbBlobSize);
+e_eFSS_BLOB_RES eFSS_BLOB_GetInfo(t_eFSS_BLOB_Ctx* const p_ptCtx, uint32_t* p_puBlobSize);
 
 /**
  * @brief       Format the memory used for the blob and all data
