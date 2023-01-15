@@ -724,6 +724,55 @@ e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_ClonePage( t_eFSS_TYPE_CbCtx* const p_ptCb
     return l_eRes;
 }
 
+e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_ClonePageNSbT( t_eFSS_TYPE_CbCtx* const p_ptCbCtx, const uint32_t p_uReTry,
+                                                     uint8_t* const p_puDataW, const uint32_t p_uDataWLen,
+                                                     uint8_t* const p_puDataR, const uint32_t p_uDataRLen,
+                                                     const uint32_t p_uOrigIndx, const uint32_t p_uDestIndx,
+                                                     const uint8_t p_uNewSubType )
+{
+    /* Local variable */
+	e_eFSS_UTILSHLPRV_RES l_eRes;
+    e_eFSS_UTILSLLPRV_RES l_eResLL;
+    uint32_t l_uCrcCalc;
+
+	/* Check pointer validity */
+	if( ( NULL == p_ptCbCtx ) || ( NULL == p_puDataW ) || ( NULL == p_puDataR ) )
+	{
+		l_eRes = e_eFSS_UTILSHLPRV_RES_BADPOINTER;
+	}
+    else
+    {
+        /* Check data validity */
+        if( ( p_uDataWLen <= EFSS_PAGEMETASIZE ) || ( p_uDataRLen <= EFSS_PAGEMETASIZE ) ||
+            ( p_uDataRLen != p_uDataWLen ) || ( p_uReTry <= 0u ) || ( p_uOrigIndx == p_uDestIndx) )
+        {
+            l_eRes = e_eFSS_UTILSHLPRV_RES_BADPARAM;
+        }
+        else
+        {
+            /* Read the page to clone */
+            l_eResLL = eFSS_UTILSLLPRV_ReadPage(p_ptCbCtx, p_uOrigIndx, p_puDataR, p_uDataRLen, p_uReTry);
+            l_eRes = eFSS_UTILSHLPRV_LLtoHLRes(l_eResLL);
+            if( e_eFSS_UTILSHLPRV_RES_OK == l_eRes)
+            {
+                /* Crc calculated, set it */
+                l_uCrcCalc = 0u;
+                l_eRes = eFSS_UTILSHLPRV_SetCrcMetaInBuff(p_puDataW, p_uDataWLen, l_uCrcCalc);
+
+                if( e_eFSS_UTILSHLPRV_RES_OK == l_eRes )
+                {
+                    /* Write the page */
+                    l_eResLL = eFSS_UTILSLLPRV_WritePage(p_ptCbCtx, p_puDataR, p_uDataRLen, p_puDataW, p_uDataWLen,
+                                                         p_uDestIndx, p_uReTry);
+                    l_eRes = eFSS_UTILSHLPRV_LLtoHLRes(l_eResLL);
+                }
+            }
+        }
+    }
+
+    return l_eRes;
+}
+
 e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_VerifyNRipristBkup( t_eFSS_TYPE_CbCtx* const p_ptCbCtx, const uint32_t p_uReTry,
                                                           uint8_t* const p_puDataW, const uint32_t p_uDataWLen,
                                                           uint8_t* const p_puDataR, const uint32_t p_uDataRLen,

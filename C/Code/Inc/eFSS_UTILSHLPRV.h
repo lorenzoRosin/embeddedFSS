@@ -253,6 +253,31 @@ e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_ClonePage( t_eFSS_TYPE_CbCtx* const p_ptCb
                                                  uint8_t* const p_puDataW, const uint32_t p_uDataWLen,
                                                  uint8_t* const p_puDataR, const uint32_t p_uDataRLen,
                                                  const uint32_t p_uOrigIndx, const uint32_t p_uDestIndx );
+/**
+ * @brief       Clone a page from p_uOrigIndx to p_uDestIndx but use a new subtype
+ *
+ * @param[in]   p_ptCbCtx     - Pointer to all callback context
+ * @param[in]   p_uReTry      - How many times we can retry if some error happens
+ * @param[in]   p_puDataW     - Buffer used for write operation
+ * @param[in]   p_uDataWLen   - size of the p_puDataW buffer
+ * @param[in]   p_puDataR     - Buffer used for read operation
+ * @param[in]   p_uDataRLen   - size of the p_puDataR buffer
+ * @param[in]   p_uOrigIndx   - Page index we want to clone
+ * @param[in]   p_uDestIndx   - Destination indexof the cloned page
+ *
+ * @return      e_eFSS_UTILSLLPRV_RES_OK                - Operation ended successfully
+ *              e_eFSS_UTILSLLPRV_RES_BADPOINTER        - In case of bad pointer passed to the function
+ *              e_eFSS_UTILSHLPRV_RES_BADPARAM          - In case of bad parameter passed to the function
+ *              e_eFSS_UTILSHLPRV_RES_CLBCKERASEERR     - Error reported from the callback
+ *              e_eFSS_UTILSHLPRV_RES_CLBCKWRITEERR     - Error reported from the callback
+ *              e_eFSS_UTILSHLPRV_RES_CLBCKREADERR      - Error reported from the callback
+ *              e_eFSS_UTILSHLPRV_RES_WRITENOMATCHREAD  - For some unknow reason data write dosent match data readed
+ */
+e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_ClonePageNSbT( t_eFSS_TYPE_CbCtx* const p_ptCbCtx, const uint32_t p_uReTry,
+                                                     uint8_t* const p_puDataW, const uint32_t p_uDataWLen,
+                                                     uint8_t* const p_puDataR, const uint32_t p_uDataRLen,
+                                                     const uint32_t p_uOrigIndx, const uint32_t p_uDestIndx,
+                                                     const uint8_t p_uNewSubType );
 
 /**
  * @brief       Verify the validity of the page in p_uOrigIndx and p_uBackupIndx.
