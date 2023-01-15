@@ -36,8 +36,8 @@ static e_eFSS_BLOB_RES eFSS_BLOB_HLtoBLOBRes(const e_eFSS_UTILSHLPRV_RES p_eHLRe
 static e_eFSS_BLOB_RES eFSS_BLOB_CrcBlobFull(t_eFSS_BLOB_Ctx* const p_ptCtx, uint8_t* p_puBlob, uint32_t p_uBlobL,
                                              uint32_t* p_puBlobCrc);
 static e_eFSS_BLOB_RES eFSS_BLOB_OriginBackupAligner(t_eFSS_BLOB_Ctx* const p_ptCtx);
-static e_eFSS_BLOB_RES eFSS_BLOB_ArePagesValid(t_eFSS_BLOB_Ctx* const p_ptCtx, uint32_t p_uStartIdx, uint32_t p_uEndIdx,
-                                               bool_t* p_pbAreValid, t_eFSS_TYPE_PageMeta* p_ptMeta);
+static e_eFSS_BLOB_RES eFSS_BLOB_ArePagesValid(t_eFSS_BLOB_Ctx* const p_ptCtx, uint32_t p_uStartIdx, uint32_t p_uNPages,
+                                               bool_t* p_pbAreValid, t_eFSS_TYPE_PageMeta* p_ptMeta, uint8_t p_uSubT);
 static e_eFSS_BLOB_RES eFSS_BLOB_WriteBlobNPrm(t_eFSS_BLOB_Ctx* const p_ptCtx, uint8_t* p_puBuff, uint32_t p_uBuffL,
                                                uint32_t p_uStartId, uint32_t p_uNPages, t_eFSS_TYPE_PageMeta* p_ptMeta);
 
@@ -791,12 +791,12 @@ static e_eFSS_BLOB_RES eFSS_BLOB_OriginBackupAligner(t_eFSS_BLOB_Ctx* const p_pt
         l_uBuF2L = p_ptCtx->uBufL / 2u ;
 
         /* Verify the validity of original sequence and backup sequence  */
-        l_eRes = eFSS_BLOB_ArePagesValid(p_ptCtx, 0u, ( ( p_ptCtx->tStorSett.uTotPages/2u ) - 1u), &l_bIsOriginValid, &l_tMetaOri);
+        l_eRes = eFSS_BLOB_ArePagesValid(p_ptCtx, 0u, ( p_ptCtx->tStorSett.uTotPages/2u ), &l_bIsOriginValid, &l_tMetaOri, EFSS_PAGESUBTYPE_BLOBORI);
 
         if( e_eFSS_BLOB_RES_OK == l_eRes )
         {
-            l_eRes = eFSS_BLOB_ArePagesValid(p_ptCtx, ( p_ptCtx->tStorSett.uTotPages/2u ), ( p_ptCtx->tStorSett.uTotPages - 1u ),
-                                             &l_bIsBackupValid, &l_tMetaBkp);
+            l_eRes = eFSS_BLOB_ArePagesValid(p_ptCtx, ( p_ptCtx->tStorSett.uTotPages/2u ), ( p_ptCtx->tStorSett.uTotPages/2u ),
+                                             &l_bIsBackupValid, &l_tMetaBkp, EFSS_PAGESUBTYPE_BLOBBKP);
 
             if( e_eFSS_BLOB_RES_OK == l_eRes )
             {
@@ -905,8 +905,8 @@ static e_eFSS_BLOB_RES eFSS_BLOB_OriginBackupAligner(t_eFSS_BLOB_Ctx* const p_pt
 	return l_eRes;
 }
 
-static e_eFSS_BLOB_RES eFSS_BLOB_ArePagesValid(t_eFSS_BLOB_Ctx* const p_ptCtx, uint32_t p_uStartIdx, uint32_t p_uEndIdx,
-                                               bool_t* p_pbAreValid, t_eFSS_TYPE_PageMeta* p_ptMeta)
+static e_eFSS_BLOB_RES eFSS_BLOB_ArePagesValid(t_eFSS_BLOB_Ctx* const p_ptCtx, uint32_t p_uStartIdx, uint32_t p_uNPages,
+                                               bool_t* p_pbAreValid, t_eFSS_TYPE_PageMeta* p_ptMeta, uint8_t p_uSubT)
 {
 	/* Local variable return */
 	e_eFSS_BLOB_RES l_eRes;
@@ -932,136 +932,136 @@ static e_eFSS_BLOB_RES eFSS_BLOB_ArePagesValid(t_eFSS_BLOB_Ctx* const p_ptCtx, u
 	else
 	{
         /* Check data validity */
-        if( p_uStartIdx > p_uEndIdx )
+        if( ( p_uNPages > p_ptCtx->tStorSett.uTotPages ) || ( p_uNPages <= 0u )  )
         {
             l_eRes = e_eFSS_BLOB_RES_BADPARAM;
         }
         else
         {
-            /* Check data validity */
-            if( ( p_uEndIdx - p_uStartIdx ) > p_ptCtx->tStorSett.uTotPages )
+            /* Calculate the raw space for data in every page */
+            l_uRawDataP = p_ptCtx->tStorSett.uPagesLen - EFSS_PAGEMETASIZE;
+
+            /* Init variable */
+            l_uI = p_uStartIdx;
+            l_bIsValidSequence = true;
+            l_eRes = e_eFSS_BLOB_RES_OK;
+            l_uDCrc = 0u;
+
+            /* Get buffer for calculation */
+            l_puBuF1 = p_ptCtx->puBuf;
+            l_uBuF1L = p_ptCtx->uBufL / 2u ;
+
+            while( ( l_uI < ( p_uNPages + p_uStartIdx ) ) && ( true == l_bIsValidSequence ) &&
+                   ( e_eFSS_BLOB_RES_OK == l_eRes ) )
             {
-                l_eRes = e_eFSS_BLOB_RES_BADPARAM;
-            }
-            else
-            {
-                /* Calculate the raw space for data in every page */
-                l_uRawDataP = p_ptCtx->tStorSett.uPagesLen - EFSS_PAGEMETASIZE;
-                l_uRawDataWhole = l_uRawDataP * ( p_ptCtx->tStorSett.uTotPages / 2u );
-
-                /* Init variable */
-                l_uI = p_uStartIdx;
-                l_bIsValidSequence = true;
-                l_eRes = e_eFSS_BLOB_RES_OK;
-                l_uDCrc = 0u;
-
-                /* Get buffer for calculation */
-                l_puBuF1 = p_ptCtx->puBuf;
-                l_uBuF1L = p_ptCtx->uBufL / 2u ;
-
-                while( (l_uI <= p_uEndIdx )  && ( true == l_bIsValidSequence ) && ( e_eFSS_BLOB_RES_OK == l_eRes ) )
+                /* Read a page, verify if it's valid and digest the CRC of the related BLOB */
+                l_eHLR = eFSS_UTILSHLPRV_ReadPageNPrm(&p_ptCtx->tCtxCb, l_uI,  l_puBuF1, l_uBuF1L,
+                                                      &l_tPagePrm, p_ptCtx->tStorSett.uRWERetry);
+                l_eRes = eFSS_BLOB_HLtoBLOBRes(l_eHLR);
+                if( e_eFSS_BLOB_RES_OK == l_eRes )
                 {
-                    /* Read a page, verify if it's valid and digest the CRC of the related BLOB */
-                    l_eHLR = eFSS_UTILSHLPRV_ReadPageNPrm(&p_ptCtx->tCtxCb, l_uI,  l_puBuF1, l_uBuF1L,
-                                                          &l_tPagePrm, p_ptCtx->tStorSett.uRWERetry);
+                    /* Verify if page is correct */
+                    l_eHLR = eFSS_UTILSHLPRV_IsValidPageInBuff(&p_ptCtx->tCtxCb, l_puBuF1, l_uBuF1L,
+                                                               &l_bIsValidPage);
                     l_eRes = eFSS_BLOB_HLtoBLOBRes(l_eHLR);
                     if( e_eFSS_BLOB_RES_OK == l_eRes )
                     {
-                        /* Verify if page is correct */
-                        l_eHLR = eFSS_UTILSHLPRV_IsValidPageInBuff(&p_ptCtx->tCtxCb, l_puBuF1, l_uBuF1L,
-                                                                   &l_bIsValidPage);
-                        l_eRes = eFSS_BLOB_HLtoBLOBRes(l_eHLR);
-                        if( e_eFSS_BLOB_RES_OK == l_eRes )
+                        if( true == l_bIsValidPage)
                         {
-                            if( true == l_bIsValidPage)
+                            if( p_uStartIdx == l_uI )
                             {
-                                if( p_uStartIdx == l_uI )
-                                {
-                                    /* First page, save the related metadata in order to be able to verify metadata
-                                     * of others page present in the sequence */
-                                    l_tPagePrmFirst = l_tPagePrm;
+                                /* First page, save the related metadata in order to be able to verify metadata
+                                 * of others page present in the sequence */
+                                l_tPagePrmFirst = l_tPagePrm;
 
-                                    /* Validate data */
-                                    if( ( EFSS_PAGETYPE_BLOB != l_tPagePrmFirst.uPageType ) ||
-                                        ( EFSS_PAGESUBTYPE_BLOBORI != l_tPagePrmFirst.uPageSubType ) ||
-                                        ( EFSS_PAGEMAGICNUMBER != l_tPagePrmFirst.uPageMagicNumber ) )
-                                    {
-                                        /* Not valid */
-                                        l_bIsValidSequence = false;
-                                    }
-                                    else
-                                    {
-                                        /* Calc CRC of the data only starting from here ( No metadata ) */
-                                        l_eHLR = eFSS_UTILSHLPRV_CrcDigest(&p_ptCtx->tCtxCb, MAX_UINT32VAL,
-                                                                           l_puBuF1 , l_uRawDataP, &l_uDCrc);
-                                        l_eRes = eFSS_BLOB_HLtoBLOBRes(l_eHLR);
-                                    }
+                                /* Validate data */
+                                if( ( EFSS_PAGETYPE_BLOB != l_tPagePrmFirst.uPageType ) ||
+                                    ( p_uSubT != l_tPagePrmFirst.uPageSubType ) ||
+                                    ( EFSS_PAGEMAGICNUMBER != l_tPagePrmFirst.uPageMagicNumber ) ||
+                                    ( p_ptCtx->tStorSett.uTotPages != l_tPagePrmFirst.uPageUseSpecific3 ) )
+                                {
+                                    /* Not valid */
+                                    l_bIsValidSequence = false;
                                 }
                                 else
                                 {
-                                    /* Validate the metada of the current page against the one of the first */
-                                    if( ( l_tPagePrm.uPageUseSpecific4 != l_tPagePrmFirst.uPageUseSpecific4 ) ||
-                                        ( l_tPagePrm.uPageUseSpecific1 != l_tPagePrmFirst.uPageUseSpecific1 ) ||
-                                        ( l_tPagePrm.uPageUseSpecific2 != l_tPagePrmFirst.uPageUseSpecific2 ) )
-                                    {
-                                        /* Not valid */
-                                        l_bIsValidSequence = false;
-                                    }
-                                    else
-                                    {
-                                        /* Continue to digest CRC */
-                                        l_eHLR = eFSS_UTILSHLPRV_CrcDigest(&p_ptCtx->tCtxCb, l_uDCrc, l_puBuF1,
-                                                                           l_uRawDataP, &l_uDCrc);
-                                        l_eRes = eFSS_BLOB_HLtoBLOBRes(l_eHLR);
-                                    }
+                                    /* Calc CRC of the data only starting from here ( No metadata ) */
+                                    l_eHLR = eFSS_UTILSHLPRV_CrcDigest(&p_ptCtx->tCtxCb, MAX_UINT32VAL,
+                                                                       l_puBuF1 , l_uRawDataP, &l_uDCrc);
+                                    l_eRes = eFSS_BLOB_HLtoBLOBRes(l_eHLR);
                                 }
                             }
                             else
                             {
-                                /* Every invalid page invalidate the whole sequence */
-                                l_bIsValidSequence = false;
-                            }
-                        }
-                    }
-
-                    l_uI++;
-                }
-
-                if( e_eFSS_BLOB_RES_OK == l_eRes )
-                {
-                    /* No error found */
-                    if( true == l_bIsValidSequence )
-                    {
-                        /* Verify if the stored crc of the blob is equals to the calculated one */
-                        if( l_tPagePrmFirst.uPageUseSpecific2 == l_uDCrc )
-                        {
-                            /* Verify coherence blob size */
-                            if( l_tPagePrmFirst.uPageUseSpecific1 <= l_uRawDataWhole )
-                            {
-                                *p_pbAreValid = true;
-                                *p_ptMeta = l_tPagePrmFirst;
-                            }
-                            else
-                            {
-                                *p_pbAreValid = false;
+                                /* Validate the metada of the current page against the one of the first */
+                                if( ( l_tPagePrm.uPageType != l_tPagePrmFirst.uPageType ) ||
+                                    ( l_tPagePrm.uPageSubType != l_tPagePrmFirst.uPageSubType ) ||
+                                    ( l_tPagePrm.uPageVersion != l_tPagePrmFirst.uPageVersion ) ||
+                                    ( l_tPagePrm.uPageUseSpecific1 != l_tPagePrmFirst.uPageUseSpecific1 ) ||
+                                    ( l_tPagePrm.uPageUseSpecific2 != l_tPagePrmFirst.uPageUseSpecific2 ) ||
+                                    ( l_tPagePrm.uPageUseSpecific3 != l_tPagePrmFirst.uPageUseSpecific3 ) ||
+                                    ( l_tPagePrm.uPageUseSpecific4 != l_tPagePrmFirst.uPageUseSpecific4 ) ||
+                                    ( l_tPagePrm.uPageMagicNumber != l_tPagePrmFirst.uPageMagicNumber ) )
+                                {
+                                    /* Not valid */
+                                    l_bIsValidSequence = false;
+                                }
+                                else
+                                {
+                                    /* Continue to digest CRC */
+                                    l_eHLR = eFSS_UTILSHLPRV_CrcDigest(&p_ptCtx->tCtxCb, l_uDCrc, l_puBuF1,
+                                                                           l_uRawDataP, &l_uDCrc);
+                                    l_eRes = eFSS_BLOB_HLtoBLOBRes(l_eHLR);
+                                }
                             }
                         }
                         else
                         {
-                            *p_pbAreValid = false;
+                            /* Every invalid page invalidate the whole sequence */
+                            l_bIsValidSequence = false;
                         }
+                    }
+                }
+
+                l_uI++;
+            }
+
+            if( e_eFSS_BLOB_RES_OK == l_eRes )
+            {
+                /* No error found */
+                if( true == l_bIsValidSequence )
+                {
+                    /* Verify if the stored crc of the blob is equals to the calculated one */
+                    if( l_tPagePrmFirst.uPageUseSpecific2 == l_uDCrc )
+                    {
+                        /* Calculate the raw space for data in every page */
+                        l_uRawDataWhole = l_uRawDataP * ( p_ptCtx->tStorSett.uTotPages / 2u );
+
+                        /* Verify coherence blob size */
+                        if( l_tPagePrmFirst.uPageUseSpecific1 <= l_uRawDataWhole )
+                        {
+                            *p_pbAreValid = true;
+                            *p_ptMeta = l_tPagePrmFirst;
+                        }
+                        else
+                        {
+                            *p_pbAreValid = false;
+                         }
                     }
                     else
                     {
                         *p_pbAreValid = false;
                     }
                 }
+                else
+                {
+                    *p_pbAreValid = false;
+                }
             }
         }
 	}
 
 	return l_eRes;
-
 }
 
 static e_eFSS_BLOB_RES eFSS_BLOB_WriteBlobNPrm(t_eFSS_BLOB_Ctx* const p_ptCtx, uint8_t* p_puBuff, uint32_t p_uBuffL,
