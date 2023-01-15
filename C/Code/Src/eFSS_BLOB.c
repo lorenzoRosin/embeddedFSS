@@ -692,18 +692,16 @@ static e_eFSS_BLOB_RES eFSS_BLOB_CrcBlobFull(t_eFSS_BLOB_Ctx* const p_ptCtx, uin
         l_uRawDataP = p_ptCtx->tStorSett.uPagesLen - EFSS_PAGEMETASIZE;
         l_uRawDataWhole = l_uRawDataP * ( p_ptCtx->tStorSett.uTotPages / 2u );
 
-        /* Get buffer for calculation */
-        l_puBuF1 = p_ptCtx->puBuf;
-        l_uBuF1L = p_ptCtx->uBufL / 2u ;
-
         if( l_uRawDataWhole < p_uBlobL )
         {
             l_eRes = e_eFSS_BLOB_RES_BADPARAM;
         }
         else
         {
-            /* Init variable */
+            /* Calc unused byte  */
             l_uUnusedByte = l_uRawDataWhole - p_uBlobL;
+
+            /* Set calc CRC to default seed (0xFFFFFFFF) */
             l_uCrcD = MAX_UINT32VAL;
 
             /* If blob has some size calculate the crc of the blob */
@@ -712,12 +710,20 @@ static e_eFSS_BLOB_RES eFSS_BLOB_CrcBlobFull(t_eFSS_BLOB_Ctx* const p_ptCtx, uin
                 l_eHLRes = eFSS_UTILSHLPRV_CrcDigest(&p_ptCtx->tCtxCb, l_uCrcD, p_puBlob , p_uBlobL, &l_uCrcD);
                 l_eRes = eFSS_BLOB_HLtoBLOBRes(l_eHLRes);
             }
+            else
+            {
+                l_eRes = e_eFSS_BLOB_RES_OK;
+            }
 
             /* Add to the blob crc the crc of the blank space */
             if( e_eFSS_BLOB_RES_OK == l_eRes )
             {
                 if( 0u != l_uUnusedByte )
                 {
+                    /* Get buffer for calculation */
+                    l_puBuF1 = p_ptCtx->puBuf;
+                    l_uBuF1L = p_ptCtx->uBufL / 2u ;
+
                     /* Calculate the remainings using zero as data */
                     memset(l_puBuF1, 0u, l_uBuF1L);
 
