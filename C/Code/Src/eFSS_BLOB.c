@@ -197,15 +197,15 @@ e_eFSS_BLOB_RES eFSS_BLOB_GetInfo(t_eFSS_BLOB_Ctx* const p_ptCtx, uint32_t* p_pu
             }
             else
             {
-                /* Get buffer for calculation */
-                l_puBuF1 = p_ptCtx->puBuf;
-                l_uBuF1L = p_ptCtx->uBufL / 2u ;
-
                 /* Fix any memory problem */
                 l_eRes = eFSS_BLOB_OriginBackupAligner(p_ptCtx);
 
                 if( ( e_eFSS_BLOB_RES_OK == l_eRes ) || ( e_eFSS_BLOB_RES_OK_BKP_RCVRD == l_eRes ) )
                 {
+                    /* Get buffer for calculation */
+                    l_puBuF1 = p_ptCtx->puBuf;
+                    l_uBuF1L = p_ptCtx->uBufL / 2u ;
+
                     /* Retrive info from the first page */
                     l_eHLRes = eFSS_UTILSHLPRV_ReadPageNPrm(&p_ptCtx->tCtxCb, 0u,  l_puBuF1, l_uBuF1L, &l_tPagePrm,
                                                             p_ptCtx->tStorSett.uRWERetry);
@@ -235,9 +235,6 @@ e_eFSS_BLOB_RES eFSS_BLOB_Format(t_eFSS_BLOB_Ctx* const p_ptCtx)
     /* Local calc variable */
     uint32_t l_uCrcZeroBlob;
     uint8_t l_uZero;
-
-    uint8_t* l_puBuF1;
-    uint32_t l_uBuF1L;
     t_eFSS_TYPE_PageMeta l_tPagePrm;
 
 	/* Check pointer validity */
@@ -261,43 +258,37 @@ e_eFSS_BLOB_RES eFSS_BLOB_Format(t_eFSS_BLOB_Ctx* const p_ptCtx)
             }
             else
             {
-                /* Get buffer for calculation */
-                l_puBuF1 = p_ptCtx->puBuf;
-                l_uBuF1L = p_ptCtx->uBufL / 2u ;
-
-                /* Clean buffer */
-                memset(l_puBuF1, 0u, l_uBuF1L);
+                l_uZero = 0u;
 
                 /* Calculate the CRC of the zero data blob */
-                l_eRes = eFSS_BLOB_CrcBlobFull(p_ptCtx, l_puBuF1, 0u, &l_uCrcZeroBlob);
+                l_eRes = eFSS_BLOB_CrcBlobFull(p_ptCtx, &l_uZero, 0u, &l_uCrcZeroBlob);
 
                 if( e_eFSS_BLOB_RES_OK == l_eRes )
                 {
                     /* First format the original pages, update blob size and CRC value, and after do the same things
-                     * to the backup pages. The backup pages are placed just after the original pages, so a single
-                      while cycle of all the pages will do the trick: first original pages and after the bkup pages */
-                    l_uZero = 0u;
-
-                    /* Generate page params that we want */
+                     * to the backup pages */
                     l_tPagePrm.uPageType = EFSS_PAGETYPE_BLOB;
                     l_tPagePrm.uPageSubType = EFSS_PAGESUBTYPE_BLOBORI;
                     l_tPagePrm.uPageVersion = p_ptCtx->tStorSett.uStorageVer;
-                    l_tPagePrm.uPageUseSpecific1 = 0;
-                    l_tPagePrm.uPageUseSpecific2 = l_uCrcZeroBlob;
-                    l_tPagePrm.uPageUseSpecific3 = p_ptCtx->tStorSett.uTotPages;
-                    l_tPagePrm.uPageUseSpecific4 = 0u;
+                    l_tPagePrm.uPageUseSpecific1 = 0;                               /* Blob size */
+                    l_tPagePrm.uPageUseSpecific2 = l_uCrcZeroBlob;                  /* Blob CRC */
+                    l_tPagePrm.uPageUseSpecific3 = p_ptCtx->tStorSett.uTotPages;    /* Total pages */
+                    l_tPagePrm.uPageUseSpecific4 = 0u;                              /* Sequential number */
                     l_tPagePrm.uPageMagicNumber = EFSS_PAGEMAGICNUMBER;
                     l_tPagePrm.uPageCrc = 0u;
 
                     /* Write first the original pages */
-                    l_eResSub = eFSS_BLOB_WriteBlobNPrm(p_ptCtx, &l_uZero, 1u, 0u,
-                                                        ( p_ptCtx->tStorSett.uTotPages / 2u ), &l_tPagePrm);
+                    l_eRes = eFSS_BLOB_WriteBlobNPrm(p_ptCtx, &l_uZero, 1u, 0u,
+                                                    ( p_ptCtx->tStorSett.uTotPages / 2u ), &l_tPagePrm);
 
-                    /* Now write backup pages */
-                    l_tPagePrm.uPageSubType = EFSS_PAGESUBTYPE_BLOBBKP;
-                    l_eResSub = eFSS_BLOB_WriteBlobNPrm(p_ptCtx, &l_uZero, 1u,
+                    if( e_eFSS_BLOB_RES_OK == l_eRes )
+                    {
+                        /* Now write backup pages */
+                        l_tPagePrm.uPageSubType = EFSS_PAGESUBTYPE_BLOBBKP;
+                        l_eRes = eFSS_BLOB_WriteBlobNPrm(p_ptCtx, &l_uZero, 1u,
                                                         ( p_ptCtx->tStorSett.uTotPages / 2u ),
                                                         ( p_ptCtx->tStorSett.uTotPages / 2u ), &l_tPagePrm);
+                    }
                 }
             }
 		}
@@ -351,15 +342,15 @@ e_eFSS_BLOB_RES eFSS_BLOB_ReadAllBlob(t_eFSS_BLOB_Ctx* const p_ptCtx, uint8_t* p
                 }
                 else
                 {
-                    /* Get buffer for calculation */
-                    l_puBuF1 = p_ptCtx->puBuf;
-                    l_uBuF1L = p_ptCtx->uBufL / 2u ;
-
                     /* Fix any memory problem */
                     l_eRes = eFSS_BLOB_OriginBackupAligner(p_ptCtx);
 
                     if( ( e_eFSS_BLOB_RES_OK == l_eRes ) || ( e_eFSS_BLOB_RES_OK_BKP_RCVRD == l_eRes ) )
                     {
+                        /* Get buffer for calculation */
+                        l_puBuF1 = p_ptCtx->puBuf;
+                        l_uBuF1L = p_ptCtx->uBufL / 2u ;
+
                         /* Read first pages of the blob to check it's size */
                         l_eHLRes = eFSS_UTILSHLPRV_ReadPageNPrm(&p_ptCtx->tCtxCb, 0u, l_puBuF1, l_uBuF1L, &l_tPagePrm,
                                                                 p_ptCtx->tStorSett.uRWERetry);
@@ -471,15 +462,15 @@ e_eFSS_BLOB_RES eFSS_BLOB_WriteAllBlob(t_eFSS_BLOB_Ctx* const p_ptCtx, uint8_t* 
             }
             else
             {
-                /* Get buffer for calculation */
-                l_puBuF1 = p_ptCtx->puBuf;
-                l_uBuF1L = p_ptCtx->uBufL / 2u ;
-
                 /* Fix any memory problem */
                 l_eRes = eFSS_BLOB_OriginBackupAligner(p_ptCtx);
 
                 if( ( e_eFSS_BLOB_RES_OK == l_eRes ) || ( e_eFSS_BLOB_RES_OK_BKP_RCVRD == l_eRes ) )
                 {
+                    /* Get buffer for calculation */
+                    l_puBuF1 = p_ptCtx->puBuf;
+                    l_uBuF1L = p_ptCtx->uBufL / 2u ;
+
                     /* Calculate the CRC of the data blob */
                     l_eRes = eFSS_BLOB_CrcBlobFull(p_ptCtx, p_puBuff, p_uBuffL, &l_uCrcBlob);
 
@@ -500,10 +491,10 @@ e_eFSS_BLOB_RES eFSS_BLOB_WriteAllBlob(t_eFSS_BLOB_Ctx* const p_ptCtx, uint8_t* 
                         l_tPagePrm.uPageType = EFSS_PAGETYPE_BLOB;
                         l_tPagePrm.uPageSubType = EFSS_PAGESUBTYPE_BLOBORI;
                         l_tPagePrm.uPageVersion = p_ptCtx->tStorSett.uStorageVer;
-                        l_tPagePrm.uPageUseSpecific1 = p_uBuffL;
-                        l_tPagePrm.uPageUseSpecific2 = l_uCrcBlob;
-                        l_tPagePrm.uPageUseSpecific3 = p_ptCtx->tStorSett.uTotPages;
-                        l_tPagePrm.uPageUseSpecific4 = l_uNweSeq;
+                        l_tPagePrm.uPageUseSpecific1 = p_uBuffL;                        /* Blob size */
+                        l_tPagePrm.uPageUseSpecific2 = l_uCrcBlob;                      /* Blob CRC */
+                        l_tPagePrm.uPageUseSpecific3 = p_ptCtx->tStorSett.uTotPages;    /* Total pages */
+                        l_tPagePrm.uPageUseSpecific4 = l_uNweSeq;                       /* Sequential number */
                         l_tPagePrm.uPageMagicNumber = EFSS_PAGEMAGICNUMBER;
                         l_tPagePrm.uPageCrc = 0u;
 
@@ -511,11 +502,23 @@ e_eFSS_BLOB_RES eFSS_BLOB_WriteAllBlob(t_eFSS_BLOB_Ctx* const p_ptCtx, uint8_t* 
                         l_eResSub = eFSS_BLOB_WriteBlobNPrm(p_ptCtx, p_puBuff, p_uBuffL, 0u,
                                                            ( p_ptCtx->tStorSett.uTotPages / 2u ), &l_tPagePrm);
 
-                        /* Now write backup pages */
-                        l_tPagePrm.uPageSubType = EFSS_PAGESUBTYPE_BLOBBKP;
-                        l_eResSub = eFSS_BLOB_WriteBlobNPrm(p_ptCtx, p_puBuff, p_uBuffL,
-                                                           ( p_ptCtx->tStorSett.uTotPages / 2u ),
-                                                           ( p_ptCtx->tStorSett.uTotPages / 2u ), &l_tPagePrm);
+                        if( e_eFSS_BLOB_RES_OK != l_eResSub )
+                        {
+                             l_eRes = l_eResSub;
+                        }
+                        else
+                        {
+                            /* Now write backup pages */
+                            l_tPagePrm.uPageSubType = EFSS_PAGESUBTYPE_BLOBBKP;
+                            l_eResSub = eFSS_BLOB_WriteBlobNPrm( p_ptCtx, p_puBuff, p_uBuffL,
+                                                                ( p_ptCtx->tStorSett.uTotPages / 2u ),
+                                                                ( p_ptCtx->tStorSett.uTotPages / 2u ), &l_tPagePrm);
+
+                            if( e_eFSS_BLOB_RES_OK != l_eResSub )
+                            {
+                                l_eRes = l_eResSub;
+                            }
+                        }
                     }
                 }
             }
