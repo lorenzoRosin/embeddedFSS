@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <workspace>
     <project>
-        <path>$WS_DIR$\..\LibFss\LibFss.ewp</path>
+        <path>$WS_DIR$\..\LibEfss\LibEfss.ewp</path>
     </project>
     <project>
-        <path>$WS_DIR$\TestFss.ewp</path>
+        <path>$WS_DIR$\TestEfss.ewp</path>
     </project>
     <batchBuild>
         <batchDefinition>
             <name>TEST_BUILD</name>
             <member>
-                <project>LibFss</project>
+                <project>LibEfss</project>
                 <configuration>Library</configuration>
             </member>
             <member>
-                <project>TestFss</project>
+                <project>TestEfss</project>
                 <configuration>Release</configuration>
             </member>
         </batchDefinition>

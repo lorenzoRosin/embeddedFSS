@@ -1426,91 +1426,91 @@
     <group>
         <name>Inc</name>
         <file>
-            <name>$PROJ_DIR$\..\..\..\Code\Inc\eCU_BSTF.h</name>
+            <name>$PROJ_DIR$\..\..\..\Src\Inc\eCU_BSTF.h</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\Code\Inc\eCU_BSTFPRV.h</name>
+            <name>$PROJ_DIR$\..\..\..\Src\Inc\eCU_BSTFPRV.h</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\Code\Inc\eCU_BUNSTF.h</name>
+            <name>$PROJ_DIR$\..\..\..\Src\Inc\eCU_BUNSTF.h</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\Code\Inc\eCU_BUNSTFPRV.h</name>
+            <name>$PROJ_DIR$\..\..\..\Src\Inc\eCU_BUNSTFPRV.h</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\Code\Inc\eCU_CIRQ.h</name>
+            <name>$PROJ_DIR$\..\..\..\Src\Inc\eCU_CIRQ.h</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\Code\Inc\eCU_CRC.h</name>
+            <name>$PROJ_DIR$\..\..\..\Src\Inc\eCU_CRC.h</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\Code\Inc\eCU_CRCD.h</name>
+            <name>$PROJ_DIR$\..\..\..\Src\Inc\eCU_CRCD.h</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\Code\Inc\eCU_DPK.h</name>
+            <name>$PROJ_DIR$\..\..\..\Src\Inc\eCU_DPK.h</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\Code\Inc\eCU_DUNPK.h</name>
+            <name>$PROJ_DIR$\..\..\..\Src\Inc\eCU_DUNPK.h</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\Code\Inc\eFSS_BLOB.h</name>
+            <name>$PROJ_DIR$\..\..\..\Src\Inc\eFSS_BLOB.h</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\Code\Inc\eFSS_DB.h</name>
+            <name>$PROJ_DIR$\..\..\..\Src\Inc\eFSS_DB.h</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\Code\Inc\eFSS_LOG.h</name>
+            <name>$PROJ_DIR$\..\..\..\Src\Inc\eFSS_LOG.h</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\Code\Inc\eFSS_STANDARDTYPE.h</name>
+            <name>$PROJ_DIR$\..\..\..\Src\Inc\eFSS_STANDARDTYPE.h</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\Code\Inc\eFSS_TYPE.h</name>
+            <name>$PROJ_DIR$\..\..\..\Src\Inc\eFSS_TYPE.h</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\Code\Inc\eFSS_UTILSHLPRV.h</name>
+            <name>$PROJ_DIR$\..\..\..\Src\Inc\eFSS_UTILSHLPRV.h</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\Code\Inc\eFSS_UTILSLLPRV.h</name>
+            <name>$PROJ_DIR$\..\..\..\Src\Inc\eFSS_UTILSLLPRV.h</name>
         </file>
     </group>
     <group>
         <name>Src</name>
         <file>
-            <name>$PROJ_DIR$\..\..\..\Code\Src\eCU_BSTF.c</name>
+            <name>$PROJ_DIR$\..\..\..\Src\Src\eCU_BSTF.c</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\Code\Src\eCU_BUNSTF.c</name>
+            <name>$PROJ_DIR$\..\..\..\Src\Src\eCU_BUNSTF.c</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\Code\Src\eCU_CIRQ.c</name>
+            <name>$PROJ_DIR$\..\..\..\Src\Src\eCU_CIRQ.c</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\Code\Src\eCU_CRC.c</name>
+            <name>$PROJ_DIR$\..\..\..\Src\Src\eCU_CRC.c</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\Code\Src\eCU_CRCD.c</name>
+            <name>$PROJ_DIR$\..\..\..\Src\Src\eCU_CRCD.c</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\Code\Src\eCU_DPK.c</name>
+            <name>$PROJ_DIR$\..\..\..\Src\Src\eCU_DPK.c</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\Code\Src\eCU_DUNPK.c</name>
+            <name>$PROJ_DIR$\..\..\..\Src\Src\eCU_DUNPK.c</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\Code\Src\eFSS_BLOB.c</name>
+            <name>$PROJ_DIR$\..\..\..\Src\Src\eFSS_BLOB.c</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\Code\Src\eFSS_DB.c</name>
+            <name>$PROJ_DIR$\..\..\..\Src\Src\eFSS_DB.c</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\Code\Src\eFSS_LOG.c</name>
+            <name>$PROJ_DIR$\..\..\..\Src\Src\eFSS_LOG.c</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\Code\Src\eFSS_UTILSHLPRV.c</name>
+            <name>$PROJ_DIR$\..\..\..\Src\Src\eFSS_UTILSHLPRV.c</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\Code\Src\eFSS_UTILSLLPRV.c</name>
+            <name>$PROJ_DIR$\..\..\..\Src\Src\eFSS_UTILSLLPRV.c</name>
         </file>
     </group>
 </project>

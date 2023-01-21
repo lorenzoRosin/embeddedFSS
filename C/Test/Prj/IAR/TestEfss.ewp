@@ -347,9 +347,9 @@
                 </option>
                 <option>
                     <name>CCIncludePath2</name>
-                    <state>$PROJ_DIR$\..\..\Code\TestFunction\Inc</state>
-                    <state>$PROJ_DIR$\..\..\Code\TestFunction\Src</state>
-                    <state>$PROJ_DIR$\..\..\..\Code\Inc</state>
+                    <state>$PROJ_DIR$\..\..\Src\TestFunction\Inc</state>
+                    <state>$PROJ_DIR$\..\..\Src\TestFunction\Src</state>
+                    <state>$PROJ_DIR$\..\..\..\Src\Inc</state>
                 </option>
                 <option>
                     <name>CCStdIncCheck</name>
@@ -609,8 +609,8 @@
                 </option>
                 <option>
                     <name>AUserIncludes</name>
-                    <state>$PROJ_DIR$\..\..\Code\TestFunction\Inc</state>
-                    <state>$PROJ_DIR$\..\..\Code\TestFunction\Src</state>
+                    <state>$PROJ_DIR$\..\..\Src\TestFunction\Inc</state>
+                    <state>$PROJ_DIR$\..\..\Src\TestFunction\Src</state>
                 </option>
                 <option>
                     <name>AExtraOptionsCheckV2</name>
@@ -648,7 +648,7 @@
                 </option>
                 <option>
                     <name>OOCOutputFile</name>
-                    <state>TestFss.srec</state>
+                    <state>TestEfss.srec</state>
                 </option>
                 <option>
                     <name>OOCCommandLineProducer</name>
@@ -807,7 +807,7 @@
                 </option>
                 <option>
                     <name>IlinkAdditionalLibs</name>
-                    <state>$PROJ_DIR$\..\LibFss\Library\Exe\LibFss.a
+                    <state>$PROJ_DIR$\..\LibEfss\Library\Exe\LibEfss.a
 </state>
                 </option>
                 <option>
@@ -993,7 +993,7 @@
                 </option>
                 <option>
                     <name>IlinkTrustzoneImportLibraryOut</name>
-                    <state>TestFss_import_lib.o</state>
+                    <state>TestEfss_import_lib.o</state>
                 </option>
                 <option>
                     <name>OILinkExtraOption</name>
@@ -1083,61 +1083,61 @@
     <group>
         <name>Inc</name>
         <file>
-            <name>$PROJ_DIR$\..\..\Code\TestFunction\Inc\eCU_BSTFTST.h</name>
+            <name>$PROJ_DIR$\..\..\Src\TestFunction\Inc\eCU_BSTFTST.h</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\Code\TestFunction\Inc\eCU_BUSTFTST.h</name>
+            <name>$PROJ_DIR$\..\..\Src\TestFunction\Inc\eCU_BUSTFTST.h</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\Code\TestFunction\Inc\eCU_CIRQTST.h</name>
+            <name>$PROJ_DIR$\..\..\Src\TestFunction\Inc\eCU_CIRQTST.h</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\Code\TestFunction\Inc\eCU_CRCDTST.h</name>
+            <name>$PROJ_DIR$\..\..\Src\TestFunction\Inc\eCU_CRCDTST.h</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\Code\TestFunction\Inc\eCU_CRCTST.h</name>
+            <name>$PROJ_DIR$\..\..\Src\TestFunction\Inc\eCU_CRCTST.h</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\Code\TestFunction\Inc\eCU_DPKTST.h</name>
+            <name>$PROJ_DIR$\..\..\Src\TestFunction\Inc\eCU_DPKTST.h</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\Code\TestFunction\Inc\eCU_DPKDUNPKTST.h</name>
+            <name>$PROJ_DIR$\..\..\Src\TestFunction\Inc\eCU_DPKDUNPKTST.h</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\Code\TestFunction\Inc\eCU_BSTFBUNSTFTST.h</name>
+            <name>$PROJ_DIR$\..\..\Src\TestFunction\Inc\eCU_BSTFBUNSTFTST.h</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\Code\TestFunction\Inc\eCU_DUNPKTST.h</name>
+            <name>$PROJ_DIR$\..\..\Src\TestFunction\Inc\eCU_DUNPKTST.h</name>
         </file>
     </group>
     <group>
         <name>Src</name>
         <file>
-            <name>$PROJ_DIR$\..\..\Code\TestFunction\Src\eCU_BSTFTST.c</name>
+            <name>$PROJ_DIR$\..\..\Src\TestFunction\Src\eCU_BSTFTST.c</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\Code\TestFunction\Src\eCU_BUSTFTST.c</name>
+            <name>$PROJ_DIR$\..\..\Src\TestFunction\Src\eCU_BUSTFTST.c</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\Code\TestFunction\Src\eCU_CIRQTST.c</name>
+            <name>$PROJ_DIR$\..\..\Src\TestFunction\Src\eCU_CIRQTST.c</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\Code\TestFunction\Src\eCU_CRCDTST.c</name>
+            <name>$PROJ_DIR$\..\..\Src\TestFunction\Src\eCU_CRCDTST.c</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\Code\TestFunction\Src\eCU_CRCTST.c</name>
+            <name>$PROJ_DIR$\..\..\Src\TestFunction\Src\eCU_CRCTST.c</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\Code\TestFunction\Src\eCU_DPKTST.c</name>
+            <name>$PROJ_DIR$\..\..\Src\TestFunction\Src\eCU_DPKTST.c</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\Code\TestFunction\Src\eCU_DPKDUNPKTST.c</name>
+            <name>$PROJ_DIR$\..\..\Src\TestFunction\Src\eCU_DPKDUNPKTST.c</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\Code\TestFunction\Src\eCU_BSTFBUNSTFTST.c</name>
+            <name>$PROJ_DIR$\..\..\Src\TestFunction\Src\eCU_BSTFBUNSTFTST.c</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\Code\TestFunction\Src\eCU_DUNPKTST.c</name>
+            <name>$PROJ_DIR$\..\..\Src\TestFunction\Src\eCU_DUNPKTST.c</name>
         </file>
     </group>
     <file>

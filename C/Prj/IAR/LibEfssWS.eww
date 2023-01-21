@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <workspace>
     <project>
-        <path>$WS_DIR$\LibFss.ewp</path>
+        <path>$WS_DIR$\LibEfss.ewp</path>
     </project>
     <batchBuild>
         <batchDefinition>
             <name>LIBRARY</name>
             <member>
-                <project>LibFss</project>
+                <project>LibEfss</project>
                 <configuration>Library</configuration>
             </member>
         </batchDefinition>
