@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <workspace>
     <project>
-        <path>$WS_DIR$\..\LibEfss\LibEfss.ewp</path>
+        <path>$WS_DIR$\..\..\..\Prj\IAR\LibEfss.ewp</path>
     </project>
     <project>
         <path>$WS_DIR$\TestEfss.ewp</path>
