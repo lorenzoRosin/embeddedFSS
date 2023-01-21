@@ -28,10 +28,6 @@ extern "C" {
 /***********************************************************************************************************************
  *      DEFINES
  **********************************************************************************************************************/
-#define ECU_SOF                                                                                    ( ( uint8_t ) 0xA1u )
-#define ECU_EOF                                                                                    ( ( uint8_t ) 0xA2u )
-#define ECU_ESC                                                                                    ( ( uint8_t ) 0xA3u )
-
 /* Pages Metadata values */
 #define EFSS_PAGEMETASIZE                                                                          ( ( uint32_t )  28u )
 #define EFSS_PAGEMAGICNUMBER                                                               ( ( uint32_t )  0xA5A5A5A5u )
@@ -70,7 +66,7 @@ typedef struct t_eFSS_TYPE_EraseCtxUser t_eFSS_TYPE_EraseCtx;
  * the p_ptCtx parameter is a custom pointer that can be used by the creator of this CRC callback, and will not be used
  * by the CRCdigest module */
 typedef bool_t (*f_eFSS_TYPE_EraseCb) ( t_eFSS_TYPE_EraseCtx* const p_ptCtx,
-                                              const uint32_t p_uPageToErase );
+                                        const uint32_t p_uPageToErase );
 
 /* Define a generic crc callback context that must be implemented by the user */
 typedef struct t_eFSS_TYPE_WriteCtxUser t_eFSS_TYPE_WriteCtx;
@@ -79,8 +75,8 @@ typedef struct t_eFSS_TYPE_WriteCtxUser t_eFSS_TYPE_WriteCtx;
  * the p_ptCtx parameter is a custom pointer that can be used by the creator of this CRC callback, and will not be used
  * by the CRCdigest module */
 typedef bool_t (*f_eFSS_TYPE_WriteCb) ( t_eFSS_TYPE_WriteCtx* const p_ptCtx,
-                                              const uint32_t p_uPageToWrite, uint8_t* const p_puDataToWrite,
-                                              const uint32_t p_uDataToWriteL);
+                                        const uint32_t p_uPageToWrite, uint8_t* const p_puDataToWrite,
+                                        const uint32_t p_uDataToWriteL);
 
 /* Define a generic crc callback context that must be implemented by the user */
 typedef struct t_eFSS_TYPE_ReadCtxUser t_eFSS_TYPE_ReadCtx;
@@ -89,8 +85,8 @@ typedef struct t_eFSS_TYPE_ReadCtxUser t_eFSS_TYPE_ReadCtx;
  * the p_ptCtx parameter is a custom pointer that can be used by the creator of this CRC callback, and will not be used
  * by the CRCdigest module */
 typedef bool_t (*f_eFSS_TYPE_ReadCb) ( t_eFSS_TYPE_ReadCtx* const p_ptCtx,
-                                              const uint32_t p_uPageToRead, uint8_t* const p_puReadBuffer,
-                                              const uint32_t p_uReadBufferL);
+                                       const uint32_t p_uPageToRead, uint8_t* const p_puReadBuffer,
+                                       const uint32_t p_uReadBufferL);
 
 /* Define a generic crc callback context that must be implemented by the user */
 typedef struct t_eFSS_TYPE_CrcCtxUser t_eFSS_TYPE_CrcCtx;
@@ -99,8 +95,8 @@ typedef struct t_eFSS_TYPE_CrcCtxUser t_eFSS_TYPE_CrcCtx;
  * the p_ptCtx parameter is a custom pointer that can be used by the creator of this CRC callback, and will not be used
  * by the CRCdigest module */
 typedef bool_t (*f_eFSS_TYPE_CrcCb) ( t_eFSS_TYPE_CrcCtx* const p_ptCtx, const uint32_t p_uUseed,
-                                            const uint8_t* p_puData, const uint32_t p_uDataL,
-                                            uint32_t* const p_puCrc32Val );
+                                      const uint8_t* p_puData, const uint32_t p_uDataL,
+                                      uint32_t* const p_puCrc32Val );
 
 typedef struct
 {
