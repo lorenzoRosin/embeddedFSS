@@ -1088,6 +1088,9 @@
     </configuration>
     <group>
         <name>Blob</name>
+        <excluded>
+            <configuration>Library</configuration>
+        </excluded>
         <group>
             <name>Inc</name>
             <file>
@@ -1130,6 +1133,9 @@
     </group>
     <group>
         <name>Db</name>
+        <excluded>
+            <configuration>Library</configuration>
+        </excluded>
         <group>
             <name>Inc</name>
             <file>
@@ -1151,6 +1157,9 @@
     </group>
     <group>
         <name>Log</name>
+        <excluded>
+            <configuration>Library</configuration>
+        </excluded>
         <group>
             <name>Inc</name>
             <file>
