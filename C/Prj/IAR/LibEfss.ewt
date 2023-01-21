@@ -1426,91 +1426,73 @@
     <group>
         <name>Inc</name>
         <file>
-            <name>$PROJ_DIR$\..\..\..\Src\Inc\eCU_BSTF.h</name>
+            <name>$PROJ_DIR$\..\..\Src\eFSS_STANDARDTYPE.h</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\Src\Inc\eCU_BSTFPRV.h</name>
+            <name>$PROJ_DIR$\..\..\Src\eFSS_TYPE.h</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\Src\Inc\eCU_BUNSTF.h</name>
+            <name>$PROJ_DIR$\..\..\Src\Blob\Inc\eFSS_BLOB.h</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\Src\Inc\eCU_BUNSTFPRV.h</name>
+            <name>$PROJ_DIR$\..\..\Src\Core\Inc\eFSS_BLOBC.h</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\Src\Inc\eCU_CIRQ.h</name>
+            <name>$PROJ_DIR$\..\..\Src\Core\Inc\eFSS_DBC.h</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\Src\Inc\eCU_CRC.h</name>
+            <name>$PROJ_DIR$\..\..\Src\Core\Inc\eFSS_LOGC.h</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\Src\Inc\eCU_CRCD.h</name>
+            <name>$PROJ_DIR$\..\..\Src\Db\Inc\eFSS_DBFL.h</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\Src\Inc\eCU_DPK.h</name>
+            <name>$PROJ_DIR$\..\..\Src\Db\Inc\eFSS_DBVL.h</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\Src\Inc\eCU_DUNPK.h</name>
+            <name>$PROJ_DIR$\..\..\Src\Log\Inc\eFSS_LOGFL.h</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\Src\Inc\eFSS_BLOB.h</name>
+            <name>$PROJ_DIR$\..\..\Src\Log\Inc\eFSS_LOGVL.h</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\Src\Inc\eFSS_DB.h</name>
+            <name>$PROJ_DIR$\..\..\Src\Utils\Inc\eFSS_UTILSHLPRV.h</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\Src\Inc\eFSS_LOG.h</name>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\..\..\..\Src\Inc\eFSS_STANDARDTYPE.h</name>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\..\..\..\Src\Inc\eFSS_TYPE.h</name>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\..\..\..\Src\Inc\eFSS_UTILSHLPRV.h</name>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\..\..\..\Src\Inc\eFSS_UTILSLLPRV.h</name>
+            <name>$PROJ_DIR$\..\..\Src\Utils\Inc\eFSS_UTILSLLPRV.h</name>
         </file>
     </group>
     <group>
         <name>Src</name>
         <file>
-            <name>$PROJ_DIR$\..\..\..\Src\Src\eCU_BSTF.c</name>
+            <name>$PROJ_DIR$\..\..\Src\Blob\Src\eFSS_BLOB.c</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\Src\Src\eCU_BUNSTF.c</name>
+            <name>$PROJ_DIR$\..\..\Src\Core\Src\eFSS_BLOBC.c</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\Src\Src\eCU_CIRQ.c</name>
+            <name>$PROJ_DIR$\..\..\Src\Core\Src\eFSS_DBC.c</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\Src\Src\eCU_CRC.c</name>
+            <name>$PROJ_DIR$\..\..\Src\Core\Src\eFSS_LOGC.c</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\Src\Src\eCU_CRCD.c</name>
+            <name>$PROJ_DIR$\..\..\Src\Db\Src\eFSS_DBFL.c</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\Src\Src\eCU_DPK.c</name>
+            <name>$PROJ_DIR$\..\..\Src\Db\Src\eFSS_DBVL.c</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\Src\Src\eCU_DUNPK.c</name>
+            <name>$PROJ_DIR$\..\..\Src\Log\Src\eFSS_LOGFL.c</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\Src\Src\eFSS_BLOB.c</name>
+            <name>$PROJ_DIR$\..\..\Src\Log\Src\eFSS_LOGVL.c</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\Src\Src\eFSS_DB.c</name>
+            <name>$PROJ_DIR$\..\..\Src\Utils\Src\eFSS_UTILSHLPRV.c</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\..\..\..\Src\Src\eFSS_LOG.c</name>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\..\..\..\Src\Src\eFSS_UTILSHLPRV.c</name>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\..\..\..\Src\Src\eFSS_UTILSLLPRV.c</name>
+            <name>$PROJ_DIR$\..\..\Src\Utils\Src\eFSS_UTILSLLPRV.c</name>
         </file>
     </group>
 </project>
