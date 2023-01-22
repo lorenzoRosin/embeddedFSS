@@ -176,6 +176,7 @@ e_eFSS_LOGC_RES eFSS_LOGC_GetLogInfo(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t *p
     e_eFSS_UTILSHLPRV_RES l_eHLRes;
     t_eFSS_TYPE_PageMeta l_tPagePrm;
 
+
 	/* Check pointer validity */
 	if( ( NULL == p_ptCtx ) || ( NULL == p_puNewLogI ) )
 	{
