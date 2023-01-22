@@ -54,8 +54,8 @@ typedef struct
 	uint32_t uBufL;
     uint32_t uNewPagIdx;
     uint32_t uOldPagIdx;
-    bool_t bUseFlashCache;
-    bool_t bUseFullBckup;
+    bool_t bFlashCache;
+    bool_t bFullBckup;
 }t_eFSS_LOGC_Ctx;
 
 
@@ -71,8 +71,8 @@ typedef struct
  * @param[in]   p_puBuff         - Pointer to a buffer used by the modules to make calc
  * @param[in]   p_uBuffL         - Size of p_puBuff
  * @param[in]   p_tStorSet       - Storage settings
- * @param[in]   p_bUseFlashCache - Use flash as cache for storing and resuming index
- * @param[in]   p_bUseFullBckup  - Save every log data in a backup pages
+ * @param[in]   p_bFlashCache    - Use flash as cache for storing and resuming index
+ * @param[in]   p_bFullBckup     - Save every log data in a backup pages
  *
  * @return      e_eFSS_LOGC_RES_BADPOINTER    - In case of bad pointer passed to the function
  *		        e_eFSS_LOGC_RES_BADPARAM      - In case of an invalid parameter passed to the function
@@ -80,7 +80,7 @@ typedef struct
  */
 e_eFSS_LOGC_RES eFSS_LOGC_InitCtx(t_eFSS_LOGC_Ctx* const p_ptCtx, t_eFSS_TYPE_CbCtx const p_tCtxCb,
                                   uint8_t* const p_puBuff, uint32_t p_uBuffL, t_eFSS_TYPE_StorageSettings p_tStorSet,
-                                  bool_t p_bUseFlashCache, bool_t p_bUseFullBckup);
+                                  bool_t p_bFlashCache, bool_t p_bFullBckup);
 
 /**
  * @brief       Check if the lib is initialized

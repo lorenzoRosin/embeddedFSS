@@ -40,46 +40,74 @@ static uint32_t eFSS_LOGC_GetPrevIndex(uint32_t p_uCurrIdx, uint32_t p_uTotPage)
 /***********************************************************************************************************************
  *   GLOBAL FUNCTIONS
  **********************************************************************************************************************/
-e_eFSS_LOGC_RES t_eFSS_LOGC_Ctx(t_eFSS_LOGC_Ctx* const p_ptCtx, t_eFSS_TYPE_CbCtx* const p_ptCtxCb,
-                                const uint32_t p_uPageToUse, const uint32_t p_uPageSize, uint8_t* const p_puBuff,
-                                uint32_t p_uBuffL, uint16_t p_uLogVersion, uint32_t p_uRetry,
-                                bool_t p_bUseFlashCache, bool_t p_bUseFullBckup)
+e_eFSS_LOGC_RES eFSS_LOGC_InitCtx(t_eFSS_LOGC_Ctx* const p_ptCtx, t_eFSS_TYPE_CbCtx const p_tCtxCb,
+                                  uint8_t* const p_puBuff, uint32_t p_uBuffL, t_eFSS_TYPE_StorageSettings p_tStorSet,
+                                  bool_t p_bFlashCache, bool_t p_bFullBckup);
 {
     e_eFSS_LOGC_RES l_eRes;
 
 	/* Check pointer validity */
-	if( ( NULL == p_ptCtx ) || ( NULL == p_ptCtxCb ) || ( NULL == p_puBuff ) )
+	if( ( NULL == p_ptCtx ) || ( NULL == p_puBuff ) )
 	{
 		l_eRes = e_eFSS_LOGC_RES_BADPOINTER;
 	}
 	else
 	{
         /* Check pointer validity */
-        if( ( NULL == p_ptCtxCb->ptCtxErase ) || ( NULL == p_ptCtxCb->fErase ) ||
-            ( NULL == p_ptCtxCb->ptCtxWrite ) || ( NULL == p_ptCtxCb->fWrite ) ||
-            ( NULL == p_ptCtxCb->ptCtxRead  ) || ( NULL == p_ptCtxCb->fRead  ) ||
-            ( NULL == p_ptCtxCb->ptCtxCrc32 ) || ( NULL == p_ptCtxCb->fCrc32 ) )
+        if( ( NULL == p_tCtxCb.ptCtxErase ) || ( NULL == p_tCtxCb.fErase ) ||
+            ( NULL == p_tCtxCb.ptCtxWrite ) || ( NULL == p_tCtxCb.fWrite ) ||
+            ( NULL == p_tCtxCb.ptCtxRead  ) || ( NULL == p_tCtxCb.fRead  ) ||
+            ( NULL == p_tCtxCb.ptCtxCrc32 ) || ( NULL == p_tCtxCb.fCrc32 ) )
         {
             l_eRes = e_eFSS_LOGC_RES_BADPOINTER;
         }
         else
         {
             /* Check data validity */
-            if( ( p_uPageToUse <= 2u ) || ( p_uPageSize <= EFSS_PAGEMETASIZE ) || ( ( p_uPageSize * 2u ) != p_uBuffL ) )
+            if( p_uBuffL != ( 2u * p_tStorSet.uPagesLen ) )
             {
-                l_eRes = e_eFSS_LOGC_RES_BADPARAM;
+                l_eRes = e_eFSS_BLOBC_RES_BADPARAM;
             }
             else
             {
-                /* Fill context */
-                p_ptCtx->bIsInit = true;
-                p_ptCtx->ptCtxCb = p_ptCtxCb;
-                p_ptCtx->puBuff1 = p_puBuff;
-                p_ptCtx->uBuff1L = p_uBuffL / 2u;
-                p_ptCtx->puBuff2 = &p_puBuff[p_ptCtx->uBuff1L];
-                p_ptCtx->uBuff2L = p_uBuffL / 2u;
-                p_ptCtx->uNPage = p_uPageToUse;
-                p_ptCtx->uPageSize = p_uPageSize;
+                /* Check data validity */
+                if( ( 0u != ( p_tStorSet.uTotPages % 2u ) ) || 
+                    ( ( false == p_bFullBckup ) && ( false == p_bFlashCache ) && ( p_tStorSet.uTotPages < 4u  ) ) || 
+                    ( ( false == p_bFullBckup ) && ( true  == p_bFlashCache ) && ( p_tStorSet.uTotPages < 6u  ) ) || 
+                    ( ( true  == p_bFullBckup ) && ( false == p_bFlashCache ) && ( p_tStorSet.uTotPages < 8u  ) ) || 
+                    ( ( true  == p_bFullBckup ) && ( true  == p_bFlashCache ) && ( p_tStorSet.uTotPages < 10u ) ) )
+                {
+                    l_eRes = e_eFSS_BLOBC_RES_BADPARAM;
+                }
+                else
+                {
+                    /* Check data validity */
+                    if( ( p_tStorSet.uPagesLen <= EFSS_PAGEMETASIZE ) || ( 0u != ( p_tStorSet.uPagesLen % 2u ) ) )
+                    {
+                        l_eRes = e_eFSS_BLOBC_RES_BADPARAM;
+                    }
+                    else
+                    {
+                        /* Check data validity */
+                        if( p_tStorSet.uRWERetry <= 0u )
+                        {
+                            l_eRes = e_eFSS_BLOBC_RES_BADPARAM;
+                        }
+                        else
+                        {
+                            /* Fill context */
+                            p_ptCtx->bIsInit = true;
+                            p_ptCtx->tCtxCb = p_tCtxCb;
+                            p_ptCtx->tStorSett = p_tStorSet;
+                            p_ptCtx->puBuf = p_puBuff;
+                            p_ptCtx->uBufL = p_uBuffL;
+                            p_ptCtx->uNewPagIdx = 0;
+                            p_ptCtx->uOldPagIdx = 0;
+                            p_ptCtx->bFlashCache = p_bFlashCache;
+                            p_ptCtx->bFullBckup = p_bFullBckup;
+                        }
+                    }
+                }
             }
         }
     }
