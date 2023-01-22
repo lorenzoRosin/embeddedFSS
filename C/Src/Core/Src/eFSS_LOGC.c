@@ -169,16 +169,20 @@ e_eFSS_LOGC_RES eFSS_LOGC_GetStorageStatus(t_eFSS_LOGC_Ctx* const p_ptCtx)
 }
 
 e_eFSS_LOGC_RES eFSS_LOGC_GetLogInfo(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t *p_puNewLogI, uint32_t *p_puOldLogI,
-                                   uint32_t *p_puNpageUsed, uint32_t *p_puLogVer)
+                                     uint32_t *p_puNpageUsed, uint32_t *p_puLogVer)
 {
 	/* Local variable */
 	e_eFSS_LOGC_RES l_eRes;
     e_eFSS_UTILSHLPRV_RES l_eHLRes;
     t_eFSS_TYPE_PageMeta l_tPagePrm;
+    uint8_t* l_puBuF1;
+    uint32_t l_uBuF1L;
+    uint32_t l_uNPageU;
 
 
 	/* Check pointer validity */
-	if( ( NULL == p_ptCtx ) || ( NULL == p_puNewLogI ) )
+	if( ( NULL == p_ptCtx ) || ( NULL == p_puNewLogI ) || ( NULL == p_puOldLogI ) || ( NULL == p_puNpageUsed ) || 
+        ( NULL == p_puLogVer ) )
 	{
 		l_eRes = e_eFSS_LOGC_RES_BADPOINTER;
 	}
@@ -203,10 +207,14 @@ e_eFSS_LOGC_RES eFSS_LOGC_GetLogInfo(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t *p
 
                 if( ( e_eFSS_LOGC_RES_OK == l_eRes ) || ( e_eFSS_LOGC_RES_OK_BKP_RCVRD == l_eRes ) )
                 {
-                    /* Retrive info from the first page */
+                    /* Get buffer for calculation */
+                    l_puBuF1 = p_ptCtx->puBuf;
+                    l_uBuF1L = p_ptCtx->uBufL / 2u ;
+
+                    /* Retrive info from the newest log index */
                     l_eHLRes = eFSS_UTILSHLPRV_ReadPageNPrm(p_ptCtx->ptCtxCb, p_ptCtx->uNPagIdxFound,
-                                                            p_ptCtx->puBuff1, p_ptCtx->uBuff1L,
-                                                            &l_tPagePrm, p_ptCtx->uReTry);
+                                                            l_puBuF1, l_uBuF1L, &l_tPagePrm, 
+                                                            p_ptCtx->tStorSett.uRWERetry);
 
                     if( e_eFSS_UTILSHLPRV_RES_OK != l_eHLRes )
                     {
@@ -214,9 +222,12 @@ e_eFSS_LOGC_RES eFSS_LOGC_GetLogInfo(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t *p
                     }
                     else
                     {
+                        /* Calculate n page */
+                        
+                        /* Copy result */
                         *p_puNewLogI = l_tPagePrm.uPageUseSpecific1;
                         *p_puOldLogI = l_tPagePrm.uPageUseSpecific2;
-                        *p_puNpageUsed = l_tPagePrm.uPageUseSpecific4;
+                        *p_puNpageUsed = l_uNPageU;
                         *p_puLogVer = l_tPagePrm.uPageVersion;
                     }
                 }
