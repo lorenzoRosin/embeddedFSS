@@ -162,28 +162,6 @@ e_eFSS_LOGC_RES eFSS_LOGC_GetLogInfo(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t *p
 e_eFSS_LOGC_RES eFSS_LOGC_Format(t_eFSS_LOGC_Ctx* const p_ptCtx);
 
 /**
- * @brief       Add a log
- *
- * @param[in]   p_ptCtx       - Log context
- * @param[in]   p_puLogToSave - Pointer to the buffer containing the log to store
- * @param[in]   p_uLogL       - Dimension in byte of the log to store
- *
- * @return      e_eFSS_LOGC_RES_BADPOINTER         - In case of bad pointer passed to the function
- *              e_eFSS_LOGC_RES_OK                 - Operation ended correctly
- *              e_eFSS_LOGC_RES_OK_BKP_RCVRD       - All ok, but some page where recovered
- *              e_eFSS_LOGC_RES_NOTVALIDBLOB       - No valid blob founded
- *              e_eFSS_LOGC_RES_NEWVERSIONLOG      - New version of the blob requested
- *              e_eFSS_LOGC_RES_NOINITLIB          - Need to init the lib before calling this function
- *              e_eFSS_LOGC_RES_CORRUPTCTX         - Context is corrupted
- *              e_eFSS_LOGC_RES_CLBCKERASEERR      - Erase callback returned error
- *              e_eFSS_LOGC_RES_CLBCKWRITEERR      - Write callback returned error
- *              e_eFSS_LOGC_RES_CLBCKREADERR       - Read callback returned error
- *              e_eFSS_LOGC_RES_CLBCKCRCERR        - Crc callback returned error
- *              e_eFSS_LOGC_RES_WRITENOMATCHREAD   - After Write operation the Read operation readed different data
- */
-e_eFSS_LOGC_RES eFSS_LOGC_AddLog(t_eFSS_LOGC_Ctx* const p_ptCtx, uint8_t* p_puLogToSave, uint32_t p_uLogL);
-
-/**
  * @brief       Get all the log present on a specific page
  *
  * @param[in]   p_ptCtx        - Log context
@@ -204,6 +182,28 @@ e_eFSS_LOGC_RES eFSS_LOGC_AddLog(t_eFSS_LOGC_Ctx* const p_ptCtx, uint8_t* p_puLo
  *              e_eFSS_LOGC_RES_WRITENOMATCHREAD   - After Write operation the Read operation readed different data
  */
 e_eFSS_LOGC_RES eFSS_LOGC_GetLogOfASpecificPage(t_eFSS_LOGC_Ctx* const p_ptCtx, uint8_t* p_puBuf, uint32_t* p_uBufL);
+
+/**
+ * @brief       Add a log
+ *
+ * @param[in]   p_ptCtx       - Log context
+ * @param[in]   p_puLogToSave - Pointer to the buffer containing the log to store
+ * @param[in]   p_uLogL       - Dimension in byte of the log to store
+ *
+ * @return      e_eFSS_LOGC_RES_BADPOINTER         - In case of bad pointer passed to the function
+ *              e_eFSS_LOGC_RES_OK                 - Operation ended correctly
+ *              e_eFSS_LOGC_RES_OK_BKP_RCVRD       - All ok, but some page where recovered
+ *              e_eFSS_LOGC_RES_NOTVALIDBLOB       - No valid blob founded
+ *              e_eFSS_LOGC_RES_NEWVERSIONLOG      - New version of the blob requested
+ *              e_eFSS_LOGC_RES_NOINITLIB          - Need to init the lib before calling this function
+ *              e_eFSS_LOGC_RES_CORRUPTCTX         - Context is corrupted
+ *              e_eFSS_LOGC_RES_CLBCKERASEERR      - Erase callback returned error
+ *              e_eFSS_LOGC_RES_CLBCKWRITEERR      - Write callback returned error
+ *              e_eFSS_LOGC_RES_CLBCKREADERR       - Read callback returned error
+ *              e_eFSS_LOGC_RES_CLBCKCRCERR        - Crc callback returned error
+ *              e_eFSS_LOGC_RES_WRITENOMATCHREAD   - After Write operation the Read operation readed different data
+ */
+e_eFSS_LOGC_RES eFSS_LOGC_AddLog(t_eFSS_LOGC_Ctx* const p_ptCtx, uint8_t* p_puLogToSave, uint32_t p_uLogL);
 
 #ifdef __cplusplus
 } /* extern "C" */
