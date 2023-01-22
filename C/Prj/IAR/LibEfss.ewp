@@ -1110,24 +1110,42 @@
             <name>Inc</name>
             <file>
                 <name>$PROJ_DIR$\..\..\Src\Core\Inc\eFSS_BLOBC.h</name>
+                <excluded>
+                    <configuration>Library</configuration>
+                </excluded>
             </file>
             <file>
                 <name>$PROJ_DIR$\..\..\Src\Core\Inc\eFSS_DBC.h</name>
+                <excluded>
+                    <configuration>Library</configuration>
+                </excluded>
             </file>
             <file>
                 <name>$PROJ_DIR$\..\..\Src\Core\Inc\eFSS_LOGC.h</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\..\Src\Core\Inc\eFSS_LOGCPRV.h</name>
             </file>
         </group>
         <group>
             <name>Src</name>
             <file>
                 <name>$PROJ_DIR$\..\..\Src\Core\Src\eFSS_BLOBC.c</name>
+                <excluded>
+                    <configuration>Library</configuration>
+                </excluded>
             </file>
             <file>
                 <name>$PROJ_DIR$\..\..\Src\Core\Src\eFSS_DBC.c</name>
+                <excluded>
+                    <configuration>Library</configuration>
+                </excluded>
             </file>
             <file>
                 <name>$PROJ_DIR$\..\..\Src\Core\Src\eFSS_LOGC.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\..\Src\Core\Src\eFSS_LOGCPRV.c</name>
             </file>
         </group>
     </group>

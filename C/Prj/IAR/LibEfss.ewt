@@ -1451,6 +1451,9 @@
             <file>
                 <name>$PROJ_DIR$\..\..\Src\Core\Inc\eFSS_LOGC.h</name>
             </file>
+            <file>
+                <name>$PROJ_DIR$\..\..\Src\Core\Inc\eFSS_LOGCPRV.h</name>
+            </file>
         </group>
         <group>
             <name>Src</name>
@@ -1462,6 +1465,9 @@
             </file>
             <file>
                 <name>$PROJ_DIR$\..\..\Src\Core\Src\eFSS_LOGC.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\..\Src\Core\Src\eFSS_LOGCPRV.c</name>
             </file>
         </group>
     </group>
