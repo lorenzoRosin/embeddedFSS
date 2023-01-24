@@ -165,6 +165,7 @@ e_eFSS_LOGC_RES eFSS_LOGC_Format(t_eFSS_LOGC_Ctx* const p_ptCtx);
  * @brief       Get all the log present on a specific page
  *
  * @param[in]   p_ptCtx        - Log context
+ * @param[in]   p_uindx        - Index to get data from
  * @param[in]   p_puBuf        - Pointer to the buffer where founded log will be stored
  * @param[in]   p_uBufL        - Size fo the p_puLogBuf buffer
  *
@@ -181,7 +182,8 @@ e_eFSS_LOGC_RES eFSS_LOGC_Format(t_eFSS_LOGC_Ctx* const p_ptCtx);
  *              e_eFSS_LOGC_RES_CLBCKCRCERR        - Crc callback returned error
  *              e_eFSS_LOGC_RES_WRITENOMATCHREAD   - After Write operation the Read operation readed different data
  */
-e_eFSS_LOGC_RES eFSS_LOGC_GetLogOfASpecificPage(t_eFSS_LOGC_Ctx* const p_ptCtx, uint8_t* p_puBuf, uint32_t* p_uBufL);
+e_eFSS_LOGC_RES eFSS_LOGC_GetLogOfASpecificPage(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t p_uindx, uint8_t* p_puBuf, 
+                                                uint32_t* p_uBufL);
 
 /**
  * @brief       Add a log

@@ -41,8 +41,6 @@
 static e_eFSS_LOGC_RES eFSS_LOGC_LoadIndexNRepair(t_eFSS_LOGC_Ctx* const p_ptCtx);
 static e_eFSS_LOGC_RES eFSS_LOGC_LoadIndexFromCache(t_eFSS_LOGC_Ctx* const p_ptCtx);
 static e_eFSS_LOGC_RES eFSS_LOGC_LoadIndxBySearch(t_eFSS_LOGC_Ctx* const p_ptCtx);
-static e_eFSS_LOGC_RES eFSS_LOGC_WriteCurrNewPageAndbkup(t_eFSS_LOGC_Ctx* const p_ptCtx, uint8_t* p_puNewPage, t_eFSS_TYPE_PageMeta* p_ptMeta);
-static e_eFSS_LOGC_RES eFSS_LOGC_IncrNewPageWriteAndbkup(t_eFSS_LOGC_Ctx* const p_ptCtx, uint8_t* p_puNewPage, t_eFSS_TYPE_PageMeta* p_ptMeta);
 
 
 
@@ -219,12 +217,14 @@ e_eFSS_LOGC_RES eFSS_LOGC_GetLogInfo(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t *p
                     /* Get buffer for calculation */
                     l_puBuF1 = p_ptCtx->puBuf;
                     l_uBuF1L = p_ptCtx->uBufL / 2u ;
+                    l_puBuF2 = &p_ptCtx->puBuf[l_uBuF1L];
+                    l_uBuF2L = p_ptCtx->uBufL / 2u ;
 
                     /* Retrive info from the newest log index */
-                    l_eHLRes = eFSS_UTILSHLPRV_ReadPageNPrm(p_ptCtx->ptCtxCb, p_ptCtx->uNPagIdxFound,
-                                                            l_puBuF1, l_uBuF1L, &l_tPagePrm, 
-                                                            p_ptCtx->tStorSett.uRWERetry);
-
+					l_eHLRes = eFSS_LOGCPRV_ReadPage(p_ptCtx, p_ptCtx->uNPagIdxFound,  
+                                                     l_puBuF1, l_uBuF1L, l_puBuF2, l_uBuF2L, 
+													 &l_tPagePrm);
+									  
                     if( e_eFSS_UTILSHLPRV_RES_OK != l_eHLRes )
                     {
                         l_eRes = eFSS_LOGCPRV_HLtoLogRes(l_eHLRes);
@@ -264,6 +264,7 @@ e_eFSS_LOGC_RES eFSS_LOGC_Format(t_eFSS_LOGC_Ctx* const p_ptCtx)
 	e_eFSS_LOGC_RES l_eRes;
     e_eFSS_UTILSHLPRV_RES l_eHLRes;
     t_eFSS_TYPE_PageMeta l_tPagePrm;
+	uint32_t l_uNewBkp;
     uint8_t* l_puBuF1;
     uint32_t l_uBuF1L;
     uint8_t* l_puBuF2;
@@ -359,174 +360,45 @@ e_eFSS_LOGC_RES eFSS_LOGC_Format(t_eFSS_LOGC_Ctx* const p_ptCtx)
                         l_tPagePrm.uPageCrc = 0u;
 
                         /* Write */
-                        l_eRes =  eFSS_LOGCPRV_WritePage(p_ptCtx, p_ptCtx->uNewPagIdx, l_puBuF1, l_uBuF1L,
+						l_uNewBkp = eFSS_LOGCPRV_GetNextIndex(p_ptCtx, p_ptCtx->uNewPagIdx);
+						
+                        l_eRes =  eFSS_LOGCPRV_WritePage(p_ptCtx, l_uNewBkp, l_puBuF1, l_uBuF1L,
                                                          l_puBuF2, l_uBuF2L, l_tPagePrm );
 
                         if( e_eFSS_LOGC_RES_OK == l_eRes )
                         {
                             /* Step 2 - if cache is present make it to point first page */
                             if( true == p_ptCtx->bFlashCache )
-                            {
-                                l_tPagePrm.uPageType = EFSS_PAGETYPE_LOG;
-                                l_tPagePrm.uPageSubType = EFSS_PAGESUBTYPE_LOG;
-                                l_tPagePrm.uPageVersion = p_ptCtx->uVersion;
-                                l_tPagePrm.uPageUseSpecific1 = 0u;
-                                l_tPagePrm.uPageUseSpecific2 = 0u;
-                                l_tPagePrm.uPageUseSpecific3 = 0u;
-                                l_tPagePrm.uPageUseSpecific4 = 0u;
-                                l_tPagePrm.uPageMagicNumber = EFSS_PAGEMAGICNUMBER;
-                                l_tPagePrm.uPageCrc = 0u;
-                                
-                                l_eRes = eFSS_LOGCPRV_WriteCache(p_ptCtx, l_tPagePrm);
+                            {                                
+                                l_eRes = eFSS_LOGCPRV_WriteCache(p_ptCtx, 0u, 0u);
                             }
 
                             if( e_eFSS_LOGC_RES_OK == l_eRes )
                             {
-                                /* Step 3 */
+                                /* Step 3 - Write first page as first page and bkup page */
+								l_eRes = eFSS_LOGCPRV_WriteCurrNewPageAndbkup(p_ptCtx, 0u, l_puBuF1, l_uBuF1L,
+                                                                           l_puBuF2, l_uBuF2L, l_tPagePrm);
                             }
-                    }
-                }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                /* Clear buffer */
-                memset(p_ptCtx->puBuff1, 0u, p_ptCtx->uBuff1L);
-
-                /* Setup metadata */
-                l_tPagePrm.uPageType = EFSS_PAGETYPE_LOG;
-                l_tPagePrm.uPageSubType = EFSS_PAGESUBTYPE_LOG;
-                l_tPagePrm.uPageVersion = p_ptCtx->uVersion;
-                l_tPagePrm.uPageUseSpecific1 = 0u;
-                l_tPagePrm.uPageUseSpecific2 = 0u;
-                l_tPagePrm.uPageUseSpecific3 = 0u;
-                l_tPagePrm.uPageUseSpecific4 = 0u;
-                l_tPagePrm.uPageMagicNumber = EFSS_PAGEMAGICNUMBER;
-                l_tPagePrm.uPageCrc = 0u;
-
-                /* Write */
-                l_eHLRes =  eFSS_UTILSHLPRV_WritePagePrmNUpCrc(p_ptCtx->ptCtxCb, 0u,
-                                                               p_ptCtx->puBuff1, p_ptCtx->uBuff1L,
-                                                               p_ptCtx->puBuff2, p_ptCtx->uBuff2L,
-                                                               &l_tPagePrm, p_ptCtx->uReTry);
-                l_eRes = eFSS_LOGCPRV_HLtoLogRes(l_eHLRes);
-
-                if( e_eFSS_LOGC_RES_OK == l_eRes )
-                {
-                    /* Clear buffer */
-                    memset(p_ptCtx->puBuff1, 0u, p_ptCtx->uBuff1L);
-
-                    /* Setup metadata */
-                    l_tPagePrm.uPageType = EFSS_PAGETYPE_LOG;
-                    l_tPagePrm.uPageSubType = EFSS_PAGESUBTYPE_LOG;
-                    l_tPagePrm.uPageVersion = p_ptCtx->uVersion;
-                    l_tPagePrm.uPageUseSpecific1 = 0u;
-                    l_tPagePrm.uPageUseSpecific2 = 0u;
-                    l_tPagePrm.uPageUseSpecific3 = 0u;
-                    l_tPagePrm.uPageUseSpecific4 = 0u;
-                    l_tPagePrm.uPageMagicNumber = EFSS_PAGEMAGICNUMBER;
-                    l_tPagePrm.uPageCrc = 0u;
-
-                    /* Write */
-                    l_eHLRes =  eFSS_UTILSHLPRV_WritePagePrmNUpCrc(p_ptCtx->ptCtxCb, 1u,
-                                                                p_ptCtx->puBuff1, p_ptCtx->uBuff1L,
-                                                                p_ptCtx->puBuff2, p_ptCtx->uBuff2L,
-                                                                &l_tPagePrm, p_ptCtx->uReTry);
-                    l_eRes = eFSS_LOGCPRV_HLtoLogRes(l_eHLRes);
-
-                    if( e_eFSS_LOGC_RES_OK == l_eRes )
-                    {
-                        /* Now we can clear the first two pages*/
-                        memset(p_ptCtx->puBuff1, 0u, p_ptCtx->uBuff1L);
-
-                        /* Setup metadata */
-                        l_tPagePrm.uPageType = EFSS_PAGETYPE_LOG;
-                        l_tPagePrm.uPageSubType = EFSS_PAGESUBTYPE_LOGNEWEST;
-                        l_tPagePrm.uPageVersion = p_ptCtx->uVersion;
-                        l_tPagePrm.uPageUseSpecific1 = 0u;
-                        l_tPagePrm.uPageUseSpecific2 = 0u;
-                        l_tPagePrm.uPageUseSpecific3 = 0u;
-                        l_tPagePrm.uPageUseSpecific4 = 0u;
-                        l_tPagePrm.uPageMagicNumber = EFSS_PAGEMAGICNUMBER;
-                        l_tPagePrm.uPageCrc = 0u;
-
-                        /* Write */
-                        l_eHLRes =  eFSS_UTILSHLPRV_WritePagePrmNUpCrc(p_ptCtx->ptCtxCb, 0u,
-                                                                       p_ptCtx->puBuff1, p_ptCtx->uBuff1L,
-                                                                       p_ptCtx->puBuff2, p_ptCtx->uBuff2L,
-                                                                       &l_tPagePrm, p_ptCtx->uReTry);
-                        l_eRes = eFSS_LOGCPRV_HLtoLogRes(l_eHLRes);
-
-                        if( e_eFSS_LOGC_RES_OK == l_eRes )
-                        {
-                            /* Clear buffer */
-                            memset(p_ptCtx->puBuff1, 0u, p_ptCtx->uBuff1L);
-
-                            /* Setup metadata */
-                            l_tPagePrm.uPageType = EFSS_PAGETYPE_LOG;
-                            l_tPagePrm.uPageSubType = EFSS_PAGESUBTYPE_LOGNEWESTBKP;
-                            l_tPagePrm.uPageVersion = p_ptCtx->uVersion;
-                            l_tPagePrm.uPageUseSpecific1 = 0u;
-                            l_tPagePrm.uPageUseSpecific2 = 0u;
-                            l_tPagePrm.uPageUseSpecific3 = 0u;
-                            l_tPagePrm.uPageUseSpecific4 = 0u;
-                            l_tPagePrm.uPageMagicNumber = EFSS_PAGEMAGICNUMBER;
-                            l_tPagePrm.uPageCrc = 0u;
-
-                            /* Write */
-                            l_eHLRes =  eFSS_UTILSHLPRV_WritePagePrmNUpCrc(p_ptCtx->ptCtxCb, 1u,
-                                                                        p_ptCtx->puBuff1, p_ptCtx->uBuff1L,
-                                                                        p_ptCtx->puBuff2, p_ptCtx->uBuff2L,
-                                                                        &l_tPagePrm, p_ptCtx->uReTry);
-                            l_eRes = eFSS_LOGCPRV_HLtoLogRes(l_eHLRes);
-
-                            if( e_eFSS_LOGC_RES_OK == l_eRes )
-                            {
-                                /* Clear flash cache if present */
-                                if( true == p_ptCtx->bUseFlashCache )
-                                {
-                                    /* Setup metadata */
-                                    l_tPagePrm.uPageType = EFSS_PAGETYPE_LOG;
-                                    l_tPagePrm.uPageSubType = EFSS_PAGESUBTYPE_LOGNEWESTBKP;
-                                    l_tPagePrm.uPageVersion = p_ptCtx->uVersion;
-                                    l_tPagePrm.uPageUseSpecific1 = 0u;
-                                    l_tPagePrm.uPageUseSpecific2 = 0u;
-                                    l_tPagePrm.uPageUseSpecific3 = 0u;
-                                    l_tPagePrm.uPageUseSpecific4 = 0u;
-                                    l_tPagePrm.uPageMagicNumber = EFSS_PAGEMAGICNUMBER;
-                                    l_tPagePrm.uPageCrc = 0u;
-
-                                    l_eRes = eFSS_LOGCPRV_WriteCache(p_ptCtx, &l_tPagePrm);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+						}
+					}
+				}
+			}
 		}
 	}
 
 	return l_eRes;
 }
 
-e_eFSS_LOGC_RES eFSS_LOGC_GetLogOfASpecificPage(t_eFSS_LOGC_Ctx* const p_ptCtx, uint8_t* p_puLogBuf, uint32_t* p_uLogBufL)
+e_eFSS_LOGC_RES eFSS_LOGC_GetLogOfASpecificPage(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t p_uindx, uint8_t* p_puBuf, 
+                                                uint32_t* p_uBufL)
 {
 	/* Local variable */
 	e_eFSS_LOGC_RES l_eRes;
     e_eFSS_UTILSHLPRV_RES l_eHLRes;
     t_eFSS_TYPE_PageMeta l_tPagePrm;
-
+    uint8_t* l_puBuF1;
+    uint32_t l_uBuF1L;
+	
 	/* Check pointer validity */
 	if( NULL == p_ptCtx )
 	{
@@ -548,26 +420,39 @@ e_eFSS_LOGC_RES eFSS_LOGC_GetLogOfASpecificPage(t_eFSS_LOGC_Ctx* const p_ptCtx, 
             }
             else
             {
-                /* Fix any memory problem and load index */
-                l_eRes = eFSS_LOGC_LoadIndexNRepair(p_ptCtx);
+				/* Check param validity */
+				if(p_uindx)
+				{
+						l_eRes = e_eFSS_LOGC_RES_BADPARAM
+				}
+				else
+				{
+					/* Fix any memory problem and load index */
+					l_eRes = eFSS_LOGC_LoadIndexNRepair(p_ptCtx);
 
-                if( ( e_eFSS_LOGC_RES_OK == l_eRes ) || ( e_eFSS_LOGC_RES_OK_BKP_RCVRD == l_eRes ) )
-                {
-                    l_eHLRes =  eFSS_UTILSHLPRV_ReadPageNPrm(p_ptCtx->ptCtxCb, p_ptCtx->uNPagIdxFound,
-                                                            p_ptCtx->puBuff1, p_ptCtx->uBuff1L,
-                                                            &l_tPagePrm, p_ptCtx->uReTry);
-                    l_eRes = eFSS_LOGCPRV_HLtoLogRes(l_eHLRes);
+					if( ( e_eFSS_LOGC_RES_OK == l_eRes ) || ( e_eFSS_LOGC_RES_OK_BKP_RCVRD == l_eRes ) )
+					{
+						/* Get buffer for calculation */
+						l_puBuF1 = p_ptCtx->puBuf;
+						l_uBuF1L = p_ptCtx->uBufL / 2u ;
+						
+						/* Read the page */
+						l_eHLRes =  eFSS_UTILSHLPRV_ReadPageNPrm(p_ptCtx->ptCtxCb, p_ptCtx->uNPagIdxFound,
+																 l_puBuF1, l_uBuF1L, &l_tPagePrm, p_ptCtx->uReTry);
+						l_eRes = eFSS_LOGCPRV_HLtoLogRes(l_eHLRes);
 
-                    if( e_eFSS_LOGC_RES_OK == l_eRes )
-                    {
-                        /* Copy readed data */
-                        memcpy(p_puLogBuf, p_ptCtx->puBuff1, p_ptCtx->uBuff1L);
-                    }
-                    else
-                    {
-                        *p_uLogBufL = 0u;
-                    }
-                }
+						if( e_eFSS_LOGC_RES_OK == l_eRes )
+						{
+							/* Copy readed data */
+							memcpy(p_puLogBuf, p_ptCtx->puBuff1, p_ptCtx->uBuff1L);
+							*p_uBufL = l_tPagePrm.uPageUseSpecific3;
+						}
+						else
+						{
+							*p_uBufL = 0u;
+						}
+					}
+				}
             }
 		}
 	}
@@ -588,6 +473,10 @@ e_eFSS_LOGC_RES eFSS_LOGC_AddLog(t_eFSS_LOGC_Ctx* const p_ptCtx, uint8_t* p_puLo
 	e_eFSS_LOGC_RES l_eRes;
     e_eFSS_UTILSHLPRV_RES l_eHLRes;
     t_eFSS_TYPE_PageMeta l_tPagePrm;
+    uint8_t* l_puBuF1;
+    uint32_t l_uBuF1L;
+    uint8_t* l_puBuF2;
+    uint32_t l_uBuF2L;
 
 	/* Check pointer validity */
 	if( ( NULL == p_ptCtx ) || ( NULL == p_puLogToSave ) )
@@ -622,26 +511,47 @@ e_eFSS_LOGC_RES eFSS_LOGC_AddLog(t_eFSS_LOGC_Ctx* const p_ptCtx, uint8_t* p_puLo
 
                     if( ( e_eFSS_LOGC_RES_OK == l_eRes ) || ( e_eFSS_LOGC_RES_OK_BKP_RCVRD == l_eRes ) )
                     {
-                        l_eHLRes =  eFSS_UTILSHLPRV_ReadPageNPrm(p_ptCtx->ptCtxCb, p_ptCtx->uNPagIdxFound,
-                                                                 p_ptCtx->puBuff1, p_ptCtx->uBuff1L,
-                                                                 &l_tPagePrm, p_ptCtx->uReTry);
+						/* Get buffer for calculation */
+						l_puBuF1 = p_ptCtx->puBuf;
+						l_uBuF1L = p_ptCtx->uBufL / 2u ;
+						l_puBuF2 = &p_ptCtx->puBuf[l_uBuF1L];
+						l_uBuF2L = p_ptCtx->uBufL / 2u ;
+					
+                        l_eHLRes =  eFSS_LOGCPRV_ReadCurrNewPageAndbkup(p_ptCtx, p_ptCtx->uNPagIdxFound,
+                                                                        l_puBuF1, l_uBuF1L, l_puBuF2, l_uBuF2L,
+                                                                        &l_tPagePrm);
                         l_eRes = eFSS_LOGCPRV_HLtoLogRes(l_eHLRes);
 
                         if( e_eFSS_LOGC_RES_OK == l_eRes )
                         {
-                            if( (l_tPagePrm.uPageUseSpecific3 - 1000u) >= p_uLogL )
-                            {
-                                /* Rol the page and write */
-                                eFSS_LOGC_IncrNewPageWriteAndbkup(p_ptCtx, p_ptCtx->puBuff1, &l_tPagePrm);
-                            }
-                            else
+                            if( (l_tPagePrm.uPageUseSpecific3 - 1000u) < p_uLogL )
                             {
                                 /* We have some free space, add data in this page */
                                 memcpy(&p_ptCtx->puBuff1[l_tPagePrm.uPageUseSpecific3], p_puLogToSave, p_uLogL);
                                 l_tPagePrm.uPageUseSpecific3 += p_uLogL;
 
                                 /* Write page */
-                                eFSS_LOGC_WriteCurrNewPageAndbkup(p_ptCtx, p_ptCtx->puBuff1, &l_tPagePrm);
+                                eFSS_LOGCPRV_WriteCurrNewPageAndbkup(p_ptCtx, p_ptCtx->puBuff1, &l_tPagePrm);
+                            }
+							else
+                            {
+                                /* We dont' have space to append log, we need to increase the page.
+								 *    1 - Transform original page in normal log page
+								 *    2 - Add the new bkup pages after the current bkup page
+								 *    3 - If cache is present update cache with the new index
+								 *    4 - trasform the backup page in the original pages
+								*/
+                                /* Step 1 - finalize original page */
+								l_eRes = eFSS_LOGCPRV_WritePage(p_ptCtx, p_ptCtx->uNPagIdxFound, l_puBuF1, l_uBuF1L, 
+																l_puBuF2, l_uBuF2L, l_tPagePrm);
+																
+								if( e_eFSS_LOGC_RES_OK == l_eRes )
+								{
+									/* Step 2 - add the new bkup page after the current bkup page */
+									l_eRes = eFSS_LOGCPRV_WritePage(p_ptCtx, p_ptCtx->uNPagIdxFound, l_puBuF1, l_uBuF1L, 
+																    l_puBuF2, l_uBuF2L, l_tPagePrm);
+								}
+
                             }
                         }
                     }
@@ -812,18 +722,3 @@ static e_eFSS_LOGC_RES eFSS_LOGC_LoadIndxBySearch(t_eFSS_LOGC_Ctx* const p_ptCtx
 
     return l_eRes;
 }
-
-static e_eFSS_LOGC_RES eFSS_LOGC_WriteCurrNewPageAndbkup(t_eFSS_LOGC_Ctx* const p_ptCtx, uint8_t* p_puNewPage, t_eFSS_TYPE_PageMeta* p_ptMeta)
-{
-
-
-}
-
-static e_eFSS_LOGC_RES eFSS_LOGC_IncrNewPageWriteAndbkup(t_eFSS_LOGC_Ctx* const p_ptCtx, uint8_t* p_puNewPage, t_eFSS_TYPE_PageMeta* p_ptMeta)
-{
-
-
-}
-
-
-
