@@ -250,7 +250,7 @@ uint32_t eFSS_LOGCPRV_GetPrevIndex(const t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t p_uI
     return l_uPrevIdx;
 }
 
-e_eFSS_LOGC_RES eFSS_LOGCPRV_WriteCache(const t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t p_uIdxN, uint32_t p_uIdxO)
+e_eFSS_LOGC_RES eFSS_LOGCPRV_WriteCache(const t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t p_uIdxN, uint32_t p_uIFlP)
 {
 	/* Local return variable */
 	e_eFSS_LOGC_RES l_eRes;
@@ -281,7 +281,7 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_WriteCache(const t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t
     l_tPagePrm.uPageSubType = EFSS_PAGESUBTYPE_LOGCACHEORI;
     l_tPagePrm.uPageVersion = p_ptCtx->tStorSett.uStorageVer;
     l_tPagePrm.uPageUseSpecific1 = p_uIdxN;
-    l_tPagePrm.uPageUseSpecific2 = p_uIdxO;
+    l_tPagePrm.uPageUseSpecific2 = p_uIFlP;
     l_tPagePrm.uPageUseSpecific3 = 0u;
     l_tPagePrm.uPageUseSpecific4 = p_ptCtx->tStorSett.uTotPages;
     l_tPagePrm.uPageMagicNumber = EFSS_PAGEMAGICNUMBER;
@@ -303,7 +303,7 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_WriteCache(const t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t
         l_tPagePrm.uPageSubType = EFSS_PAGESUBTYPE_LOGCACHEBKP;
 		l_tPagePrm.uPageVersion = p_ptCtx->tStorSett.uStorageVer;
 		l_tPagePrm.uPageUseSpecific1 = p_uIdxN;
-		l_tPagePrm.uPageUseSpecific2 = p_uIdxO;
+		l_tPagePrm.uPageUseSpecific2 = p_uIFlP;
 		l_tPagePrm.uPageUseSpecific3 = 0u;
 		l_tPagePrm.uPageUseSpecific4 = p_ptCtx->tStorSett.uTotPages;
 		l_tPagePrm.uPageMagicNumber = EFSS_PAGEMAGICNUMBER;
@@ -319,104 +319,86 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_WriteCache(const t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t
     return l_eRes;
 }
 
-e_eFSS_LOGC_RES eFSS_LOGCPRV_ReadCache(const t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t* p_puIdxN, uint32_t* p_puIdxO)
+e_eFSS_LOGC_RES eFSS_LOGCPRV_ReadCache(const t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t* p_puIdxN, uint32_t* p_puIFlP)
 {
-    /* Local variable */
-	e_eFSS_UTILSHLPRV_RES l_eRes;
-    e_eFSS_UTILSLLPRV_RES l_eResLL;
+	/* Local return variable */
+	e_eFSS_LOGC_RES l_eRes;
+    e_eFSS_UTILSHLPRV_RES l_eHLRes;
 
-    bool_t isOriginValid;
-    bool_t isBackupValid;
+    /* Local calc variable */
+    t_eFSS_TYPE_PageMeta l_tPagePrm;
+    uint32_t l_uNPageU;
+    uint32_t l_uCachePageIdx;
+    uint8_t* l_puBuF1;
+    uint32_t l_uBuF1L;
+    uint8_t* l_puBuF2;
+    uint32_t l_uBuF2L;
 
-	/* Check pointer validity */
-	if( ( NULL == p_ptCtx ) || ( NULL == p_puIdxN ) || ( NULL == p_puIdxO ) )
-	{
-		l_eRes = e_eFSS_UTILSHLPRV_RES_BADPOINTER;
-	}
-    else
+    /* Get buffer for calculation */
+    l_puBuF1 = p_ptCtx->puBuf;
+    l_uBuF1L = p_ptCtx->uBufL / 2u ;
+    l_puBuF2 = &p_ptCtx->puBuf[l_uBuF1L];
+    l_uBuF2L = p_ptCtx->uBufL / 2u ;
+
+    /* Calculate cache page index */
+    l_uCachePageIdx = p_ptCtx->tStorSett.uTotPages - 2u;
+
+    /* Read cache and ripristinate corrupted page if needed */
+    l_eHLRes = eFSS_UTILSHLPRV_VerifyNRipristBkup( p_ptCtx->tCtxCb, p_ptCtx->tStorSett.uRWERetry,
+                                                   l_puBuF1, l_uBuF1L, l_puBuF2, l_uBuF2L, l_uCachePageIdx, 
+                                                   ( l_uCachePageIdx + 1u ), &l_tPagePrm );
+
+    l_eRes = eFSS_LOGCPRV_HLtoLogRes(l_eHLRes);
+
+    if( ( e_eFSS_LOGC_RES_OK == l_eRes ) || ( e_eFSS_LOGC_RES_OK_BKP_RCVRD == l_eRes ) )
     {
-        /* Check data validity */
-        if( ( p_uDataWLen <= EFSS_PAGEMETASIZE ) || ( p_uDataRLen <= EFSS_PAGEMETASIZE ) ||
-            ( p_uDataRLen != p_uDataWLen ) || ( p_uReTry <= 0u ) || ( p_uOrigIndx == p_uBackupIndx) )
+        /* Verify page validty */
+        if( ( EFSS_PAGETYPE_LOG != l_tPagePrm.uPageType ) || 
+            ( EFSS_PAGESUBTYPE_LOGCACHEORI != l_tPagePrm.uPageSubType ) || ( 0u != l_tPagePrm.uPageUseSpecific3 ) ||
+            ( p_ptCtx->tStorSett.uTotPages != l_tPagePrm.uPageUseSpecific4 ) )
         {
-            l_eRes = e_eFSS_UTILSHLPRV_RES_BADPARAM;
+            l_eRes = e_eFSS_LOGC_RES_NOTVALIDLOG;
         }
         else
         {
-            /* Read origin page */
-            l_eResLL = eFSS_UTILSLLPRV_ReadPage(p_ptCbCtx, p_uOrigIndx, p_puDataW, p_uDataWLen, p_uReTry);
-            l_eRes = eFSS_UTILSHLPRV_LLtoHLRes(l_eResLL);
+            /* Calculate n page */
+            l_uNPageU = p_ptCtx->tStorSett.uTotPages;
 
-            if( e_eFSS_UTILSHLPRV_RES_OK == l_eRes)
+            /* Flash cache will use two flash pages */
+            if( true == p_ptCtx->bFlashCache )
             {
-                /* Read backup page */
-                l_eResLL = eFSS_UTILSLLPRV_ReadPage(p_ptCbCtx, p_uBackupIndx, p_puDataR, p_uDataRLen, p_uReTry);
-                l_eRes = eFSS_UTILSHLPRV_LLtoHLRes(l_eResLL);
+                l_uNPageU -= 2u;
+            }
 
-                if( e_eFSS_UTILSHLPRV_RES_OK == l_eRes )
+            /* Flash full bkup will use twice as pages as normal log */
+            if( true == p_ptCtx->bFullBckup )
+            {
+                l_uNPageU = (uint32_t)( l_uNPageU / 2u );
+            }
+
+            /* Need to check index validity */
+            if( l_tPagePrm.uPageUseSpecific1 >= l_uNPageU )
+            {
+                l_eRes = e_eFSS_LOGC_RES_NOTVALIDLOG;
+            }
+            else
+            {
+                /* Need to check filled size validity */
+                if( l_tPagePrm.uPageUseSpecific2 >= ( l_uNPageU - 3u ) )
                 {
-                    /* Verify origin integrity */
-                    l_eRes = eFSS_UTILSHLPRV_IsValidPage(p_ptCbCtx, p_uOrigIndx, p_puDataW, p_uDataWLen, p_uReTry,
-                                                         &isOriginValid);
-                    if( e_eFSS_UTILSHLPRV_RES_OK == l_eRes )
+                    l_eRes = e_eFSS_LOGC_RES_NOTVALIDLOG;
+                }
+                else
+                {
+                    /* Verify page version */
+                    if(  l_tPagePrm.uPageVersion != p_ptCtx->tStorSett.uStorageVer )
                     {
-                        /* Verify backup integrity */
-                        l_eRes = eFSS_UTILSHLPRV_IsValidPage(p_ptCbCtx, p_uBackupIndx, p_puDataR, p_uDataRLen, p_uReTry,
-                                                            &isBackupValid);
-
-                        if( e_eFSS_UTILSHLPRV_RES_OK == l_eRes )
-                        {
-                            if( ( true == isOriginValid ) && ( true == isBackupValid ) )
-                            {
-                                /* Both page are valid, are they identical? */
-                                if( 0 == memcmp(p_puDataW, p_puDataR, p_uDataRLen ) )
-                                {
-                                    /* Page are equals*/
-                                    l_eRes = e_eFSS_UTILSHLPRV_RES_OK;
-                                }
-                                else
-                                {
-                                    /* Page are not equals, copy origin in backup */
-                                    l_eResLL = eFSS_UTILSLLPRV_WritePage(p_ptCbCtx, p_puDataW, p_uDataWLen, p_puDataR,
-                                                                        p_uDataRLen, p_uBackupIndx, p_uReTry);
-                                    l_eRes = eFSS_UTILSHLPRV_LLtoHLRes(l_eResLL);
-
-                                    if( e_eFSS_UTILSHLPRV_RES_OK == l_eRes )
-                                    {
-                                        l_eRes = e_eFSS_UTILSHLPRV_RES_OK_BKP_RCVRD;
-                                    }
-                                }
-                            }
-                            else if( ( false == isOriginValid ) && ( true == isBackupValid ) )
-                            {
-                                /* Origin is not valid, repristinate from backup */
-                                l_eResLL = eFSS_UTILSLLPRV_WritePage(p_ptCbCtx, p_puDataR, p_uDataRLen, p_puDataW,
-                                                                     p_uDataWLen, p_uOrigIndx, p_uReTry);
-                                l_eRes = eFSS_UTILSHLPRV_LLtoHLRes(l_eResLL);
-
-                                if( e_eFSS_UTILSHLPRV_RES_OK == l_eRes )
-                                {
-                                    l_eRes = e_eFSS_UTILSHLPRV_RES_OK_BKP_RCVRD;
-                                }
-                            }
-                            else if( ( true == isOriginValid ) && ( false == isBackupValid ) )
-                            {
-                                /* Backup is not valid, repristinate from origin */
-                                l_eResLL = eFSS_UTILSLLPRV_WritePage(p_ptCbCtx, p_puDataW, p_uDataWLen, p_puDataR,
-                                                                     p_uDataRLen, p_uBackupIndx, p_uReTry);
-                                l_eRes = eFSS_UTILSHLPRV_LLtoHLRes(l_eResLL);
-
-                                if( e_eFSS_UTILSHLPRV_RES_OK == l_eRes )
-                                {
-                                    l_eRes = e_eFSS_UTILSHLPRV_RES_OK_BKP_RCVRD;
-                                }
-                            }
-                            else
-                            {
-                                /* No a single valid pages found */
-                                l_eRes = e_eFSS_UTILSHLPRV_RES_NOTVALIDPAGE;
-                            }
-                        }
+                        l_eRes = e_eFSS_LOGC_RES_NEWVERSIONLOG;
+                    }
+                    else
+                    {
+                        *p_puIdxN = l_tPagePrm.uPageUseSpecific1;
+                        *p_puIFlP = l_tPagePrm.uPageUseSpecific2;
                     }
                 }
             }

@@ -9,7 +9,7 @@
 
 /* In this module the page field has the following meaning:
  * - uPageUseSpecific1 -> New page Index
- * - uPageUseSpecific2 -> Old page Index
+ * - uPageUseSpecific2 -> Number of Filled index page
  * - uPageUseSpecific3 -> Valorized byte in page
  * - uPageUseSpecific4 -> N page used
  *

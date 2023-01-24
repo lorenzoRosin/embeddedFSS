@@ -75,11 +75,11 @@ uint32_t eFSS_LOGCPRV_GetPrevIndex(const t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t p_uI
  *
  * @param[in]   p_ptCtx          - Log Core context
  * @param[in]   p_uIdxN          - Index of the new log page  that we want to save in cache
- * @param[in]   p_uIdxO          - Index of the old log page  that we want to save in cache
+ * @param[in]   p_uIFlP          - Number of filled pages
  *
  * @return      Return error related to read write erase function
  */
-e_eFSS_LOGC_RES eFSS_LOGCPRV_WriteCache(const t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t p_uIdxN, uint32_t p_uIdxO);
+e_eFSS_LOGC_RES eFSS_LOGCPRV_WriteCache(const t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t p_uIdxN, uint32_t p_uIFlP);
 
 /**
  * @brief       Read from cache the value of new and old index. This function take care of the backup pages.
@@ -87,11 +87,11 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_WriteCache(const t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t
  *
  * @param[in]   p_ptCtx          - Log Core context
  * @param[in]   p_puIdxN         - Index of the new log page that we want to read from cache
- * @param[in]   p_puIdxO         - Index of the old log page that we want to read from cache
+ * @param[in]   p_puIFlP         - Number of filled pages
  *
  * @return      Return error related to read write erase function, even invalid page if found.
  */
-e_eFSS_LOGC_RES eFSS_LOGCPRV_ReadCache(const t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t* p_puIdxN, uint32_t* p_puIdxO);
+e_eFSS_LOGC_RES eFSS_LOGCPRV_ReadCache(const t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t* p_puIdxN, uint32_t* p_puIFlP);
 
 /**
  * @brief       Write a page of data at p_uIdx position. Do not pass to this function NULL value
