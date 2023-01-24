@@ -21,7 +21,7 @@ extern "C" {
 /***********************************************************************************************************************
  *      INCLUDES
  **********************************************************************************************************************/
-#include "eFSS_UTILSLLPRV.h"
+#include "eFSS_UTILSHLPRV.h"
 
 
 
@@ -94,7 +94,7 @@ e_eFSS_LOGC_RES eFSS_LOGC_InitCtx(t_eFSS_LOGC_Ctx* const p_ptCtx, t_eFSS_TYPE_Cb
 e_eFSS_LOGC_RES eFSS_LOGC_IsInit(t_eFSS_LOGC_Ctx* const p_ptCtx, bool_t* p_pbIsInit);
 
 /**
- * @brief       Get the status of the storage. This operation will restore any corrupted information if possible. 
+ * @brief       Get the status of the storage. This operation will restore any corrupted information if possible.
  *              In the case it's not possible to restore corrupted contex e_eFSS_LOGC_RES_NOTVALIDLOG will be returned.
  *              When e_eFSS_LOGC_RES_NOTVALIDLOG is returned we need to call eFSS_LOGC_Format in order to format the
  *              storage area because no other operation is possible.
@@ -182,7 +182,7 @@ e_eFSS_LOGC_RES eFSS_LOGC_Format(t_eFSS_LOGC_Ctx* const p_ptCtx);
  *              e_eFSS_LOGC_RES_CLBCKCRCERR        - Crc callback returned error
  *              e_eFSS_LOGC_RES_WRITENOMATCHREAD   - After Write operation the Read operation readed different data
  */
-e_eFSS_LOGC_RES eFSS_LOGC_GetLogOfASpecificPage(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t p_uindx, uint8_t* p_puBuf, 
+e_eFSS_LOGC_RES eFSS_LOGC_GetLogOfASpecificPage(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t p_uindx, uint8_t* p_puBuf,
                                                 uint32_t* p_uBufL);
 
 /**
