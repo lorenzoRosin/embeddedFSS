@@ -425,7 +425,7 @@ e_eFSS_LOGC_RES eFSS_LOGC_GetLogOfASpecificPage(t_eFSS_LOGC_Ctx* const p_ptCtx, 
 				/* Check param validity */
 				if(p_uindx)
 				{
-						l_eRes = e_eFSS_LOGC_RES_BADPARAM
+						l_eRes = e_eFSS_LOGC_RES_BADPARAM;
 				}
 				else
 				{

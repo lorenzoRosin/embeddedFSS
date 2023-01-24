@@ -53,7 +53,7 @@ typedef struct
 	uint8_t* puBuf;
 	uint32_t uBufL;
     uint32_t uNewPagIdx;
-    uint32_t uOldPagIdx;
+    uint32_t uFullFilledP;
     bool_t bFlashCache;
     bool_t bFullBckup;
 }t_eFSS_LOGC_Ctx;
