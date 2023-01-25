@@ -37,7 +37,25 @@ typedef struct
     uint32_t uByteInPage;
 }t_eFSS_LOGCPRV_WriteMeta;
 
+typedef struct
+{
+    uint32_t uNewPageIndex;
+    uint32_t uFilledPageIndex;
+    uint32_t uByteInPage;
+}t_eFSS_LOGCPRV_WriteCurNewMeta;
 
+typedef struct
+{
+    uint32_t uNewPageIndex;
+    uint32_t uFilledPageIndex;
+    uint32_t uByteInPage;
+}t_eFSS_LOGCPRV_ReadMeta;
+
+typedef struct
+{
+    uint32_t uOriSubType;
+    uint32_t uBckUpSubType;
+}t_eFSS_LOGCPRV_ReadExpectedMeta;
 
 /***********************************************************************************************************************
  * GLOBAL PROTOTYPES
@@ -124,8 +142,7 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_ReadCache(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t*
 e_eFSS_LOGC_RES eFSS_LOGCPRV_WritePage(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t p_uIdx,
                                        uint8_t* p_puBuf, uint32_t p_uBufL,
                                        uint8_t* p_puBufS, uint32_t p_uBufSL,
-                                       const uint32_t p_uOriSubType, const uint32_t p_uBckUpSubType,
-                                       t_eFSS_TYPE_PageMeta p_tParam);
+                                       t_eFSS_LOGCPRV_WriteMeta p_tWriteMEta);
 
 /**
  * @brief       Read a page of data at p_uIdx position. Do not pass to this function NULL value
@@ -141,11 +158,11 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_WritePage(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t 
  *
  * @return      Return error related to read write erase function, even invalid page if found.
  */
-e_eFSS_LOGC_RES eFSS_LOGCPRV_ReadPage(t_eFSS_LOGC_Ctx* const p_ptCtx,uint32_t p_uIdx,
+e_eFSS_LOGC_RES eFSS_LOGCPRV_ReadPage(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t p_uIdx,
                                       uint8_t* p_puBuf, uint32_t p_uBufL,
                                       uint8_t* p_puBufS, uint32_t p_uBufSL,
-                                      const uint32_t p_uOriSubType, const uint32_t p_uBckUpSubType,
-                                      t_eFSS_TYPE_PageMeta* p_ptParam);
+                                      t_eFSS_LOGCPRV_ReadExpectedMeta p_tExpectedMeta,
+                                      t_eFSS_LOGCPRV_ReadMeta* p_ptReadMeta);
 
 /**
  * @brief       Write a page of data at p_uIdx position. Do not pass to this function NULL value
@@ -164,7 +181,7 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_ReadPage(t_eFSS_LOGC_Ctx* const p_ptCtx,uint32_t p_
 e_eFSS_LOGC_RES eFSS_LOGCPRV_WriteCurrNewPageAndbkup(const t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t p_uIdx,
 												     uint8_t* p_puBuf, uint32_t p_uBufL,
 												     uint8_t* p_puBufS, uint32_t p_uBufSL,
-												     t_eFSS_TYPE_PageMeta p_tParam);
+												     t_eFSS_LOGCPRV_WriteCurNewMeta p_tMetaWrite);
 
 /**
  * @brief       Read a page of data at p_uIdx position. Do not pass to this function NULL value

@@ -7,6 +7,26 @@
  *
  **********************************************************************************************************************/
 
+/* In this module the page field has the following meaning:
+ * - uPageUseSpecific1 -> New page Index
+ * - uPageUseSpecific2 -> Number of Filled index page
+ * - uPageUseSpecific3 -> Valorized byte in page
+ * - uPageUseSpecific4 -> N page used
+ *
+ * In this module the storage is organizated as follow :
+ *
+ *   bFullBckup = true, bFlashCache = true
+ * - [ 0                            -    ( ( uTotPages - 2 ) / 2 ) - 1 ]  -> Original pages
+ * - [ ( ( uTotPages - 2 ) / 2 )    -    uTotPages - 1 -2              ]  -> Backup pages
+ * - [ uTotPages - 1 -1             -    uTotPages - 1 -1              ]  -> Cache original
+ * - [ uTotPages - 1                -    uTotPages - 1                 ]  -> Cache backup
+ *
+ * First write original pages and after the backup pages
+ * An unused page is always left after newer page abckup index.
+ * Newest and ondest page index can be identical only when the log storage is empty. When the storage is full an empty
+ * page is always present between new and old log index.
+ */
+
 /***********************************************************************************************************************
  *      INCLUDES
  **********************************************************************************************************************/
@@ -421,6 +441,13 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_WritePage(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t 
     t_eFSS_TYPE_PageMeta p_tParam
 
     /* Fill page parameter */
+    p_tParam.uPageType = EFSS_PAGETYPE_LOG;
+    p_tParam.uPageSubType = p_tWriteMEta.uOriSubType;
+    p_tParam.uPageVersion = p_ptCtx->tStorSett.uStorageVer;
+    p_tParam.uPageUseSpecific1 = p_tWriteMEta.uNewPageIndex;
+    p_tParam.uPageUseSpecific2 = p_tWriteMEta.uFilledPageIndex;
+    p_tParam.uPageUseSpecific3 = p_tWriteMEta.uByteInPage;
+    p_tParam.uPageUseSpecific4 = p_ptCtx->tStorSett.uTotPages;
 
     /* Write */
     l_eHLRes =  eFSS_UTILSHLPRV_WritePagePrmNUpCrc(&p_ptCtx->tCtxCb, p_uIdx, p_puBuf, p_uBufL, p_puBufS, p_uBufSL,
@@ -443,6 +470,15 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_WritePage(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t 
 
             l_uNPageU = (uint32_t)( l_uNPageU / 2u );
 
+            /* Fill page parameter */
+            p_tParam.uPageType = EFSS_PAGETYPE_LOG;
+            p_tParam.uPageSubType = p_tWriteMEta.uBckUpSubType;
+            p_tParam.uPageVersion = p_ptCtx->tStorSett.uStorageVer;
+            p_tParam.uPageUseSpecific1 = p_tWriteMEta.uNewPageIndex;
+            p_tParam.uPageUseSpecific2 = p_tWriteMEta.uFilledPageIndex;
+            p_tParam.uPageUseSpecific3 = p_tWriteMEta.uByteInPage;
+            p_tParam.uPageUseSpecific4 = p_ptCtx->tStorSett.uTotPages;
+
 			/* Write the bkup page */
 			l_eHLRes =  eFSS_UTILSHLPRV_WritePagePrmNUpCrc(&p_ptCtx->tCtxCb, (p_uIdx + l_uNPageU), p_puBuf, p_uBufL,
                                                            p_puBufS, p_uBufSL, &p_tParam, p_ptCtx->tStorSett.uRWERetry);
@@ -456,8 +492,8 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_WritePage(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t 
 e_eFSS_LOGC_RES eFSS_LOGCPRV_ReadPage(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t p_uIdx,
                                       uint8_t* p_puBuf, uint32_t p_uBufL,
                                       uint8_t* p_puBufS, uint32_t p_uBufSL,
-                                      const uint32_t p_uOriSubType, const uint32_t p_uBckUpSubType,
-                                      t_eFSS_TYPE_PageMeta* p_ptParam)
+                                      t_eFSS_LOGCPRV_ReadExpectedMeta p_tExpectedMeta,
+                                      t_eFSS_LOGCPRV_ReadMeta* p_ptReadMeta)
 {
 	/* Local return variable */
 	e_eFSS_LOGC_RES l_eRes;
@@ -486,7 +522,7 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_ReadPage(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t p
 	{
         l_eHLRes = eFSS_UTILSHLPRV_VerifyNRipristBkup( &p_ptCtx->tCtxCb, p_ptCtx->tStorSett.uRWERetry,
                                                     p_puBuf, p_uBufL, p_puBufS, p_uBufSL, p_uIdx,
-                                                    p_uOriSubType, p_uBckUpSubType,
+                                                    p_tExpectedMeta.uOriSubType, p_tExpectedMeta.uBckUpSubType,
                                                     ( p_uIdx + l_uNPageU ), &l_tPagePrm );
     }
     else
@@ -502,7 +538,7 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_ReadPage(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t p
     {
         /* Verify page validty */
         if( ( EFSS_PAGETYPE_LOG != l_tPagePrm.uPageType ) ||
-            ( EFSS_PAGESUBTYPE_LOGCACHEORI != l_tPagePrm.uPageSubType ) || ( 0u != l_tPagePrm.uPageUseSpecific3 ) ||
+            ( EFSS_PAGESUBTYPE_LOGCACHEORI != p_tExpectedMeta.uOriSubType ) || ( 0u != l_tPagePrm.uPageUseSpecific3 ) ||
             ( p_ptCtx->tStorSett.uTotPages != l_tPagePrm.uPageUseSpecific4 ) )
         {
             l_eRes = e_eFSS_LOGC_RES_NOTVALIDLOG;
@@ -530,8 +566,9 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_ReadPage(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t p
                     }
                     else
                     {
-                        *p_puIdxN = l_tPagePrm.uPageUseSpecific1;
-                        *p_puIFlP = l_tPagePrm.uPageUseSpecific2;
+                        p_ptReadMeta->uNewPageIndex = l_tPagePrm.uPageUseSpecific1;
+                        p_ptReadMeta->uFilledPageIndex = l_tPagePrm.uPageUseSpecific2;
+                        p_ptReadMeta->uByteInPage = l_tPagePrm.uPageUseSpecific3;
                     }
                 }
             }
@@ -544,10 +581,14 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_ReadPage(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t p
 e_eFSS_LOGC_RES eFSS_LOGCPRV_WriteCurrNewPageAndbkup(const t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t p_uIdx,
 												     uint8_t* p_puBuf, uint32_t p_uBufL,
 												     uint8_t* p_puBufS, uint32_t p_uBufSL,
-												     t_eFSS_TYPE_PageMeta p_tParam)
+												     t_eFSS_LOGCPRV_WriteCurNewMeta p_tMetaWrite)
 {
 	/* Local variable */
 	e_eFSS_LOGC_RES l_eRes;
+    t_eFSS_TYPE_PageMeta p_tParam
+
+    /* Fill parameter */
+
 
     /* Write new page */
     l_eRes = eFSS_LOGCPRV_WritePage(p_ptCtx, p_uIdx, p_puBuf, p_uBufL, p_puBufS, p_uBufSL,
