@@ -26,6 +26,20 @@ extern "C" {
 
 
 /***********************************************************************************************************************
+ *      TYPEDEFS
+ **********************************************************************************************************************/
+typedef struct
+{
+    uint32_t uOriSubType;
+    uint32_t uBckUpSubType;
+    uint32_t uNewPageIndex;
+    uint32_t uFilledPageIndex;
+    uint32_t uByteInPage;
+}t_eFSS_LOGCPRV_WriteMeta;
+
+
+
+/***********************************************************************************************************************
  * GLOBAL PROTOTYPES
  **********************************************************************************************************************/
 /**
@@ -110,6 +124,7 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_ReadCache(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t*
 e_eFSS_LOGC_RES eFSS_LOGCPRV_WritePage(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t p_uIdx,
                                        uint8_t* p_puBuf, uint32_t p_uBufL,
                                        uint8_t* p_puBufS, uint32_t p_uBufSL,
+                                       const uint32_t p_uOriSubType, const uint32_t p_uBckUpSubType,
                                        t_eFSS_TYPE_PageMeta p_tParam);
 
 /**
@@ -129,6 +144,7 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_WritePage(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t 
 e_eFSS_LOGC_RES eFSS_LOGCPRV_ReadPage(t_eFSS_LOGC_Ctx* const p_ptCtx,uint32_t p_uIdx,
                                       uint8_t* p_puBuf, uint32_t p_uBufL,
                                       uint8_t* p_puBufS, uint32_t p_uBufSL,
+                                      const uint32_t p_uOriSubType, const uint32_t p_uBckUpSubType,
                                       t_eFSS_TYPE_PageMeta* p_ptParam);
 
 /**
