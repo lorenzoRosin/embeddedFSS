@@ -29,7 +29,7 @@ extern "C" {
  * GLOBAL PROTOTYPES
  **********************************************************************************************************************/
 /**
- * @brief       Verify if the log core context is valid. Be sure to no pass null to this function 
+ * @brief       Verify if the log core context is valid. Be sure to no pass null to this function
  *
  * @param[in]   p_ptCtx          - Log Core context
  *
@@ -79,7 +79,7 @@ uint32_t eFSS_LOGCPRV_GetPrevIndex(const t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t p_uI
  *
  * @return      Return error related to read write erase function
  */
-e_eFSS_LOGC_RES eFSS_LOGCPRV_WriteCache(const t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t p_uIdxN, uint32_t p_uIFlP);
+e_eFSS_LOGC_RES eFSS_LOGCPRV_WriteCache(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t p_uIdxN, uint32_t p_uIFlP);
 
 /**
  * @brief       Read from cache the value of new and old index. This function take care of the backup pages.
@@ -91,7 +91,7 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_WriteCache(const t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t
  *
  * @return      Return error related to read write erase function, even invalid page if found.
  */
-e_eFSS_LOGC_RES eFSS_LOGCPRV_ReadCache(const t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t* p_puIdxN, uint32_t* p_puIFlP);
+e_eFSS_LOGC_RES eFSS_LOGCPRV_ReadCache(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t* p_puIdxN, uint32_t* p_puIFlP);
 
 /**
  * @brief       Write a page of data at p_uIdx position. Do not pass to this function NULL value
@@ -107,9 +107,9 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_ReadCache(const t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t*
  *
  * @return      Return error related to read write erase function, even invalid page if found.
  */
-e_eFSS_LOGC_RES eFSS_LOGCPRV_WritePage(const t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t p_uIdx, 
+e_eFSS_LOGC_RES eFSS_LOGCPRV_WritePage(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t p_uIdx,
                                        uint8_t* p_puBuf, uint32_t p_uBufL,
-                                       uint8_t* p_puBufS, uint32_t p_uBufSL, 
+                                       uint8_t* p_puBufS, uint32_t p_uBufSL,
                                        t_eFSS_TYPE_PageMeta p_tParam);
 
 /**
@@ -126,9 +126,9 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_WritePage(const t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t 
  *
  * @return      Return error related to read write erase function, even invalid page if found.
  */
-e_eFSS_LOGC_RES eFSS_LOGCPRV_ReadPage(const t_eFSS_LOGC_Ctx* p_ptCtx,uint32_t p_uIdx,  
+e_eFSS_LOGC_RES eFSS_LOGCPRV_ReadPage(t_eFSS_LOGC_Ctx* const p_ptCtx,uint32_t p_uIdx,
                                       uint8_t* p_puBuf, uint32_t p_uBufL,
-                                      uint8_t* p_puBufS, uint32_t p_uBufSL, 
+                                      uint8_t* p_puBufS, uint32_t p_uBufSL,
                                       t_eFSS_TYPE_PageMeta* p_ptParam);
 
 /**
@@ -145,9 +145,9 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_ReadPage(const t_eFSS_LOGC_Ctx* p_ptCtx,uint32_t p_
  *
  * @return      Return error related to read write erase function, even invalid page if found.
  */
-e_eFSS_LOGC_RES eFSS_LOGCPRV_WriteCurrNewPageAndbkup(const t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t p_uIdx, 
+e_eFSS_LOGC_RES eFSS_LOGCPRV_WriteCurrNewPageAndbkup(const t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t p_uIdx,
 												     uint8_t* p_puBuf, uint32_t p_uBufL,
-												     uint8_t* p_puBufS, uint32_t p_uBufSL, 
+												     uint8_t* p_puBufS, uint32_t p_uBufSL,
 												     t_eFSS_TYPE_PageMeta p_tParam);
 
 /**
@@ -164,9 +164,9 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_WriteCurrNewPageAndbkup(const t_eFSS_LOGC_Ctx* p_pt
  *
  * @return      Return error related to read write erase function, even invalid page if found.
  */
-e_eFSS_LOGC_RES eFSS_LOGCPRV_ReadCurrNewPageAndbkup(const t_eFSS_LOGC_Ctx* p_ptCtx,uint32_t p_uIdx,  
+e_eFSS_LOGC_RES eFSS_LOGCPRV_ReadCurrNewPageAndbkup(const t_eFSS_LOGC_Ctx* p_ptCtx,uint32_t p_uIdx,
                                                     uint8_t* p_puBuf, uint32_t p_uBufL,
-                                                    uint8_t* p_puBufS, uint32_t p_uBufSL, 
+                                                    uint8_t* p_puBufS, uint32_t p_uBufSL,
                                                     t_eFSS_TYPE_PageMeta* p_ptParam);
 
 

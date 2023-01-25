@@ -312,6 +312,7 @@ e_eFSS_UTILSHLPRV_RES eFSS_UTILSHLPRV_VerifyNRipristBkup( t_eFSS_TYPE_CbCtx* con
                                                           uint8_t* const p_puDataW, const uint32_t p_uDataWLen,
                                                           uint8_t* const p_puDataR, const uint32_t p_uDataRLen,
                                                           const uint32_t p_uOrigIndx, const uint32_t p_uBackupIndx,
+                                                          const uint32_t p_uOriSubType, const uint32_t p_uBckUpSubType,
                                                           t_eFSS_TYPE_PageMeta* p_ptPagePrm );
 
 /**
