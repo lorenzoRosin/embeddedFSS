@@ -310,19 +310,19 @@ e_eFSS_COREML_RES eFSS_COREML_LoadPageInBuffNChkCrc(t_eFSS_COREML_Ctx* const p_p
 e_eFSS_COREML_RES eFSS_COREML_FlushBuffWUpdCrcInPage(t_eFSS_COREML_Ctx* const p_ptCtx,
                                                      e_eFSS_CORELL_BUFTYPE p_tBuffType, const uint32_t p_uPageIndx)
 {
-	/* Local variable */
-	e_eFSS_COREML_RES l_eRes;
+	/* Return local var */
+	e_eFSS_CORELL_RES l_eRes;
     e_eFSS_CORELL_RES l_eResLL;
 
-	uint8_t* l_puBuff;
-	uint32_t l_uBuffL;
-    uint32_t l_uPageL;
-    uint32_t l_uNPage;
+    /* Local var used for calculation */
+    bool_t l_bIsInit;
+    uint8_t* l_puBuffLL; 
+    uint32_t l_uBuffLLL;
     uint32_t l_uComulIndx;
     uint32_t l_uTemp;
     uint32_t l_uMagicNumber;
     uint32_t l_uPageCrc;
-    uint32_t l_uPageCrcStored;
+    uint32_t l_uPageCrcCalc;
 
 	/* Check pointer validity */
 	if( NULL == p_ptCtx )
@@ -331,77 +331,82 @@ e_eFSS_COREML_RES eFSS_COREML_FlushBuffWUpdCrcInPage(t_eFSS_COREML_Ctx* const p_
 	}
 	else
 	{
-        /* Get buffer */
-        l_eResLL = eFSS_CORELL_GetBuff(&p_ptCtx->tCORELLCtx, p_tBuffType, &l_puBuff, &l_uBuffL);
+        /* Check if initialized */
+        l_eResLL = eFSS_CORELL_IsInit(p_ptCtx->tCORELLCtx, &l_bIsInit);
         l_eRes = eFSS_COREML_LLtoMLRes(l_eResLL);
 
         if( e_eFSS_COREML_RES_OK == l_eRes )
         {
-            /* Get page settings */
-            l_eResLL = eFSS_CORELL_GetStorSett(&p_ptCtx->tCORELLCtx, &l_uPageL, &l_uNPage)
-            l_eRes = eFSS_COREML_LLtoMLRes(l_eResLL);
-
-            if( e_eFSS_COREML_RES_OK == l_eRes )
+            if( false == l_bIsInit )
             {
-                /* Initialize internal status */
-                l_uMagicNumber = 0u;
-                l_uPageCrc = 0u;
-                l_uComulIndx = p_uPageL - 8u;
-
-                /* Set Magic number */
-                /* --- Copy data Little endian */
-                p_puPageBuf[l_uComulIndx] = (uint8_t) ( ( p_ptPagePrm->uPageMagicNumber        ) & 0x000000FFu );
-                l_uComulIndx++;
-
-                p_puPageBuf[l_uComulIndx] = (uint8_t) ( ( p_ptPagePrm->uPageMagicNumber >> 8u  ) & 0x000000FFu );
-                l_uComulIndx++;
-
-                p_puPageBuf[l_uComulIndx] = (uint8_t) ( ( p_ptPagePrm->uPageMagicNumber >> 16u ) & 0x000000FFu );
-                l_uComulIndx++;
-
-                p_puPageBuf[l_uComulIndx] = (uint8_t) ( ( p_ptPagePrm->uPageMagicNumber >> 24u ) & 0x000000FFu );
-                l_uComulIndx++;
-
-                /* Calculate CRC */
-                l_eResLL = eFSS_CalcCrcInBuff(&p_ptCtx->tCORELLCtx, p_tBuffType, MAX_UINT32VAL, l_uPageL - 4u, &l_uPageCrcStored);
-                l_eRes = eFSS_COREML_LLtoMLRes(l_eResLL);
-                if( e_eFSS_COREML_RES_OK == l_eRes )
+                l_eRes = e_eFSS_COREML_RES_NOINITLIB;
+            }
+            else
+            {
+                /* Check internal status validity */
+                if( false == eFSS_COREML_IsStatusStillCoherent(p_ptCtx) )
                 {
-                    /* Set Crc */
-                    /* --- Copy data Little endian */
-                    p_puPageBuf[l_uComulIndx] = (uint8_t) ( ( p_ptPagePrm->uPageMagicNumber        ) & 0x000000FFu );
-                    l_uComulIndx++;
-
-                    p_puPageBuf[l_uComulIndx] = (uint8_t) ( ( p_ptPagePrm->uPageMagicNumber >> 8u  ) & 0x000000FFu );
-                    l_uComulIndx++;
-
-                    p_puPageBuf[l_uComulIndx] = (uint8_t) ( ( p_ptPagePrm->uPageMagicNumber >> 16u ) & 0x000000FFu );
-                    l_uComulIndx++;
-
-                    p_puPageBuf[l_uComulIndx] = (uint8_t) ( ( p_ptPagePrm->uPageMagicNumber >> 24u ) & 0x000000FFu );
-                    l_uComulIndx++;
-
-                    /* Flush buffer */
-                    l_eResLL = eFSS_CORELL_FlushBuffInPage(t_eFSS_CORELL_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFTYPE p_tBuffType,
-								              const uint32_t p_uPageIndx);
+                    l_eRes = e_eFSS_COREML_RES_CORRUPTCTX;
+                }
+                else
+                {
+                    /* Get internal buffer */
+                    l_eResLL = eFSS_COREML_GetBuff(p_ptCtx->tCORELLCtx, &l_puBuffLL, &l_uBuffLLL);
                     l_eRes = eFSS_COREML_LLtoMLRes(l_eResLL);
+
+                    if( e_eFSS_COREML_RES_OK == l_eRes )
+                    {
+                        /* Initialize internal status */
+                        l_uMagicNumber = 0u;
+                        l_uPageCrc = 0u;
+                        l_uComulIndx = p_uPageL - 8u;
+
+                        /* Set Magic number */
+                        /* --- Copy data Little endian */
+                        p_puPageBuf[l_uComulIndx] = (uint8_t) ( ( p_ptPagePrm->uPageMagicNumber        ) & 0x000000FFu );
+                        l_uComulIndx++;
+
+                        p_puPageBuf[l_uComulIndx] = (uint8_t) ( ( p_ptPagePrm->uPageMagicNumber >> 8u  ) & 0x000000FFu );
+                        l_uComulIndx++;
+
+                        p_puPageBuf[l_uComulIndx] = (uint8_t) ( ( p_ptPagePrm->uPageMagicNumber >> 16u ) & 0x000000FFu );
+                        l_uComulIndx++;
+
+                        p_puPageBuf[l_uComulIndx] = (uint8_t) ( ( p_ptPagePrm->uPageMagicNumber >> 24u ) & 0x000000FFu );
+                        l_uComulIndx++;
+
+                        /* Calculate CRC */
+                        l_eResLL = eFSS_CORELL_CalcCrcInBuff(&p_ptCtx->tCORELLCtx, p_tBuffType, MAX_UINT32VAL, l_uPageL - 4u, &l_uPageCrcStored);
+                        l_eRes = eFSS_COREML_LLtoMLRes(l_eResLL);
+                        if( e_eFSS_COREML_RES_OK == l_eRes )
+                        {
+                            /* Set Crc */
+                            /* --- Copy data Little endian */
+                            p_puPageBuf[l_uComulIndx] = (uint8_t) ( ( p_ptPagePrm->uPageMagicNumber        ) & 0x000000FFu );
+                            l_uComulIndx++;
+
+                            p_puPageBuf[l_uComulIndx] = (uint8_t) ( ( p_ptPagePrm->uPageMagicNumber >> 8u  ) & 0x000000FFu );
+                            l_uComulIndx++;
+
+                            p_puPageBuf[l_uComulIndx] = (uint8_t) ( ( p_ptPagePrm->uPageMagicNumber >> 16u ) & 0x000000FFu );
+                            l_uComulIndx++;
+
+                            p_puPageBuf[l_uComulIndx] = (uint8_t) ( ( p_ptPagePrm->uPageMagicNumber >> 24u ) & 0x000000FFu );
+                            l_uComulIndx++;
+
+                            /* Flush buffer */
+                            l_eResLL = eFSS_CORELL_FlushBuffInPage(t_eFSS_CORELL_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFTYPE p_tBuffType,
+                                                    const uint32_t p_uPageIndx);
+                            l_eRes = eFSS_COREML_LLtoMLRes(l_eResLL);
+                        }
+                    }
                 }
             }
         }
 	}
 
-	return l_eRes;
+	return l_eRes; 
 }
-
-
-
-
-
-
-
-
-
-
 
 e_eFSS_COREML_RES eFSS_COREML_CalcCrcInBuff(t_eFSS_COREML_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFTYPE p_eBuffType,
 								            uint32_t p_uCrcSeed, uint32_t p_uLenCalc, uint32_t* p_puCrc)
@@ -441,4 +446,86 @@ static bool_t eFSS_COREML_IsStatusStillCoherent(const t_eFSS_COREML_Ctx* p_ptCtx
     }
 
     return l_eRes;
+}
+
+static e_eFSS_COREML_RES eFSS_COREML_LLtoMLRes(const e_eFSS_CORELL_RES p_eLLRes)
+{
+    e_eFSS_DB_RES l_eRes;
+
+    switch(p_eHLRes)
+    {
+        case e_eFSS_UTILSHLPRV_RES_OK:
+        {
+            l_eRes = e_eFSS_DB_RES_OK;
+            break;
+        }
+
+        case e_eFSS_UTILSHLPRV_RES_NOTVALIDPAGE:
+        {
+            l_eRes = e_eFSS_DB_RES_BADPARAM;
+            break;
+        }
+
+        case e_eFSS_UTILSHLPRV_RES_OK_BKP_RCVRD:
+        {
+            l_eRes = e_eFSS_DB_RES_BADPARAM;
+            break;
+        }
+
+        case e_eFSS_UTILSHLPRV_RES_BADPARAM:
+        {
+            l_eRes = e_eFSS_DB_RES_BADPARAM;
+            break;
+        }
+
+        case e_eFSS_UTILSHLPRV_RES_BADPOINTER:
+        {
+            l_eRes = e_eFSS_DB_RES_BADPOINTER;
+            break;
+        }
+
+        case e_eFSS_UTILSHLPRV_RES_CLBCKERASEERR:
+        {
+            l_eRes = e_eFSS_DB_RES_BADPARAM;
+            break;
+        }
+
+        case e_eFSS_UTILSHLPRV_RES_CLBCKWRITEERR:
+        {
+            l_eRes = e_eFSS_DB_RES_BADPARAM;
+            break;
+        }
+
+        case e_eFSS_UTILSHLPRV_RES_CLBCKREADERR:
+        {
+            l_eRes = e_eFSS_DB_RES_BADPARAM;
+            break;
+        }
+
+        case e_eFSS_UTILSHLPRV_RES_CLBCKCRCERR:
+        {
+            l_eRes = e_eFSS_DB_RES_BADPARAM;
+            break;
+        }
+
+        case e_eFSS_UTILSHLPRV_RES_WRITENOMATCHREAD:
+        {
+            l_eRes = e_eFSS_DB_RES_BADPARAM;
+            break;
+        }
+
+        case e_eFSS_UTILSHLPRV_RES_CORRUPT:
+        {
+            l_eRes = e_eFSS_DB_RES_BADPARAM;
+            break;
+        }
+
+        default:
+        {
+            l_eRes = e_eFSS_DB_RES_BADPARAM;
+            break;
+        }
+    }
+
+    return l_eRes; 
 }

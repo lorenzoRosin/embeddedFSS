@@ -115,13 +115,13 @@ typedef struct
 
 typedef struct
 {
-    uint8_t     uPageType;
-    uint8_t     uPageSubType;
-    uint16_t    uPageVersion;
     uint32_t    uPageUseSpecific1;
     uint32_t    uPageUseSpecific2;
     uint32_t    uPageUseSpecific3;
     uint32_t    uPageUseSpecific4;
+    uint8_t     uPageSubType;
+    uint8_t     uPageType;
+    uint16_t    uPageVersion;
     uint32_t    uPageMagicNumber;
     uint32_t    uPageCrc;
 }t_eFSS_TYPE_PageMeta;
