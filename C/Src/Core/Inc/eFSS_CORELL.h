@@ -37,9 +37,7 @@ typedef enum
 typedef enum
 {
     e_eFSS_CORELL_RES_OK = 0,
-    e_eFSS_CORELL_RES_OK_BKP_RCVRD,
-    e_eFSS_CORELL_RES_NOTVALIDLOG,
-    e_eFSS_CORELL_RES_NEWVERSIONLOG,
+    e_eFSS_CORELL_RES_NOTVALIDPAGE,
     e_eFSS_CORELL_RES_NOINITLIB,
     e_eFSS_CORELL_RES_BADPARAM,
     e_eFSS_CORELL_RES_BADPOINTER,
@@ -75,19 +73,17 @@ typedef struct
  * GLOBAL PROTOTYPES
  **********************************************************************************************************************/
 /**
- * @brief       Initialize the Log Core module context
+ * @brief       Initialize the Low Level Core Module context
  *
- * @param[in]   p_ptCtx          - Log Core context
+ * @param[in]   p_ptCtx          - Low Level Log Core context
  * @param[in]   p_tCtxCb         - All callback collection context
+ * @param[in]   p_tStorSet       - Storage settings
  * @param[in]   p_puBuff         - Pointer to a buffer used by the modules to make calc
  * @param[in]   p_uBuffL         - Size of p_puBuff
- * @param[in]   p_tStorSet       - Storage settings
- * @param[in]   p_bFlashCache    - Use flash as cache for storing and resuming index
- * @param[in]   p_bFullBckup     - Save every log data in a backup pages
  *
- * @return      e_eFSS_LOGC_RES_BADPOINTER    - In case of bad pointer passed to the function
- *		        e_eFSS_LOGC_RES_BADPARAM      - In case of an invalid parameter passed to the function
- *              e_eFSS_LOGC_RES_OK            - Operation ended correctly
+ * @return      e_eFSS_CORELL_RES_BADPOINTER    - In case of bad pointer passed to the function
+ *		        e_eFSS_CORELL_RES_BADPARAM      - In case of an invalid parameter passed to the function
+ *              e_eFSS_CORELL_RES_OK            - Operation ended correctly
  */
 e_eFSS_CORELL_RES eFSS_CORELL_InitCtx(t_eFSS_CORELL_Ctx* const p_ptCtx, t_eFSS_TYPE_CbCtx const p_tCtxCb,
 									  t_eFSS_CORELL_StorSet p_tStorSet, uint8_t* const p_puBuff, uint32_t p_uBuffL);
@@ -95,71 +91,86 @@ e_eFSS_CORELL_RES eFSS_CORELL_InitCtx(t_eFSS_CORELL_Ctx* const p_ptCtx, t_eFSS_T
 /**
  * @brief       Check if the lib is initialized
  *
- * @param[in]   p_ptCtx       - Log Core context
+ * @param[in]   p_ptCtx       - Low Level Log Core context
  * @param[out]  p_pbIsInit    - Pointer to a bool_t variable that will be filled with true if the lib is initialized
  *
- * @return      e_eFSS_LOGC_RES_BADPOINTER    - In case of bad pointer passed to the function
- *              e_eFSS_LOGC_RES_OK            - Operation ended correctly
+ * @return      e_eFSS_CORELL_RES_BADPOINTER    - In case of bad pointer passed to the function
+ *              e_eFSS_CORELL_RES_OK            - Operation ended correctly
  */
 e_eFSS_CORELL_RES eFSS_CORELL_IsInit(t_eFSS_CORELL_Ctx* const p_ptCtx, bool_t* p_pbIsInit);
 
 /**
- * @brief       Check if the lib is initialized
+ * @brief       Get storage settings
  *
- * @param[in]   p_ptCtx       - Log Core context
- * @param[out]  p_pbIsInit    - Pointer to a bool_t variable that will be filled with true if the lib is initialized
+ * @param[in]   p_ptCtx       - Low Level Log Core context
+ * @param[out]  p_puPageL     - Pointer to a uint32_t variable that will be filled with the page lenght
+ * @param[out]  p_puNPage     - Pointer to a uint32_t variable that will be filled with the numbers of page
  *
- * @return      e_eFSS_LOGC_RES_BADPOINTER    - In case of bad pointer passed to the function
- *              e_eFSS_LOGC_RES_OK            - Operation ended correctly
+ * @return      e_eFSS_CORELL_RES_BADPOINTER    - In case of bad pointer passed to the function
+ *		        e_eFSS_CORELL_RES_CORRUPTCTX    - Context is corrupted
+ *		        e_eFSS_CORELL_RES_NOINITLIB     - Need to init lib before calling function
+ *              e_eFSS_CORELL_RES_OK            - Operation ended correctly
  */
 e_eFSS_CORELL_RES eFSS_CORELL_GetStorSett(t_eFSS_CORELL_Ctx* const p_ptCtx, uint32_t* p_puPageL, uint32_t* p_puNPage);
 
 /**
- * @brief       Check if the lib is initialized
+ * @brief       Get reference to one of the two internal buffer
  *
- * @param[in]   p_ptCtx       - Log Core context
- * @param[out]  p_pbIsInit    - Pointer to a bool_t variable that will be filled with true if the lib is initialized
+ * @param[in]   p_ptCtx       - Low Level Log Core context
+ * @param[in]   p_eBuffType   - Enum used to select wich buffer we want to select
+ * @param[out]  p_ppuBuff     - Pointer to a Pointer pointing to the p_eBuffType buffer
+ * @param[out]  p_puBuffL     - Pointer to a uint32_t variable where the size of p_ppuBuff buffer will be placed
  *
- * @return      e_eFSS_LOGC_RES_BADPOINTER    - In case of bad pointer passed to the function
- *              e_eFSS_LOGC_RES_OK            - Operation ended correctly
+ * @return      e_eFSS_CORELL_RES_BADPOINTER    - In case of bad pointer passed to the function
+ *		        e_eFSS_CORELL_RES_BADPARAM      - In case of an invalid parameter passed to the function
+ *		        e_eFSS_CORELL_RES_CORRUPTCTX    - Context is corrupted
+ *		        e_eFSS_CORELL_RES_NOINITLIB     - Need to init lib before calling function
+ *              e_eFSS_CORELL_RES_OK            - Operation ended correctly
  */
-e_eFSS_CORELL_RES eFSS_CORELL_GetBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFTYPE p_tBuffType,
+e_eFSS_CORELL_RES eFSS_CORELL_GetBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFTYPE p_eBuffType,
 								      uint8_t** p_ppuBuff, uint32_t* p_puBuffL);
 
 /**
- * @brief       Check if the lib is initialized
+ * @brief       Load a page from the storage are in one of he two internal buffer
  *
- * @param[in]   p_ptCtx       - Log Core context
- * @param[out]  p_pbIsInit    - Pointer to a bool_t variable that will be filled with true if the lib is initialized
+ * @param[in]   p_ptCtx       - Low Level Log Core context
+ * @param[in]   p_eBuffType   - Enum used to select wich buffer we want to select
+ * @param[in]   p_uPageIndx   - uint32_t index rappresenting the page that we want to load from storage
  *
- * @return      e_eFSS_LOGC_RES_BADPOINTER    - In case of bad pointer passed to the function
- *              e_eFSS_LOGC_RES_OK            - Operation ended correctly
+ * @return      e_eFSS_CORELL_RES_BADPOINTER    - In case of bad pointer passed to the function
+ *		        e_eFSS_CORELL_RES_BADPARAM      - In case of an invalid parameter passed to the function
+ *		        e_eFSS_CORELL_RES_CORRUPTCTX    - Context is corrupted
+ *		        e_eFSS_CORELL_RES_NOINITLIB     - Need to init lib before calling function
+ *		        e_eFSS_CORELL_RES_CLBCKREADERR  - The read callback reported an error
+ *              e_eFSS_CORELL_RES_OK            - Operation ended correctly
  */
-e_eFSS_CORELL_RES eFSS_CORELL_LoadPageInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFTYPE p_tBuffType,
+e_eFSS_CORELL_RES eFSS_CORELL_LoadPageInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFTYPE p_eBuffType,
 								             const uint32_t p_uPageIndx);
 
 /**
  * @brief       Check if the lib is initialized
  *
- * @param[in]   p_ptCtx       - Log Core context
+ * @param[in]   p_ptCtx       - Low Level Log Core context
  * @param[out]  p_pbIsInit    - Pointer to a bool_t variable that will be filled with true if the lib is initialized
  *
- * @return      e_eFSS_LOGC_RES_BADPOINTER    - In case of bad pointer passed to the function
- *              e_eFSS_LOGC_RES_OK            - Operation ended correctly
+ * @return      e_eFSS_CORELL_RES_BADPOINTER    - In case of bad pointer passed to the function
+ *		        e_eFSS_CORELL_RES_BADPARAM      - In case of an invalid parameter passed to the function
+ *              e_eFSS_CORELL_RES_OK            - Operation ended correctly
  */
-e_eFSS_CORELL_RES eFSS_CORELL_FlushBuffInPage(t_eFSS_CORELL_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFTYPE p_tBuffType,
+e_eFSS_CORELL_RES eFSS_CORELL_FlushBuffInPage(t_eFSS_CORELL_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFTYPE p_eBuffType,
 								              const uint32_t p_uPageIndx);
 
 /**
  * @brief       Check if the lib is initialized
  *
- * @param[in]   p_ptCtx       - Log Core context
+ * @param[in]   p_ptCtx       - Low Level Log Core context
  * @param[out]  p_pbIsInit    - Pointer to a bool_t variable that will be filled with true if the lib is initialized
  *
- * @return      e_eFSS_LOGC_RES_BADPOINTER    - In case of bad pointer passed to the function
- *              e_eFSS_LOGC_RES_OK            - Operation ended correctly
+ * @return      e_eFSS_CORELL_RES_BADPOINTER    - In case of bad pointer passed to the function
+ *		        e_eFSS_CORELL_RES_BADPARAM      - In case of an invalid parameter passed to the function
+ *              e_eFSS_CORELL_RES_OK            - Operation ended correctly
  */
-e_eFSS_CORELL_RES eFSS_CalcCrcInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFTYPE p_tBuffType,
+e_eFSS_CORELL_RES eFSS_CalcCrcInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFTYPE p_eBuffType,
 								     uint32_t p_uCrcSeed, uint32_t p_uLenCalc, uint32_t* p_puCrc);
 
 #ifdef __cplusplus
