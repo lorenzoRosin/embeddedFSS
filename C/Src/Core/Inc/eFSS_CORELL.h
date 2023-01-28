@@ -184,8 +184,8 @@ e_eFSS_CORELL_RES eFSS_CORELL_FlushBuffInPage(t_eFSS_CORELL_Ctx* const p_ptCtx, 
  *		        e_eFSS_CORELL_RES_CLBCKCRCERR      - The CRC callback reported an error
  *              e_eFSS_CORELL_RES_OK               - Operation ended correctly
  */
-e_eFSS_CORELL_RES eFSS_CalcCrcInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFTYPE p_eBuffType,
-								     uint32_t p_uCrcSeed, uint32_t p_uLenCalc, uint32_t* p_puCrc);
+e_eFSS_CORELL_RES eFSS_CORELL_CalcCrcInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFTYPE p_eBuffType,
+								            uint32_t p_uCrcSeed, uint32_t p_uLenCalc, uint32_t* p_puCrc);
 
 #ifdef __cplusplus
 } /* extern "C" */

@@ -1,7 +1,7 @@
 /**
- * @file       eFSS_CORELL.h
+ * @file       eFSS_COREML.h
  *
- * @brief      Low level core module
+ * @brief      Medium level core module
  *
  * @author     Lorenzo Rosin
  *
@@ -17,7 +17,9 @@
 /***********************************************************************************************************************
  *  PRIVATE STATIC FUNCTION DECLARATION
  **********************************************************************************************************************/
+static bool_t eFSS_COREML_IsStatusStillCoherent(const t_eFSS_COREML_Ctx* p_ptCtx);
 static e_eFSS_COREML_RES eFSS_COREML_LLtoMLRes(const e_eFSS_CORELL_RES p_eLLRes);
+
 
 
 /***********************************************************************************************************************
@@ -36,9 +38,17 @@ e_eFSS_COREML_RES eFSS_COREML_InitCtx(t_eFSS_COREML_Ctx* const p_ptCtx, t_eFSS_T
 	}
 	else
 	{
-        /* Init LL context */
-        l_eResLL = eFSS_CORELL_InitCtx(p_ptCtx->tCORELLCtx, p_tCtxCb, p_tStorSet, p_puBuff, p_uBuffL);
-        l_eRes = eFSS_COREML_LLtoMLRes(l_eResLL);
+        /* Check data validity */
+        if( p_tStorSet.uPagesLen <= 8u )
+        {
+            l_eRes = e_eFSS_COREML_RES_BADPARAM;
+        }
+        else
+        {
+            /* Init LL context */
+            l_eResLL = eFSS_CORELL_InitCtx(p_ptCtx->tCORELLCtx, p_tCtxCb, p_tStorSet, p_puBuff, p_uBuffL);
+            l_eRes = eFSS_COREML_LLtoMLRes(l_eResLL);
+        }
     }
 
     return l_eRes;
@@ -46,7 +56,7 @@ e_eFSS_COREML_RES eFSS_COREML_InitCtx(t_eFSS_COREML_Ctx* const p_ptCtx, t_eFSS_T
 
 e_eFSS_COREML_RES eFSS_COREML_IsInit(t_eFSS_COREML_Ctx* const p_ptCtx, bool_t* p_pbIsInit)
 {
-	/* Local variable */
+	/* Return local var */
 	e_eFSS_CORELL_RES l_eRes;
     e_eFSS_CORELL_RES l_eResLL;
 
@@ -64,12 +74,71 @@ e_eFSS_COREML_RES eFSS_COREML_IsInit(t_eFSS_COREML_Ctx* const p_ptCtx, bool_t* p
 	return l_eRes;
 }
 
-e_eFSS_CORELL_RES eFSS_CORELL_GetBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFTYPE p_tBuffType,
-								      uint8_t** p_ppuBuff, uint32_t* p_puBuffL)
+e_eFSS_COREML_RES eFSS_COREML_GetStorSett(t_eFSS_COREML_Ctx* const p_ptCtx, uint32_t* p_puDataL, uint32_t* p_puNPage)
 {
-	/* Local variable */
+	/* Return local var */
 	e_eFSS_CORELL_RES l_eRes;
     e_eFSS_CORELL_RES l_eResLL;
+
+    /* Local var used for calculation */
+    bool_t l_bIsInit;
+    uint32_t l_uDataLLL;
+    uint32_t l_uNPageLL;
+
+	/* Check pointer validity */
+	if( ( NULL == p_ptCtx ) || ( NULL == p_puDataL ) || ( NULL == p_puNPage ) )
+	{
+		l_eRes = e_eFSS_COREML_RES_BADPOINTER;
+	}
+	else
+	{
+        /* Check if initialized */
+        l_eResLL = eFSS_CORELL_IsInit(p_ptCtx->tCORELLCtx, &l_bIsInit);
+        l_eRes = eFSS_COREML_LLtoMLRes(l_eResLL);
+
+        if( e_eFSS_COREML_RES_OK == l_eRes )
+        {
+            if( false == l_bIsInit )
+            {
+                l_eRes = e_eFSS_COREML_RES_NOINITLIB;
+            }
+            else
+            {
+                /* Check internal status validity */
+                if( false == eFSS_COREML_IsStatusStillCoherent(p_ptCtx) )
+                {
+                    l_eRes = e_eFSS_COREML_RES_CORRUPTCTX;
+                }
+                else
+                {
+                    /* Return data */
+                    l_eResLL = eFSS_CORELL_GetStorSett(p_ptCtx->tCORELLCtx, &l_uDataLLL, &l_uNPageLL);
+                    l_eRes = eFSS_COREML_LLtoMLRes(l_eResLL);
+
+                    if( e_eFSS_COREML_RES_OK == l_eRes )
+                    {
+                        *p_puDataL = l_uDataLLL - 8u;
+                        *p_puNPage = l_uNPageLL;
+                    }
+                }
+            }
+        }
+	}
+
+	return l_eRes;   
+}
+
+e_eFSS_COREML_RES eFSS_COREML_GetBuff(t_eFSS_COREML_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFTYPE p_eBuffType,
+								      uint8_t** p_ppuBuff, uint32_t* p_puBuffL)
+{
+	/* Return local var */
+	e_eFSS_CORELL_RES l_eRes;
+    e_eFSS_CORELL_RES l_eResLL;
+
+    /* Local var used for calculation */
+    bool_t l_bIsInit;
+    uint8_t* l_puBuffLL; 
+    uint32_t l_uBuffLLL;
 
 	/* Check pointer validity */
 	if( ( NULL == p_ptCtx ) || ( NULL == p_ppuBuff ) || ( NULL == p_puBuffL ) )
@@ -78,11 +147,40 @@ e_eFSS_CORELL_RES eFSS_CORELL_GetBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e_eFSS_C
 	}
 	else
 	{
-        l_eResLL = eFSS_CORELL_GetBuff(&p_ptCtx->tCORELLCtx, p_tBuffType, p_ppuBuff, p_puBuffL);
+        /* Check if initialized */
+        l_eResLL = eFSS_CORELL_IsInit(p_ptCtx->tCORELLCtx, &l_bIsInit);
         l_eRes = eFSS_COREML_LLtoMLRes(l_eResLL);
+
+        if( e_eFSS_COREML_RES_OK == l_eRes )
+        {
+            if( false == l_bIsInit )
+            {
+                l_eRes = e_eFSS_COREML_RES_NOINITLIB;
+            }
+            else
+            {
+                /* Check internal status validity */
+                if( false == eFSS_COREML_IsStatusStillCoherent(p_ptCtx) )
+                {
+                    l_eRes = e_eFSS_COREML_RES_CORRUPTCTX;
+                }
+                else
+                {
+                    /* Return data */
+                    l_eResLL = eFSS_COREML_GetBuff(p_ptCtx->tCORELLCtx, &l_puBuffLL, &l_uBuffLLL);
+                    l_eRes = eFSS_COREML_LLtoMLRes(l_eResLL);
+
+                    if( e_eFSS_COREML_RES_OK == l_eRes )
+                    {
+                        *p_puBuffL = l_uBuffLLL - 8u;
+                        *p_ppuBuff = l_puBuffLL;
+                    }
+                }
+            }
+        }
 	}
 
-	return l_eRes;
+	return l_eRes;     
 }
 
 e_eFSS_COREML_RES eFSS_COREML_LoadPageInBuffNChkCrc(t_eFSS_COREML_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFTYPE p_tBuffType,
@@ -283,8 +381,42 @@ e_eFSS_COREML_RES eFSS_COREML_FlushBuffWUpdCrcInPage(t_eFSS_COREML_Ctx* const p_
 	return l_eRes;
 }
 
-
+e_eFSS_COREML_RES eFSS_COREML_CalcCrcInBuff(t_eFSS_COREML_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFTYPE p_eBuffType,
+								            uint32_t p_uCrcSeed, uint32_t p_uLenCalc, uint32_t* p_puCrc)
+{
+    
+}
 
 /***********************************************************************************************************************
  *  PRIVATE FUNCTION
  **********************************************************************************************************************/
+static bool_t eFSS_COREML_IsStatusStillCoherent(const t_eFSS_COREML_Ctx* p_ptCtx)
+{
+    /* Return local var */
+    bool_t l_eRes;
+    e_eFSS_CORELL_RES l_eResLL;
+
+    /* Local var used for calculation */
+    uint32_t l_uPageL;
+    uint32_t l_uNPage;
+
+    l_eResLL = eFSS_CORELL_GetStorSett(&p_ptCtx->tCORELLCtx, &l_uPageL, &l_uNPage);
+    if( e_eFSS_CORELL_RES_OK != l_eResLL )
+    {
+        l_eRes = false;
+    }
+    else
+    {
+        /* Check data validity */
+        if( l_uPageL <= 8u )
+        {
+            l_eRes = false;
+        }
+        else
+        {
+            l_eRes = true;
+        }
+    }
+
+    return l_eRes;
+}
