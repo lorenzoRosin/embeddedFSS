@@ -21,8 +21,8 @@ extern "C" {
 /***********************************************************************************************************************
  *      INCLUDES
  **********************************************************************************************************************/
-#include "eFSS_TYPE.h"
 #include "eFSS_CORELL.h"
+
 
 
 /***********************************************************************************************************************
@@ -30,16 +30,8 @@ extern "C" {
  **********************************************************************************************************************/
 typedef enum
 {
-    e_eFSS_CORELL_BUFTYPE_1 = 0,
-    e_eFSS_CORELL_BUFTYPE_2
-}e_eFSS_COREML_BUFTYPE;
-
-typedef enum
-{
     e_eFSS_COREML_RES_OK = 0,
-    e_eFSS_COREML_RES_OK_BKP_RCVRD,
-    e_eFSS_COREML_RES_NOTVALIDLOG,
-    e_eFSS_COREML_RES_NEWVERSIONLOG,
+    e_eFSS_COREML_RES_NOTVALIDPAGE,
     e_eFSS_COREML_RES_NOINITLIB,
     e_eFSS_COREML_RES_BADPARAM,
     e_eFSS_COREML_RES_BADPOINTER,
@@ -62,9 +54,9 @@ typedef struct
  * GLOBAL PROTOTYPES
  **********************************************************************************************************************/
 /**
- * @brief       Initialize the Log Core module context
+ * @brief       Initialize the Medium Level Core Module context
  *
- * @param[in]   p_ptCtx          - Log Core context
+ * @param[in]   p_ptCtx          - Medium Level Log Core context
  * @param[in]   p_tCtxCb         - All callback collection context
  * @param[in]   p_puBuff         - Pointer to a buffer used by the modules to make calc
  * @param[in]   p_uBuffL         - Size of p_puBuff

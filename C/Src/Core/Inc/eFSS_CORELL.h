@@ -37,7 +37,6 @@ typedef enum
 typedef enum
 {
     e_eFSS_CORELL_RES_OK = 0,
-    e_eFSS_CORELL_RES_NOTVALIDPAGE,
     e_eFSS_CORELL_RES_NOINITLIB,
     e_eFSS_CORELL_RES_BADPARAM,
     e_eFSS_CORELL_RES_BADPOINTER,
