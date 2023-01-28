@@ -131,7 +131,7 @@ e_eFSS_CORELL_RES eFSS_CORELL_GetBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e_eFSS_C
 								      uint8_t** p_ppuBuff, uint32_t* p_puBuffL);
 
 /**
- * @brief       Load a page from the storage are in one of he two internal buffer
+ * @brief       Load a page from the storage area in one of he two internal buffer
  *
  * @param[in]   p_ptCtx       - Low Level Log Core context
  * @param[in]   p_eBuffType   - Enum used to select wich buffer we want to select
@@ -148,27 +148,42 @@ e_eFSS_CORELL_RES eFSS_CORELL_LoadPageInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e
 								             const uint32_t p_uPageIndx);
 
 /**
- * @brief       Check if the lib is initialized
+ * @brief       Flush one of the two buffer in the storage are. Keep in mine that the other buffer well be used
+ *              to check if the data was flushed corretly, and after this operation will contains different value.
  *
  * @param[in]   p_ptCtx       - Low Level Log Core context
- * @param[out]  p_pbIsInit    - Pointer to a bool_t variable that will be filled with true if the lib is initialized
+ * @param[in]   p_eBuffType   - Enum used to select wich buffer we want to select
+ * @param[in]   p_uPageIndx   - uint32_t index rappresenting the page that we want to flush in storage
  *
- * @return      e_eFSS_CORELL_RES_BADPOINTER    - In case of bad pointer passed to the function
- *		        e_eFSS_CORELL_RES_BADPARAM      - In case of an invalid parameter passed to the function
- *              e_eFSS_CORELL_RES_OK            - Operation ended correctly
+ * @return      e_eFSS_CORELL_RES_BADPOINTER       - In case of bad pointer passed to the function
+ *		        e_eFSS_CORELL_RES_BADPARAM         - In case of an invalid parameter passed to the function
+ *		        e_eFSS_CORELL_RES_CORRUPTCTX       - Context is corrupted
+ *		        e_eFSS_CORELL_RES_NOINITLIB        - Need to init lib before calling function
+ *		        e_eFSS_CORELL_RES_CLBCKREADERR     - The read callback reported an error
+ *		        e_eFSS_CORELL_RES_CLBCKERASEERR    - The erase callback reported an error
+ *		        e_eFSS_CORELL_RES_CLBCKWRITEERR    - The write callback reported an error
+  *		        e_eFSS_CORELL_RES_WRITENOMATCHREAD - Writen data dosent match what requested
+ *              e_eFSS_CORELL_RES_OK               - Operation ended correctly
  */
 e_eFSS_CORELL_RES eFSS_CORELL_FlushBuffInPage(t_eFSS_CORELL_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFTYPE p_eBuffType,
 								              const uint32_t p_uPageIndx);
 
 /**
- * @brief       Check if the lib is initialized
+ * @brief       Calculate the Crc of the data present in the choosen buffer. Can also select to calculate the crc of
+ *              a given numbers of bytes.
  *
  * @param[in]   p_ptCtx       - Low Level Log Core context
- * @param[out]  p_pbIsInit    - Pointer to a bool_t variable that will be filled with true if the lib is initialized
+ * @param[in]   p_eBuffType   - Enum used to select wich buffer we want to select
+ * @param[in]   p_uCrcSeed    - uint32_t rappresenting the seed we want to use in the calc
+ * @param[in]   p_uLenCalc    - uint32_t rappresenting the lenght we want to calc
+ * @param[out]  p_puCrc       - Pointer to a uint32_t variable where the CRC calculated will be placed
  *
- * @return      e_eFSS_CORELL_RES_BADPOINTER    - In case of bad pointer passed to the function
- *		        e_eFSS_CORELL_RES_BADPARAM      - In case of an invalid parameter passed to the function
- *              e_eFSS_CORELL_RES_OK            - Operation ended correctly
+ * @return      e_eFSS_CORELL_RES_BADPOINTER       - In case of bad pointer passed to the function
+ *		        e_eFSS_CORELL_RES_BADPARAM         - In case of an invalid parameter passed to the function
+ *		        e_eFSS_CORELL_RES_CORRUPTCTX       - Context is corrupted
+ *		        e_eFSS_CORELL_RES_NOINITLIB        - Need to init lib before calling function
+ *		        e_eFSS_CORELL_RES_CLBCKCRCERR      - The CRC callback reported an error
+ *              e_eFSS_CORELL_RES_OK               - Operation ended correctly
  */
 e_eFSS_CORELL_RES eFSS_CalcCrcInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFTYPE p_eBuffType,
 								     uint32_t p_uCrcSeed, uint32_t p_uLenCalc, uint32_t* p_puCrc);

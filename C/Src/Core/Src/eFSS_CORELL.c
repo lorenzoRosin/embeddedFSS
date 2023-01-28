@@ -303,14 +303,15 @@ e_eFSS_CORELL_RES eFSS_CORELL_LoadPageInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e
 	return l_eRes;
 }
 
-e_eFSS_CORELL_RES eFSS_CORELL_FlushBuffInPage(t_eFSS_CORELL_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFTYPE p_tBuffType,
+e_eFSS_CORELL_RES eFSS_CORELL_FlushBuffInPage(t_eFSS_CORELL_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFTYPE p_eBuffType,
 								              const uint32_t p_uPageIndx)
 {
-	/* Local variable */
+	/* Return local var */
 	e_eFSS_CORELL_RES l_eRes;
+
+    /* Local var used for calculation */
     uint32_t l_uTryPerformed;
     bool_t l_bCbRes;
-
 	uint8_t* l_puBuff;
 	uint32_t l_uBuffL;
 	uint8_t* l_puBuffS;
@@ -416,7 +417,7 @@ e_eFSS_CORELL_RES eFSS_CORELL_FlushBuffInPage(t_eFSS_CORELL_Ctx* const p_ptCtx, 
 
                             if( true == l_bCbRes )
                             {
-                                /* Compare */
+                                /* Compare buffer to write with the readed one */
                                 if( 0 == memcmp(l_puBuff, l_puBuffS, l_uBuffL) )
                                 {
                                     l_bCbRes = true;
@@ -444,10 +445,88 @@ e_eFSS_CORELL_RES eFSS_CORELL_FlushBuffInPage(t_eFSS_CORELL_Ctx* const p_ptCtx, 
 	return l_eRes;
 }
 
-e_eFSS_CORELL_RES eFSS_CalcCrcInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFTYPE p_tBuffType,
+e_eFSS_CORELL_RES eFSS_CalcCrcInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFTYPE p_eBuffType,
 								     uint32_t p_uCrcSeed, uint32_t p_uLenCalc, uint32_t* p_puCrc)
 {
+	/* Return local var */
+	e_eFSS_CORELL_RES l_eRes;
 
+    /* Local var used for calculation */
+    bool_t l_bCbRes;
+	uint8_t* l_puBuff;
+	uint32_t l_uBuffL;
+
+	/* Check pointer validity */
+	if( ( NULL == p_ptCtx ) || ( NULL == p_puCrc ) )
+	{
+		l_eRes = e_eFSS_CORELL_RES_BADPOINTER;
+	}
+	else
+	{
+		/* Check Init */
+		if( false == p_ptCtx->bIsInit )
+		{
+			l_eRes = e_eFSS_CORELL_RES_NOINITLIB;
+		}
+		else
+		{
+            /* Check internal status validity */
+            if( false == eFSS_CORELL_IsStatusStillCoherent(p_ptCtx) )
+            {
+                l_eRes = e_eFSS_CORELL_RES_CORRUPTCTX;
+            }
+            else
+            {
+                /* Check param validity */
+                if( ( p_uLenCalc <= 0u ) || ( p_uLenCalc > p_ptCtx->tStorSett.uPagesLen ) )
+                {
+                    l_eRes = e_eFSS_CORELL_RES_BADPARAM;
+                }
+                else
+                {
+                    switch(p_tBuffType)
+                    {
+                        case e_eFSS_CORELL_BUFTYPE_1:
+                        {
+                            l_puBuff = p_ptCtx->puBuf1;
+                            l_uBuffL = p_ptCtx->uBuf1L;
+                            l_eRes = e_eFSS_CORELL_RES_OK;
+                            break;
+                        }
+
+                        case e_eFSS_CORELL_BUFTYPE_2:
+                        {
+                            l_puBuff = p_ptCtx->puBuf2;
+                            l_uBuffL = p_ptCtx->uBuf2L;
+                            l_eRes = e_eFSS_CORELL_RES_OK;
+                            break;
+                        }
+
+                        default:
+                        {
+                            l_eRes = e_eFSS_CORELL_RES_BADPARAM;
+                            break;
+                        }
+                    }
+
+                    /* Check validity */
+                    if( e_eFSS_CORELL_RES_OK == l_eRes )
+                    {
+                        /* Calc */
+                        l_bCbRes = (*(p_ptCbCtx->fCrc32))(p_ptCbCtx->ptCtxCrc32, p_uCrcSeed, l_puBuff, p_uLenCalc,
+                                                          p_puCrc );
+
+                        if( true != l_bCbRes )
+                        {
+                            l_eRes = e_eFSS_CORELL_RES_CLBCKCRCERR;
+                        }
+                    }
+                }
+            }
+		}
+	}
+
+	return l_eRes;
 }
 
 
@@ -463,27 +542,27 @@ static bool_t eFSS_CORELL_IsStatusStillCoherent(const t_eFSS_CORELL_Ctx* p_ptCtx
         ( NULL == p_ptCtx->tCtxCb.ptCtxWrite ) || ( NULL == p_ptCtx->tCtxCb.fWrite ) ||
         ( NULL == p_ptCtx->tCtxCb.ptCtxRead  ) || ( NULL == p_ptCtx->tCtxCb.fRead  ) ||
         ( NULL == p_ptCtx->tCtxCb.ptCtxCrc32 ) || ( NULL == p_ptCtx->tCtxCb.fCrc32 ) ||
-        ( NULL == p_ptCtx->puBuf ) )
+        ( NULL == p_ptCtx->puBuf1 ) || ( NULL == p_ptCtx->puBuf2 ) )
     {
         l_eRes = false;
     }
     else
     {
         /* Check data validity */
-        if( ( p_ptCtx->tStorSett.uTotPages < 2u ) || ( 0u != ( p_ptCtx->tStorSett.uTotPages % 2u ) ) )
+        if( p_ptCtx->tStorSett.uTotPages <= 0u )
         {
             l_eRes = false;
         }
         else
         {
             /* Check data validity */
-            if( ( p_ptCtx->tStorSett.uPagesLen <= EFSS_PAGEMETASIZE ) ||
-                ( 0u != ( p_ptCtx->tStorSett.uPagesLen % 2u ) ) )
+            if( p_ptCtx->tStorSett.uPagesLen <= 0u )
             {
                 l_eRes = false;
             }
             else
             {
+                /* Check data validity */
                 if( p_ptCtx->tStorSett.uRWERetry <= 0u )
                 {
                         l_eRes = false;
@@ -491,13 +570,21 @@ static bool_t eFSS_CORELL_IsStatusStillCoherent(const t_eFSS_CORELL_Ctx* p_ptCtx
                 else
                 {
                     /* Check data validity */
-                    if( ( 2u * p_ptCtx->tStorSett.uPagesLen ) != p_ptCtx->uBufL )
+                    if( p_ptCtx->uBuf2L != p_ptCtx->uBuf1L )
                     {
                         l_eRes = false;
                     }
                     else
                     {
-                        l_eRes = true;
+                        /* Check data validity */
+                        if( p_ptCtx->tStorSett.uPagesLen != p_ptCtx->uBuf1L )
+                        {
+                            l_eRes = false;
+                        }
+                        else
+                        {
+                            l_eRes = true;
+                        }
                     }
                 }
             }
