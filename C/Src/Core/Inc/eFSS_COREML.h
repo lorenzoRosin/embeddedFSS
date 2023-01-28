@@ -1,7 +1,7 @@
 /**
- * @file       eFSS_CORELL.h
+ * @file       eFSS_COREML.h
  *
- * @brief      Low level core module
+ * @brief      Medium level core module
  *
  * @author     Lorenzo Rosin
  *
@@ -22,7 +22,7 @@ extern "C" {
  *      INCLUDES
  **********************************************************************************************************************/
 #include "eFSS_TYPE.h"
-
+#include "eFSS_CORELL.h"
 
 
 /***********************************************************************************************************************
@@ -32,42 +32,29 @@ typedef enum
 {
     e_eFSS_CORELL_BUFTYPE_1 = 0,
     e_eFSS_CORELL_BUFTYPE_2
-}e_eFSS_CORELL_BUFTYPE;
+}e_eFSS_COREML_BUFTYPE;
 
 typedef enum
 {
-    e_eFSS_CORELL_RES_OK = 0,
-    e_eFSS_CORELL_RES_OK_BKP_RCVRD,
-    e_eFSS_CORELL_RES_NOTVALIDLOG,
-    e_eFSS_CORELL_RES_NEWVERSIONLOG,
-    e_eFSS_CORELL_RES_NOINITLIB,
-    e_eFSS_CORELL_RES_BADPARAM,
-    e_eFSS_CORELL_RES_BADPOINTER,
-    e_eFSS_CORELL_RES_CORRUPTCTX,
-    e_eFSS_CORELL_RES_CLBCKERASEERR,
-    e_eFSS_CORELL_RES_CLBCKWRITEERR,
-    e_eFSS_CORELL_RES_CLBCKREADERR,
-    e_eFSS_CORELL_RES_CLBCKCRCERR,
-    e_eFSS_CORELL_RES_WRITENOMATCHREAD,
-}e_eFSS_CORELL_RES;
+    e_eFSS_COREML_RES_OK = 0,
+    e_eFSS_COREML_RES_OK_BKP_RCVRD,
+    e_eFSS_COREML_RES_NOTVALIDLOG,
+    e_eFSS_COREML_RES_NEWVERSIONLOG,
+    e_eFSS_COREML_RES_NOINITLIB,
+    e_eFSS_COREML_RES_BADPARAM,
+    e_eFSS_COREML_RES_BADPOINTER,
+    e_eFSS_COREML_RES_CORRUPTCTX,
+    e_eFSS_COREML_RES_CLBCKERASEERR,
+    e_eFSS_COREML_RES_CLBCKWRITEERR,
+    e_eFSS_COREML_RES_CLBCKREADERR,
+    e_eFSS_COREML_RES_CLBCKCRCERR,
+    e_eFSS_COREML_RES_WRITENOMATCHREAD,
+}e_eFSS_COREML_RES;
 
 typedef struct
 {
-    uint32_t    uTotPages;
-    uint32_t    uPagesLen;
-    uint32_t    uRWERetry;
-}t_eFSS_CORELL_StorSet;
-
-typedef struct
-{
-    bool_t   bIsInit;
-    t_eFSS_TYPE_CbCtx tCtxCb;
-    t_eFSS_CORELL_StorSet tStorSett;
-	uint8_t* puBuf1;
-	uint32_t uBuf1L;
-	uint8_t* puBuf2;
-	uint32_t uBuf2L;
-}t_eFSS_CORELL_Ctx;
+    t_eFSS_CORELL_Ctx tCORELLCtx;
+}t_eFSS_COREML_Ctx;
 
 
 
@@ -89,7 +76,7 @@ typedef struct
  *		        e_eFSS_LOGC_RES_BADPARAM      - In case of an invalid parameter passed to the function
  *              e_eFSS_LOGC_RES_OK            - Operation ended correctly
  */
-e_eFSS_CORELL_RES eFSS_CORELL_InitCtx(t_eFSS_CORELL_Ctx* const p_ptCtx, t_eFSS_TYPE_CbCtx const p_tCtxCb,
+e_eFSS_COREML_RES eFSS_COREML_InitCtx(t_eFSS_COREML_Ctx* const p_ptCtx, t_eFSS_TYPE_CbCtx const p_tCtxCb,
 									  t_eFSS_CORELL_StorSet p_tStorSet, uint8_t* const p_puBuff, uint32_t p_uBuffL);
 
 /**
@@ -101,7 +88,7 @@ e_eFSS_CORELL_RES eFSS_CORELL_InitCtx(t_eFSS_CORELL_Ctx* const p_ptCtx, t_eFSS_T
  * @return      e_eFSS_LOGC_RES_BADPOINTER    - In case of bad pointer passed to the function
  *              e_eFSS_LOGC_RES_OK            - Operation ended correctly
  */
-e_eFSS_CORELL_RES eFSS_CORELL_IsInit(t_eFSS_CORELL_Ctx* const p_ptCtx, bool_t* p_pbIsInit);
+e_eFSS_COREML_RES eFSS_COREML_IsInit(t_eFSS_COREML_Ctx* const p_ptCtx, bool_t* p_pbIsInit);
 
 /**
  * @brief       Check if the lib is initialized
@@ -112,7 +99,7 @@ e_eFSS_CORELL_RES eFSS_CORELL_IsInit(t_eFSS_CORELL_Ctx* const p_ptCtx, bool_t* p
  * @return      e_eFSS_LOGC_RES_BADPOINTER    - In case of bad pointer passed to the function
  *              e_eFSS_LOGC_RES_OK            - Operation ended correctly
  */
-e_eFSS_CORELL_RES eFSS_CORELL_GetBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFTYPE p_tBuffType,
+e_eFSS_COREML_RES eFSS_COREML_GetBuff(t_eFSS_COREML_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFTYPE p_tBuffType,
 								      uint8_t** p_ppuBuff, uint32_t* p_puBuffL);
 
 /**
@@ -124,8 +111,8 @@ e_eFSS_CORELL_RES eFSS_CORELL_GetBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e_eFSS_C
  * @return      e_eFSS_LOGC_RES_BADPOINTER    - In case of bad pointer passed to the function
  *              e_eFSS_LOGC_RES_OK            - Operation ended correctly
  */
-e_eFSS_CORELL_RES eFSS_CORELL_LoadPageInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFTYPE p_tBuffType,
-								             const uint32_t p_uPageIndx);
+e_eFSS_COREML_RES eFSS_COREML_LoadPageInBuffNChkCrc(t_eFSS_COREML_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFTYPE p_tBuffType,
+								                    const uint32_t p_uPageIndx);
 
 /**
  * @brief       Check if the lib is initialized
@@ -136,8 +123,8 @@ e_eFSS_CORELL_RES eFSS_CORELL_LoadPageInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e
  * @return      e_eFSS_LOGC_RES_BADPOINTER    - In case of bad pointer passed to the function
  *              e_eFSS_LOGC_RES_OK            - Operation ended correctly
  */
-e_eFSS_CORELL_RES eFSS_CORELL_FlushBuffInPage(t_eFSS_CORELL_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFTYPE p_tBuffType,
-								              const uint32_t p_uPageIndx);
+e_eFSS_COREML_RES eFSS_COREML_FlushBuffWUpdCrcInPage(t_eFSS_COREML_Ctx* const p_ptCtx,
+                                                     e_eFSS_CORELL_BUFTYPE p_tBuffType, const uint32_t p_uPageIndx);
 
 #ifdef __cplusplus
 } /* extern "C" */
