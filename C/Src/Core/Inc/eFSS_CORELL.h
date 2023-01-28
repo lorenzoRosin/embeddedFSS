@@ -161,7 +161,7 @@ e_eFSS_CORELL_RES eFSS_CORELL_LoadPageInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e
  *		        e_eFSS_CORELL_RES_CLBCKREADERR     - The read callback reported an error
  *		        e_eFSS_CORELL_RES_CLBCKERASEERR    - The erase callback reported an error
  *		        e_eFSS_CORELL_RES_CLBCKWRITEERR    - The write callback reported an error
-  *		        e_eFSS_CORELL_RES_WRITENOMATCHREAD - Writen data dosent match what requested
+ *		        e_eFSS_CORELL_RES_WRITENOMATCHREAD - Writen data dosent match what requested
  *              e_eFSS_CORELL_RES_OK               - Operation ended correctly
  */
 e_eFSS_CORELL_RES eFSS_CORELL_FlushBuffInPage(t_eFSS_CORELL_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFTYPE p_eBuffType,
