@@ -112,6 +112,17 @@ e_eFSS_CORELL_RES eFSS_CORELL_IsInit(t_eFSS_CORELL_Ctx* const p_ptCtx, bool_t* p
  * @return      e_eFSS_LOGC_RES_BADPOINTER    - In case of bad pointer passed to the function
  *              e_eFSS_LOGC_RES_OK            - Operation ended correctly
  */
+e_eFSS_CORELL_RES eFSS_CORELL_GetStorSett(t_eFSS_CORELL_Ctx* const p_ptCtx, uint32_t* p_puPageL, uint32_t* p_puNPage);
+
+/**
+ * @brief       Check if the lib is initialized
+ *
+ * @param[in]   p_ptCtx       - Log Core context
+ * @param[out]  p_pbIsInit    - Pointer to a bool_t variable that will be filled with true if the lib is initialized
+ *
+ * @return      e_eFSS_LOGC_RES_BADPOINTER    - In case of bad pointer passed to the function
+ *              e_eFSS_LOGC_RES_OK            - Operation ended correctly
+ */
 e_eFSS_CORELL_RES eFSS_CORELL_GetBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFTYPE p_tBuffType,
 								      uint8_t** p_ppuBuff, uint32_t* p_puBuffL);
 
@@ -138,6 +149,18 @@ e_eFSS_CORELL_RES eFSS_CORELL_LoadPageInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e
  */
 e_eFSS_CORELL_RES eFSS_CORELL_FlushBuffInPage(t_eFSS_CORELL_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFTYPE p_tBuffType,
 								              const uint32_t p_uPageIndx);
+
+/**
+ * @brief       Check if the lib is initialized
+ *
+ * @param[in]   p_ptCtx       - Log Core context
+ * @param[out]  p_pbIsInit    - Pointer to a bool_t variable that will be filled with true if the lib is initialized
+ *
+ * @return      e_eFSS_LOGC_RES_BADPOINTER    - In case of bad pointer passed to the function
+ *              e_eFSS_LOGC_RES_OK            - Operation ended correctly
+ */
+e_eFSS_CORELL_RES eFSS_CalcCrcInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFTYPE p_tBuffType,
+								     uint32_t p_uCrcSeed, uint32_t p_uLenCalc, uint32_t* p_puCrc);
 
 #ifdef __cplusplus
 } /* extern "C" */

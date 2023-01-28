@@ -7,8 +7,8 @@
  *
  **********************************************************************************************************************/
 
-#ifndef EFSS_CORELL_H
-#define EFSS_CORELL_H
+#ifndef EFSS_COREML_H
+#define EFSS_COREML_H
 
 
 
@@ -132,4 +132,4 @@ e_eFSS_COREML_RES eFSS_COREML_FlushBuffWUpdCrcInPage(t_eFSS_COREML_Ctx* const p_
 
 
 
-#endif /* EFSS_CORELL_H */
+#endif /* EFSS_COREML_H */

@@ -112,6 +112,64 @@ e_eFSS_CORELL_RES eFSS_CORELL_IsInit(t_eFSS_CORELL_Ctx* const p_ptCtx, bool_t* p
 	return l_eRes;
 }
 
+
+e_eFSS_CORELL_RES eFSS_CORELL_GetStorSett(t_eFSS_CORELL_Ctx* const p_ptCtx, uint32_t* p_puPageL, uint32_t* p_puNPage)
+{
+	/* Local variable */
+	e_eFSS_CORELL_RES l_eRes;
+
+	/* Check pointer validity */
+	if( ( NULL == p_ptCtx ) || ( NULL == p_ppuBuff ) || ( NULL == p_puBuffL ) )
+	{
+		l_eRes = e_eFSS_CORELL_RES_BADPOINTER;
+	}
+	else
+	{
+		/* Check Init */
+		if( false == p_ptCtx->bIsInit )
+		{
+			l_eRes = e_eFSS_CORELL_RES_NOINITLIB;
+		}
+		else
+		{
+            /* Check internal status validity */
+            if( false == eFSS_CORELL_IsStatusStillCoherent(p_ptCtx) )
+            {
+                l_eRes = e_eFSS_CORELL_RES_CORRUPTCTX;
+            }
+            else
+            {
+				switch(p_tBuffType)
+				{
+					case e_eFSS_CORELL_BUFTYPE_1:
+					{
+						*p_ppuBuff = p_ptCtx->puBuf1;
+						*p_puBuffL = p_ptCtx->uBuf1L;
+						l_eRes = e_eFSS_LOGC_RES_OK;
+						break;
+					}
+
+					case e_eFSS_CORELL_BUFTYPE_2:
+					{
+						*p_ppuBuff = p_ptCtx->puBuf2;
+						*p_puBuffL = p_ptCtx->uBuf2L;
+						l_eRes = e_eFSS_LOGC_RES_OK;
+						break;
+					}
+
+					default:
+					{
+						l_eRes = e_eFSS_CORELL_RES_BADPARAM;
+						break;
+					}
+				}
+            }
+		}
+	}
+
+	return l_eRes;   
+}
+
 e_eFSS_CORELL_RES eFSS_CORELL_GetBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFTYPE p_tBuffType,
 								      uint8_t** p_ppuBuff, uint32_t* p_puBuffL)
 {
@@ -407,6 +465,11 @@ e_eFSS_CORELL_RES eFSS_CORELL_FlushBuffInPage(t_eFSS_CORELL_Ctx* const p_ptCtx, 
 	return l_eRes;
 }
 
+e_eFSS_CORELL_RES eFSS_CalcCrcInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFTYPE p_tBuffType,
+								     uint32_t p_uCrcSeed, uint32_t p_uLenCalc, uint32_t* p_puCrc)
+{
+
+}
 
 
 /***********************************************************************************************************************
