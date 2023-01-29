@@ -32,6 +32,7 @@ typedef enum
 {
     e_eFSS_COREML_RES_OK = 0,
     e_eFSS_COREML_RES_NOTVALIDPAGE,
+    e_eFSS_COREML_RES_NEWVERSIONFOUND,
     e_eFSS_COREML_RES_NOINITLIB,
     e_eFSS_COREML_RES_BADPARAM,
     e_eFSS_COREML_RES_BADPOINTER,
@@ -65,7 +66,8 @@ typedef struct
  *
  * @param[in]   p_ptCtx          - Medium Level Log Core context
  * @param[in]   p_tCtxCb         - All callback collection context
- * @param[in]   p_tStorSet       - Storage settings
+ * @param[in]   p_tStorSetLL     - Storage settings LL
+ * @param[in]   p_tStorSetML     - Storage settings ML
  * @param[in]   p_puBuff         - Pointer to a buffer used by the modules to make calc
  * @param[in]   p_uBuffL         - Size of p_puBuff
  *
@@ -74,7 +76,7 @@ typedef struct
  *              e_eFSS_COREML_RES_OK            - Operation ended correctly
  */
 e_eFSS_COREML_RES eFSS_COREML_InitCtx(t_eFSS_COREML_Ctx* const p_ptCtx, t_eFSS_TYPE_CbCtx const p_tCtxCb,
-									  t_eFSS_CORELL_StorSet p_tStorSetLL, t_eFSS_CORELL_StorSet p_tStorSetML,
+									  t_eFSS_CORELL_StorSet p_tStorSetLL, t_eFSS_COREML_StorSet p_tStorSetML,
                                       uint8_t* const p_puBuff, uint32_t p_uBuffL);
 /**
  * @brief       Check if the lib is initialized
@@ -99,7 +101,8 @@ e_eFSS_COREML_RES eFSS_COREML_IsInit(t_eFSS_COREML_Ctx* const p_ptCtx, bool_t* p
  *		        e_eFSS_COREML_RES_NOINITLIB     - Need to init lib before calling function
  *              e_eFSS_COREML_RES_OK            - Operation ended correctly
  */
-e_eFSS_COREML_RES eFSS_COREML_GetStorSett(t_eFSS_COREML_Ctx* const p_ptCtx, uint32_t* p_puDataL, uint32_t* p_puNPage);
+e_eFSS_COREML_RES eFSS_COREML_GetStorSett(t_eFSS_COREML_Ctx* const p_ptCtx, uint32_t* p_puDataL, uint32_t* p_puNPage,
+                                          uint8_t* p_puPageType, uint16_t* p_puPageVersion);
 
 /**
  * @brief       Get reference to one of the two internal buffer
@@ -132,7 +135,7 @@ e_eFSS_COREML_RES eFSS_COREML_GetBuff(t_eFSS_COREML_Ctx* const p_ptCtx, e_eFSS_C
  *		        e_eFSS_COREML_RES_CLBCKREADERR  - The read callback reported an error
  *              e_eFSS_COREML_RES_OK            - Operation ended correctly
  */
-e_eFSS_COREML_RES eFSS_COREML_LoadPageInBuffNChkCrc(t_eFSS_COREML_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFTYPE p_eBuffType,
+e_eFSS_COREML_RES eFSS_COREML_LoadPageInBuffNChkVal(t_eFSS_COREML_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFTYPE p_eBuffType,
 								                    const uint32_t p_uPageIndx);
 
 /**
@@ -153,7 +156,7 @@ e_eFSS_COREML_RES eFSS_COREML_LoadPageInBuffNChkCrc(t_eFSS_COREML_Ctx* const p_p
  *		        e_eFSS_COREML_RES_WRITENOMATCHREAD - Writen data dosent match what requested
  *              e_eFSS_COREML_RES_OK               - Operation ended correctly
  */
-e_eFSS_COREML_RES eFSS_COREML_FlushBuffWUpdCrcInPage(t_eFSS_COREML_Ctx* const p_ptCtx,
+e_eFSS_COREML_RES eFSS_COREML_FlushBuffWUpdValInPage(t_eFSS_COREML_Ctx* const p_ptCtx,
                                                      e_eFSS_CORELL_BUFTYPE p_eBuffType, const uint32_t p_uPageIndx);
 
 /**
