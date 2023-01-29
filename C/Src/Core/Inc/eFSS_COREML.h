@@ -124,7 +124,7 @@ e_eFSS_COREML_RES eFSS_COREML_GetBuff(t_eFSS_COREML_Ctx* const p_ptCtx, e_eFSS_C
  *		        e_eFSS_COREML_RES_CLBCKREADERR  - The read callback reported an error
  *              e_eFSS_COREML_RES_OK            - Operation ended correctly
  */
-e_eFSS_COREML_RES eFSS_COREML_LoadPageInBuffNChkCrc(t_eFSS_COREML_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFTYPE p_tBuffType,
+e_eFSS_COREML_RES eFSS_COREML_LoadPageInBuffNChkCrc(t_eFSS_COREML_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFTYPE p_eBuffType,
 								                    const uint32_t p_uPageIndx);
 
 /**
@@ -146,7 +146,7 @@ e_eFSS_COREML_RES eFSS_COREML_LoadPageInBuffNChkCrc(t_eFSS_COREML_Ctx* const p_p
  *              e_eFSS_COREML_RES_OK               - Operation ended correctly
  */
 e_eFSS_COREML_RES eFSS_COREML_FlushBuffWUpdCrcInPage(t_eFSS_COREML_Ctx* const p_ptCtx,
-                                                     e_eFSS_CORELL_BUFTYPE p_tBuffType, const uint32_t p_uPageIndx);
+                                                     e_eFSS_CORELL_BUFTYPE p_eBuffType, const uint32_t p_uPageIndx);
 
 /**
  * @brief       Calculate the Crc of the data present in the choosen buffer. Can also select to calculate the crc of
