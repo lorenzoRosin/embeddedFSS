@@ -1,14 +1,14 @@
 /**
- * @file       eFSS_LOGC.h
+ * @file       eFSS_COREHL.h
  *
- * @brief      LOG Core module
+ * @brief      High level core module
  *
  * @author     Lorenzo Rosin
  *
  **********************************************************************************************************************/
 
-#ifndef EFSS_LOGC_H
-#define EFSS_LOGC_H
+#ifndef EFSS_COREHL_H
+#define EFSS_COREHL_H
 
 
 
@@ -21,42 +21,33 @@ extern "C" {
 /***********************************************************************************************************************
  *      INCLUDES
  **********************************************************************************************************************/
-#include "eFSS_UTILSHLPRV.h"
+#include "eFSS_COREML.h"
 
 
 
 /***********************************************************************************************************************
- *      PRIVATE TYPEDEFS
+ *      PUBLIC TYPEDEFS
  **********************************************************************************************************************/
 typedef enum
 {
-    e_eFSS_LOGC_RES_OK = 0,
-    e_eFSS_LOGC_RES_OK_BKP_RCVRD,
-    e_eFSS_LOGC_RES_NOTVALIDLOG,
-    e_eFSS_LOGC_RES_NEWVERSIONLOG,
-    e_eFSS_LOGC_RES_NOINITLIB,
-    e_eFSS_LOGC_RES_BADPARAM,
-    e_eFSS_LOGC_RES_BADPOINTER,
-    e_eFSS_LOGC_RES_CORRUPTCTX,
-    e_eFSS_LOGC_RES_CLBCKERASEERR,
-    e_eFSS_LOGC_RES_CLBCKWRITEERR,
-    e_eFSS_LOGC_RES_CLBCKREADERR,
-    e_eFSS_LOGC_RES_CLBCKCRCERR,
-    e_eFSS_LOGC_RES_WRITENOMATCHREAD,
-}e_eFSS_LOGC_RES;
+    e_eFSS_COREHL_RES_OK = 0,
+    e_eFSS_COREHL_RES_NOTVALIDPAGE,
+    e_eFSS_COREHL_RES_NEWVERSIONFOUND,
+    e_eFSS_COREHL_RES_NOINITLIB,
+    e_eFSS_COREHL_RES_BADPARAM,
+    e_eFSS_COREHL_RES_BADPOINTER,
+    e_eFSS_COREHL_RES_CORRUPTCTX,
+    e_eFSS_COREHL_RES_CLBCKERASEERR,
+    e_eFSS_COREHL_RES_CLBCKWRITEERR,
+    e_eFSS_COREHL_RES_CLBCKREADERR,
+    e_eFSS_COREHL_RES_CLBCKCRCERR,
+    e_eFSS_COREHL_RES_WRITENOMATCHREAD,
+}e_eFSS_COREHL_RES;
 
 typedef struct
 {
-    bool_t   bIsInit;
-    t_eFSS_TYPE_CbCtx tCtxCb;
-    t_eFSS_TYPE_StorageSettings tStorSett;
-	uint8_t* puBuf;
-	uint32_t uBufL;
-    uint32_t uNewPagIdx;
-    uint32_t uFullFilledP;
-    bool_t bFlashCache;
-    bool_t bFullBckup;
-}t_eFSS_LOGC_Ctx;
+    t_eFSS_COREML_Ctx tCOREMLCtx;
+}t_eFSS_COREHL_Ctx;
 
 
 
@@ -64,148 +55,122 @@ typedef struct
  * GLOBAL PROTOTYPES
  **********************************************************************************************************************/
 /**
- * @brief       Initialize the Log Core module context
+ * @brief       Initialize the High Level Core Module context
  *
- * @param[in]   p_ptCtx          - Log Core context
+ * @param[in]   p_ptCtx          - High Level Log Core context
  * @param[in]   p_tCtxCb         - All callback collection context
+ * @param[in]   p_tStorSetLL     - Storage settings LL
+ * @param[in]   p_tStorSetML     - Storage settings ML
  * @param[in]   p_puBuff         - Pointer to a buffer used by the modules to make calc
  * @param[in]   p_uBuffL         - Size of p_puBuff
- * @param[in]   p_tStorSet       - Storage settings
- * @param[in]   p_bFlashCache    - Use flash as cache for storing and resuming index
- * @param[in]   p_bFullBckup     - Save every log data in a backup pages
  *
- * @return      e_eFSS_LOGC_RES_BADPOINTER    - In case of bad pointer passed to the function
- *		        e_eFSS_LOGC_RES_BADPARAM      - In case of an invalid parameter passed to the function
- *              e_eFSS_LOGC_RES_OK            - Operation ended correctly
+ * @return      e_eFSS_COREML_RES_BADPOINTER    - In case of bad pointer passed to the function
+ *		        e_eFSS_COREML_RES_BADPARAM      - In case of an invalid parameter passed to the function
+ *              e_eFSS_COREML_RES_OK            - Operation ended correctly
  */
-e_eFSS_LOGC_RES eFSS_LOGC_InitCtx(t_eFSS_LOGC_Ctx* const p_ptCtx, t_eFSS_TYPE_CbCtx const p_tCtxCb,
-                                  uint8_t* const p_puBuff, uint32_t p_uBuffL, t_eFSS_TYPE_StorageSettings p_tStorSet,
-                                  bool_t p_bFlashCache, bool_t p_bFullBckup);
-
+e_eFSS_COREHL_RES eFSS_COREML_InitCtx(t_eFSS_COREHL_Ctx* const p_ptCtx, t_eFSS_TYPE_CbCtx const p_tCtxCb,
+									  t_eFSS_CORELL_StorSet p_tStorSetLL, t_eFSS_COREML_StorSet p_tStorSetML,
+                                      uint8_t* const p_puBuff, uint32_t p_uBuffL);
 /**
  * @brief       Check if the lib is initialized
  *
- * @param[in]   p_ptCtx       - Log Core context
+ * @param[in]   p_ptCtx       - High Level Log Core context
  * @param[out]  p_pbIsInit    - Pointer to a bool_t variable that will be filled with true if the lib is initialized
  *
- * @return      e_eFSS_LOGC_RES_BADPOINTER    - In case of bad pointer passed to the function
- *              e_eFSS_LOGC_RES_OK            - Operation ended correctly
+ * @return      e_eFSS_COREML_RES_BADPOINTER    - In case of bad pointer passed to the function
+ *              e_eFSS_COREML_RES_OK            - Operation ended correctly
  */
-e_eFSS_LOGC_RES eFSS_LOGC_IsInit(t_eFSS_LOGC_Ctx* const p_ptCtx, bool_t* p_pbIsInit);
+e_eFSS_COREHL_RES eFSS_COREML_IsInit(t_eFSS_COREHL_Ctx* const p_ptCtx, bool_t* p_pbIsInit);
 
 /**
- * @brief       Get the status of the storage. This operation will restore any corrupted information if possible.
- *              In the case it's not possible to restore corrupted contex e_eFSS_LOGC_RES_NOTVALIDLOG will be returned.
- *              When e_eFSS_LOGC_RES_NOTVALIDLOG is returned we need to call eFSS_LOGC_Format in order to format the
- *              storage area because no other operation is possible.
+ * @brief       Get storage settings
  *
- * @param[in]   p_ptCtx       - Log context
+ * @param[in]   p_ptCtx       - High Level Log Core context
+ * @param[out]  p_puDataL     - Pointer to a uint32_t variable that will be filled with the usable data lenght
+ * @param[out]  p_puNPage     - Pointer to a uint32_t variable that will be filled with the numbers of page
  *
- * @return      e_eFSS_LOGC_RES_BADPOINTER         - In case of bad pointer passed to the function
- *              e_eFSS_LOGC_RES_OK                 - Operation ended correctly
- *              e_eFSS_LOGC_RES_OK_BKP_RCVRD       - All ok, but some page where recovered
- *              e_eFSS_LOGC_RES_NOTVALIDLOG        - No valid log founded
- *              e_eFSS_LOGC_RES_NEWVERSIONLOG      - New version of the blob requested
- *              e_eFSS_LOGC_RES_NOINITLIB          - Need to init the lib before calling this function
- *              e_eFSS_LOGC_RES_CORRUPTCTX         - Context is corrupted
- *              e_eFSS_LOGC_RES_CLBCKERASEERR      - Erase callback returned error
- *              e_eFSS_LOGC_RES_CLBCKWRITEERR      - Write callback returned error
- *              e_eFSS_LOGC_RES_CLBCKREADERR       - Read callback returned error
- *              e_eFSS_LOGC_RES_CLBCKCRCERR        - Crc callback returned error
- *              e_eFSS_LOGC_RES_WRITENOMATCHREAD   - After Write operation the Read operation readed different data
+ * @return      e_eFSS_COREML_RES_BADPOINTER    - In case of bad pointer passed to the function
+ *		        e_eFSS_COREML_RES_CORRUPTCTX    - Context is corrupted
+ *		        e_eFSS_COREML_RES_NOINITLIB     - Need to init lib before calling function
+ *              e_eFSS_COREML_RES_OK            - Operation ended correctly
  */
-e_eFSS_LOGC_RES eFSS_LOGC_GetStorageStatus(t_eFSS_LOGC_Ctx* const p_ptCtx);
+e_eFSS_COREHL_RES eFSS_COREML_GetStorSett(t_eFSS_COREHL_Ctx* const p_ptCtx, uint32_t* p_puDataL, uint32_t* p_puNPage,
+                                          uint8_t* p_puPageType, uint16_t* p_puPageVersion);
 
 /**
- * @brief       Get info about the stored log
+ * @brief       Get reference to one of the two internal buffer
  *
- * @param[in]   p_ptCtx       - Log context
- * @param[out]  p_puNewLogI   - Pointer to a uint32_t that will be filled with the New log index
- * @param[out]  p_puOldLogI   - Pointer to a uint32_t that will be filled with the Old log index
- * @param[out]  p_puNpageUsed - Pointer to a uint32_t that will be filled with the number of valorized page
- * @param[out]  p_puLogVer    - Pointer to a uint32_t that will be filled with the version of the log
+ * @param[in]   p_ptCtx       - High Level Log Core context
+ * @param[in]   p_eBuffType   - Enum used to select wich buffer we want to select
+ * @param[out]  p_ppuBuff     - Pointer to a Pointer pointing to the p_eBuffType buffer
+ * @param[out]  p_puBuffL     - Pointer to a uint32_t variable where the size of p_ppuBuff buffer will be placed
  *
- * @return      e_eFSS_LOGC_RES_BADPOINTER         - In case of bad pointer passed to the function
- *              e_eFSS_LOGC_RES_OK                 - Operation ended correctly
- *              e_eFSS_LOGC_RES_OK_BKP_RCVRD       - All ok, but some page where recovered
- *              e_eFSS_LOGC_RES_NOTVALIDBLOB       - No valid blob founded
- *              e_eFSS_LOGC_RES_NEWVERSIONLOG      - New version of the blob requested
- *              e_eFSS_LOGC_RES_NOINITLIB          - Need to init the lib before calling this function
- *              e_eFSS_LOGC_RES_CORRUPTCTX         - Context is corrupted
- *              e_eFSS_LOGC_RES_CLBCKERASEERR      - Erase callback returned error
- *              e_eFSS_LOGC_RES_CLBCKWRITEERR      - Write callback returned error
- *              e_eFSS_LOGC_RES_CLBCKREADERR       - Read callback returned error
- *              e_eFSS_LOGC_RES_CLBCKCRCERR        - Crc callback returned error
- *              e_eFSS_LOGC_RES_WRITENOMATCHREAD   - After Write operation the Read operation readed different data
+ * @return      e_eFSS_COREML_RES_BADPOINTER    - In case of bad pointer passed to the function
+ *		        e_eFSS_COREML_RES_BADPARAM      - In case of an invalid parameter passed to the function
+ *		        e_eFSS_COREML_RES_CORRUPTCTX    - Context is corrupted
+ *		        e_eFSS_COREML_RES_NOINITLIB     - Need to init lib before calling function
+ *              e_eFSS_COREML_RES_OK            - Operation ended correctly
  */
-e_eFSS_LOGC_RES eFSS_LOGC_GetLogInfo(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t *p_puNewLogI, uint32_t *p_puOldLogI,
-                                     uint32_t *p_puNpageUsed, uint32_t *p_puLogVer);
+e_eFSS_COREHL_RES eFSS_COREML_GetBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFTYPE p_eBuffType,
+								      uint8_t** p_ppuBuff, uint32_t* p_puBuffL);
 
 /**
- * @brief       Format the memory used for the log, previous data, if present, will be lost.
+ * @brief       Load a page from the storage area in one of he two internal buffer
  *
- * @param[in]   p_ptCtx       - Log context
+ * @param[in]   p_ptCtx       - High Level Log Core context
+ * @param[in]   p_eBuffType   - Enum used to select wich buffer we want to select
+ * @param[in]   p_uPageIndx   - uint32_t index rappresenting the page that we want to load from storage
  *
- * @return      e_eFSS_LOGC_RES_BADPOINTER         - In case of bad pointer passed to the function
- *              e_eFSS_LOGC_RES_OK                 - Operation ended correctly
- *              e_eFSS_LOGC_RES_OK_BKP_RCVRD       - All ok, but some page where recovered
- *              e_eFSS_LOGC_RES_NOTVALIDBLOB       - No valid blob founded
- *              e_eFSS_LOGC_RES_NEWVERSIONLOG      - New version of the blob requested
- *              e_eFSS_LOGC_RES_NOINITLIB          - Need to init the lib before calling this function
- *              e_eFSS_LOGC_RES_CORRUPTCTX         - Context is corrupted
- *              e_eFSS_LOGC_RES_CLBCKERASEERR      - Erase callback returned error
- *              e_eFSS_LOGC_RES_CLBCKWRITEERR      - Write callback returned error
- *              e_eFSS_LOGC_RES_CLBCKREADERR       - Read callback returned error
- *              e_eFSS_LOGC_RES_CLBCKCRCERR        - Crc callback returned error
- *              e_eFSS_LOGC_RES_WRITENOMATCHREAD   - After Write operation the Read operation readed different data
+ * @return      e_eFSS_COREML_RES_BADPOINTER    - In case of bad pointer passed to the function
+ *		        e_eFSS_COREML_RES_BADPARAM      - In case of an invalid parameter passed to the function
+ *		        e_eFSS_COREML_RES_CORRUPTCTX    - Context is corrupted
+ *		        e_eFSS_COREML_RES_NOINITLIB     - Need to init lib before calling function
+ *		        e_eFSS_COREML_RES_CLBCKREADERR  - The read callback reported an error
+ *              e_eFSS_COREML_RES_OK            - Operation ended correctly
  */
-e_eFSS_LOGC_RES eFSS_LOGC_Format(t_eFSS_LOGC_Ctx* const p_ptCtx);
+e_eFSS_COREHL_RES eFSS_COREML_LoadPageInBuffNChkVal(t_eFSS_COREHL_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFTYPE p_eBuffType,
+								                    const uint32_t p_uPageIndx);
 
 /**
- * @brief       Get all the log present on a specific page
+ * @brief       Flush one of the two buffer in the storage are. Keep in mine that the other buffer well be used
+ *              to check if the data was flushed corretly, and after this operation will contains different value.
  *
- * @param[in]   p_ptCtx        - Log context
- * @param[in]   p_uindx        - Index to get data from
- * @param[in]   p_puBuf        - Pointer to the buffer where founded log will be stored
- * @param[in]   p_uBufL        - Size fo the p_puLogBuf buffer
+ * @param[in]   p_ptCtx       - High Level Log Core context
+ * @param[in]   p_eBuffType   - Enum used to select wich buffer we want to select
+ * @param[in]   p_uPageIndx   - uint32_t index rappresenting the page that we want to flush in storage
  *
- * @return      e_eFSS_LOGC_RES_BADPOINTER         - In case of bad pointer passed to the function
- *              e_eFSS_LOGC_RES_OK                 - Operation ended correctly
- *              e_eFSS_LOGC_RES_OK_BKP_RCVRD       - All ok, but some page where recovered
- *              e_eFSS_LOGC_RES_NOTVALIDBLOB       - No valid blob founded
- *              e_eFSS_LOGC_RES_NEWVERSIONLOG      - New version of the blob requested
- *              e_eFSS_LOGC_RES_NOINITLIB          - Need to init the lib before calling this function
- *              e_eFSS_LOGC_RES_CORRUPTCTX         - Context is corrupted
- *              e_eFSS_LOGC_RES_CLBCKERASEERR      - Erase callback returned error
- *              e_eFSS_LOGC_RES_CLBCKWRITEERR      - Write callback returned error
- *              e_eFSS_LOGC_RES_CLBCKREADERR       - Read callback returned error
- *              e_eFSS_LOGC_RES_CLBCKCRCERR        - Crc callback returned error
- *              e_eFSS_LOGC_RES_WRITENOMATCHREAD   - After Write operation the Read operation readed different data
+ * @return      e_eFSS_COREML_RES_BADPOINTER       - In case of bad pointer passed to the function
+ *		        e_eFSS_COREML_RES_BADPARAM         - In case of an invalid parameter passed to the function
+ *		        e_eFSS_COREML_RES_CORRUPTCTX       - Context is corrupted
+ *		        e_eFSS_COREML_RES_NOINITLIB        - Need to init lib before calling function
+ *		        e_eFSS_COREML_RES_CLBCKREADERR     - The read callback reported an error
+ *		        e_eFSS_COREML_RES_CLBCKERASEERR    - The erase callback reported an error
+ *		        e_eFSS_COREML_RES_CLBCKWRITEERR    - The write callback reported an error
+ *		        e_eFSS_COREML_RES_WRITENOMATCHREAD - Writen data dosent match what requested
+ *              e_eFSS_COREML_RES_OK               - Operation ended correctly
  */
-e_eFSS_LOGC_RES eFSS_LOGC_GetLogOfASpecificPage(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t p_uindx, uint8_t* p_puBuf,
-                                                uint32_t* p_uBufL);
+e_eFSS_COREHL_RES eFSS_COREML_FlushBuffWUpdValInPage(t_eFSS_COREHL_Ctx* const p_ptCtx,
+                                                     e_eFSS_CORELL_BUFTYPE p_eBuffType, const uint32_t p_uPageIndx);
 
 /**
- * @brief       Add a log
+ * @brief       Calculate the Crc of the data present in the choosen buffer. Can also select to calculate the crc of
+ *              a given numbers of bytes.
  *
- * @param[in]   p_ptCtx       - Log context
- * @param[in]   p_puLogToSave - Pointer to the buffer containing the log to store
- * @param[in]   p_uLogL       - Dimension in byte of the log to store
+ * @param[in]   p_ptCtx       - High Level Log Core context
+ * @param[in]   p_eBuffType   - Enum used to select wich buffer we want to select
+ * @param[in]   p_uCrcSeed    - uint32_t rappresenting the seed we want to use in the calc
+ * @param[in]   p_uLenCalc    - uint32_t rappresenting the lenght we want to calc
+ * @param[out]  p_puCrc       - Pointer to a uint32_t variable where the CRC calculated will be placed
  *
- * @return      e_eFSS_LOGC_RES_BADPOINTER         - In case of bad pointer passed to the function
- *              e_eFSS_LOGC_RES_OK                 - Operation ended correctly
- *              e_eFSS_LOGC_RES_OK_BKP_RCVRD       - All ok, but some page where recovered
- *              e_eFSS_LOGC_RES_NOTVALIDBLOB       - No valid blob founded
- *              e_eFSS_LOGC_RES_NEWVERSIONLOG      - New version of the blob requested
- *              e_eFSS_LOGC_RES_NOINITLIB          - Need to init the lib before calling this function
- *              e_eFSS_LOGC_RES_CORRUPTCTX         - Context is corrupted
- *              e_eFSS_LOGC_RES_CLBCKERASEERR      - Erase callback returned error
- *              e_eFSS_LOGC_RES_CLBCKWRITEERR      - Write callback returned error
- *              e_eFSS_LOGC_RES_CLBCKREADERR       - Read callback returned error
- *              e_eFSS_LOGC_RES_CLBCKCRCERR        - Crc callback returned error
- *              e_eFSS_LOGC_RES_WRITENOMATCHREAD   - After Write operation the Read operation readed different data
+ * @return      e_eFSS_COREML_RES_BADPOINTER       - In case of bad pointer passed to the function
+ *		        e_eFSS_COREML_RES_BADPARAM         - In case of an invalid parameter passed to the function
+ *		        e_eFSS_COREML_RES_CORRUPTCTX       - Context is corrupted
+ *		        e_eFSS_COREML_RES_NOINITLIB        - Need to init lib before calling function
+ *		        e_eFSS_COREML_RES_CLBCKCRCERR      - The CRC callback reported an error
+ *              e_eFSS_COREML_RES_OK               - Operation ended correctly
  */
-e_eFSS_LOGC_RES eFSS_LOGC_AddLog(t_eFSS_LOGC_Ctx* const p_ptCtx, uint8_t* p_puLogToSave, uint32_t p_uLogL);
+e_eFSS_COREHL_RES eFSS_COREML_CalcCrcInBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFTYPE p_eBuffType,
+								            uint32_t p_uCrcSeed, uint32_t p_uLenCalc, uint32_t* p_puCrc);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -213,4 +178,4 @@ e_eFSS_LOGC_RES eFSS_LOGC_AddLog(t_eFSS_LOGC_Ctx* const p_ptCtx, uint8_t* p_puLo
 
 
 
-#endif /* EFSS_LOGC_H */
+#endif /* EFSS_COREHL_H */

@@ -81,7 +81,7 @@ e_eFSS_COREML_RES eFSS_COREML_InitCtx(t_eFSS_COREML_Ctx* const p_ptCtx, t_eFSS_T
 /**
  * @brief       Check if the lib is initialized
  *
- * @param[in]   p_ptCtx       - Low Level Log Core context
+ * @param[in]   p_ptCtx       - Medium Level Log Core context
  * @param[out]  p_pbIsInit    - Pointer to a bool_t variable that will be filled with true if the lib is initialized
  *
  * @return      e_eFSS_COREML_RES_BADPOINTER    - In case of bad pointer passed to the function
@@ -92,7 +92,7 @@ e_eFSS_COREML_RES eFSS_COREML_IsInit(t_eFSS_COREML_Ctx* const p_ptCtx, bool_t* p
 /**
  * @brief       Get storage settings
  *
- * @param[in]   p_ptCtx       - Low Level Log Core context
+ * @param[in]   p_ptCtx       - Medium Level Log Core context
  * @param[out]  p_puDataL     - Pointer to a uint32_t variable that will be filled with the usable data lenght
  * @param[out]  p_puNPage     - Pointer to a uint32_t variable that will be filled with the numbers of page
  *
@@ -107,7 +107,7 @@ e_eFSS_COREML_RES eFSS_COREML_GetStorSett(t_eFSS_COREML_Ctx* const p_ptCtx, uint
 /**
  * @brief       Get reference to one of the two internal buffer
  *
- * @param[in]   p_ptCtx       - Low Level Log Core context
+ * @param[in]   p_ptCtx       - Medium Level Log Core context
  * @param[in]   p_eBuffType   - Enum used to select wich buffer we want to select
  * @param[out]  p_ppuBuff     - Pointer to a Pointer pointing to the p_eBuffType buffer
  * @param[out]  p_puBuffL     - Pointer to a uint32_t variable where the size of p_ppuBuff buffer will be placed
@@ -124,7 +124,7 @@ e_eFSS_COREML_RES eFSS_COREML_GetBuff(t_eFSS_COREML_Ctx* const p_ptCtx, e_eFSS_C
 /**
  * @brief       Load a page from the storage area in one of he two internal buffer
  *
- * @param[in]   p_ptCtx       - Low Level Log Core context
+ * @param[in]   p_ptCtx       - Medium Level Log Core context
  * @param[in]   p_eBuffType   - Enum used to select wich buffer we want to select
  * @param[in]   p_uPageIndx   - uint32_t index rappresenting the page that we want to load from storage
  *
@@ -142,7 +142,7 @@ e_eFSS_COREML_RES eFSS_COREML_LoadPageInBuffNChkVal(t_eFSS_COREML_Ctx* const p_p
  * @brief       Flush one of the two buffer in the storage are. Keep in mine that the other buffer well be used
  *              to check if the data was flushed corretly, and after this operation will contains different value.
  *
- * @param[in]   p_ptCtx       - Low Level Log Core context
+ * @param[in]   p_ptCtx       - Medium Level Log Core context
  * @param[in]   p_eBuffType   - Enum used to select wich buffer we want to select
  * @param[in]   p_uPageIndx   - uint32_t index rappresenting the page that we want to flush in storage
  *
@@ -163,7 +163,7 @@ e_eFSS_COREML_RES eFSS_COREML_FlushBuffWUpdValInPage(t_eFSS_COREML_Ctx* const p_
  * @brief       Calculate the Crc of the data present in the choosen buffer. Can also select to calculate the crc of
  *              a given numbers of bytes.
  *
- * @param[in]   p_ptCtx       - Low Level Log Core context
+ * @param[in]   p_ptCtx       - Medium Level Log Core context
  * @param[in]   p_eBuffType   - Enum used to select wich buffer we want to select
  * @param[in]   p_uCrcSeed    - uint32_t rappresenting the seed we want to use in the calc
  * @param[in]   p_uLenCalc    - uint32_t rappresenting the lenght we want to calc
