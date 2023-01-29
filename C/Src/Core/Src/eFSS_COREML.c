@@ -496,7 +496,7 @@ e_eFSS_COREML_RES eFSS_COREML_CalcCrcInBuff(t_eFSS_COREML_Ctx* const p_ptCtx, e_
                     if( e_eFSS_COREML_RES_OK == l_eRes )
                     {
                         /* Check data validity */
-                        if( p_uLenCalc > l_uBuffLLL - 11u)
+                        if( p_uLenCalc > l_uBuffLLL - 17u)
                         {
                             l_eRes = e_eFSS_COREML_RES_BADPARAM;
                         }

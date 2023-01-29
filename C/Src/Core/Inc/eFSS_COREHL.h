@@ -116,16 +116,16 @@ e_eFSS_COREHL_RES eFSS_COREHL_GetStorSett(t_eFSS_COREHL_Ctx* const p_ptCtx, uint
  * @param[in]   p_eBuffType   - Enum used to select wich buffer we want to select
  * @param[out]  p_ppuBuff     - Pointer to a Pointer pointing to the p_eBuffType buffer
  * @param[out]  p_puBuffL     - Pointer to a uint32_t variable where the size of p_ppuBuff buffer will be placed
- * @param[out]  p_ptMeta      - Pointer to a t_eFSS_COREHL_PageMeta variable where the metadata of the page will be 
+ * @param[out]  p_pptMeta     - Pointer to a t_eFSS_COREHL_PageMeta variable where the metadata of the page will be 
  *                              placed
  *
- * @return      e_eFSS_COREML_RES_BADPOINTER    - In case of bad pointer passed to the function
- *		        e_eFSS_COREML_RES_BADPARAM      - In case of an invalid parameter passed to the function
- *		        e_eFSS_COREML_RES_CORRUPTCTX    - Context is corrupted
- *		        e_eFSS_COREML_RES_NOINITLIB     - Need to init lib before calling function
- *              e_eFSS_COREML_RES_OK            - Operation ended correctly
+ * @return      e_eFSS_COREHL_RES_BADPOINTER    - In case of bad pointer passed to the function
+ *		        e_eFSS_COREHL_RES_BADPARAM      - In case of an invalid parameter passed to the function
+ *		        e_eFSS_COREHL_RES_CORRUPTCTX    - Context is corrupted
+ *		        e_eFSS_COREHL_RES_NOINITLIB     - Need to init lib before calling function
+ *              e_eFSS_COREHL_RES_OK            - Operation ended correctly
  */
-e_eFSS_COREHL_RES eFSS_COREML_GetBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFTYPE p_eBuffType,
+e_eFSS_COREHL_RES eFSS_COREHL_GetBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFTYPE p_eBuffType,
 								      uint8_t** p_ppuBuff, uint32_t* p_puBuffL, t_eFSS_COREHL_PageMeta** p_pptMeta);
 
 /**
@@ -135,14 +135,14 @@ e_eFSS_COREHL_RES eFSS_COREML_GetBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, e_eFSS_C
  * @param[in]   p_eBuffType   - Enum used to select wich buffer we want to select
  * @param[in]   p_uPageIndx   - uint32_t index rappresenting the page that we want to load from storage
  *
- * @return      e_eFSS_COREML_RES_BADPOINTER    - In case of bad pointer passed to the function
- *		        e_eFSS_COREML_RES_BADPARAM      - In case of an invalid parameter passed to the function
- *		        e_eFSS_COREML_RES_CORRUPTCTX    - Context is corrupted
- *		        e_eFSS_COREML_RES_NOINITLIB     - Need to init lib before calling function
- *		        e_eFSS_COREML_RES_CLBCKREADERR  - The read callback reported an error
- *              e_eFSS_COREML_RES_OK            - Operation ended correctly
+ * @return      e_eFSS_COREHL_RES_BADPOINTER    - In case of bad pointer passed to the function
+ *		        e_eFSS_COREHL_RES_BADPARAM      - In case of an invalid parameter passed to the function
+ *		        e_eFSS_COREHL_RES_CORRUPTCTX    - Context is corrupted
+ *		        e_eFSS_COREHL_RES_NOINITLIB     - Need to init lib before calling function
+ *		        e_eFSS_COREHL_RES_CLBCKREADERR  - The read callback reported an error
+ *              e_eFSS_COREHL_RES_OK            - Operation ended correctly
  */
-e_eFSS_COREHL_RES eFSS_COREML_LoadPageInBuffNChkVal(t_eFSS_COREHL_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFTYPE p_eBuffType,
+e_eFSS_COREHL_RES eFSS_COREHL_LoadPageInBuffNChkVal(t_eFSS_COREHL_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFTYPE p_eBuffType,
 								                    const uint32_t p_uPageIndx);
 
 /**
@@ -153,17 +153,17 @@ e_eFSS_COREHL_RES eFSS_COREML_LoadPageInBuffNChkVal(t_eFSS_COREHL_Ctx* const p_p
  * @param[in]   p_eBuffType   - Enum used to select wich buffer we want to select
  * @param[in]   p_uPageIndx   - uint32_t index rappresenting the page that we want to flush in storage
  *
- * @return      e_eFSS_COREML_RES_BADPOINTER       - In case of bad pointer passed to the function
- *		        e_eFSS_COREML_RES_BADPARAM         - In case of an invalid parameter passed to the function
- *		        e_eFSS_COREML_RES_CORRUPTCTX       - Context is corrupted
- *		        e_eFSS_COREML_RES_NOINITLIB        - Need to init lib before calling function
- *		        e_eFSS_COREML_RES_CLBCKREADERR     - The read callback reported an error
- *		        e_eFSS_COREML_RES_CLBCKERASEERR    - The erase callback reported an error
- *		        e_eFSS_COREML_RES_CLBCKWRITEERR    - The write callback reported an error
- *		        e_eFSS_COREML_RES_WRITENOMATCHREAD - Writen data dosent match what requested
- *              e_eFSS_COREML_RES_OK               - Operation ended correctly
+ * @return      e_eFSS_COREHL_RES_BADPOINTER       - In case of bad pointer passed to the function
+ *		        e_eFSS_COREHL_RES_BADPARAM         - In case of an invalid parameter passed to the function
+ *		        e_eFSS_COREHL_RES_CORRUPTCTX       - Context is corrupted
+ *		        e_eFSS_COREHL_RES_NOINITLIB        - Need to init lib before calling function
+ *		        e_eFSS_COREHL_RES_CLBCKREADERR     - The read callback reported an error
+ *		        e_eFSS_COREHL_RES_CLBCKERASEERR    - The erase callback reported an error
+ *		        e_eFSS_COREHL_RES_CLBCKWRITEERR    - The write callback reported an error
+ *		        e_eFSS_COREHL_RES_WRITENOMATCHREAD - Writen data dosent match what requested
+ *              e_eFSS_COREHL_RES_OK               - Operation ended correctly
  */
-e_eFSS_COREHL_RES eFSS_COREML_FlushBuffWUpdValInPage(t_eFSS_COREHL_Ctx* const p_ptCtx,
+e_eFSS_COREHL_RES eFSS_COREHL_FlushBuffWUpdValInPage(t_eFSS_COREHL_Ctx* const p_ptCtx,
                                                      e_eFSS_CORELL_BUFTYPE p_eBuffType, const uint32_t p_uPageIndx);
 
 /**
@@ -176,14 +176,14 @@ e_eFSS_COREHL_RES eFSS_COREML_FlushBuffWUpdValInPage(t_eFSS_COREHL_Ctx* const p_
  * @param[in]   p_uLenCalc    - uint32_t rappresenting the lenght we want to calc
  * @param[out]  p_puCrc       - Pointer to a uint32_t variable where the CRC calculated will be placed
  *
- * @return      e_eFSS_COREML_RES_BADPOINTER       - In case of bad pointer passed to the function
- *		        e_eFSS_COREML_RES_BADPARAM         - In case of an invalid parameter passed to the function
- *		        e_eFSS_COREML_RES_CORRUPTCTX       - Context is corrupted
- *		        e_eFSS_COREML_RES_NOINITLIB        - Need to init lib before calling function
- *		        e_eFSS_COREML_RES_CLBCKCRCERR      - The CRC callback reported an error
- *              e_eFSS_COREML_RES_OK               - Operation ended correctly
+ * @return      e_eFSS_COREHL_RES_BADPOINTER       - In case of bad pointer passed to the function
+ *		        e_eFSS_COREHL_RES_BADPARAM         - In case of an invalid parameter passed to the function
+ *		        e_eFSS_COREHL_RES_CORRUPTCTX       - Context is corrupted
+ *		        e_eFSS_COREHL_RES_NOINITLIB        - Need to init lib before calling function
+ *		        e_eFSS_COREHL_RES_CLBCKCRCERR      - The CRC callback reported an error
+ *              e_eFSS_COREHL_RES_OK               - Operation ended correctly
  */
-e_eFSS_COREHL_RES eFSS_COREML_CalcCrcInBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFTYPE p_eBuffType,
+e_eFSS_COREHL_RES eFSS_COREHL_CalcCrcInBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFTYPE p_eBuffType,
 								            uint32_t p_uCrcSeed, uint32_t p_uLenCalc, uint32_t* p_puCrc);
 
 #ifdef __cplusplus
