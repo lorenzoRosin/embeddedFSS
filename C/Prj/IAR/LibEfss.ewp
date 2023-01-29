@@ -350,14 +350,14 @@
                     <state>$PROJ_DIR$\..\..\Src</state>
                     <state>$PROJ_DIR$\..\..\Src\Blob\Inc</state>
                     <state>$PROJ_DIR$\..\..\Src\Blob\Src</state>
-                    <state>$PROJ_DIR$\..\..\Src\Core\Inc</state>
-                    <state>$PROJ_DIR$\..\..\Src\Core\Src</state>
+                    <state>$PROJ_DIR$\..\..\Src\CoreHL\Inc</state>
+                    <state>$PROJ_DIR$\..\..\Src\CoreHL\Src</state>
+                    <state>$PROJ_DIR$\..\..\Src\CoreLL\Inc</state>
+                    <state>$PROJ_DIR$\..\..\Src\CoreLL\Src</state>
                     <state>$PROJ_DIR$\..\..\Src\Db\Inc</state>
                     <state>$PROJ_DIR$\..\..\Src\Db\Src</state>
                     <state>$PROJ_DIR$\..\..\Src\Log\Inc</state>
                     <state>$PROJ_DIR$\..\..\Src\Log\Src</state>
-                    <state>$PROJ_DIR$\..\..\Src\Utils\Inc</state>
-                    <state>$PROJ_DIR$\..\..\Src\Utils\Src</state>
                 </option>
                 <option>
                     <name>CCStdIncCheck</name>
@@ -1105,47 +1105,89 @@
         </group>
     </group>
     <group>
-        <name>Core</name>
+        <name>CoreHL</name>
+        <excluded>
+            <configuration>Library</configuration>
+        </excluded>
         <group>
             <name>Inc</name>
             <file>
-                <name>$PROJ_DIR$\..\..\Src\Core\Inc\eFSS_BLOBC.h</name>
-                <excluded>
-                    <configuration>Library</configuration>
-                </excluded>
+                <name>$PROJ_DIR$\..\..\Src\CoreHL\Inc\eFSS_BLOBC.h</name>
             </file>
             <file>
-                <name>$PROJ_DIR$\..\..\Src\Core\Inc\eFSS_DBC.h</name>
-                <excluded>
-                    <configuration>Library</configuration>
-                </excluded>
+                <name>$PROJ_DIR$\..\..\Src\CoreHL\Inc\eFSS_DBC.h</name>
             </file>
             <file>
-                <name>$PROJ_DIR$\..\..\Src\Core\Inc\eFSS_LOGC.h</name>
+                <name>$PROJ_DIR$\..\..\Src\CoreHL\Inc\eFSS_LOGC.h</name>
             </file>
             <file>
-                <name>$PROJ_DIR$\..\..\Src\Core\Inc\eFSS_LOGCPRV.h</name>
+                <name>$PROJ_DIR$\..\..\Src\CoreHL\Inc\eFSS_LOGCPRV.h</name>
             </file>
         </group>
         <group>
             <name>Src</name>
             <file>
-                <name>$PROJ_DIR$\..\..\Src\Core\Src\eFSS_BLOBC.c</name>
+                <name>$PROJ_DIR$\..\..\Src\CoreHL\Src\eFSS_BLOBC.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\..\Src\CoreHL\Src\eFSS_DBC.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\..\Src\CoreHL\Src\eFSS_LOGC.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\..\Src\CoreHL\Src\eFSS_LOGCPRV.c</name>
+            </file>
+        </group>
+    </group>
+    <group>
+        <name>CoreLL</name>
+        <group>
+            <name>Inc</name>
+            <file>
+                <name>$PROJ_DIR$\..\..\Src\CoreLL\Inc\eFSS_COREHL.h</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\..\Src\CoreLL\Inc\eFSS_CORELL.h</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\..\Src\CoreLL\Inc\eFSS_COREML.h</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\..\Src\CoreLL\Inc\eFSS_UTILSHLPRV.h</name>
                 <excluded>
                     <configuration>Library</configuration>
                 </excluded>
             </file>
             <file>
-                <name>$PROJ_DIR$\..\..\Src\Core\Src\eFSS_DBC.c</name>
+                <name>$PROJ_DIR$\..\..\Src\CoreLL\Inc\eFSS_UTILSLLPRV.h</name>
+                <excluded>
+                    <configuration>Library</configuration>
+                </excluded>
+            </file>
+        </group>
+        <group>
+            <name>Src</name>
+            <file>
+                <name>$PROJ_DIR$\..\..\Src\CoreLL\Src\eFSS_COREHL.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\..\Src\CoreLL\Src\eFSS_CORELL.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\..\Src\CoreLL\Src\eFSS_COREML.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\..\Src\CoreLL\Src\eFSS_UTILSHLPRV.c</name>
                 <excluded>
                     <configuration>Library</configuration>
                 </excluded>
             </file>
             <file>
-                <name>$PROJ_DIR$\..\..\Src\Core\Src\eFSS_LOGC.c</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\..\Src\Core\Src\eFSS_LOGCPRV.c</name>
+                <name>$PROJ_DIR$\..\..\Src\CoreLL\Src\eFSS_UTILSLLPRV.c</name>
+                <excluded>
+                    <configuration>Library</configuration>
+                </excluded>
             </file>
         </group>
     </group>
@@ -1194,27 +1236,6 @@
             </file>
             <file>
                 <name>$PROJ_DIR$\..\..\Src\Log\Src\eFSS_LOGVL.c</name>
-            </file>
-        </group>
-    </group>
-    <group>
-        <name>Utils</name>
-        <group>
-            <name>Inc</name>
-            <file>
-                <name>$PROJ_DIR$\..\..\Src\Utils\Inc\eFSS_UTILSHLPRV.h</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\..\Src\Utils\Inc\eFSS_UTILSLLPRV.h</name>
-            </file>
-        </group>
-        <group>
-            <name>Src</name>
-            <file>
-                <name>$PROJ_DIR$\..\..\Src\Utils\Src\eFSS_UTILSHLPRV.c</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\..\Src\Utils\Src\eFSS_UTILSLLPRV.c</name>
             </file>
         </group>
     </group>
