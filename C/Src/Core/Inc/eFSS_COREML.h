@@ -45,7 +45,14 @@ typedef enum
 
 typedef struct
 {
+    uint8_t     uPageType;
+    uint16_t    uPageVersion;
+}t_eFSS_COREML_StorSet;
+
+typedef struct
+{
     t_eFSS_CORELL_Ctx tCORELLCtx;
+    t_eFSS_COREML_StorSet tStorSett;
 }t_eFSS_COREML_Ctx;
 
 
@@ -67,7 +74,8 @@ typedef struct
  *              e_eFSS_COREML_RES_OK            - Operation ended correctly
  */
 e_eFSS_COREML_RES eFSS_COREML_InitCtx(t_eFSS_COREML_Ctx* const p_ptCtx, t_eFSS_TYPE_CbCtx const p_tCtxCb,
-									  t_eFSS_CORELL_StorSet p_tStorSet, uint8_t* const p_puBuff, uint32_t p_uBuffL);
+									  t_eFSS_CORELL_StorSet p_tStorSetLL, t_eFSS_CORELL_StorSet p_tStorSetML,
+                                      uint8_t* const p_puBuff, uint32_t p_uBuffL);
 /**
  * @brief       Check if the lib is initialized
  *
