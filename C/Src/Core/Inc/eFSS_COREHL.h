@@ -46,7 +46,17 @@ typedef enum
 
 typedef struct
 {
+    uint32_t    uPageUseSpecific1;
+    uint32_t    uPageUseSpecific2;
+    uint32_t    uPageUseSpecific3;
+    uint32_t    uPageUseSpecific4;
+    uint8_t     uPageSubType;
+}t_eFSS_COREHL_PageMeta;
+
+typedef struct
+{
     t_eFSS_COREML_Ctx tCOREMLCtx;
+    t_eFSS_COREHL_PageMeta tPageMeta;
 }t_eFSS_COREHL_Ctx;
 
 
@@ -64,11 +74,11 @@ typedef struct
  * @param[in]   p_puBuff         - Pointer to a buffer used by the modules to make calc
  * @param[in]   p_uBuffL         - Size of p_puBuff
  *
- * @return      e_eFSS_COREML_RES_BADPOINTER    - In case of bad pointer passed to the function
- *		        e_eFSS_COREML_RES_BADPARAM      - In case of an invalid parameter passed to the function
- *              e_eFSS_COREML_RES_OK            - Operation ended correctly
+ * @return      e_eFSS_COREHL_RES_BADPOINTER    - In case of bad pointer passed to the function
+ *		        e_eFSS_COREHL_RES_BADPARAM      - In case of an invalid parameter passed to the function
+ *              e_eFSS_COREHL_RES_OK            - Operation ended correctly
  */
-e_eFSS_COREHL_RES eFSS_COREML_InitCtx(t_eFSS_COREHL_Ctx* const p_ptCtx, t_eFSS_TYPE_CbCtx const p_tCtxCb,
+e_eFSS_COREHL_RES eFSS_COREHL_InitCtx(t_eFSS_COREHL_Ctx* const p_ptCtx, t_eFSS_TYPE_CbCtx const p_tCtxCb,
 									  t_eFSS_CORELL_StorSet p_tStorSetLL, t_eFSS_COREML_StorSet p_tStorSetML,
                                       uint8_t* const p_puBuff, uint32_t p_uBuffL);
 /**
@@ -77,8 +87,8 @@ e_eFSS_COREHL_RES eFSS_COREML_InitCtx(t_eFSS_COREHL_Ctx* const p_ptCtx, t_eFSS_T
  * @param[in]   p_ptCtx       - High Level Log Core context
  * @param[out]  p_pbIsInit    - Pointer to a bool_t variable that will be filled with true if the lib is initialized
  *
- * @return      e_eFSS_COREML_RES_BADPOINTER    - In case of bad pointer passed to the function
- *              e_eFSS_COREML_RES_OK            - Operation ended correctly
+ * @return      e_eFSS_COREHL_RES_BADPOINTER    - In case of bad pointer passed to the function
+ *              e_eFSS_COREHL_RES_OK            - Operation ended correctly
  */
 e_eFSS_COREHL_RES eFSS_COREML_IsInit(t_eFSS_COREHL_Ctx* const p_ptCtx, bool_t* p_pbIsInit);
 
@@ -89,10 +99,10 @@ e_eFSS_COREHL_RES eFSS_COREML_IsInit(t_eFSS_COREHL_Ctx* const p_ptCtx, bool_t* p
  * @param[out]  p_puDataL     - Pointer to a uint32_t variable that will be filled with the usable data lenght
  * @param[out]  p_puNPage     - Pointer to a uint32_t variable that will be filled with the numbers of page
  *
- * @return      e_eFSS_COREML_RES_BADPOINTER    - In case of bad pointer passed to the function
- *		        e_eFSS_COREML_RES_CORRUPTCTX    - Context is corrupted
- *		        e_eFSS_COREML_RES_NOINITLIB     - Need to init lib before calling function
- *              e_eFSS_COREML_RES_OK            - Operation ended correctly
+ * @return      e_eFSS_COREHL_RES_BADPOINTER    - In case of bad pointer passed to the function
+ *		        e_eFSS_COREHL_RES_CORRUPTCTX    - Context is corrupted
+ *		        e_eFSS_COREHL_RES_NOINITLIB     - Need to init lib before calling function
+ *              e_eFSS_COREHL_RES_OK            - Operation ended correctly
  */
 e_eFSS_COREHL_RES eFSS_COREML_GetStorSett(t_eFSS_COREHL_Ctx* const p_ptCtx, uint32_t* p_puDataL, uint32_t* p_puNPage,
                                           uint8_t* p_puPageType, uint16_t* p_puPageVersion);
@@ -104,6 +114,8 @@ e_eFSS_COREHL_RES eFSS_COREML_GetStorSett(t_eFSS_COREHL_Ctx* const p_ptCtx, uint
  * @param[in]   p_eBuffType   - Enum used to select wich buffer we want to select
  * @param[out]  p_ppuBuff     - Pointer to a Pointer pointing to the p_eBuffType buffer
  * @param[out]  p_puBuffL     - Pointer to a uint32_t variable where the size of p_ppuBuff buffer will be placed
+ * @param[out]  p_ptMeta      - Pointer to a t_eFSS_COREHL_PageMeta variable where the metadata of the page will be 
+ *                              placed
  *
  * @return      e_eFSS_COREML_RES_BADPOINTER    - In case of bad pointer passed to the function
  *		        e_eFSS_COREML_RES_BADPARAM      - In case of an invalid parameter passed to the function
@@ -112,7 +124,7 @@ e_eFSS_COREHL_RES eFSS_COREML_GetStorSett(t_eFSS_COREHL_Ctx* const p_ptCtx, uint
  *              e_eFSS_COREML_RES_OK            - Operation ended correctly
  */
 e_eFSS_COREHL_RES eFSS_COREML_GetBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFTYPE p_eBuffType,
-								      uint8_t** p_ppuBuff, uint32_t* p_puBuffL);
+								      uint8_t** p_ppuBuff, uint32_t* p_puBuffL, t_eFSS_COREHL_PageMeta** p_pptMeta);
 
 /**
  * @brief       Load a page from the storage area in one of he two internal buffer

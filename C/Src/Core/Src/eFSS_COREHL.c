@@ -17,15 +17,15 @@
 /***********************************************************************************************************************
  *  PRIVATE STATIC FUNCTION DECLARATION
  **********************************************************************************************************************/
-static bool_t eFSS_COREML_IsStatusStillCoherent(const t_eFSS_COREML_Ctx* p_ptCtx);
-static e_eFSS_COREML_RES eFSS_COREML_LLtoMLRes(const e_eFSS_CORELL_RES p_eLLRes);
+static bool_t eFSS_COREHL_IsStatusStillCoherent(const t_eFSS_COREHL_Ctx* p_ptCtx);
+static e_eFSS_COREHL_RES eFSS_COREHL_MLtoHLRes(const e_eFSS_COREML_RES p_eLLRes);
 
 
 
 /***********************************************************************************************************************
  *   GLOBAL FUNCTIONS
  **********************************************************************************************************************/
-e_eFSS_COREML_RES eFSS_COREML_InitCtx(t_eFSS_COREML_Ctx* const p_ptCtx, t_eFSS_TYPE_CbCtx const p_tCtxCb,
+e_eFSS_COREHL_RES eFSS_COREHL_InitCtx(t_eFSS_COREHL_Ctx* const p_ptCtx, t_eFSS_TYPE_CbCtx const p_tCtxCb,
 									  t_eFSS_CORELL_StorSet p_tStorSetLL, t_eFSS_COREML_StorSet p_tStorSetML,
                                       uint8_t* const p_puBuff, uint32_t p_uBuffL)
 {
@@ -40,19 +40,20 @@ e_eFSS_COREML_RES eFSS_COREML_InitCtx(t_eFSS_COREML_Ctx* const p_ptCtx, t_eFSS_T
 	else
 	{
         /* Check data validity */
-        if( p_tStorSet.uPagesLen <= 11u )
+        if( p_tStorSet.uPagesLen <= 28u )
         {
             l_eRes = e_eFSS_COREML_RES_BADPARAM;
         }
         else
         {
-            /* Init LL context */
-            l_eResLL = eFSS_CORELL_InitCtx(p_ptCtx->tCORELLCtx, p_tCtxCb, p_tStorSet, p_puBuff, p_uBuffL);
-            l_eRes = eFSS_COREML_LLtoMLRes(l_eResLL);
+            /* Init ML context */
+            l_eResLL = eFSS_COREML_InitCtx(&p_ptCtx->tCOREMLCtx, p_tCtxCb, p_tStorSetLL,p_tStorSetML, p_puBuff, 
+                                           p_uBuffL);
+            l_eRes = eFSS_COREHL_MLtoHLRes(l_eResLL);
 
             if( e_eFSS_COREML_RES_OK == l_eRes )
             {
-                p_ptCtx->tStorSett = p_tStorSetML;
+                memset( &p_ptCtx->tPageMeta, 0u, sizeof(t_eFSS_COREHL_PageMeta) );
             }
         }
     }
@@ -73,8 +74,8 @@ e_eFSS_COREML_RES eFSS_COREML_IsInit(t_eFSS_COREML_Ctx* const p_ptCtx, bool_t* p
 	}
 	else
 	{
-        l_eResLL = eFSS_CORELL_IsInit(p_ptCtx->tCORELLCtx, p_pbIsInit);
-        l_eRes = eFSS_COREML_LLtoMLRes(l_eResLL);
+        l_eResLL = eFSS_COREML_IsInit(p_ptCtx->tCOREMLCtx, p_pbIsInit);
+        l_eRes = eFSS_COREHL_MLtoHLRes(l_eResLL);
 	}
 
 	return l_eRes;
@@ -101,8 +102,8 @@ e_eFSS_COREML_RES eFSS_COREML_GetStorSett(t_eFSS_COREML_Ctx* const p_ptCtx, uint
 	else
 	{
         /* Check if initialized */
-        l_eResLL = eFSS_CORELL_IsInit(p_ptCtx->tCORELLCtx, &l_bIsInit);
-        l_eRes = eFSS_COREML_LLtoMLRes(l_eResLL);
+        l_eResLL = eFSS_COREML_IsInit(p_ptCtx->tCOREMLCtx, &l_bIsInit);
+        l_eRes = eFSS_COREHL_MLtoHLRes(l_eResLL);
 
         if( e_eFSS_COREML_RES_OK == l_eRes )
         {
@@ -120,8 +121,8 @@ e_eFSS_COREML_RES eFSS_COREML_GetStorSett(t_eFSS_COREML_Ctx* const p_ptCtx, uint
                 else
                 {
                     /* Return data */
-                    l_eResLL = eFSS_CORELL_GetStorSett(p_ptCtx->tCORELLCtx, &l_uDataLLL, &l_uNPageLL);
-                    l_eRes = eFSS_COREML_LLtoMLRes(l_eResLL);
+                    l_eResLL = eFSS_CORELL_GetStorSett(p_ptCtx->tCOREMLCtx, &l_uDataLLL, &l_uNPageLL);
+                    l_eRes = eFSS_COREHL_MLtoHLRes(l_eResLL);
 
                     if( e_eFSS_COREML_RES_OK == l_eRes )
                     {
@@ -158,8 +159,8 @@ e_eFSS_COREML_RES eFSS_COREML_GetBuff(t_eFSS_COREML_Ctx* const p_ptCtx, e_eFSS_C
 	else
 	{
         /* Check if initialized */
-        l_eResLL = eFSS_CORELL_IsInit(p_ptCtx->tCORELLCtx, &l_bIsInit);
-        l_eRes = eFSS_COREML_LLtoMLRes(l_eResLL);
+        l_eResLL = eFSS_COREML_IsInit(p_ptCtx->tCOREMLCtx, &l_bIsInit);
+        l_eRes = eFSS_COREHL_MLtoHLRes(l_eResLL);
 
         if( e_eFSS_COREML_RES_OK == l_eRes )
         {
@@ -177,8 +178,8 @@ e_eFSS_COREML_RES eFSS_COREML_GetBuff(t_eFSS_COREML_Ctx* const p_ptCtx, e_eFSS_C
                 else
                 {
                     /* Return data */
-                    l_eResLL = eFSS_COREML_GetBuff(p_ptCtx->tCORELLCtx, &l_puBuffLL, &l_uBuffLLL);
-                    l_eRes = eFSS_COREML_LLtoMLRes(l_eResLL);
+                    l_eResLL = eFSS_COREML_GetBuff(p_ptCtx->tCOREMLCtx, &l_puBuffLL, &l_uBuffLLL);
+                    l_eRes = eFSS_COREHL_MLtoHLRes(l_eResLL);
 
                     if( e_eFSS_COREML_RES_OK == l_eRes )
                     {
@@ -220,8 +221,8 @@ e_eFSS_COREML_RES eFSS_COREML_LoadPageInBuffNChkVal(t_eFSS_COREML_Ctx* const p_p
 	else
 	{
         /* Check if initialized */
-        l_eResLL = eFSS_CORELL_IsInit(p_ptCtx->tCORELLCtx, &l_bIsInit);
-        l_eRes = eFSS_COREML_LLtoMLRes(l_eResLL);
+        l_eResLL = eFSS_COREML_IsInit(p_ptCtx->tCOREMLCtx, &l_bIsInit);
+        l_eRes = eFSS_COREHL_MLtoHLRes(l_eResLL);
 
         if( e_eFSS_COREML_RES_OK == l_eRes )
         {
@@ -239,14 +240,14 @@ e_eFSS_COREML_RES eFSS_COREML_LoadPageInBuffNChkVal(t_eFSS_COREML_Ctx* const p_p
                 else
                 {
                     /* Load pae in internal buffer */
-                    l_eResLL = eFSS_CORELL_LoadPageInBuff(&p_ptCtx->tCORELLCtx, p_eBuffType, p_uPageIndx);
-                    l_eRes = eFSS_COREML_LLtoMLRes(l_eResLL);
+                    l_eResLL = eFSS_CORELL_LoadPageInBuff(&p_ptCtx->tCOREMLCtx, p_eBuffType, p_uPageIndx);
+                    l_eRes = eFSS_COREHL_MLtoHLRes(l_eResLL);
 
                     if( e_eFSS_COREML_RES_OK == l_eRes )
                     {
                         /* Get internal buffer */
-                        l_eResLL = eFSS_COREML_GetBuff(p_ptCtx->tCORELLCtx, &l_puBuffLL, &l_uBuffLLL);
-                        l_eRes = eFSS_COREML_LLtoMLRes(l_eResLL);
+                        l_eResLL = eFSS_COREML_GetBuff(p_ptCtx->tCOREMLCtx, &l_puBuffLL, &l_uBuffLLL);
+                        l_eRes = eFSS_COREHL_MLtoHLRes(l_eResLL);
 
                         if( e_eFSS_COREML_RES_OK == l_eRes )
                         {
@@ -303,9 +304,9 @@ e_eFSS_COREML_RES eFSS_COREML_LoadPageInBuffNChkVal(t_eFSS_COREML_Ctx* const p_p
                             l_uComulIndx++;
 
                             /* Calculate CRC */
-                            l_eResLL = eFSS_CORELL_CalcCrcInBuff(&p_ptCtx->tCORELLCtx, p_eBuffType, MAX_UINT32VAL,
+                            l_eResLL = eFSS_CORELL_CalcCrcInBuff(&p_ptCtx->tCOREMLCtx, p_eBuffType, MAX_UINT32VAL,
                                                                  l_uBuffLLL - 4u, &l_uPageCrcCalc);
-                            l_eRes = eFSS_COREML_LLtoMLRes(l_eResLL);
+                            l_eRes = eFSS_COREHL_MLtoHLRes(l_eResLL);
 
                             if( e_eFSS_COREML_RES_OK == l_eRes )
                             {
@@ -365,8 +366,8 @@ e_eFSS_COREML_RES eFSS_COREML_FlushBuffWUpdValInPage(t_eFSS_COREML_Ctx* const p_
 	else
 	{
         /* Check if initialized */
-        l_eResLL = eFSS_CORELL_IsInit(p_ptCtx->tCORELLCtx, &l_bIsInit);
-        l_eRes = eFSS_COREML_LLtoMLRes(l_eResLL);
+        l_eResLL = eFSS_COREML_IsInit(p_ptCtx->tCOREMLCtx, &l_bIsInit);
+        l_eRes = eFSS_COREHL_MLtoHLRes(l_eResLL);
 
         if( e_eFSS_COREML_RES_OK == l_eRes )
         {
@@ -384,8 +385,8 @@ e_eFSS_COREML_RES eFSS_COREML_FlushBuffWUpdValInPage(t_eFSS_COREML_Ctx* const p_
                 else
                 {
                     /* Get internal buffer */
-                    l_eResLL = eFSS_COREML_GetBuff(&p_ptCtx->tCORELLCtx, &l_puBuffLL, &l_uBuffLLL);
-                    l_eRes = eFSS_COREML_LLtoMLRes(l_eResLL);
+                    l_eResLL = eFSS_COREML_GetBuff(&p_ptCtx->tCOREMLCtx, &l_puBuffLL, &l_uBuffLLL);
+                    l_eRes = eFSS_COREHL_MLtoHLRes(l_eResLL);
 
                     if( e_eFSS_COREML_RES_OK == l_eRes )
                     {
@@ -420,9 +421,9 @@ e_eFSS_COREML_RES eFSS_COREML_FlushBuffWUpdValInPage(t_eFSS_COREML_Ctx* const p_
                         l_uComulIndx++;
 
                         /* Calculate CRC */
-                        l_eResLL = eFSS_CORELL_CalcCrcInBuff(&p_ptCtx->tCORELLCtx, p_eBuffType, MAX_UINT32VAL,
+                        l_eResLL = eFSS_CORELL_CalcCrcInBuff(&p_ptCtx->tCOREMLCtx, p_eBuffType, MAX_UINT32VAL,
                                                              l_uBuffLLL - 4u, &l_uPageCrcCalc);
-                        l_eRes = eFSS_COREML_LLtoMLRes(l_eResLL);
+                        l_eRes = eFSS_COREHL_MLtoHLRes(l_eResLL);
                         if( e_eFSS_COREML_RES_OK == l_eRes )
                         {
                             /* --- Copy data Little endian -- CRC */
@@ -439,8 +440,8 @@ e_eFSS_COREML_RES eFSS_COREML_FlushBuffWUpdValInPage(t_eFSS_COREML_Ctx* const p_
                             l_uComulIndx++;
 
                             /* Flush buffer */
-                            l_eResLL = eFSS_CORELL_FlushBuffInPage(&p_ptCtx->tCORELLCtx, p_eBuffType, p_uPageIndx);
-                            l_eRes = eFSS_COREML_LLtoMLRes(l_eResLL);
+                            l_eResLL = eFSS_CORELL_FlushBuffInPage(&p_ptCtx->tCOREMLCtx, p_eBuffType, p_uPageIndx);
+                            l_eRes = eFSS_COREHL_MLtoHLRes(l_eResLL);
                         }
                     }
                 }
@@ -471,8 +472,8 @@ e_eFSS_COREML_RES eFSS_COREML_CalcCrcInBuff(t_eFSS_COREML_Ctx* const p_ptCtx, e_
 	else
 	{
         /* Check if initialized */
-        l_eResLL = eFSS_CORELL_IsInit(p_ptCtx->tCORELLCtx, &l_bIsInit);
-        l_eRes = eFSS_COREML_LLtoMLRes(l_eResLL);
+        l_eResLL = eFSS_COREML_IsInit(p_ptCtx->tCOREMLCtx, &l_bIsInit);
+        l_eRes = eFSS_COREHL_MLtoHLRes(l_eResLL);
 
         if( e_eFSS_COREML_RES_OK == l_eRes )
         {
@@ -490,8 +491,8 @@ e_eFSS_COREML_RES eFSS_COREML_CalcCrcInBuff(t_eFSS_COREML_Ctx* const p_ptCtx, e_
                 else
                 {
                     /* Return data */
-                    l_eResLL = eFSS_COREML_GetBuff(p_ptCtx->tCORELLCtx, &l_puBuffLL, &l_uBuffLLL);
-                    l_eRes = eFSS_COREML_LLtoMLRes(l_eResLL);
+                    l_eResLL = eFSS_COREML_GetBuff(p_ptCtx->tCOREMLCtx, &l_puBuffLL, &l_uBuffLLL);
+                    l_eRes = eFSS_COREHL_MLtoHLRes(l_eResLL);
 
                     if( e_eFSS_COREML_RES_OK == l_eRes )
                     {
@@ -503,9 +504,9 @@ e_eFSS_COREML_RES eFSS_COREML_CalcCrcInBuff(t_eFSS_COREML_Ctx* const p_ptCtx, e_
                         else
                         {
                             /* Calculate CRC */
-                            l_eResLL = eFSS_CORELL_CalcCrcInBuff(&p_ptCtx->tCORELLCtx, p_eBuffType, p_uCrcSeed,
+                            l_eResLL = eFSS_CORELL_CalcCrcInBuff(&p_ptCtx->tCOREMLCtx, p_eBuffType, p_uCrcSeed,
                                                                  p_uLenCalc, p_puCrc);
-                            l_eRes = eFSS_COREML_LLtoMLRes(l_eResLL);
+                            l_eRes = eFSS_COREHL_MLtoHLRes(l_eResLL);
                         }
                     }
                 }
@@ -519,7 +520,7 @@ e_eFSS_COREML_RES eFSS_COREML_CalcCrcInBuff(t_eFSS_COREML_Ctx* const p_ptCtx, e_
 /***********************************************************************************************************************
  *  PRIVATE FUNCTION
  **********************************************************************************************************************/
-static bool_t eFSS_COREML_IsStatusStillCoherent(const t_eFSS_COREML_Ctx* p_ptCtx)
+static bool_t eFSS_COREHL_IsStatusStillCoherent(const t_eFSS_COREHL_Ctx* p_ptCtx)
 {
     /* Return local var */
     bool_t l_eRes;
@@ -529,7 +530,7 @@ static bool_t eFSS_COREML_IsStatusStillCoherent(const t_eFSS_COREML_Ctx* p_ptCtx
     uint32_t l_uPageL;
     uint32_t l_uNPage;
 
-    l_eResLL = eFSS_CORELL_GetStorSett(&p_ptCtx->tCORELLCtx, &l_uPageL, &l_uNPage);
+    l_eResLL = eFSS_CORELL_GetStorSett(&p_ptCtx->tCOREMLCtx, &l_uPageL, &l_uNPage);
     if( e_eFSS_CORELL_RES_OK != l_eResLL )
     {
         l_eRes = false;
@@ -550,7 +551,7 @@ static bool_t eFSS_COREML_IsStatusStillCoherent(const t_eFSS_COREML_Ctx* p_ptCtx
     return l_eRes;
 }
 
-static e_eFSS_COREML_RES eFSS_COREML_LLtoMLRes(const e_eFSS_CORELL_RES p_eLLRes)
+static e_eFSS_COREHL_RES eFSS_COREHL_MLtoHLRes(const e_eFSS_COREML_RES p_eLLRes)
 {
     e_eFSS_COREML_RES l_eRes;
 
