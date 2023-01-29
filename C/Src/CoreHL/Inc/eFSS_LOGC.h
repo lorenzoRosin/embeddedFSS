@@ -47,11 +47,7 @@ typedef enum
 
 typedef struct
 {
-    bool_t   bIsInit;
-    t_eFSS_TYPE_CbCtx tCtxCb;
-    t_eFSS_TYPE_StorageSettings tStorSett;
-	uint8_t* puBuf;
-	uint32_t uBufL;
+    t_eFSS_COREHL_Ctx tCOREHLCtx;
     uint32_t uNewPagIdx;
     uint32_t uFullFilledP;
     bool_t bFlashCache;
