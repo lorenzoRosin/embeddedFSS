@@ -90,21 +90,23 @@ e_eFSS_COREHL_RES eFSS_COREHL_InitCtx(t_eFSS_COREHL_Ctx* const p_ptCtx, t_eFSS_T
  * @return      e_eFSS_COREHL_RES_BADPOINTER    - In case of bad pointer passed to the function
  *              e_eFSS_COREHL_RES_OK            - Operation ended correctly
  */
-e_eFSS_COREHL_RES eFSS_COREML_IsInit(t_eFSS_COREHL_Ctx* const p_ptCtx, bool_t* p_pbIsInit);
+e_eFSS_COREHL_RES eFSS_COREHL_IsInit(t_eFSS_COREHL_Ctx* const p_ptCtx, bool_t* p_pbIsInit);
 
 /**
  * @brief       Get storage settings
  *
- * @param[in]   p_ptCtx       - High Level Log Core context
- * @param[out]  p_puDataL     - Pointer to a uint32_t variable that will be filled with the usable data lenght
- * @param[out]  p_puNPage     - Pointer to a uint32_t variable that will be filled with the numbers of page
+ * @param[in]   p_ptCtx         - High Level Log Core context
+ * @param[out]  p_puDataL       - Pointer to a uint32_t variable that will be filled with the usable data lenght
+ * @param[out]  p_puNPage       - Pointer to a uint32_t variable that will be filled with the numbers of page
+ * @param[out]  p_puPageType    - Pointer to a uint32_t variable that will be filled with the usable data lenght
+ * @param[out]  p_puPageVersion - Pointer to a uint32_t variable that will be filled with the numbers of page
  *
  * @return      e_eFSS_COREHL_RES_BADPOINTER    - In case of bad pointer passed to the function
  *		        e_eFSS_COREHL_RES_CORRUPTCTX    - Context is corrupted
  *		        e_eFSS_COREHL_RES_NOINITLIB     - Need to init lib before calling function
  *              e_eFSS_COREHL_RES_OK            - Operation ended correctly
  */
-e_eFSS_COREHL_RES eFSS_COREML_GetStorSett(t_eFSS_COREHL_Ctx* const p_ptCtx, uint32_t* p_puDataL, uint32_t* p_puNPage,
+e_eFSS_COREHL_RES eFSS_COREHL_GetStorSett(t_eFSS_COREHL_Ctx* const p_ptCtx, uint32_t* p_puDataL, uint32_t* p_puNPage,
                                           uint8_t* p_puPageType, uint16_t* p_puPageVersion);
 
 /**
