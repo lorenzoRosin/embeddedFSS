@@ -61,7 +61,7 @@ e_eFSS_CORELL_RES eFSS_CORELL_InitCtx(t_eFSS_CORELL_Ctx* const p_ptCtx, t_eFSS_T
                 else
                 {
                     /* Check data validity */
-                    if( p_tStorSet.uPagesLen <= 0u )
+                    if( p_tStorSet.uPagesLen <= 8u )
                     {
                         l_eRes = e_eFSS_CORELL_RES_BADPARAM;
                     }
@@ -217,6 +217,11 @@ e_eFSS_CORELL_RES eFSS_CORELL_LoadPageInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e
     bool_t l_bCbRes;
 	uint8_t* l_puBuff;
 	uint32_t l_uBuffL;
+    uint32_t l_uMagicNumber;
+    uint32_t l_uPageCrc;
+    uint32_t l_uPageCrcCalc;
+    uint32_t l_uComulIndx;
+    uint32_t l_uTemp;
 
 	/* Check pointer validity */
 	if( NULL == p_ptCtx )
@@ -294,6 +299,77 @@ e_eFSS_CORELL_RES eFSS_CORELL_LoadPageInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e
                                 l_eRes = e_eFSS_CORELL_RES_OK;
                             }
                         }
+
+                        if( e_eFSS_CORELL_RES_OK == l_eRes )
+                        {
+                            /* Can check validity CRC and Magic number */
+                            /* Initialize internal status */
+                            l_uMagicNumber = 0u;
+                            l_uPageCrc = 0u;
+                            l_uComulIndx = l_uBuffLLL - 8u;
+
+                            /* --- Copy data Little endian -- MAGIC NUMBER */
+                            l_uTemp = (uint32_t) l_puBuffLL[l_uComulIndx];
+                            l_uMagicNumber |= ( l_uTemp & 0x000000FFu );
+                            l_uComulIndx++;
+
+                            l_uTemp =  (uint32_t) ( ( (uint32_t) l_puBuffLL[l_uComulIndx] ) << 8u  );
+                            l_uMagicNumber |= ( l_uTemp & 0x0000FF00u );
+                            l_uComulIndx++;
+
+                            l_uTemp =  (uint32_t) ( ( (uint32_t) l_puBuffLL[l_uComulIndx] ) << 16u  );
+                            l_uMagicNumber |= ( l_uTemp & 0x00FF0000u );
+                            l_uComulIndx++;
+
+                            l_uTemp =  (uint32_t) ( ( (uint32_t) l_puBuffLL[l_uComulIndx] ) << 24u  );
+                            l_uMagicNumber |= ( l_uTemp & 0xFF000000u );
+                            l_uComulIndx++;
+
+                            /* --- Copy data Little endian -- CRC */
+                            l_uTemp = (uint32_t) l_puBuffLL[l_uComulIndx];
+                            l_uPageCrc |= ( l_uTemp & 0x000000FFu );
+                            l_uComulIndx++;
+
+                            l_uTemp =  (uint32_t) ( ( (uint32_t) l_puBuffLL[l_uComulIndx] ) << 8u  );
+                            l_uPageCrc |= ( l_uTemp & 0x0000FF00u );
+                            l_uComulIndx++;
+
+                            l_uTemp =  (uint32_t) ( ( (uint32_t) l_puBuffLL[l_uComulIndx] ) << 16u  );
+                            l_uPageCrc |= ( l_uTemp & 0x00FF0000u );
+                            l_uComulIndx++;
+
+                            l_uTemp =  (uint32_t) ( ( (uint32_t) l_puBuffLL[l_uComulIndx] ) << 24u  );
+                            l_uPageCrc |= ( l_uTemp & 0xFF000000u );
+                            l_uComulIndx++;
+
+                            /* Calculate CRC */
+                            l_eResLL = eFSS_CORELL_CalcCrcInBuff(&p_ptCtx->tCORELLCtx, p_eBuffType, MAX_UINT32VAL,
+                                                                 l_uBuffLLL - 4u, &l_uPageCrcCalc);
+                            l_eRes = eFSS_COREML_LLtoMLRes(l_eResLL);
+
+                            if( e_eFSS_COREML_RES_OK == l_eRes )
+                            {
+                                if( l_uPageCrcCalc != l_uPageCrc )
+                                {
+                                    l_eRes = e_eFSS_COREML_RES_NOTVALIDPAGE;
+                                }
+                                else
+                                {
+                                    if( ( EFSS_PAGEMAGICNUMBER != l_uMagicNumber ) ||
+                                        ( p_ptCtx->tStorSett.uPageType != l_uPageType ) )
+                                    {
+                                        l_eRes = e_eFSS_COREML_RES_NOTVALIDPAGE;
+                                    }
+                                    else
+                                    {
+                                        if( p_ptCtx->tStorSett.uPageVersion != l_uPageVersion )
+                                        {
+                                            l_eRes = e_eFSS_COREML_RES_NEWVERSIONFOUND;
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -316,6 +392,9 @@ e_eFSS_CORELL_RES eFSS_CORELL_FlushBuffInPage(t_eFSS_CORELL_Ctx* const p_ptCtx, 
 	uint32_t l_uBuffL;
 	uint8_t* l_puBuffS;
 	uint32_t l_uBuffSL;
+    uint32_t l_uComulIndx;
+    uint32_t l_uMagicNumber;
+    uint32_t l_uPageCrcCalc;
 
 	/* Check pointer validity */
 	if( NULL == p_ptCtx )
@@ -379,64 +458,111 @@ e_eFSS_CORELL_RES eFSS_CORELL_FlushBuffInPage(t_eFSS_CORELL_Ctx* const p_ptCtx, 
                     /* Check validity */
                     if( e_eFSS_CORELL_RES_OK == l_eRes )
                     {
-                        /* Init var */
-                        l_eRes = e_eFSS_CORELL_RES_CLBCKWRITEERR;
-                        l_uTryPerformed = 0u;
-                        l_bCbRes = false;
+                        /* Calc and insert magic number and CRC */
+                        /* Initialize internal status */
+                        l_uPageType = p_ptCtx->tStorSett.uPageType;
+                        l_uPageVersion = p_ptCtx->tStorSett.uPageVersion;
+                        l_uMagicNumber = EFSS_PAGEMAGICNUMBER;
+                        l_uComulIndx = l_uBuffLLL - 11u;
 
-                        while( ( false == l_bCbRes ) && ( l_uTryPerformed < p_ptCtx->tStorSett.uRWERetry ) )
+                        /* --- Copy data Little endian -- MAGIC NUMBER */
+                        l_puBuffLL[l_uComulIndx] = (uint8_t) ( ( l_uMagicNumber        ) & 0x000000FFu );
+                        l_uComulIndx++;
+
+                        l_puBuffLL[l_uComulIndx] = (uint8_t) ( ( l_uMagicNumber >> 8u  ) & 0x000000FFu );
+                        l_uComulIndx++;
+
+                        l_puBuffLL[l_uComulIndx] = (uint8_t) ( ( l_uMagicNumber >> 16u ) & 0x000000FFu );
+                        l_uComulIndx++;
+
+                        l_puBuffLL[l_uComulIndx] = (uint8_t) ( ( l_uMagicNumber >> 24u ) & 0x000000FFu );
+                        l_uComulIndx++;
+
+                        /* Calculate CRC */
+                        l_eResLL = eFSS_CORELL_CalcCrcInBuff(&p_ptCtx->tCORELLCtx, p_eBuffType, MAX_UINT32VAL,
+                                                             l_uBuffLLL - 4u, &l_uPageCrcCalc);
+                        l_eRes = eFSS_COREML_LLtoMLRes(l_eResLL);
+                        if( e_eFSS_COREML_RES_OK == l_eRes )
                         {
-                            /* Erase */
-                            l_bCbRes = (*(p_ptCtx->tCtxCb.fErase))(p_ptCtx->tCtxCb.ptCtxErase, p_uPageIndx);
+                            /* --- Copy data Little endian -- CRC */
+                            l_puBuffLL[l_uComulIndx] = (uint8_t) ( ( l_uPageCrcCalc        ) & 0x000000FFu );
+                            l_uComulIndx++;
 
-                            if( true == l_bCbRes )
+                            l_puBuffLL[l_uComulIndx] = (uint8_t) ( ( l_uPageCrcCalc >> 8u  ) & 0x000000FFu );
+                            l_uComulIndx++;
+
+                            l_puBuffLL[l_uComulIndx] = (uint8_t) ( ( l_uPageCrcCalc >> 16u ) & 0x000000FFu );
+                            l_uComulIndx++;
+
+                            l_puBuffLL[l_uComulIndx] = (uint8_t) ( ( l_uPageCrcCalc >> 24u ) & 0x000000FFu );
+                            l_uComulIndx++;
+
+                            /* Flush buffer */
+                            l_eResLL = eFSS_CORELL_FlushBuffInPage(&p_ptCtx->tCORELLCtx, p_eBuffType, p_uPageIndx);
+                            l_eRes = eFSS_COREML_LLtoMLRes(l_eResLL);
+                        }
+
+                        if( e_eFSS_COREML_RES_OK == l_eRes)
+                        {
+                            /* Init var */
+                            l_eRes = e_eFSS_CORELL_RES_CLBCKWRITEERR;
+                            l_uTryPerformed = 0u;
+                            l_bCbRes = false;
+
+                            while( ( false == l_bCbRes ) && ( l_uTryPerformed < p_ptCtx->tStorSett.uRWERetry ) )
                             {
-                                /* Write */
-                                l_bCbRes = (*(p_ptCtx->tCtxCb.fWrite))(p_ptCtx->tCtxCb.ptCtxWrite, p_uPageIndx, l_puBuff, l_uBuffL);
+                                /* Erase */
+                                l_bCbRes = (*(p_ptCtx->tCtxCb.fErase))(p_ptCtx->tCtxCb.ptCtxErase, p_uPageIndx);
 
-                                if( false == l_bCbRes )
+                                if( true == l_bCbRes )
                                 {
-                                    /* Write error  */
-                                    l_eRes = e_eFSS_CORELL_RES_CLBCKWRITEERR;
-                                }
-                            }
-                            else
-                            {
-                                l_eRes = e_eFSS_CORELL_RES_CLBCKERASEERR;
-                            }
+                                    /* Write */
+                                    l_bCbRes = (*(p_ptCtx->tCtxCb.fWrite))(p_ptCtx->tCtxCb.ptCtxWrite, p_uPageIndx, l_puBuff, l_uBuffL);
 
-                            if( true == l_bCbRes )
-                            {
-                                /* Read */
-                                l_bCbRes = (*(p_ptCtx->tCtxCb.fRead))(p_ptCtx->tCtxCb.ptCtxRead, p_uPageIndx, l_puBuffS, l_uBuffSL);
-
-                                if( false == l_bCbRes )
-                                {
-                                    /* Write error  */
-                                    l_eRes = e_eFSS_CORELL_RES_CLBCKREADERR;
-                                }
-                            }
-
-                            if( true == l_bCbRes )
-                            {
-                                /* Compare buffer to write with the readed one */
-                                if( 0 == memcmp(l_puBuff, l_puBuffS, l_uBuffL) )
-                                {
-                                    l_bCbRes = true;
+                                    if( false == l_bCbRes )
+                                    {
+                                        /* Write error  */
+                                        l_eRes = e_eFSS_CORELL_RES_CLBCKWRITEERR;
+                                    }
                                 }
                                 else
                                 {
-                                    l_bCbRes = false;
-                                    l_eRes = e_eFSS_CORELL_RES_WRITENOMATCHREAD;
+                                    l_eRes = e_eFSS_CORELL_RES_CLBCKERASEERR;
                                 }
+
+                                if( true == l_bCbRes )
+                                {
+                                    /* Read */
+                                    l_bCbRes = (*(p_ptCtx->tCtxCb.fRead))(p_ptCtx->tCtxCb.ptCtxRead, p_uPageIndx, l_puBuffS, l_uBuffSL);
+
+                                    if( false == l_bCbRes )
+                                    {
+                                        /* Write error  */
+                                        l_eRes = e_eFSS_CORELL_RES_CLBCKREADERR;
+                                    }
+                                }
+
+                                if( true == l_bCbRes )
+                                {
+                                    /* Compare buffer to write with the readed one */
+                                    if( 0 == memcmp(l_puBuff, l_puBuffS, l_uBuffL) )
+                                    {
+                                        l_bCbRes = true;
+                                    }
+                                    else
+                                    {
+                                        l_bCbRes = false;
+                                        l_eRes = e_eFSS_CORELL_RES_WRITENOMATCHREAD;
+                                    }
+                                }
+
+                                l_uTryPerformed++;
                             }
 
-                            l_uTryPerformed++;
-                        }
-
-                        if( true == l_bCbRes )
-                        {
-                            l_eRes = e_eFSS_CORELL_RES_OK;
+                            if( true == l_bCbRes )
+                            {
+                                l_eRes = e_eFSS_CORELL_RES_OK;
+                            }
                         }
                     }
                 }
@@ -555,7 +681,7 @@ static bool_t eFSS_CORELL_IsStatusStillCoherent(const t_eFSS_CORELL_Ctx* p_ptCtx
         else
         {
             /* Check data validity */
-            if( p_ptCtx->tStorSett.uPagesLen <= 0u )
+            if( p_ptCtx->tStorSett.uPagesLen <= 8u )
             {
                 l_eRes = false;
             }
