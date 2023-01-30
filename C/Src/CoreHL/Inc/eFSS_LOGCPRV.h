@@ -77,7 +77,7 @@ bool_t eFSS_LOGCPRV_IsStatusStillCoherent(const t_eFSS_LOGC_Ctx* p_ptCtx);
  *
  * @return      Return the corrisponding value from HL utils operation to LOGC enum code
  */
-e_eFSS_LOGC_RES eFSS_LOGCPRV_HLtoLogRes(const e_eFSS_UTILSHLPRV_RES p_eHLRes);
+e_eFSS_LOGC_RES eFSS_LOGCPRV_HLtoLogRes(const e_eFSS_COREHL_RES p_eHLRes);
 
 /**
  * @brief       Get the value of the next index. Be sure to not insert any NULL value and
