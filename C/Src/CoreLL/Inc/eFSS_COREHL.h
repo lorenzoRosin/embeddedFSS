@@ -185,6 +185,24 @@ e_eFSS_COREHL_RES eFSS_COREHL_FlushBuffWUpdValInPage(t_eFSS_COREHL_Ctx* const p_
  */
 e_eFSS_COREHL_RES eFSS_COREHL_CalcCrcInBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFTYPE p_eBuffType,
 								            uint32_t p_uCrcSeed, uint32_t p_uLenCalc, uint32_t* p_puCrc);
+/**
+ * @brief       Calculate the Crc of the data present in the choosen buffer. Can also select to calculate the crc of
+ *              a given numbers of bytes.
+ *
+ * @param[in]   p_ptCtx       - High Level Log Core context
+ * @param[in]   p_eBuffType   - Enum used to select wich buffer we want to select
+ * @param[in]   p_uCrcSeed    - uint32_t rappresenting the seed we want to use in the calc
+ * @param[in]   p_uLenCalc    - uint32_t rappresenting the lenght we want to calc
+ * @param[out]  p_puCrc       - Pointer to a uint32_t variable where the CRC calculated will be placed
+ *
+ * @return      e_eFSS_COREHL_RES_BADPOINTER       - In case of bad pointer passed to the function
+ *		        e_eFSS_COREHL_RES_BADPARAM         - In case of an invalid parameter passed to the function
+ *		        e_eFSS_COREHL_RES_CORRUPTCTX       - Context is corrupted
+ *		        e_eFSS_COREHL_RES_NOINITLIB        - Need to init lib before calling function
+ *		        e_eFSS_COREHL_RES_CLBCKCRCERR      - The CRC callback reported an error
+ *              e_eFSS_COREHL_RES_OK               - Operation ended correctly
+ */
+e_eFSS_COREHL_RES eFSS_COREHL_CloneBuffere(t_eFSS_COREHL_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFTYPE p_eBuffTypeToClone);
 
 #ifdef __cplusplus
 } /* extern "C" */
