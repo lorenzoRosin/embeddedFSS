@@ -46,12 +46,6 @@ typedef enum
 
 typedef struct
 {
-    uint8_t     uPageType;
-    uint16_t    uPageVersion;
-}t_eFSS_COREML_StorSet;
-
-typedef struct
-{
     t_eFSS_CORELL_Ctx tCORELLCtx;
     t_eFSS_COREML_StorSet tStorSett;
 }t_eFSS_COREML_Ctx;

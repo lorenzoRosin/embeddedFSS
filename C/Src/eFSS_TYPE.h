@@ -29,7 +29,7 @@ extern "C" {
  *      DEFINES
  **********************************************************************************************************************/
 /* Pages Metadata values */
-#define EFSS_PAGEMETASIZE                                                                          ( ( uint32_t )  28u )
+#define EFSS_PAGEMETALLSIZE                                                                        ( ( uint32_t )  11u )
 #define EFSS_PAGEMAGICNUMBER                                                               ( ( uint32_t )  0xA5A5A5A5u )
 
 /* Pages type */
@@ -101,6 +101,26 @@ typedef bool_t (*f_eFSS_TYPE_CrcCb) ( t_eFSS_TYPE_CrcCtx* const p_ptCtx, const u
                                       const uint8_t* p_puData, const uint32_t p_uDataL,
                                       uint32_t* const p_puCrc32Val );
 
+
+
+typedef struct
+{
+    uint32_t    uPageUseSpecific1;
+    uint32_t    uPageUseSpecific2;
+    uint32_t    uPageUseSpecific3;
+    uint32_t    uPageUseSpecific4;
+    uint8_t     uPageSubType;
+
+
+
+
+    uint8_t     uPageType;
+    uint16_t    uPageVersion;
+    uint32_t    uPageMagicNumber;
+    uint32_t    uPageCrc;
+}t_eFSS_TYPE_PageMeta;
+
+/* NUOVE EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE*/
 typedef struct
 {
     t_eFSS_TYPE_EraseCtx* ptCtxErase;
@@ -113,27 +133,20 @@ typedef struct
     f_eFSS_TYPE_CrcCb     fCrc32;
 }t_eFSS_TYPE_CbCtx;
 
-typedef struct
+typedef enum
 {
-    uint32_t    uPageUseSpecific1;
-    uint32_t    uPageUseSpecific2;
-    uint32_t    uPageUseSpecific3;
-    uint32_t    uPageUseSpecific4;
-    uint8_t     uPageSubType;
-    uint8_t     uPageType;
-    uint16_t    uPageVersion;
-    uint32_t    uPageMagicNumber;
-    uint32_t    uPageCrc;
-}t_eFSS_TYPE_PageMeta;
+    e_eFSS_TYPE_BUFFTYPE_1 = 0,
+    e_eFSS_TYPE_BUFFTYPE_2
+}e_eFSS_TYPE_BUFFTYPE;
 
 typedef struct
 {
     uint32_t    uTotPages;
     uint32_t    uPagesLen;
-    uint32_t    uStorageVer;
     uint32_t    uRWERetry;
-}t_eFSS_TYPE_StorageSettings;
-
+    uint8_t     uPageType;
+    uint16_t    uPageVersion;
+}t_eFSS_TYPE_StorSet;
 
 #ifdef __cplusplus
 } /* extern "C" */
