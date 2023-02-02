@@ -174,19 +174,15 @@ e_eFSS_COREHL_RES eFSS_COREHL_CalcCrcInBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, e_
 								            uint32_t p_uCrcSeed, uint32_t p_uLenCalc, uint32_t* p_puCrc);
 
 /**
- * @brief       Verify the validity of the page in p_uOrigIndx and p_uBackupIndx.
+ * @brief       Verify the validity of the page in p_uOrigIndx and p_uBackupIndx. If everithing goes well at the end
+ *              we can also retrive the original page from the buffer 1.
  *              1 - If p_uOrigIndx and p_uBackupIndx are valid, verify if they are equals. If not copy p_uOrigIndx
  *                  in p_uBackupIndx
  *              2 - If p_uOrigIndx is not valid copy p_uBackupIndx in p_uOrigIndx
  *              3 - If p_uBackupIndx is not valid copy p_uOrigIndx in p_uBackupIndx
  *              4 - If p_uOrigIndx and p_uBackupIndx are not valid we cann not do nothing
  *
- * @param[in]   p_ptCbCtx     - Pointer to all callback context
- * @param[in]   p_uReTry      - How many times we can retry if some error happens
- * @param[in]   p_puDataW     - Buffer used for write operation
- * @param[in]   p_uDataWLen   - size of the p_puDataW buffer
- * @param[in]   p_puDataR     - Buffer used for read operation
- * @param[in]   p_uDataRLen   - size of the p_puDataR buffer
+ * @param[in]   p_ptCtx       - Pointer to all callback context
  * @param[in]   p_uOrigIndx   - Page index of the original data
  * @param[in]   p_uBackupIndx - Page index of the backup data
  *
@@ -202,12 +198,9 @@ e_eFSS_COREHL_RES eFSS_COREHL_CalcCrcInBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, e_
  *              e_eFSS_COREHL_RES_CLBCKREADERR      - Error reported from the callback
  *              e_eFSS_COREHL_RES_WRITENOMATCHREAD  - For some unknow reason data write dosent match data readed
  */
-e_eFSS_COREHL_RES eFSS_COREHL_VerifyNRipristBkup( t_eFSS_COREHL_Ctx* const p_ptCtx, const uint32_t p_uReTry,
-                                                          uint8_t* const p_puDataW, const uint32_t p_uDataWLen,
-                                                          uint8_t* const p_puDataR, const uint32_t p_uDataRLen,
-                                                          const uint32_t p_uOrigIndx, const uint32_t p_uBackupIndx,
-                                                          const uint32_t p_uOriSubType, const uint32_t p_uBckUpSubType,
-                                                          t_eFSS_TYPE_PageMeta* p_ptPagePrm );
+e_eFSS_COREHL_RES eFSS_COREHL_VerifyNRipristBkup(t_eFSS_COREHL_Ctx* const p_ptCtx, const uint32_t p_uOrigIndx, 
+                                                 const uint32_t p_uBackupIndx, const uint32_t p_uOriSubType, 
+                                                 const uint32_t p_uBckUpSubType );
 
 #ifdef __cplusplus
 } /* extern "C" */

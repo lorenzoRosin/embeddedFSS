@@ -114,6 +114,23 @@ void eFSS_CORELLPRV_ExtractData(uint8_t* p_puBuff, t_eFSS_CORELL_privMeta* p_ptP
     p_ptPrvMeta->uPageVersion |= ( l_uTemp & 0xFF00u );
     l_uComulIndx++;
 
+    /* --- Copy data Little endian -- PAGE TOTAL */
+    l_uTemp = (uint32_t) p_puBuff[l_uComulIndx];
+    p_ptPrvMeta->uPageTot |= ( l_uTemp & 0x000000FFu );
+    l_uComulIndx++;
+
+    l_uTemp =  (uint32_t) ( ( (uint32_t) p_puBuff[l_uComulIndx] ) << 8u  );
+    p_ptPrvMeta->uPageTot |= ( l_uTemp & 0x0000FF00u );
+    l_uComulIndx++;
+
+    l_uTemp =  (uint32_t) ( ( (uint32_t) p_puBuff[l_uComulIndx] ) << 16u  );
+    p_ptPrvMeta->uPageTot |= ( l_uTemp & 0x00FF0000u );
+    l_uComulIndx++;
+
+    l_uTemp =  (uint32_t) ( ( (uint32_t) p_puBuff[l_uComulIndx] ) << 24u  );
+    p_ptPrvMeta->uPageTot |= ( l_uTemp & 0xFF000000u );
+    l_uComulIndx++;
+
     /* --- Copy data Little endian -- MAGIC NUMBER */
     l_uTemp = (uint32_t) p_puBuff[l_uComulIndx];
     p_ptPrvMeta->uPageMagicNumber |= ( l_uTemp & 0x000000FFu );
@@ -223,6 +240,19 @@ void eFSS_CORELLPRV_InsertData(uint8_t* p_puBuff, t_eFSS_CORELL_privMeta* p_ptPr
     l_uComulIndx++;
 
     p_puBuff[l_uComulIndx] = (uint8_t) ( ( p_ptPrvMeta->uPageVersion >> 8u  ) & 0x00FFu );
+    l_uComulIndx++;
+
+    /* --- Copy data Little endian -- PAGE TOTAL */
+    p_puBuff[l_uComulIndx] = (uint8_t) ( ( p_ptPrvMeta->uPageTot        ) & 0x000000FFu );
+    l_uComulIndx++;
+
+    p_puBuff[l_uComulIndx] = (uint8_t) ( ( p_ptPrvMeta->uPageTot >> 8u  ) & 0x000000FFu );
+    l_uComulIndx++;
+
+    p_puBuff[l_uComulIndx] = (uint8_t) ( ( p_ptPrvMeta->uPageTot >> 16u ) & 0x000000FFu );
+    l_uComulIndx++;
+
+    p_puBuff[l_uComulIndx] = (uint8_t) ( ( p_ptPrvMeta->uPageTot >> 24u ) & 0x000000FFu );
     l_uComulIndx++;
 
     /* --- Copy data Little endian -- MAGIC NUMBER */

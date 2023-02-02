@@ -29,7 +29,7 @@ extern "C" {
  *      DEFINES
  **********************************************************************************************************************/
 /* Pages Metadata values */
-#define EFSS_PAGEMETALLSIZE                                                                        ( ( uint32_t )  28u )
+#define EFSS_PAGEMETALLSIZE                                                                        ( ( uint32_t )  17u )
 #define EFSS_PAGEMAGICNUMBER                                                               ( ( uint32_t )  0xA5A5A5A5u )
 
 /* Pages type */

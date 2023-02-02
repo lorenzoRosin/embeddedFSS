@@ -155,6 +155,170 @@ e_eFSS_COREHL_RES eFSS_COREHL_CalcCrcInBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, e_
     return l_eRes;
 }
 
+e_eFSS_COREHL_RES eFSS_COREHL_VerifyNRipristBkup(t_eFSS_COREHL_Ctx* const p_ptCtx, const uint32_t p_uOrigIndx, 
+                                                 const uint32_t p_uBackupIndx, const uint32_t p_uOriSubType, 
+                                                 const uint32_t p_uBckUpSubType )
+{
+    e_eFSS_COREHL_RES l_eRes;
+    e_eFSS_CORELL_RES l_eResLL;
+
+    if( NULL == p_ptCtx )
+    {
+        l_eRes = e_eFSS_COREHL_RES_BADPOINTER;
+    }
+    else
+    {
+        if( p_uBackupIndx == p_uOrigIndx )
+        {
+            l_eRes = e_eFSS_COREHL_RES_BADPARAM;
+        }
+        else
+        {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            /* Read origin page */
+            l_eResLL = eFSS_UTILSLLPRV_ReadPage(p_ptCbCtx, p_uOrigIndx, p_puDataW, p_uDataWLen, p_uReTry);
+            l_eRes = eFSS_UTILSHLPRV_LLtoHLRes(l_eResLL);
+
+            if( e_eFSS_UTILSHLPRV_RES_OK == l_eRes)
+            {
+                /* Read backup page */
+                l_eResLL = eFSS_UTILSLLPRV_ReadPage(p_ptCbCtx, p_uBackupIndx, p_puDataR, p_uDataRLen, p_uReTry);
+                l_eRes = eFSS_UTILSHLPRV_LLtoHLRes(l_eResLL);
+
+                if( e_eFSS_UTILSHLPRV_RES_OK == l_eRes )
+                {
+                    /* Verify origin integrity */
+                    l_eRes = eFSS_UTILSHLPRV_IsValidPage(p_ptCbCtx, p_uOrigIndx, p_puDataW, p_uDataWLen, p_uReTry,
+                                                         &isOriginValid);
+                    if( e_eFSS_UTILSHLPRV_RES_OK == l_eRes )
+                    {
+                        /* Verify backup integrity */
+                        l_eRes = eFSS_UTILSHLPRV_IsValidPage(p_ptCbCtx, p_uBackupIndx, p_puDataR, p_uDataRLen, p_uReTry,
+                                                            &isBackupValid);
+
+                        if( e_eFSS_UTILSHLPRV_RES_OK == l_eRes )
+                        {
+                            if( ( true == isOriginValid ) && ( true == isBackupValid ) )
+                            {
+                                /* Both page are valid, are they identical? */
+                                if( 0 == memcmp(p_puDataW, p_puDataR, p_uDataRLen ) )
+                                {
+                                    /* Page are equals*/
+                                    l_eRes = e_eFSS_UTILSHLPRV_RES_OK;
+                                }
+                                else
+                                {
+                                    /* Page are not equals, copy origin in backup */
+                                    l_eResLL = eFSS_UTILSLLPRV_WritePage(p_ptCbCtx, p_puDataW, p_uDataWLen, p_puDataR,
+                                                                        p_uDataRLen, p_uBackupIndx, p_uReTry);
+                                    l_eRes = eFSS_UTILSHLPRV_LLtoHLRes(l_eResLL);
+
+                                    if( e_eFSS_UTILSHLPRV_RES_OK == l_eRes )
+                                    {
+                                        l_eRes = e_eFSS_UTILSHLPRV_RES_OK_BKP_RCVRD;
+                                    }
+                                }
+                            }
+                            else if( ( false == isOriginValid ) && ( true == isBackupValid ) )
+                            {
+                                /* Origin is not valid, repristinate from backup */
+                                l_eResLL = eFSS_UTILSLLPRV_WritePage(p_ptCbCtx, p_puDataR, p_uDataRLen, p_puDataW,
+                                                                     p_uDataWLen, p_uOrigIndx, p_uReTry);
+                                l_eRes = eFSS_UTILSHLPRV_LLtoHLRes(l_eResLL);
+
+                                if( e_eFSS_UTILSHLPRV_RES_OK == l_eRes )
+                                {
+                                    l_eRes = e_eFSS_UTILSHLPRV_RES_OK_BKP_RCVRD;
+                                }
+                            }
+                            else if( ( true == isOriginValid ) && ( false == isBackupValid ) )
+                            {
+                                /* Backup is not valid, repristinate from origin */
+                                l_eResLL = eFSS_UTILSLLPRV_WritePage(p_ptCbCtx, p_puDataW, p_uDataWLen, p_puDataR,
+                                                                     p_uDataRLen, p_uBackupIndx, p_uReTry);
+                                l_eRes = eFSS_UTILSHLPRV_LLtoHLRes(l_eResLL);
+
+                                if( e_eFSS_UTILSHLPRV_RES_OK == l_eRes )
+                                {
+                                    l_eRes = e_eFSS_UTILSHLPRV_RES_OK_BKP_RCVRD;
+                                }
+                            }
+                            else
+                            {
+                                /* No a single valid pages found */
+                                l_eRes = e_eFSS_UTILSHLPRV_RES_NOTVALIDPAGE;
+                            }
+                        }
+                    }
+                }
+            }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        }
+    }
+
+    return l_eRes; 
+}
+
 /***********************************************************************************************************************
  *  PRIVATE FUNCTION
  **********************************************************************************************************************/

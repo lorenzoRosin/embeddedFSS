@@ -32,6 +32,7 @@ typedef struct
 {
     uint8_t     uPageType;
     uint16_t    uPageVersion;
+    uint32_t    uPageTot;
     uint32_t    uPageMagicNumber;
     uint32_t    uPageCrc;
 }t_eFSS_CORELL_privMeta;

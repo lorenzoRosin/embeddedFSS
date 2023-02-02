@@ -16,6 +16,7 @@
  * - uint8_t  - uPageSubType       -> Page subtype
  * - uint8_t  - uPageType          -> Page type
  * - uint16_t - uPageVersion       -> Page version
+ * - uint32_t - uPageTot           -> Total number of page used
  * - uint32_t - uPageMagicNumber   -> Magic number of the page
  * - uint32_t - uPageCrc           -> 32 bit CRC
  *
