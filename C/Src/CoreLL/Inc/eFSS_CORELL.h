@@ -28,6 +28,14 @@ extern "C" {
 /***********************************************************************************************************************
  *      PUBLIC TYPEDEFS
  **********************************************************************************************************************/
+typedef struct
+{
+    uint8_t     uPageType;
+    uint16_t    uPageVersion;
+    uint32_t    uPageMagicNumber;
+    uint32_t    uPageCrc;
+}t_eFSS_CORELL_privMeta;
+
 typedef enum
 {
     e_eFSS_CORELL_RES_OK = 0,
@@ -51,8 +59,10 @@ typedef struct
     t_eFSS_TYPE_StorSet tStorSett;
 	uint8_t* puBuf1;
 	uint32_t uBuf1L;
+    t_eFSS_TYPE_PageMeta tMetaBuf1;
 	uint8_t* puBuf2;
 	uint32_t uBuf2L;
+    t_eFSS_TYPE_PageMeta tMetaBuf2;
 }t_eFSS_CORELL_Ctx;
 
 
@@ -107,6 +117,7 @@ e_eFSS_CORELL_RES eFSS_CORELL_GetStorSett(t_eFSS_CORELL_Ctx* const p_ptCtx, t_eF
  * @param[in]   p_eBuffType   - Enum used to select wich buffer we want to select
  * @param[out]  p_ppuBuff     - Pointer to a Pointer pointing to the p_eBuffType buffer
  * @param[out]  p_puBuffL     - Pointer to a uint32_t variable where the size of p_ppuBuff buffer will be placed
+ * @param[out]  p_pptMetaB    - Pointer to a meta struct variable where the pointer to the page metasize will be placed
  *
  * @return      e_eFSS_CORELL_RES_BADPOINTER    - In case of bad pointer passed to the function
  *		        e_eFSS_CORELL_RES_BADPARAM      - In case of an invalid parameter passed to the function
@@ -115,7 +126,7 @@ e_eFSS_CORELL_RES eFSS_CORELL_GetStorSett(t_eFSS_CORELL_Ctx* const p_ptCtx, t_eF
  *              e_eFSS_CORELL_RES_OK            - Operation ended correctly
  */
 e_eFSS_CORELL_RES eFSS_CORELL_GetBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e_eFSS_TYPE_BUFFTYPE p_eBuffType,
-								      uint8_t** p_ppuBuff, uint32_t* p_puBuffL);
+								      uint8_t** p_ppuBuff, uint32_t* p_puBuffL, t_eFSS_TYPE_PageMeta** p_pptMetaB);
 
 /**
  * @brief       Load a page from the storage area in one of he two internal buffer
@@ -131,7 +142,7 @@ e_eFSS_CORELL_RES eFSS_CORELL_GetBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e_eFSS_T
  *		        e_eFSS_CORELL_RES_CLBCKREADERR    - The read callback reported an error
  *              e_eFSS_CORELL_RES_CLBCKCRCERR     - The crc callback reported an error
  *              e_eFSS_CORELL_RES_NOTVALIDPAGE    - The readed page is invalid
- *              e_eFSS_CORELL_RES_NEWVERSIONFOUND - The readed page has a new version 
+ *              e_eFSS_CORELL_RES_NEWVERSIONFOUND - The readed page has a new version
  *              e_eFSS_CORELL_RES_OK              - Operation ended correctly
  */
 e_eFSS_CORELL_RES eFSS_CORELL_LoadPageInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e_eFSS_TYPE_BUFFTYPE p_eBuffType,

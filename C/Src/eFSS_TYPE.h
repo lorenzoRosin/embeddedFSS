@@ -29,7 +29,7 @@ extern "C" {
  *      DEFINES
  **********************************************************************************************************************/
 /* Pages Metadata values */
-#define EFSS_PAGEMETALLSIZE                                                                        ( ( uint32_t )  11u )
+#define EFSS_PAGEMETALLSIZE                                                                        ( ( uint32_t )  28u )
 #define EFSS_PAGEMAGICNUMBER                                                               ( ( uint32_t )  0xA5A5A5A5u )
 
 /* Pages type */
@@ -103,22 +103,7 @@ typedef bool_t (*f_eFSS_TYPE_CrcCb) ( t_eFSS_TYPE_CrcCtx* const p_ptCtx, const u
 
 
 
-typedef struct
-{
-    uint32_t    uPageUseSpecific1;
-    uint32_t    uPageUseSpecific2;
-    uint32_t    uPageUseSpecific3;
-    uint32_t    uPageUseSpecific4;
-    uint8_t     uPageSubType;
 
-
-
-
-    uint8_t     uPageType;
-    uint16_t    uPageVersion;
-    uint32_t    uPageMagicNumber;
-    uint32_t    uPageCrc;
-}t_eFSS_TYPE_PageMeta;
 
 /* NUOVE EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE*/
 typedef struct
@@ -147,6 +132,15 @@ typedef struct
     uint8_t     uPageType;
     uint16_t    uPageVersion;
 }t_eFSS_TYPE_StorSet;
+
+typedef struct
+{
+    uint32_t    uPageUseSpec1;
+    uint32_t    uPageUseSpec2;
+    uint32_t    uPageUseSpec3;
+    uint32_t    uPageUseSpec4;
+    uint8_t     uPageSubType;
+}t_eFSS_TYPE_PageMeta;
 
 #ifdef __cplusplus
 } /* extern "C" */

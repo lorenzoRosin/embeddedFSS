@@ -1482,7 +1482,7 @@
                 <name>$PROJ_DIR$\..\..\Src\CoreLL\Inc\eFSS_CORELL.h</name>
             </file>
             <file>
-                <name>$PROJ_DIR$\..\..\Src\CoreLL\Inc\eFSS_COREML.h</name>
+                <name>$PROJ_DIR$\..\..\Src\CoreLL\Inc\eFSS_CORELLPRV.h</name>
             </file>
             <file>
                 <name>$PROJ_DIR$\..\..\Src\CoreLL\Inc\eFSS_UTILSHLPRV.h</name>
@@ -1500,7 +1500,7 @@
                 <name>$PROJ_DIR$\..\..\Src\CoreLL\Src\eFSS_CORELL.c</name>
             </file>
             <file>
-                <name>$PROJ_DIR$\..\..\Src\CoreLL\Src\eFSS_COREML.c</name>
+                <name>$PROJ_DIR$\..\..\Src\CoreLL\Src\eFSS_CORELLPRV.c</name>
             </file>
             <file>
                 <name>$PROJ_DIR$\..\..\Src\CoreLL\Src\eFSS_UTILSHLPRV.c</name>

@@ -47,7 +47,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_InitCtx(t_eFSS_COREHL_Ctx* const p_ptCtx, t_eFSS_T
         else
         {
             /* Init ML context */
-            l_eResML = eFSS_COREML_InitCtx(&p_ptCtx->tCOREMLCtx, p_tCtxCb, p_tStorSetLL,p_tStorSetML, p_puBuff, 
+            l_eResML = eFSS_COREML_InitCtx(&p_ptCtx->tCOREMLCtx, p_tCtxCb, p_tStorSetLL,p_tStorSetML, p_puBuff,
                                            p_uBuffL);
             l_eRes = eFSS_COREHL_MLtoHLRes(l_eResML);
 
@@ -96,7 +96,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_GetStorSett(t_eFSS_COREHL_Ctx* const p_ptCtx, uint
     uint16_t l_uPageVersion;
 
 	/* Check pointer validity */
-	if( ( NULL == p_ptCtx ) || ( NULL == p_puDataL ) || ( NULL == p_puNPage ) || ( NULL == p_puPageType ) || 
+	if( ( NULL == p_ptCtx ) || ( NULL == p_puDataL ) || ( NULL == p_puNPage ) || ( NULL == p_puPageType ) ||
         ( NULL == p_puPageVersion ) )
 	{
 		l_eRes = e_eFSS_COREHL_RES_BADPOINTER;
