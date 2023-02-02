@@ -161,6 +161,10 @@ e_eFSS_COREHL_RES eFSS_COREHL_VerifyNRipristBkup(t_eFSS_COREHL_Ctx* const p_ptCt
 {
     e_eFSS_COREHL_RES l_eRes;
     e_eFSS_CORELL_RES l_eResLL;
+    t_eFSS_TYPE_StorBuf* buff1;
+    t_eFSS_TYPE_StorBuf* buff2;
+    bool_t isOriginValid;
+    bool_t isBackupValid;
 
     if( NULL == p_ptCtx )
     {
@@ -174,41 +178,32 @@ e_eFSS_COREHL_RES eFSS_COREHL_VerifyNRipristBkup(t_eFSS_COREHL_Ctx* const p_ptCt
         }
         else
         {
+            l_eResLL = eFSS_CORELL_GetBuff(&p_ptCtx->tCORELLCtx, &buff1, &buff2);
+            l_eRes = eFSS_COREHL_LLtoHLRes(l_eResLL);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            /* Read origin page */
-            l_eResLL = eFSS_UTILSLLPRV_ReadPage(p_ptCbCtx, p_uOrigIndx, p_puDataW, p_uDataWLen, p_uReTry);
-            l_eRes = eFSS_UTILSHLPRV_LLtoHLRes(l_eResLL);
-
-            if( e_eFSS_UTILSHLPRV_RES_OK == l_eRes)
+            if( e_eFSS_CORELL_RES_OK == l_eRes)
             {
-                /* Read backup page */
-                l_eResLL = eFSS_UTILSLLPRV_ReadPage(p_ptCbCtx, p_uBackupIndx, p_puDataR, p_uDataRLen, p_uReTry);
-                l_eRes = eFSS_UTILSHLPRV_LLtoHLRes(l_eResLL);
+                l_eResLL = eFSS_CORELL_LoadPageInBuff(&p_ptCtx->tCORELLCtx, e_eFSS_TYPE_BUFFTYPE_1, p_uOrigIndx);
+                l_eRes = eFSS_COREHL_LLtoHLRes(l_eResLL);
 
-                if( e_eFSS_UTILSHLPRV_RES_OK == l_eRes )
+                if( e_eFSS_CORELL_RES_OK == l_eRes)
                 {
-                    /* Verify origin integrity */
-                    l_eRes = eFSS_UTILSHLPRV_IsValidPage(p_ptCbCtx, p_uOrigIndx, p_puDataW, p_uDataWLen, p_uReTry,
-                                                         &isOriginValid);
-                    if( e_eFSS_UTILSHLPRV_RES_OK == l_eRes )
-                    {
-                        /* Verify backup integrity */
-                        l_eRes = eFSS_UTILSHLPRV_IsValidPage(p_ptCbCtx, p_uBackupIndx, p_puDataR, p_uDataRLen, p_uReTry,
-                                                            &isBackupValid);
+                    l_eResLL = eFSS_CORELL_LoadPageInBuff(&p_ptCtx->tCORELLCtx, e_eFSS_TYPE_BUFFTYPE_2, p_uBackupIndx);
+                    l_eRes = eFSS_COREHL_LLtoHLRes(l_eResLL);
+
+
+
+                }
+            }
+
+
+
+
+
+
+
+
+
 
                         if( e_eFSS_UTILSHLPRV_RES_OK == l_eRes )
                         {
@@ -263,6 +258,15 @@ e_eFSS_COREHL_RES eFSS_COREHL_VerifyNRipristBkup(t_eFSS_COREHL_Ctx* const p_ptCt
                                 l_eRes = e_eFSS_UTILSHLPRV_RES_NOTVALIDPAGE;
                             }
                         }
+
+
+
+
+
+
+
+
+
                     }
                 }
             }

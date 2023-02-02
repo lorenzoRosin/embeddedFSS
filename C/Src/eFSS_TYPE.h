@@ -142,6 +142,13 @@ typedef struct
     uint8_t     uPageSubType;
 }t_eFSS_TYPE_PageMeta;
 
+typedef struct
+{
+    uint8_t*  ppuBuf;
+    uint32_t  puBufL;
+    t_eFSS_TYPE_PageMeta pptMeta;
+}t_eFSS_TYPE_StorBuf;
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
