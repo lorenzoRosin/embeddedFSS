@@ -170,7 +170,7 @@ e_eFSS_CORELL_RES eFSS_CORELL_GetStorSett(t_eFSS_CORELL_Ctx* const p_ptCtx, t_eF
 	return l_eRes;
 }
 
-e_eFSS_CORELL_RES eFSS_CORELL_GetBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, t_eFSS_TYPE_StorBuf** buff1, 
+e_eFSS_CORELL_RES eFSS_CORELL_GetBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, t_eFSS_TYPE_StorBuf** buff1,
                                       t_eFSS_TYPE_StorBuf** buff2)
 {
 	/* Return local var */

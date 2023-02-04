@@ -30,38 +30,42 @@ extern "C" {
  * GLOBAL PROTOTYPES
  **********************************************************************************************************************/
 /**
- * @brief       Extract all metadata from the passed buffer
+ * @brief       Extract all metadata from the passed buffer. Keep in mind that not a single controll of any parameter
+ *              is executed by this function, so do not pass NULL pointer of invalid buffer. The correct buffer must
+ *              be EFSS_PAGEMETALLSIZE long.
  *
- * @param[in]   p_puBuff      - Pointer to a buffer containing data that we need to extract
- * @param[out]  p_ptPrvMeta   - Enum used to select wich buffer we want to select
- * @param[out]  p_ptMetaB     - uint32_t index rappresenting the page that we want to flush in storage
+ * @param[in]   p_puBuf       - Buffer of EFSS_PAGEMETALLSIZE length which will be used to extract needed parameter
+ * @param[out]  p_ptPrvMeta   - Pointer to a private metadata struct that will be filled with data present in p_puBuf
+ * @param[out]  p_ptMeta      - Pointer to a metadata struct that will be filled with data present in p_puBuf
  *
  * @return      Nothing will be returned
  */
-void eFSS_CORELLPRV_ExtractData(uint8_t* p_puBuff, t_eFSS_CORELL_privMeta* p_ptPrvMeta,
-                                t_eFSS_TYPE_PageMeta* p_ptMetaB);
+void eFSS_CORELLPRV_ExtractData(uint8_t* p_puBuf, t_eFSS_CORELL_privMeta* p_ptPrvMeta, t_eFSS_TYPE_PageMeta* p_ptMeta);
 
 /**
- * @brief       Insert all metadata in to the the passed buffer
+ * @brief       Insert data taken from p_ptPrvMeta and p_ptMeta inside the passed buffer. Keep in mind that not a
+ *              single controll of any parameter is executed by this function, so do not pass NULL pointer of invalid
+ *              buffer. The correct buffer must be EFSS_PAGEMETALLSIZE long.
  *
- * @param[in]   p_puBuff      - Pointer to a buffer containing data that we need to extract
- * @param[out]  p_ptPrvMeta   - Enum used to select wich buffer we want to select
- * @param[out]  p_ptMetaB     - uint32_t index rappresenting the page that we want to flush in storage
+ * @param[out]  p_puBuf       - Buffer of EFSS_PAGEMETALLSIZE length which will be filled with passed parameter
+ * @param[in]   p_ptPrvMeta   - Pointer to a private metadata struct that will be copied inside p_puBuf
+ * @param[in]   p_ptMeta      - Pointer to a metadata struct that will be copied inside p_puBuf
  *
  * @return      Nothing will be returned
  */
-void eFSS_CORELLPRV_InsertData(uint8_t* p_puBuff, t_eFSS_CORELL_privMeta* p_ptPrvMeta,
-                               t_eFSS_TYPE_PageMeta* p_ptMetaB);
+void eFSS_CORELLPRV_InsertData(uint8_t* p_puBuf, t_eFSS_CORELL_privMeta* p_ptPrvMeta, t_eFSS_TYPE_PageMeta* p_ptMeta);
 
 /**
- * @brief       Insert CRC metadata in to the the passed buffer
+ * @brief       Insert a CRC32 vlue inside the passed buffer. Keep in mind that not a single controll of any parameter
+ *              is executed by this function, so do not pass NULL pointer of invalid buffer. The correct buffer must
+ *              be sizeof(uint32_t) long.
  *
- * @param[in]   p_puBuff      - Pointer to a buffer containing data that we need to extract
- * @param[out]  p_uCrc        - Crc to insert
+ * @param[out]  p_puBuf       - Buffer of sizeof(uint32_t) length which will be filled with crc value
+ * @param[in]   p_uCrc        - Crc to insert
  *
  * @return      Nothing will be returned
  */
-void eFSS_CORELLPRV_InsertCrc(uint8_t* p_puBuff, uint32_t p_uCrc);
+void eFSS_CORELLPRV_InsertCrc(uint8_t* p_puBuf, uint32_t p_uCrc);
 
 #ifdef __cplusplus
 } /* extern "C" */
