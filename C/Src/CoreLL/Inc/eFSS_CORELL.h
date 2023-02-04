@@ -152,7 +152,7 @@ e_eFSS_CORELL_RES eFSS_CORELL_LoadPageInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e
 /**
  * @brief       Flush one of the two buffer in the storage are. Keep in mine that the other buffer well be used
  *              to check if the data was flushed corretly, and after this operation will contains different value.
- *              Only the buffer of the flushed area will be still valid after this operation.
+ *              Only the buffer of the flushed area will be valid after this operation.
  *
  * @param[in]   p_ptCtx       - Low Level Core context
  * @param[in]   p_eBuffType   - Enum used to select wich buffer we want to select
