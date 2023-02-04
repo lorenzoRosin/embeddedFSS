@@ -55,12 +55,12 @@ typedef struct
  * GLOBAL PROTOTYPES
  **********************************************************************************************************************/
 /**
- * @brief       Initialize the Low Level Core Module context
+ * @brief       Initialize the High Level Core Module context
  *
- * @param[in]   p_ptCtx          - Low Level Log Core context
+ * @param[in]   p_ptCtx          - High Level Core context
  * @param[in]   p_tCtxCb         - All callback collection context
  * @param[in]   p_tStorSet       - Storage settings
- * @param[in]   p_puBuff         - Pointer to a buffer used by the modules to make calc
+ * @param[in]   p_puBuff         - Pointer to a buffer used by the modules to make calc, must ne pageSize * 2
  * @param[in]   p_uBuffL         - Size of p_puBuff
  *
  * @return      e_eFSS_COREHL_RES_BADPOINTER    - In case of bad pointer passed to the function
@@ -73,7 +73,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_InitCtx(t_eFSS_COREHL_Ctx* const p_ptCtx, t_eFSS_T
 /**
  * @brief       Check if the lib is initialized
  *
- * @param[in]   p_ptCtx       - Low Level Log Core context
+ * @param[in]   p_ptCtx       - High Level Core context
  * @param[out]  p_pbIsInit    - Pointer to a bool_t variable that will be filled with true if the lib is initialized
  *
  * @return      e_eFSS_COREHL_RES_BADPOINTER    - In case of bad pointer passed to the function
@@ -84,7 +84,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_IsInit(t_eFSS_COREHL_Ctx* const p_ptCtx, bool_t* p
 /**
  * @brief       Get storage settings
  *
- * @param[in]   p_ptCtx       - Low Level Log Core context
+ * @param[in]   p_ptCtx       - High Level Core context
  * @param[out]  p_ptStorSet   - Pointer to a storage settings
  *
  * @return      e_eFSS_COREHL_RES_BADPOINTER    - In case of bad pointer passed to the function
@@ -95,27 +95,24 @@ e_eFSS_COREHL_RES eFSS_COREHL_IsInit(t_eFSS_COREHL_Ctx* const p_ptCtx, bool_t* p
 e_eFSS_COREHL_RES eFSS_COREHL_GetStorSett(t_eFSS_COREHL_Ctx* const p_ptCtx, t_eFSS_TYPE_StorSet* p_ptStorSet);
 
 /**
- * @brief       Get reference to one of the two internal buffer
+ * @brief       Get reference of the two buffer used to read and write in storage
  *
- * @param[in]   p_ptCtx       - Low Level Log Core context
- * @param[in]   p_eBuffType   - Enum used to select wich buffer we want to select
- * @param[out]  p_ppuBuff     - Pointer to a Pointer pointing to the p_eBuffType buffer
- * @param[out]  p_puBuffL     - Pointer to a uint32_t variable where the size of p_ppuBuff buffer will be placed
- * @param[out]  p_pptMetaB    - Pointer to a meta struct variable where the pointer to the page metasize will be placed
+ * @param[in]   p_ptCtx       - High Level Core context
+ * @param[out]  p_ptBuff1     - Pointer to a pointer struct that will be filled with info about buffer 1
+ * @param[out]  p_ptBuff2     - Pointer to a pointer struct that will be filled with info about buffer 2
  *
  * @return      e_eFSS_COREHL_RES_BADPOINTER    - In case of bad pointer passed to the function
- *		        e_eFSS_COREHL_RES_BADPARAM      - In case of an invalid parameter passed to the function
  *		        e_eFSS_COREHL_RES_CORRUPTCTX    - Context is corrupted
  *		        e_eFSS_COREHL_RES_NOINITLIB     - Need to init lib before calling function
  *              e_eFSS_COREHL_RES_OK            - Operation ended correctly
  */
-e_eFSS_COREHL_RES eFSS_COREHL_GetBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, e_eFSS_TYPE_BUFFTYPE p_eBuffType,
-								      uint8_t** p_ppuBuff, uint32_t* p_puBuffL, t_eFSS_TYPE_PageMeta** p_pptMetaB);
+e_eFSS_COREHL_RES eFSS_COREHL_GetBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, t_eFSS_TYPE_StorBuf* p_ptBuff1,
+                                      t_eFSS_TYPE_StorBuf* p_ptBuff2);
 
 /**
  * @brief       Load a page from the storage area in one of he two internal buffer
  *
- * @param[in]   p_ptCtx       - Low Level Log Core context
+ * @param[in]   p_ptCtx       - High Level Core context
  * @param[in]   p_eBuffType   - Enum used to select wich buffer we want to select
  * @param[in]   p_uPageIndx   - uint32_t index rappresenting the page that we want to load from storage
  *
@@ -135,8 +132,9 @@ e_eFSS_COREHL_RES eFSS_COREHL_LoadPageInBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, e
 /**
  * @brief       Flush one of the two buffer in the storage are. Keep in mine that the other buffer well be used
  *              to check if the data was flushed corretly, and after this operation will contains different value.
+ *              Only the buffer of the flushed area will be valid after this operation.
  *
- * @param[in]   p_ptCtx       - Low Level Log Core context
+ * @param[in]   p_ptCtx       - High Level Core context
  * @param[in]   p_eBuffType   - Enum used to select wich buffer we want to select
  * @param[in]   p_uPageIndx   - uint32_t index rappresenting the page that we want to flush in storage
  *
@@ -157,7 +155,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_FlushBuffInPage(t_eFSS_COREHL_Ctx* const p_ptCtx, 
  * @brief       Calculate the Crc of the data present in the choosen buffer. Can also select to calculate the crc of
  *              a given numbers of bytes.
  *
- * @param[in]   p_ptCtx       - Low Level Log Core context
+ * @param[in]   p_ptCtx       - High Level Core context
  * @param[in]   p_eBuffType   - Enum used to select wich buffer we want to select
  * @param[in]   p_uCrcSeed    - uint32_t rappresenting the seed we want to use in the calc
  * @param[in]   p_uLenCalc    - uint32_t rappresenting the lenght we want to calc
@@ -172,6 +170,32 @@ e_eFSS_COREHL_RES eFSS_COREHL_FlushBuffInPage(t_eFSS_COREHL_Ctx* const p_ptCtx, 
  */
 e_eFSS_COREHL_RES eFSS_COREHL_CalcCrcInBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, e_eFSS_TYPE_BUFFTYPE p_eBuffType,
 								            uint32_t p_uCrcSeed, uint32_t p_uLenCalc, uint32_t* p_puCrc);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /**
  * @brief       Verify the validity of the page in p_uOrigIndx and p_uBackupIndx. If everithing goes well at the end

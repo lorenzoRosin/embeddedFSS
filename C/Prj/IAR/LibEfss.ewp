@@ -1146,9 +1146,6 @@
             <name>Inc</name>
             <file>
                 <name>$PROJ_DIR$\..\..\Src\CoreLL\Inc\eFSS_COREHL.h</name>
-                <excluded>
-                    <configuration>Library</configuration>
-                </excluded>
             </file>
             <file>
                 <name>$PROJ_DIR$\..\..\Src\CoreLL\Inc\eFSS_CORELL.h</name>
@@ -1173,9 +1170,6 @@
             <name>Src</name>
             <file>
                 <name>$PROJ_DIR$\..\..\Src\CoreLL\Src\eFSS_COREHL.c</name>
-                <excluded>
-                    <configuration>Library</configuration>
-                </excluded>
             </file>
             <file>
                 <name>$PROJ_DIR$\..\..\Src\CoreLL\Src\eFSS_CORELL.c</name>

@@ -1,5 +1,5 @@
 /**
- * @file       eFSS_COREHL.h
+ * @file       eFSS_COREHL.c
  *
  * @brief      High level core module
  *
@@ -27,6 +27,7 @@ static e_eFSS_COREHL_RES eFSS_COREHL_LLtoHLRes(const e_eFSS_CORELL_RES p_eLLRes)
 e_eFSS_COREHL_RES eFSS_COREHL_InitCtx(t_eFSS_COREHL_Ctx* const p_ptCtx, t_eFSS_TYPE_CbCtx const p_tCtxCb,
 									  t_eFSS_TYPE_StorSet p_tStorSet, uint8_t* const p_puBuff, uint32_t p_uBuffL)
 {
+    /* Return local var */
     e_eFSS_COREHL_RES l_eRes;
     e_eFSS_CORELL_RES l_eResLL;
 
@@ -36,7 +37,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_InitCtx(t_eFSS_COREHL_Ctx* const p_ptCtx, t_eFSS_T
     }
     else
     {
-        l_eResLL = eFSS_COREHL_InitCtx(&p_ptCtx->tCORELLCtx, p_tCtxCb, p_tStorSet, p_puBuff, p_uBuffL);
+        l_eResLL = eFSS_CORELL_InitCtx(&p_ptCtx->tCORELLCtx, p_tCtxCb, p_tStorSet, p_puBuff, p_uBuffL);
         l_eRes = eFSS_COREHL_LLtoHLRes(l_eResLL);
     }
 
@@ -45,6 +46,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_InitCtx(t_eFSS_COREHL_Ctx* const p_ptCtx, t_eFSS_T
 
 e_eFSS_COREHL_RES eFSS_COREHL_IsInit(t_eFSS_COREHL_Ctx* const p_ptCtx, bool_t* p_pbIsInit)
 {
+    /* Return local var */
     e_eFSS_COREHL_RES l_eRes;
     e_eFSS_CORELL_RES l_eResLL;
 
@@ -54,7 +56,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_IsInit(t_eFSS_COREHL_Ctx* const p_ptCtx, bool_t* p
     }
     else
     {
-        l_eResLL = eFSS_COREHL_IsInit(&p_ptCtx->tCORELLCtx, p_pbIsInit);
+        l_eResLL = eFSS_CORELL_IsInit(&p_ptCtx->tCORELLCtx, p_pbIsInit);
         l_eRes = eFSS_COREHL_LLtoHLRes(l_eResLL);
     }
 
@@ -63,6 +65,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_IsInit(t_eFSS_COREHL_Ctx* const p_ptCtx, bool_t* p
 
 e_eFSS_COREHL_RES eFSS_COREHL_GetStorSett(t_eFSS_COREHL_Ctx* const p_ptCtx, t_eFSS_TYPE_StorSet* p_ptStorSet)
 {
+    /* Return local var */
     e_eFSS_COREHL_RES l_eRes;
     e_eFSS_CORELL_RES l_eResLL;
 
@@ -72,16 +75,17 @@ e_eFSS_COREHL_RES eFSS_COREHL_GetStorSett(t_eFSS_COREHL_Ctx* const p_ptCtx, t_eF
     }
     else
     {
-        l_eResLL = eFSS_COREHL_GetStorSett(&p_ptCtx->tCORELLCtx, p_ptStorSet);
+        l_eResLL = eFSS_CORELL_GetStorSett(&p_ptCtx->tCORELLCtx, p_ptStorSet);
         l_eRes = eFSS_COREHL_LLtoHLRes(l_eResLL);
     }
 
     return l_eRes;
 }
 
-e_eFSS_COREHL_RES eFSS_COREHL_GetBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, e_eFSS_TYPE_BUFFTYPE p_eBuffType,
-								      uint8_t** p_ppuBuff, uint32_t* p_puBuffL, t_eFSS_TYPE_PageMeta** p_pptMetaB)
+e_eFSS_COREHL_RES eFSS_COREHL_GetBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, t_eFSS_TYPE_StorBuf* p_ptBuff1,
+                                      t_eFSS_TYPE_StorBuf* p_ptBuff2)
 {
+    /* Return local var */
     e_eFSS_COREHL_RES l_eRes;
     e_eFSS_CORELL_RES l_eResLL;
 
@@ -91,7 +95,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_GetBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, e_eFSS_T
     }
     else
     {
-        l_eResLL = eFSS_COREHL_GetBuff(&p_ptCtx->tCORELLCtx, p_eBuffType, p_ppuBuff, p_puBuffL, p_pptMetaB);
+        l_eResLL = eFSS_CORELL_GetBuff(&p_ptCtx->tCORELLCtx, p_ptBuff1, p_ptBuff2);
         l_eRes = eFSS_COREHL_LLtoHLRes(l_eResLL);
     }
 
@@ -101,6 +105,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_GetBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, e_eFSS_T
 e_eFSS_COREHL_RES eFSS_COREHL_LoadPageInBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, e_eFSS_TYPE_BUFFTYPE p_eBuffType,
 								             const uint32_t p_uPageIndx)
 {
+    /* Return local var */
     e_eFSS_COREHL_RES l_eRes;
     e_eFSS_CORELL_RES l_eResLL;
 
@@ -110,7 +115,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_LoadPageInBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, e
     }
     else
     {
-        l_eResLL = eFSS_COREHL_LoadPageInBuff(&p_ptCtx->tCORELLCtx, p_eBuffType, p_uPageIndx);
+        l_eResLL = eFSS_CORELL_LoadPageInBuff(&p_ptCtx->tCORELLCtx, p_eBuffType, p_uPageIndx);
         l_eRes = eFSS_COREHL_LLtoHLRes(l_eResLL);
     }
 
@@ -120,6 +125,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_LoadPageInBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, e
 e_eFSS_COREHL_RES eFSS_COREHL_FlushBuffInPage(t_eFSS_COREHL_Ctx* const p_ptCtx, e_eFSS_TYPE_BUFFTYPE p_eBuffType,
 								              const uint32_t p_uPageIndx)
 {
+    /* Return local var */
     e_eFSS_COREHL_RES l_eRes;
     e_eFSS_CORELL_RES l_eResLL;
 
@@ -129,7 +135,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_FlushBuffInPage(t_eFSS_COREHL_Ctx* const p_ptCtx, 
     }
     else
     {
-        l_eResLL = eFSS_COREHL_FlushBuffInPage(&p_ptCtx->tCORELLCtx, p_eBuffType, p_uPageIndx);
+        l_eResLL = eFSS_CORELL_FlushBuffInPage(&p_ptCtx->tCORELLCtx, p_eBuffType, p_uPageIndx);
         l_eRes = eFSS_COREHL_LLtoHLRes(l_eResLL);
     }
 
@@ -139,6 +145,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_FlushBuffInPage(t_eFSS_COREHL_Ctx* const p_ptCtx, 
 e_eFSS_COREHL_RES eFSS_COREHL_CalcCrcInBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, e_eFSS_TYPE_BUFFTYPE p_eBuffType,
 								            uint32_t p_uCrcSeed, uint32_t p_uLenCalc, uint32_t* p_puCrc)
 {
+    /* Return local var */
     e_eFSS_COREHL_RES l_eRes;
     e_eFSS_CORELL_RES l_eResLL;
 
@@ -148,15 +155,15 @@ e_eFSS_COREHL_RES eFSS_COREHL_CalcCrcInBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, e_
     }
     else
     {
-        l_eResLL = eFSS_COREHL_CalcCrcInBuff(&p_ptCtx->tCORELLCtx, p_eBuffType, p_uCrcSeed, p_uLenCalc, p_puCrc);
+        l_eResLL = eFSS_CORELL_CalcCrcInBuff(&p_ptCtx->tCORELLCtx, p_eBuffType, p_uCrcSeed, p_uLenCalc, p_puCrc);
         l_eRes = eFSS_COREHL_LLtoHLRes(l_eResLL);
     }
 
     return l_eRes;
 }
 
-e_eFSS_COREHL_RES eFSS_COREHL_VerifyNRipristBkup(t_eFSS_COREHL_Ctx* const p_ptCtx, const uint32_t p_uOrigIndx, 
-                                                 const uint32_t p_uBackupIndx, const uint32_t p_uOriSubType, 
+e_eFSS_COREHL_RES eFSS_COREHL_VerifyNRipristBkup(t_eFSS_COREHL_Ctx* const p_ptCtx, const uint32_t p_uOrigIndx,
+                                                 const uint32_t p_uBackupIndx, const uint32_t p_uOriSubType,
                                                  const uint32_t p_uBckUpSubType )
 {
     e_eFSS_COREHL_RES l_eRes;
@@ -320,7 +327,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_VerifyNRipristBkup(t_eFSS_COREHL_Ctx* const p_ptCt
         }
     }
 
-    return l_eRes; 
+    return l_eRes;
 }
 
 /***********************************************************************************************************************
