@@ -1,5 +1,5 @@
 /**
- * @file       eFSS_CORELL.h
+ * @file       eFSS_CORELL.c
  *
  * @brief      Low level core module
  *
@@ -7,19 +7,22 @@
  *
  **********************************************************************************************************************/
 
-/* In this module the page field has the following meaning:
- *
- * - uint32_t - uPageUseSpecific1  -> User specific data
- * - uint32_t - uPageUseSpecific2  -> User specific data
- * - uint32_t - uPageUseSpecific3  -> User specific data
- * - uint32_t - uPageUseSpecific4  -> User specific data
- * - uint8_t  - uPageSubType       -> Page subtype
- * - uint8_t  - uPageType          -> Page type
- * - uint16_t - uPageVersion       -> Page version
- * - uint32_t - uPageTot           -> Total number of page used
- * - uint32_t - uPageMagicNumber   -> Magic number of the page
- * - uint32_t - uPageCrc           -> 32 bit CRC
- *
+/* The written page in storage will have this struct:
+ * ------------------------------------------------------------------ User data
+ * - [uint8_t] -                    -> N byte of user data           |
+ * ------------------------------------------------------------------ Metadata  (17 byte)
+ * - uint32_t  - uPageUseSpec1      -> User specific data            |
+ * - uint32_t  - uPageUseSpec2      -> User specific data            |
+ * - uint32_t  - uPageUseSpec3      -> User specific data            |
+ * - uint32_t  - uPageUseSpec4      -> User specific data            |
+ * - uint8_t   - uPageSubType       -> Page subtype                  |
+ * ------------------------------------------------------------------ Private metadata (15 byte)
+ * - uint8_t   - uPageType          -> Page type                     |
+ * - uint16_t  - uPageVersion       -> Page version                  |
+ * - uint32_t  - uPageTot           -> Total number of page used     |
+ * - uint32_t  - uPageMagicNumber   -> Magic number of the page      |
+ * - uint32_t  - uPageCrc           -> 32 bit CRC                    |
+ * ------------------------------------------------------------------ End of Page
  */
 
 /***********************************************************************************************************************
@@ -95,14 +98,14 @@ e_eFSS_CORELL_RES eFSS_CORELL_InitCtx(t_eFSS_CORELL_Ctx* const p_ptCtx, t_eFSS_T
                             p_ptCtx->bIsInit 	= true;
                             p_ptCtx->tCtxCb 	= p_tCtxCb;
                             p_ptCtx->tStorSett 	= p_tStorSet;
-                            p_ptCtx->puBuf1 	= p_puBuff;
-                            p_ptCtx->uBuf1L 	= p_uBuffL / 2u;
-                            p_ptCtx->puBuf2 	= &p_puBuff[p_ptCtx->uBuf1L];
-                            p_ptCtx->uBuf2L 	= p_ptCtx->uBuf1L;
 
-                            /* Set to zero metabuffer */
-                            memset(&p_ptCtx->tMetaBuf1, 0u, sizeof(t_eFSS_TYPE_PageMeta));
-                            memset(&p_ptCtx->tMetaBuf2, 0u, sizeof(t_eFSS_TYPE_PageMeta));
+                            p_ptCtx->tBuff1.puBuf = p_puBuff;
+                            p_ptCtx->tBuff1.uBufL = p_uBuffL / 2u;
+                            memset(&p_ptCtx->tBuff1.tMeta, 0u, sizeof(t_eFSS_TYPE_PageMeta));
+
+                            p_ptCtx->tBuff2.puBuf = &p_puBuff[p_ptCtx->tBuff1.uBufL];
+                            p_ptCtx->tBuff2.uBufL = p_ptCtx->tBuff1.uBufL;
+                            memset(&p_ptCtx->tBuff2.tMeta, 0u, sizeof(t_eFSS_TYPE_PageMeta));
 
                             l_eRes = e_eFSS_CORELL_RES_OK;
                         }
@@ -170,14 +173,14 @@ e_eFSS_CORELL_RES eFSS_CORELL_GetStorSett(t_eFSS_CORELL_Ctx* const p_ptCtx, t_eF
 	return l_eRes;
 }
 
-e_eFSS_CORELL_RES eFSS_CORELL_GetBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, t_eFSS_TYPE_StorBuf** buff1,
-                                      t_eFSS_TYPE_StorBuf** buff2)
+e_eFSS_CORELL_RES eFSS_CORELL_GetBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, t_eFSS_TYPE_StorBuf* p_ptBuff1,
+                                      t_eFSS_TYPE_StorBuf* p_ptBuff2)
 {
 	/* Return local var */
 	e_eFSS_CORELL_RES l_eRes;
 
 	/* Check pointer validity */
-	if( ( NULL == p_ptCtx ) || ( NULL == p_ppuBuff ) || ( NULL == p_puBuffL ) || ( NULL == p_pptMetaB ) )
+	if( ( NULL == p_ptCtx ) || ( NULL == p_ptBuff1 ) || ( NULL == p_ptBuff2 ) )
 	{
 		l_eRes = e_eFSS_CORELL_RES_BADPOINTER;
 	}
@@ -197,32 +200,15 @@ e_eFSS_CORELL_RES eFSS_CORELL_GetBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, t_eFSS_T
             }
             else
             {
-				switch(p_eBuffType)
-				{
-					case e_eFSS_TYPE_BUFFTYPE_1:
-					{
-						*p_ppuBuff = p_ptCtx->puBuf1;
-						*p_puBuffL = p_ptCtx->uBuf1L - EFSS_PAGEMETALLSIZE;
-                        *p_pptMetaB = &p_ptCtx->tMetaBuf1;
-						l_eRes = e_eFSS_CORELL_RES_OK;
-						break;
-					}
+                p_ptBuff1->puBuf = p_ptCtx->tBuff1.puBuf;
+                p_ptBuff1->uBufL = p_ptCtx->tBuff1.uBufL - EFSS_PAGEMETALLSIZE;
+                p_ptBuff1->ptMeta = &p_ptCtx->tBuff1.tMeta;
 
-					case e_eFSS_TYPE_BUFFTYPE_2:
-					{
-						*p_ppuBuff = p_ptCtx->puBuf2;
-						*p_puBuffL = p_ptCtx->uBuf2L - EFSS_PAGEMETALLSIZE;
-                        *p_pptMetaB = &p_ptCtx->tMetaBuf2;
-						l_eRes = e_eFSS_CORELL_RES_OK;
-						break;
-					}
+                p_ptBuff2->puBuf = p_ptCtx->tBuff2.puBuf;
+                p_ptBuff2->uBufL = p_ptCtx->tBuff2.uBufL - EFSS_PAGEMETALLSIZE;
+                p_ptBuff2->ptMeta = &p_ptCtx->tBuff2.tMeta;
 
-					default:
-					{
-						l_eRes = e_eFSS_CORELL_RES_BADPARAM;
-						break;
-					}
-				}
+                l_eRes = e_eFSS_CORELL_RES_OK;
             }
 		}
 	}
@@ -237,9 +223,7 @@ e_eFSS_CORELL_RES eFSS_CORELL_LoadPageInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e
 	e_eFSS_CORELL_RES l_eRes;
 
     /* Local var used for storage  */
-	uint8_t* l_puBuff;
-	uint32_t l_uBuffL;
-    t_eFSS_TYPE_PageMeta* l_ptMetaB;
+    t_eFSS_TYPE_StorBufPrv* l_ptStorBuff;
 
     /* Local var used for calculation */
     uint32_t l_uTryPerformed;
@@ -282,18 +266,14 @@ e_eFSS_CORELL_RES eFSS_CORELL_LoadPageInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e
                     {
                         case e_eFSS_TYPE_BUFFTYPE_1:
                         {
-                            l_puBuff = p_ptCtx->puBuf1;
-                            l_uBuffL = p_ptCtx->uBuf1L;
-                            l_ptMetaB = &p_ptCtx->tMetaBuf1;
+                            l_ptStorBuff = &p_ptCtx->tBuff1;
                             l_eRes = e_eFSS_CORELL_RES_OK;
                             break;
                         }
 
                         case e_eFSS_TYPE_BUFFTYPE_2:
                         {
-                            l_puBuff = p_ptCtx->puBuf2;
-                            l_uBuffL = p_ptCtx->uBuf2L;
-                            l_ptMetaB = &p_ptCtx->tMetaBuf2;
+                            l_ptStorBuff = &p_ptCtx->tBuff2;
                             l_eRes = e_eFSS_CORELL_RES_OK;
                             break;
                         }
@@ -317,8 +297,8 @@ e_eFSS_CORELL_RES eFSS_CORELL_LoadPageInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e
                                ( l_uTryPerformed < p_ptCtx->tStorSett.uRWERetry ) )
                         {
                             /* Read */
-                            l_bCbRes = (*(p_ptCtx->tCtxCb.fRead))(p_ptCtx->tCtxCb.ptCtxRead, p_uPageIndx, l_puBuff,
-                                                                  l_uBuffL);
+                            l_bCbRes = (*(p_ptCtx->tCtxCb.fRead))(p_ptCtx->tCtxCb.ptCtxRead, p_uPageIndx,
+                                                                  l_ptStorBuff->puBuf, l_ptStorBuff->uBufL);
                             l_uTryPerformed++;
 
                             if( false == l_bCbRes )
@@ -334,13 +314,15 @@ e_eFSS_CORELL_RES eFSS_CORELL_LoadPageInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e
                         if( e_eFSS_CORELL_RES_OK == l_eRes )
                         {
                             /* Extract data */
-                            l_uStartIndex = l_uBuffLLL - EFSS_PAGEMETALLSIZE;
-                            eFSS_CORELLPRV_ExtractData(&l_puBuff[l_uStartIndex], &l_tPrvMeta, l_ptMetaB);
+                            l_uStartIndex = l_ptStorBuff->uBufL - EFSS_PAGEMETALLSIZE;
+                            eFSS_CORELLPRV_ExtractData(&l_ptStorBuff->puBuf[l_uStartIndex], &l_tPrvMeta,
+                                                       &l_ptStorBuff->tMeta);
 
                             /* Can check validity CRC and Magic number */
                             /* Calculate CRC */
-                            l_bCbRes = (*(p_ptCtx->tCtxCb.fCrc32))(p_ptCtx->tCtxCb.ptCtxCrc32, MAX_UINT32VAL, l_puBuff,
-                                                                  ( l_uBuffL - 4u ), &l_uPageCrcCalc );
+                            l_bCbRes = (*(p_ptCtx->tCtxCb.fCrc32))(p_ptCtx->tCtxCb.ptCtxCrc32, MAX_UINT32VAL,
+                                                                  l_ptStorBuff->puBuf,( l_ptStorBuff->uBufL - 4u ),
+                                                                  &l_uPageCrcCalc );
 
                             if( true != l_bCbRes )
                             {

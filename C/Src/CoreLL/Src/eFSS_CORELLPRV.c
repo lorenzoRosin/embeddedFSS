@@ -207,10 +207,10 @@ void eFSS_CORELLPRV_InsertData(uint8_t* p_puBuf, t_eFSS_CORELL_privMeta* p_ptPrv
     l_uIndx++;
 
     /* --- Copy data Little endian -- uPageUseSpec2 */
-    p_puBuf[l_uIndx] = (uint8_t) ( ( p_ptMeta->uPageUseSpec1        ) & 0x000000FFu );
+    p_puBuf[l_uIndx] = (uint8_t) ( ( p_ptMeta->uPageUseSpec2        ) & 0x000000FFu );
     l_uIndx++;
 
-    p_puBuf[l_uIndx] = (uint8_t) ( ( p_ptMeta->uPageUseSpec1 >> 8u  ) & 0x000000FFu );
+    p_puBuf[l_uIndx] = (uint8_t) ( ( p_ptMeta->uPageUseSpec2 >> 8u  ) & 0x000000FFu );
     l_uIndx++;
 
     p_puBuf[l_uIndx] = (uint8_t) ( ( p_ptMeta->uPageUseSpec2 >> 16u ) & 0x000000FFu );
@@ -220,10 +220,10 @@ void eFSS_CORELLPRV_InsertData(uint8_t* p_puBuf, t_eFSS_CORELL_privMeta* p_ptPrv
     l_uIndx++;
 
     /* --- Copy data Little endian -- uPageUseSpec3 */
-    p_puBuf[l_uIndx] = (uint8_t) ( ( p_ptMeta->uPageUseSpec1        ) & 0x000000FFu );
+    p_puBuf[l_uIndx] = (uint8_t) ( ( p_ptMeta->uPageUseSpec3        ) & 0x000000FFu );
     l_uIndx++;
 
-    p_puBuf[l_uIndx] = (uint8_t) ( ( p_ptMeta->uPageUseSpec1 >> 8u  ) & 0x000000FFu );
+    p_puBuf[l_uIndx] = (uint8_t) ( ( p_ptMeta->uPageUseSpec3 >> 8u  ) & 0x000000FFu );
     l_uIndx++;
 
     p_puBuf[l_uIndx] = (uint8_t) ( ( p_ptMeta->uPageUseSpec3 >> 16u ) & 0x000000FFu );

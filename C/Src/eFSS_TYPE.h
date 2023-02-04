@@ -144,9 +144,9 @@ typedef struct
 
 typedef struct
 {
-    uint8_t*  ppuBuf;
-    uint32_t  puBufL;
-    t_eFSS_TYPE_PageMeta pptMeta;
+    uint8_t*  puBuf;
+    uint32_t  uBufL;
+    t_eFSS_TYPE_PageMeta* ptMeta;
 }t_eFSS_TYPE_StorBuf;
 
 #ifdef __cplusplus
