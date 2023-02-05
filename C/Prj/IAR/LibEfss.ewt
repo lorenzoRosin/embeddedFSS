@@ -1484,12 +1484,6 @@
             <file>
                 <name>$PROJ_DIR$\..\..\Src\CoreLL\Inc\eFSS_CORELLPRV.h</name>
             </file>
-            <file>
-                <name>$PROJ_DIR$\..\..\Src\CoreLL\Inc\eFSS_UTILSHLPRV.h</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\..\Src\CoreLL\Inc\eFSS_UTILSLLPRV.h</name>
-            </file>
         </group>
         <group>
             <name>Src</name>
@@ -1501,12 +1495,6 @@
             </file>
             <file>
                 <name>$PROJ_DIR$\..\..\Src\CoreLL\Src\eFSS_CORELLPRV.c</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\..\Src\CoreLL\Src\eFSS_UTILSHLPRV.c</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\..\Src\CoreLL\Src\eFSS_UTILSLLPRV.c</name>
             </file>
         </group>
     </group>

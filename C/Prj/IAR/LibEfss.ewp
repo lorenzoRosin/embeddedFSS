@@ -1076,7 +1076,7 @@
                 </option>
                 <option>
                     <name>IarchiveOutput</name>
-                    <state>C:\Project\eFSS\C\Prj\IAR\Library\Exe\LibEfss.a</state>
+                    <state>C:\Project\embeddedFSS\C\Prj\IAR\Library\Exe\LibEfss.a</state>
                 </option>
             </data>
         </settings>
@@ -1106,16 +1106,19 @@
     </group>
     <group>
         <name>CoreHL</name>
-        <excluded>
-            <configuration>Library</configuration>
-        </excluded>
         <group>
             <name>Inc</name>
             <file>
                 <name>$PROJ_DIR$\..\..\Src\CoreHL\Inc\eFSS_BLOBC.h</name>
+                <excluded>
+                    <configuration>Library</configuration>
+                </excluded>
             </file>
             <file>
                 <name>$PROJ_DIR$\..\..\Src\CoreHL\Inc\eFSS_DBC.h</name>
+                <excluded>
+                    <configuration>Library</configuration>
+                </excluded>
             </file>
             <file>
                 <name>$PROJ_DIR$\..\..\Src\CoreHL\Inc\eFSS_LOGC.h</name>
@@ -1128,9 +1131,15 @@
             <name>Src</name>
             <file>
                 <name>$PROJ_DIR$\..\..\Src\CoreHL\Src\eFSS_BLOBC.c</name>
+                <excluded>
+                    <configuration>Library</configuration>
+                </excluded>
             </file>
             <file>
                 <name>$PROJ_DIR$\..\..\Src\CoreHL\Src\eFSS_DBC.c</name>
+                <excluded>
+                    <configuration>Library</configuration>
+                </excluded>
             </file>
             <file>
                 <name>$PROJ_DIR$\..\..\Src\CoreHL\Src\eFSS_LOGC.c</name>
@@ -1153,18 +1162,6 @@
             <file>
                 <name>$PROJ_DIR$\..\..\Src\CoreLL\Inc\eFSS_CORELLPRV.h</name>
             </file>
-            <file>
-                <name>$PROJ_DIR$\..\..\Src\CoreLL\Inc\eFSS_UTILSHLPRV.h</name>
-                <excluded>
-                    <configuration>Library</configuration>
-                </excluded>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\..\Src\CoreLL\Inc\eFSS_UTILSLLPRV.h</name>
-                <excluded>
-                    <configuration>Library</configuration>
-                </excluded>
-            </file>
         </group>
         <group>
             <name>Src</name>
@@ -1176,18 +1173,6 @@
             </file>
             <file>
                 <name>$PROJ_DIR$\..\..\Src\CoreLL\Src\eFSS_CORELLPRV.c</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\..\Src\CoreLL\Src\eFSS_UTILSHLPRV.c</name>
-                <excluded>
-                    <configuration>Library</configuration>
-                </excluded>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\..\Src\CoreLL\Src\eFSS_UTILSLLPRV.c</name>
-                <excluded>
-                    <configuration>Library</configuration>
-                </excluded>
             </file>
         </group>
     </group>

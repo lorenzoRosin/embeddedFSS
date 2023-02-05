@@ -42,6 +42,7 @@ typedef enum
     e_eFSS_COREHL_RES_NOTVALIDPAGE,
     e_eFSS_COREHL_RES_NEWVERSIONFOUND,
     e_eFSS_COREHL_RES_WRITENOMATCHREAD,
+    e_eFSS_COREHL_RES_OK_BKP_RCVRD
 }e_eFSS_COREHL_RES;
 
 typedef struct
@@ -199,8 +200,8 @@ e_eFSS_COREHL_RES eFSS_COREHL_CalcCrcInBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, e_
  *              e_eFSS_COREHL_RES_CLBCKREADERR      - Error reported from the callback
  *              e_eFSS_COREHL_RES_WRITENOMATCHREAD  - For some unknow reason data write dosent match data readed
  */
-e_eFSS_COREHL_RES eFSS_COREHL_VerifyNRipristBkup(t_eFSS_COREHL_Ctx* const p_ptCtx, const uint32_t p_uOrigIndx, 
-                                                 const uint32_t p_uBackupIndx, const uint32_t p_uOriSubType, 
+e_eFSS_COREHL_RES eFSS_COREHL_VerifyNRipristBkup(t_eFSS_COREHL_Ctx* const p_ptCtx, const uint32_t p_uOrigIndx,
+                                                 const uint32_t p_uBackupIndx, const uint32_t p_uOriSubType,
                                                  const uint32_t p_uBckUpSubType );
 
 #ifdef __cplusplus
