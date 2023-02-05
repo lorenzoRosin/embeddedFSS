@@ -68,7 +68,7 @@ typedef struct
  * @return      true    - The t_eFSS_LOGC_Ctx context is valid
  *		        false   - Detected some corruption in the t_eFSS_LOGC_Ctx context
  */
-bool_t eFSS_LOGCPRV_IsStatusStillCoherent(const t_eFSS_LOGC_Ctx* p_ptCtx);
+bool_t eFSS_LOGCPRV_IsStatusStillCoherent(t_eFSS_LOGC_Ctx* p_ptCtx);
 
 /**
  * @brief       Convert enum from HL utils to LOGC module enum
@@ -84,26 +84,29 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_HLtoLogRes(const e_eFSS_COREHL_RES p_eHLRes);
  *              call eFSS_LOGCPRV_IsStatusStillCoherent before. Do not insert non valid index.
  *
  * @param[in]   p_ptCtx          - Log Core context
+ * @param[in]   p_tStorSet       - Storage settings
  * @param[in]   p_uIdx           - Index that we want to search for next
  *
  * @return      Return the next index of p_uIdx
  */
-uint32_t eFSS_LOGCPRV_GetNextIndex(const t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t p_uIdx);
+uint32_t eFSS_LOGCPRV_GetNextIndex(const t_eFSS_LOGC_Ctx* p_ptCtx, t_eFSS_TYPE_StorSet p_tStorSet, uint32_t p_uIdx);
 
 /**
  * @brief       Get the value of the previous index. Be sure to not insert any NULL value and
  *              call eFSS_LOGCPRV_IsStatusStillCoherent before. Do not insert non valid index.
  *
  * @param[in]   p_ptCtx          - Log Core context
+ * @param[in]   p_tStorSet       - Storage settings
  * @param[in]   p_uIdx           - Index that we want to search for previous
  *
  * @return      Return the previous index of p_uIdx
  */
-uint32_t eFSS_LOGCPRV_GetPrevIndex(const t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t p_uIdx);
+uint32_t eFSS_LOGCPRV_GetPrevIndex(const t_eFSS_LOGC_Ctx* p_ptCtx, t_eFSS_TYPE_StorSet p_tStorSet, uint32_t p_uIdx);
 
 /**
- * @brief       Write in cache the value of new and old index. This function take care of the backup pages.
- *              Do not pass to function NULL pointer or invalid index, they are not checked.
+ * @brief       Write in cache the value of new and fill index. This function take care of the backup pages.
+ *              Do not pass to this function NULL pointer or invalid index, they are not checked.
+ *              Make sure eFSS_LOGCPRV_IsStatusStillCoherent is called before calling this function
  *
  * @param[in]   p_ptCtx          - Log Core context
  * @param[in]   p_uIdxN          - Index of the new log page  that we want to save in cache
@@ -112,6 +115,67 @@ uint32_t eFSS_LOGCPRV_GetPrevIndex(const t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t p_uI
  * @return      Return error related to read write erase function
  */
 e_eFSS_LOGC_RES eFSS_LOGCPRV_WriteCache(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t p_uIdxN, uint32_t p_uIFlP);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /**
  * @brief       Read from cache the value of new and old index. This function take care of the backup pages.
