@@ -162,15 +162,15 @@ e_eFSS_COREHL_RES eFSS_COREHL_CalcCrcInBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, e_
     return l_eRes;
 }
 
-e_eFSS_COREHL_RES eFSS_COREHL_VerifyNRipristBkup(t_eFSS_COREHL_Ctx* const p_ptCtx, const uint32_t p_uOrigIndx,
-                                                 const uint32_t p_uBackupIndx, const uint32_t p_uOriSubType,
+e_eFSS_COREHL_RES eFSS_COREHL_VerifyNRipristBkup(t_eFSS_COREHL_Ctx* const p_ptCtx, const uint32_t p_uOrigIndx, 
+                                                 const uint32_t p_uBackupIndx, const uint32_t p_uOriSubType, 
                                                  const uint32_t p_uBckUpSubType )
 {
     e_eFSS_COREHL_RES l_eRes;
     e_eFSS_CORELL_RES l_eResLL;
     t_eFSS_TYPE_StorBuf* buff1;
     t_eFSS_TYPE_StorBuf* buff2;
-    bool_t isOriginValid;
+    bool_t isOriginValid;   
     bool_t isBackupValid;
 
     if( NULL == p_ptCtx )

@@ -171,32 +171,6 @@ e_eFSS_COREHL_RES eFSS_COREHL_FlushBuffInPage(t_eFSS_COREHL_Ctx* const p_ptCtx, 
 e_eFSS_COREHL_RES eFSS_COREHL_CalcCrcInBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, e_eFSS_TYPE_BUFFTYPE p_eBuffType,
 								            uint32_t p_uCrcSeed, uint32_t p_uLenCalc, uint32_t* p_puCrc);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /**
  * @brief       Verify the validity of the page in p_uOrigIndx and p_uBackupIndx. If everithing goes well at the end
  *              we can also retrive the original page from the buffer 1.
@@ -205,10 +179,13 @@ e_eFSS_COREHL_RES eFSS_COREHL_CalcCrcInBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, e_
  *              2 - If p_uOrigIndx is not valid copy p_uBackupIndx in p_uOrigIndx
  *              3 - If p_uBackupIndx is not valid copy p_uOrigIndx in p_uBackupIndx
  *              4 - If p_uOrigIndx and p_uBackupIndx are not valid we cann not do nothing
+ *              Note: page validity is checkd against subtype also
  *
- * @param[in]   p_ptCtx       - Pointer to all callback context
- * @param[in]   p_uOrigIndx   - Page index of the original data
- * @param[in]   p_uBackupIndx - Page index of the backup data
+ * @param[in]   p_ptCtx         - Pointer to all callback context
+ * @param[in]   p_uOrigIndx     - Page index of the original data
+ * @param[in]   p_uBackupIndx   - Page index of the backup data
+ * @param[in]   p_uOriSubType   - Sub type of the original page
+ * @param[in]   p_uBckUpSubType - Sub type of the backup pages
  *
  * @return      e_eFSS_COREHL_RES_OK                - Operation ended successfully, page are correct
  *              e_eFSS_COREHL_RES_NOTVALIDPAGE      - both origin and backup pages are corrupted
