@@ -44,10 +44,13 @@ extern "C" {
 /* Page LOG subtypes */
 #define EFSS_PAGESUBTYPE_LOGORI                                                                  ( ( uint32_t )  0x01u )
 #define EFSS_PAGESUBTYPE_LOGBKP                                                                  ( ( uint32_t )  0x02u )
+
 #define EFSS_PAGESUBTYPE_LOGNEWESTORI                                                            ( ( uint32_t )  0x03u )
 #define EFSS_PAGESUBTYPE_LOGNEWESTBKP                                                            ( ( uint32_t )  0x04u )
 #define EFSS_PAGESUBTYPE_LOGNEWESTBKPORI                                                         ( ( uint32_t )  0x05u )
 #define EFSS_PAGESUBTYPE_LOGNEWESTBKPBKP                                                         ( ( uint32_t )  0x06u )
+
+
 #define EFSS_PAGESUBTYPE_LOGCACHEORI                                                             ( ( uint32_t )  0x07u )
 #define EFSS_PAGESUBTYPE_LOGCACHEBKP                                                             ( ( uint32_t )  0x08u )
 
@@ -101,11 +104,6 @@ typedef bool_t (*f_eFSS_TYPE_CrcCb) ( t_eFSS_TYPE_CrcCtx* const p_ptCtx, const u
                                       const uint8_t* p_puData, const uint32_t p_uDataL,
                                       uint32_t* const p_puCrc32Val );
 
-
-
-
-
-/* NUOVE EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE*/
 typedef struct
 {
     t_eFSS_TYPE_EraseCtx* ptCtxErase;
