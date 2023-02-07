@@ -482,7 +482,7 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_LoadBufferAsLog(t_eFSS_LOGC_Ctx* const p_ptCtx, uin
                 /* Flash cache will use two flash pages */
                 if( true == p_ptCtx->bFlashCache )
                 {
-                        l_uNPageU -= 2u;
+                    l_uNPageU -= 2u;
                 }
 
                 l_uNPageU = (uint32_t)( l_uNPageU / 2u );
@@ -605,7 +605,7 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_LoadBufferAsNewestPage(t_eFSS_LOGC_Ctx* p_ptCtx, ui
 	e_eFSS_LOGC_RES l_eRes;
     e_eFSS_COREHL_RES l_eResHL;
 
-    /* Local var used for calculation */
+    /* Local var used for storage */
     t_eFSS_TYPE_StorSet l_tStorSet;
     t_eFSS_TYPE_StorBuf l_tBuff1;
     t_eFSS_TYPE_StorBuf l_tBuff2;
@@ -614,21 +614,6 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_LoadBufferAsNewestPage(t_eFSS_LOGC_Ctx* p_ptCtx, ui
 	uint32_t l_uOriPageIdx;
     uint32_t l_uBkupPageIdx;
     uint32_t l_uNPageU;
-
-    /* Calculate n page */
-    l_uNPageU = l_tStorSet.uTotPages;
-
-    /* Flash cache will use two flash pages */
-    if( true == p_ptCtx->bFlashCache )
-    {
-        l_uNPageU -= 2u;
-    }
-
-    /* Flash full bkup will use twice as pages as normal log */
-    if( true == p_ptCtx->bFullBckup )
-    {
-        l_uNPageU = (uint32_t)( l_uNPageU / 2u );
-    }
 
     /* Get storage settings */
     l_eResHL = eFSS_COREHL_GetStorSett(&p_ptCtx->tCOREHLCtx, &l_tStorSet);
@@ -644,32 +629,57 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_LoadBufferAsNewestPage(t_eFSS_LOGC_Ctx* p_ptCtx, ui
         {
             if( true == p_ptCtx->bFullBckup )
             {
+                /* Calculate n page */
+                l_uNPageU = l_tStorSet.uTotPages;
+
+                /* Flash cache will use two flash pages */
+                if( true == p_ptCtx->bFlashCache )
+                {
+                    l_uNPageU -= 2u;
+                }
+
+                l_uNPageU = (uint32_t)( l_uNPageU / 2u );
+
                 /* Setup index */
-                l_uOriPageIdx = l_tStorSet.uTotPages  - 2u;
-                l_uBkupPageIdx = l_tStorSet.uTotPages - 1u;
+                l_uOriPageIdx = p_uIdx;
+                l_uBkupPageIdx = l_uNPageU + p_uIdx;
 
                 /* Before reading fix any error in original and backup pages */
                 l_eResHL = eFSS_COREHL_VerifyNRipristBkup(&p_ptCtx->tCOREHLCtx, l_uOriPageIdx, l_uBkupPageIdx,
-                                                          EFSS_PAGESUBTYPE_LOGCACHEORI, EFSS_PAGESUBTYPE_LOGCACHEBKP );
+                                                          EFSS_PAGESUBTYPE_LOGNEWESTORI, EFSS_PAGESUBTYPE_LOGNEWESTBKP );
                 l_eRes = eFSS_LOGCPRV_HLtoLogRes(l_eResHL);
-
-                if( ( e_eFSS_LOGC_RES_OK == l_eRes ) || ( e_eFSS_LOGC_RES_OK_BKP_RCVRD == l_eRes ) )
-                {
-                    /* Can read data */
-                    *p_puIdxN = l_tBuff1.ptMeta->uPageUseSpec1;
-                    *p_puIFlP = l_tBuff1.ptMeta->uPageUseSpec2;
-                }
             }
-            else
-            {
-                l_eResHL =  eFSS_COREHL_LoadPageInBuff(&p_ptCtx->tCOREHLCtx, e_eFSS_TYPE_BUFFTYPE_1, l_uOriPageIdx);
-                l_eRes = eFSS_LOGCPRV_HLtoLogRes(l_eResHL);
 
-                if( ( e_eFSS_LOGC_RES_OK == l_eRes ) || ( e_eFSS_LOGC_RES_OK_BKP_RCVRD == l_eRes ) )
+            if( ( e_eFSS_LOGC_RES_OK == l_eRes ) || ( e_eFSS_LOGC_RES_OK_BKP_RCVRD == l_eRes ) || 
+                ( e_eFSS_LOGC_RES_NEWVERSIONLOG == l_eRes )  || ( e_eFSS_LOGC_RES_NEWVERSIONLOG == l_eRes ) )
+            {
+                if( true == p_ptCtx->bFullBckup )
                 {
-                    /* Can read data */
-                    *p_puIdxN = l_tBuff1.ptMeta->uPageUseSpec1;
-                    *p_puIFlP = l_tBuff1.ptMeta->uPageUseSpec2;
+                    /* Calculate n page */
+                    l_uNPageU = l_tStorSet.uTotPages;
+
+                    /* Flash cache will use two flash pages */
+                    if( true == p_ptCtx->bFlashCache )
+                    {
+                        l_uNPageU -= 2u;
+                    }
+
+                    l_uNPageU = (uint32_t)( l_uNPageU / 2u );
+
+                    /* Setup index */
+                    l_uOriPageIdx = p_uIdx;
+                    l_uBkupPageIdx = l_uNPageU + p_uIdx;
+
+                    /* Before reading fix any error in original and backup pages */
+                    l_eResHL = eFSS_COREHL_VerifyNRipristBkup(&p_ptCtx->tCOREHLCtx, l_uOriPageIdx, l_uBkupPageIdx,
+                                                            EFSS_PAGESUBTYPE_LOGNEWESTORI, EFSS_PAGESUBTYPE_LOGNEWESTBKP );
+                    l_eRes = eFSS_LOGCPRV_HLtoLogRes(l_eResHL);
+                }
+
+                if( ( e_eFSS_LOGC_RES_OK == l_eRes ) || ( e_eFSS_LOGC_RES_OK_BKP_RCVRD == l_eRes ) || 
+                    ( e_eFSS_LOGC_RES_NEWVERSIONLOG == l_eRes )  || ( e_eFSS_LOGC_RES_NEWVERSIONLOG == l_eRes ) )
+                {
+
                 }
             }
         }

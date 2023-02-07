@@ -64,9 +64,9 @@ typedef struct
  *
  * @param[in]   p_ptCtx          - Log Core context
  * @param[in]   p_tCtxCb         - All callback collection context
- * @param[in]   p_puBuff         - Pointer to a buffer used by the modules to make calc
- * @param[in]   p_uBuffL         - Size of p_puBuff
  * @param[in]   p_tStorSet       - Storage settings
+ * @param[in]   p_puBuff         - Pointer to a buffer used by the modules to make calc, must ne pageSize * 2
+ * @param[in]   p_uBuffL         - Size of p_puBuff
  * @param[in]   p_bFlashCache    - Use flash as cache for storing and resuming index
  * @param[in]   p_bFullBckup     - Save every log data in a backup pages
  *
@@ -75,7 +75,7 @@ typedef struct
  *              e_eFSS_LOGC_RES_OK            - Operation ended correctly
  */
 e_eFSS_LOGC_RES eFSS_LOGC_InitCtx(t_eFSS_LOGC_Ctx* const p_ptCtx, t_eFSS_TYPE_CbCtx const p_tCtxCb,
-                                  uint8_t* const p_puBuff, uint32_t p_uBuffL, t_eFSS_TYPE_StorageSettings p_tStorSet,
+                                  t_eFSS_TYPE_StorSet p_tStorSet, uint8_t* const p_puBuff, uint32_t p_uBuffL,
                                   bool_t p_bFlashCache, bool_t p_bFullBckup);
 
 /**
@@ -117,9 +117,8 @@ e_eFSS_LOGC_RES eFSS_LOGC_GetStorageStatus(t_eFSS_LOGC_Ctx* const p_ptCtx);
  *
  * @param[in]   p_ptCtx       - Log context
  * @param[out]  p_puNewLogI   - Pointer to a uint32_t that will be filled with the New log index
- * @param[out]  p_puOldLogI   - Pointer to a uint32_t that will be filled with the Old log index
  * @param[out]  p_puNpageUsed - Pointer to a uint32_t that will be filled with the number of valorized page
- * @param[out]  p_puLogVer    - Pointer to a uint32_t that will be filled with the version of the log
+ * @param[out]  p_puNpageTot  - Pointer to a uint32_t that will be filled with the number of redable page
  *
  * @return      e_eFSS_LOGC_RES_BADPOINTER         - In case of bad pointer passed to the function
  *              e_eFSS_LOGC_RES_OK                 - Operation ended correctly
@@ -134,8 +133,8 @@ e_eFSS_LOGC_RES eFSS_LOGC_GetStorageStatus(t_eFSS_LOGC_Ctx* const p_ptCtx);
  *              e_eFSS_LOGC_RES_CLBCKCRCERR        - Crc callback returned error
  *              e_eFSS_LOGC_RES_WRITENOMATCHREAD   - After Write operation the Read operation readed different data
  */
-e_eFSS_LOGC_RES eFSS_LOGC_GetLogInfo(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t *p_puNewLogI, uint32_t *p_puOldLogI,
-                                     uint32_t *p_puNpageUsed, uint32_t *p_puLogVer);
+e_eFSS_LOGC_RES eFSS_LOGC_GetLogInfo(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t *p_puNewLogI, uint32_t *p_puNpageUsed,
+                                     uint32_t *p_puNpageTot);
 
 /**
  * @brief       Format the memory used for the log, previous data, if present, will be lost.
