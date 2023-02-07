@@ -356,7 +356,7 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_ReadCache(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t*
             l_uBkupPageIdx = l_tStorSet.uTotPages - 1u;
 
             /* Before reading fix any error in original and backup pages */
-            l_eResHL = eFSS_COREHL_VerifyNRipristBkup(&p_ptCtx->tCOREHLCtx, l_uOriPageIdx, l_uBkupPageIdx, 
+            l_eResHL = eFSS_COREHL_VerifyNRipristBkup(&p_ptCtx->tCOREHLCtx, l_uOriPageIdx, l_uBkupPageIdx,
                                                     EFSS_PAGESUBTYPE_LOGCACHEORI, EFSS_PAGESUBTYPE_LOGCACHEBKP );
             l_eRes = eFSS_LOGCPRV_HLtoLogRes(l_eResHL);
 
@@ -381,7 +381,7 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_GetBuffer(t_eFSS_LOGC_Ctx* const p_ptCtx, t_eFSS_TY
     /* Local var used for calculation */
     t_eFSS_TYPE_StorBuf l_tBuff2;
 
-    /* Get storage area */
+    /* Get storage area, we need to return only the first buffer */
     l_eResHL = eFSS_COREHL_GetBuff(&p_ptCtx->tCOREHLCtx, p_ptBuff, &l_tBuff2);
     l_eRes = eFSS_LOGCPRV_HLtoLogRes(l_eResHL);
 
@@ -394,7 +394,7 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_FlushBufferAsLog(t_eFSS_LOGC_Ctx* const p_ptCtx, ui
 	e_eFSS_LOGC_RES l_eRes;
     e_eFSS_COREHL_RES l_eResHL;
 
-    /* Local var used for calculation */
+    /* Local var used for storage */
     t_eFSS_TYPE_StorSet l_tStorSet;
     t_eFSS_TYPE_StorBuf l_tBuff1;
     t_eFSS_TYPE_StorBuf l_tBuff2;
@@ -412,10 +412,6 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_FlushBufferAsLog(t_eFSS_LOGC_Ctx* const p_ptCtx, ui
 
         if( e_eFSS_LOGC_RES_OK == l_eRes )
         {
-            /* Clear data support buffer*/
-            memset(l_tBuff2.puBuf,  0u,  l_tBuff2.uBufL);
-            memset(l_tBuff2.ptMeta, 0u,  sizeof(t_eFSS_TYPE_PageMeta));
-
             /* Flush */
             l_tBuff1.ptMeta->uPageSubType = EFSS_PAGESUBTYPE_LOGORI;
             l_eResHL = eFSS_COREHL_FlushBuffInPage(&p_ptCtx->tCOREHLCtx, e_eFSS_TYPE_BUFFTYPE_1,
@@ -456,7 +452,7 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_LoadBufferAsLog(t_eFSS_LOGC_Ctx* const p_ptCtx, uin
 	e_eFSS_LOGC_RES l_eRes;
     e_eFSS_COREHL_RES l_eResHL;
 
-    /* Local var used for calculation */
+    /* Local var used for storage */
     t_eFSS_TYPE_StorSet l_tStorSet;
     t_eFSS_TYPE_StorBuf l_tBuff1;
     t_eFSS_TYPE_StorBuf l_tBuff2;
@@ -465,21 +461,6 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_LoadBufferAsLog(t_eFSS_LOGC_Ctx* const p_ptCtx, uin
 	uint32_t l_uOriPageIdx;
     uint32_t l_uBkupPageIdx;
     uint32_t l_uNPageU;
-
-    /* Calculate n page */
-    l_uNPageU = l_tStorSet.uTotPages;
-
-    /* Flash cache will use two flash pages */
-    if( true == p_ptCtx->bFlashCache )
-    {
-        l_uNPageU -= 2u;
-    }
-
-    /* Flash full bkup will use twice as pages as normal log */
-    if( true == p_ptCtx->bFullBckup )
-    {
-        l_uNPageU = (uint32_t)( l_uNPageU / 2u );
-    }
 
     /* Get storage settings */
     l_eResHL = eFSS_COREHL_GetStorSett(&p_ptCtx->tCOREHLCtx, &l_tStorSet);
@@ -495,33 +476,30 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_LoadBufferAsLog(t_eFSS_LOGC_Ctx* const p_ptCtx, uin
         {
             if( true == p_ptCtx->bFullBckup )
             {
+                /* Calculate n page */
+                l_uNPageU = l_tStorSet.uTotPages;
+
+                /* Flash cache will use two flash pages */
+                if( true == p_ptCtx->bFlashCache )
+                {
+                        l_uNPageU -= 2u;
+                }
+
+                l_uNPageU = (uint32_t)( l_uNPageU / 2u );
+
                 /* Setup index */
-                l_uOriPageIdx = l_tStorSet.uTotPages  - 2u;
-                l_uBkupPageIdx = l_tStorSet.uTotPages - 1u;
+                l_uOriPageIdx = p_uIdx;
+                l_uBkupPageIdx = l_uNPageU + p_uIdx;
 
                 /* Before reading fix any error in original and backup pages */
-                l_eResHL = eFSS_COREHL_VerifyNRipristBkup(&p_ptCtx->tCOREHLCtx, l_uOriPageIdx, l_uBkupPageIdx, 
+                l_eResHL = eFSS_COREHL_VerifyNRipristBkup(&p_ptCtx->tCOREHLCtx, l_uOriPageIdx, l_uBkupPageIdx,
                                                           EFSS_PAGESUBTYPE_LOGCACHEORI, EFSS_PAGESUBTYPE_LOGCACHEBKP );
                 l_eRes = eFSS_LOGCPRV_HLtoLogRes(l_eResHL);
-
-                if( ( e_eFSS_LOGC_RES_OK == l_eRes ) || ( e_eFSS_LOGC_RES_OK_BKP_RCVRD == l_eRes ) )
-                {
-                    /* Can read data */
-                    *p_puIdxN = l_tBuff1.ptMeta->uPageUseSpec1;
-                    *p_puIFlP = l_tBuff1.ptMeta->uPageUseSpec2;
-                }
             }
             else
             {
                 l_eResHL =  eFSS_COREHL_LoadPageInBuff(&p_ptCtx->tCOREHLCtx, e_eFSS_TYPE_BUFFTYPE_1, l_uOriPageIdx);
                 l_eRes = eFSS_LOGCPRV_HLtoLogRes(l_eResHL);
-
-                if( ( e_eFSS_LOGC_RES_OK == l_eRes ) || ( e_eFSS_LOGC_RES_OK_BKP_RCVRD == l_eRes ) )
-                {
-                    /* Can read data */
-                    *p_puIdxN = l_tBuff1.ptMeta->uPageUseSpec1;
-                    *p_puIFlP = l_tBuff1.ptMeta->uPageUseSpec2;
-                }
             }
         }
     }
@@ -529,19 +507,20 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_LoadBufferAsLog(t_eFSS_LOGC_Ctx* const p_ptCtx, uin
     return l_eRes;
 }
 
-e_eFSS_LOGC_RES eFSS_LOGCPRV_FlushBufferAsNewestPage(const t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t p_uIdx)
+e_eFSS_LOGC_RES eFSS_LOGCPRV_FlushBufferAsNewestPage(t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t p_uIdx)
 {
 	/* Local return variable */
 	e_eFSS_LOGC_RES l_eRes;
     e_eFSS_COREHL_RES l_eResHL;
 
-    /* Local var used for calculation */
+    /* Local var used for storage */
     t_eFSS_TYPE_StorSet l_tStorSet;
     t_eFSS_TYPE_StorBuf l_tBuff1;
     t_eFSS_TYPE_StorBuf l_tBuff2;
 
     /* Local calc variable */
 	uint32_t l_uNPageU;
+    uint32_t l_uBkupPage;
 
     l_eResHL = eFSS_COREHL_GetStorSett(&p_ptCtx->tCOREHLCtx, &l_tStorSet);
     l_eRes = eFSS_LOGCPRV_HLtoLogRes(l_eResHL);
@@ -553,12 +532,8 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_FlushBufferAsNewestPage(const t_eFSS_LOGC_Ctx* p_pt
 
         if( e_eFSS_LOGC_RES_OK == l_eRes )
         {
-            /* Clear data support buffer*/
-            memset(l_tBuff2.puBuf,  0u,  l_tBuff2.uBufL);
-            memset(l_tBuff2.ptMeta, 0u,  sizeof(t_eFSS_TYPE_PageMeta));
-
             /* Flush */
-            l_tBuff1.ptMeta->uPageSubType = EFSS_PAGESUBTYPE_LOGORI;
+            l_tBuff1.ptMeta->uPageSubType = EFSS_PAGESUBTYPE_LOGNEWESTORI;
             l_eResHL = eFSS_COREHL_FlushBuffInPage(&p_ptCtx->tCOREHLCtx, e_eFSS_TYPE_BUFFTYPE_1,
                                                    p_uIdx);
             l_eRes = eFSS_LOGCPRV_HLtoLogRes(l_eResHL);
@@ -579,17 +554,19 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_FlushBufferAsNewestPage(const t_eFSS_LOGC_Ctx* p_pt
                     l_uNPageU = (uint32_t)( l_uNPageU / 2u );
 
                     /* Flush */
-                    l_tBuff1.ptMeta->uPageSubType = EFSS_PAGESUBTYPE_LOGBKP;
+                    l_tBuff1.ptMeta->uPageSubType = EFSS_PAGESUBTYPE_LOGNEWESTBKP;
                     l_eResHL = eFSS_COREHL_FlushBuffInPage(&p_ptCtx->tCOREHLCtx, e_eFSS_TYPE_BUFFTYPE_1,
                                                            (l_uNPageU + p_uIdx) );
                     l_eRes = eFSS_LOGCPRV_HLtoLogRes(l_eResHL);
                 }
+
                 if( e_eFSS_LOGC_RES_OK == l_eRes )
                 {
                     /* Flush */
-                    l_tBuff1.ptMeta->uPageSubType = EFSS_PAGESUBTYPE_LOGORI;
+                    l_uBkupPage = eFSS_LOGCPRV_GetNextIndex(p_ptCtx, l_tStorSet, p_uIdx);
+                    l_tBuff1.ptMeta->uPageSubType = EFSS_PAGESUBTYPE_LOGNEWESTBKPORI;
                     l_eResHL = eFSS_COREHL_FlushBuffInPage(&p_ptCtx->tCOREHLCtx, e_eFSS_TYPE_BUFFTYPE_1,
-                                                        p_uIdx);
+                                                           l_uBkupPage);
                     l_eRes = eFSS_LOGCPRV_HLtoLogRes(l_eResHL);
 
                     if( e_eFSS_LOGC_RES_OK == l_eRes )
@@ -608,9 +585,9 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_FlushBufferAsNewestPage(const t_eFSS_LOGC_Ctx* p_pt
                             l_uNPageU = (uint32_t)( l_uNPageU / 2u );
 
                             /* Flush */
-                            l_tBuff1.ptMeta->uPageSubType = EFSS_PAGESUBTYPE_LOGBKP;
+                            l_tBuff1.ptMeta->uPageSubType = EFSS_PAGESUBTYPE_LOGNEWESTBKPBKP;
                             l_eResHL = eFSS_COREHL_FlushBuffInPage(&p_ptCtx->tCOREHLCtx, e_eFSS_TYPE_BUFFTYPE_1,
-                                                                (l_uNPageU + p_uIdx) );
+                                                                   (l_uNPageU + l_uBkupPage) );
                             l_eRes = eFSS_LOGCPRV_HLtoLogRes(l_eResHL);
                         }
                     }
@@ -622,7 +599,7 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_FlushBufferAsNewestPage(const t_eFSS_LOGC_Ctx* p_pt
     return l_eRes;
 }
 
-e_eFSS_LOGC_RES eFSS_LOGCPRV_LoadBufferAsNewestPage(const t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t p_uIdx)
+e_eFSS_LOGC_RES eFSS_LOGCPRV_LoadBufferAsNewestPage(t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t p_uIdx)
 {
 	/* Local return variable */
 	e_eFSS_LOGC_RES l_eRes;
@@ -672,7 +649,7 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_LoadBufferAsNewestPage(const t_eFSS_LOGC_Ctx* p_ptC
                 l_uBkupPageIdx = l_tStorSet.uTotPages - 1u;
 
                 /* Before reading fix any error in original and backup pages */
-                l_eResHL = eFSS_COREHL_VerifyNRipristBkup(&p_ptCtx->tCOREHLCtx, l_uOriPageIdx, l_uBkupPageIdx, 
+                l_eResHL = eFSS_COREHL_VerifyNRipristBkup(&p_ptCtx->tCOREHLCtx, l_uOriPageIdx, l_uBkupPageIdx,
                                                           EFSS_PAGESUBTYPE_LOGCACHEORI, EFSS_PAGESUBTYPE_LOGCACHEBKP );
                 l_eRes = eFSS_LOGCPRV_HLtoLogRes(l_eResHL);
 
@@ -687,7 +664,7 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_LoadBufferAsNewestPage(const t_eFSS_LOGC_Ctx* p_ptC
             {
                 l_eResHL =  eFSS_COREHL_LoadPageInBuff(&p_ptCtx->tCOREHLCtx, e_eFSS_TYPE_BUFFTYPE_1, l_uOriPageIdx);
                 l_eRes = eFSS_LOGCPRV_HLtoLogRes(l_eResHL);
-                
+
                 if( ( e_eFSS_LOGC_RES_OK == l_eRes ) || ( e_eFSS_LOGC_RES_OK_BKP_RCVRD == l_eRes ) )
                 {
                     /* Can read data */

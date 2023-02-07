@@ -102,7 +102,7 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_ReadCache(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t*
  *              Make sure eFSS_LOGCPRV_IsStatusStillCoherent is called before calling this function.
  *
  * @param[in]   p_ptCtx          - Log Core context
- * @param[out]  p_ptBuff         - Pointer to a pointer struct that will be filled with info about buffer
+ * @param[out]  p_ptBuff         - Pointer to a struct that will be filled with info about buffer
  *
  * @return      Return error related to read write erase function, even invalid page if found.
  */
@@ -112,7 +112,8 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_GetBuffer(t_eFSS_LOGC_Ctx* const p_ptCtx, t_eFSS_TY
  * @brief       Flush the buffer in a page at p_uIdx position. Do not pass to this function NULL value
  *              or invalid index value. This function will take care of any support page.
  *              Make sure eFSS_LOGCPRV_IsStatusStillCoherent is called before calling this function.
- *              Do not use this function on Flash cache pages
+ *              Do not use this function on Flash cache pages.
+ *              The buffer is managed with subtype related to log only.
  *
  * @param[in]   p_ptCtx          - Log Core context
  * @param[in]   p_uIdx           - Index of the log page we want to write
@@ -124,6 +125,9 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_FlushBufferAsLog(t_eFSS_LOGC_Ctx* const p_ptCtx, ui
 /**
  * @brief       Read a page of data at p_uIdx position. Do not pass to this function NULL value
  *              or invalid index value. This function will take care of any support page.
+ *              Make sure eFSS_LOGCPRV_IsStatusStillCoherent is called before calling this function.
+ *              Do not use this function on Flash cache pages.
+ *              The buffer is managed with subtype related to log only.
  *
  * @param[in]   p_ptCtx          - Log Core context
  * @param[in]   p_uIdx           - Index of the log page we want to read
@@ -135,13 +139,16 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_LoadBufferAsLog(t_eFSS_LOGC_Ctx* const p_ptCtx, uin
 /**
  * @brief       Write a page of data at p_uIdx position. Do not pass to this function NULL value
  *              or invalid index value. This function will take care of any support page.
+ *              Make sure eFSS_LOGCPRV_IsStatusStillCoherent is called before calling this function.
+ *              Do not use this function on Flash cache pages.
+ *              The buffer is managed with subtype related to newest page only.
  *
  * @param[in]   p_ptCtx          - Log Core context
- * @param[in]   p_uIdx           - Index of the new log page that we want to read from cache
+ * @param[in]   p_uIdx           - Index of the new newest log page that we want to read from cache
  *
  * @return      Return error related to read write erase function, even invalid page if found.
  */
-e_eFSS_LOGC_RES eFSS_LOGCPRV_FlushBufferAsNewestPage(const t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t p_uIdx);
+e_eFSS_LOGC_RES eFSS_LOGCPRV_FlushBufferAsNewestPage(t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t p_uIdx);
 
 /**
  * @brief       Read a page of data at p_uIdx position. Do not pass to this function NULL value
@@ -152,7 +159,7 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_FlushBufferAsNewestPage(const t_eFSS_LOGC_Ctx* p_pt
  *
  * @return      Return error related to read write erase function, even invalid page if found.
  */
-e_eFSS_LOGC_RES eFSS_LOGCPRV_LoadBufferAsNewestPage(const t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t p_uIdx);
+e_eFSS_LOGC_RES eFSS_LOGCPRV_LoadBufferAsNewestPage(t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t p_uIdx);
 
 
 
