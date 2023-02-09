@@ -48,6 +48,18 @@ bool_t eFSS_LOGCPRV_IsStatusStillCoherent(t_eFSS_LOGC_Ctx* p_ptCtx);
 e_eFSS_LOGC_RES eFSS_LOGCPRV_HLtoLogRes(const e_eFSS_COREHL_RES p_eHLRes);
 
 /**
+ * @brief       Get the value of the previous index. Be sure to not insert any NULL value and
+ *              call eFSS_LOGCPRV_IsStatusStillCoherent before. Do not insert non valid index.
+ *
+ * @param[in]   p_ptCtx          - Log Core context
+ * @param[in]   p_tStorSet       - Storage settings
+ * @param[in]   p_uIdx           - Index that we want to search for previous
+ *
+ * @return      Return the previous index of p_uIdx
+ */
+uint32_t eFSS_LOGCPRV_GetUsablePage(const t_eFSS_LOGC_Ctx* p_ptCtx, t_eFSS_TYPE_StorSet p_tStorSet);
+
+/**
  * @brief       Get the value of the next index. Be sure to not insert any NULL value and
  *              call eFSS_LOGCPRV_IsStatusStillCoherent before. Do not insert non valid index.
  *
@@ -160,7 +172,6 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_FlushBufferAsNewestPage(t_eFSS_LOGC_Ctx* p_ptCtx, u
  * @return      Return error related to read write erase function, even invalid page if found.
  */
 e_eFSS_LOGC_RES eFSS_LOGCPRV_LoadBufferAsNewestPage(t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t p_uIdx);
-
 
 
 #ifdef __cplusplus

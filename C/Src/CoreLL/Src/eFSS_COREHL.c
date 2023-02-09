@@ -102,6 +102,32 @@ e_eFSS_COREHL_RES eFSS_COREHL_GetBuff(t_eFSS_COREHL_Ctx* p_ptCtx, t_eFSS_TYPE_St
     return l_eRes;
 }
 
+e_eFSS_COREHL_RES eFSS_COREHL_GetStorSettNBuff(t_eFSS_COREHL_Ctx* p_ptCtx, t_eFSS_TYPE_StorSet* p_ptStorSet, 
+                                               t_eFSS_TYPE_StorBuf* p_ptBuff1, t_eFSS_TYPE_StorBuf* p_ptBuff2)
+{
+    /* Return local var */
+    e_eFSS_COREHL_RES l_eRes;
+    e_eFSS_CORELL_RES l_eResLL;
+
+    if( NULL == p_ptCtx )
+    {
+        l_eRes = e_eFSS_COREHL_RES_BADPOINTER;
+    }
+    else
+    {
+        l_eResLL = eFSS_CORELL_GetStorSett(&p_ptCtx->tCORELLCtx, p_ptStorSet);
+        l_eRes = eFSS_COREHL_LLtoHLRes(l_eResLL);
+
+        if( e_eFSS_COREHL_RES_OK == l_eRes )
+        {
+            l_eResLL = eFSS_CORELL_GetBuff(&p_ptCtx->tCORELLCtx, p_ptBuff1, p_ptBuff2);
+            l_eRes = eFSS_COREHL_LLtoHLRes(l_eResLL); 
+        }
+    }
+
+    return l_eRes;
+}
+                                               
 e_eFSS_COREHL_RES eFSS_COREHL_LoadPageInBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, e_eFSS_TYPE_BUFFTYPE p_eBuffType,
 								             const uint32_t p_uPageIndx)
 {
@@ -162,9 +188,56 @@ e_eFSS_COREHL_RES eFSS_COREHL_CalcCrcInBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, e_
     return l_eRes;
 }
 
-e_eFSS_COREHL_RES eFSS_COREHL_VerifyNRipristBkup(t_eFSS_COREHL_Ctx* const p_ptCtx, const uint32_t p_uOrigIndx,
-                                                 const uint32_t p_uBackupIndx, const uint32_t p_uOriSubType,
-                                                 const uint32_t p_uBckUpSubType )
+e_eFSS_COREHL_RES eFSS_COREHL_FlushBuffInPageNBkp(t_eFSS_COREHL_Ctx* const p_ptCtx, e_eFSS_TYPE_BUFFTYPE p_eBuffType,
+								                  const uint32_t p_uOrigIndx, const uint32_t p_uBackupIndx, 
+                                                  const uint32_t p_uOriSubType, const uint32_t p_uBckUpSubType )
+{
+    /* Return local var */
+    e_eFSS_COREHL_RES l_eRes;
+    e_eFSS_CORELL_RES l_eResLL;
+
+    /* Local var used for storage  */
+    t_eFSS_TYPE_StorBuf l_tBuff1;
+    t_eFSS_TYPE_StorBuf l_tBuff2;
+
+    if( NULL == p_ptCtx )
+    {
+        l_eRes = e_eFSS_COREHL_RES_BADPOINTER;
+    }
+    else
+    {
+        if( p_uBackupIndx == p_uOrigIndx )
+        {
+            l_eRes = e_eFSS_COREHL_RES_BADPARAM;
+        }
+        else
+        {
+            l_eResLL = eFSS_CORELL_GetBuff(&p_ptCtx->tCORELLCtx, &l_tBuff1, &l_tBuff2);
+            l_eRes = eFSS_COREHL_LLtoHLRes(l_eResLL);
+
+            if( e_eFSS_COREHL_RES_OK == l_eRes)
+            {
+                l_tBuff1.ptMeta->uPageSubType = p_uOriSubType;
+
+                l_eResLL = eFSS_CORELL_FlushBuffInPage(&p_ptCtx->tCORELLCtx, p_eBuffType, p_uOrigIndx);
+                l_eRes = eFSS_COREHL_LLtoHLRes(l_eResLL);
+
+                if( e_eFSS_COREHL_RES_OK == l_eRes)
+                {
+                    l_tBuff1.ptMeta->uPageSubType = p_uBckUpSubType;
+                    
+                    l_eResLL = eFSS_CORELL_FlushBuffInPage(&p_ptCtx->tCORELLCtx, p_eBuffType, p_uBckUpSubType);
+                    l_eRes = eFSS_COREHL_LLtoHLRes(l_eResLL);
+                }
+            }
+        }
+    }
+
+    return l_eRes;
+}
+
+e_eFSS_COREHL_RES eFSS_COREHL_LoadPageInBuffNRipBkp(t_eFSS_COREHL_Ctx* const p_ptCtx, const uint32_t p_uOrigIndx, const uint32_t p_uBackupIndx, 
+                                                 const uint32_t p_uOriSubType, const uint32_t p_uBckUpSubType )
 {
      /* Return local var */
     e_eFSS_COREHL_RES l_eRes;

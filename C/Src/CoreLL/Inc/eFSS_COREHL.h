@@ -111,6 +111,22 @@ e_eFSS_COREHL_RES eFSS_COREHL_GetBuff(t_eFSS_COREHL_Ctx* p_ptCtx, t_eFSS_TYPE_St
                                       t_eFSS_TYPE_StorBuf* p_ptBuff2);
 
 /**
+ * @brief       Get storage settings and buffer
+ *
+ * @param[in]   p_ptCtx       - High Level Core context
+ * @param[out]  p_ptStorSet   - Pointer to a storage settings
+ * @param[out]  p_ptBuff1     - Pointer to a pointer struct that will be filled with info about buffer 1
+ * @param[out]  p_ptBuff2     - Pointer to a pointer struct that will be filled with info about buffer 2
+ *
+ * @return      e_eFSS_COREHL_RES_BADPOINTER    - In case of bad pointer passed to the function
+ *		        e_eFSS_COREHL_RES_CORRUPTCTX    - Context is corrupted
+ *		        e_eFSS_COREHL_RES_NOINITLIB     - Need to init lib before calling function
+ *              e_eFSS_COREHL_RES_OK            - Operation ended correctly
+ */
+e_eFSS_COREHL_RES eFSS_COREHL_GetStorSettNBuff(t_eFSS_COREHL_Ctx* p_ptCtx, t_eFSS_TYPE_StorSet* p_ptStorSet, 
+                                               t_eFSS_TYPE_StorBuf* p_ptBuff1, t_eFSS_TYPE_StorBuf* p_ptBuff2);
+
+/**
  * @brief       Load a page from the storage area in one of he two internal buffer
  *
  * @param[in]   p_ptCtx       - High Level Core context
@@ -173,6 +189,32 @@ e_eFSS_COREHL_RES eFSS_COREHL_CalcCrcInBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, e_
 								            uint32_t p_uCrcSeed, uint32_t p_uLenCalc, uint32_t* p_puCrc);
 
 /**
+ * @brief       Flush one of the two buffer in the storage are and generate a backup copy. Keep in mind that 
+ *              the other buffer will be used to check if the data was flushed corretly, and after this operation will 
+ *              contains different value. Only the buffer of the flushed area will be valid after this operation.
+ *
+ * @param[in]   p_ptCtx         - High Level Core context
+ * @param[in]   p_eBuffType     - Enum used to select wich buffer we want to select
+ * @param[in]   p_uOrigIndx     - Page index of the original data
+ * @param[in]   p_uBackupIndx   - Page index of the backup data
+ * @param[in]   p_uOriSubType   - Sub type of the original page
+ * @param[in]   p_uBckUpSubType - Sub type of the backup pages
+ *
+ * @return      e_eFSS_COREHL_RES_BADPOINTER       - In case of bad pointer passed to the function
+ *		        e_eFSS_COREHL_RES_BADPARAM         - In case of an invalid parameter passed to the function
+ *		        e_eFSS_COREHL_RES_CORRUPTCTX       - Context is corrupted
+ *		        e_eFSS_COREHL_RES_NOINITLIB        - Need to init lib before calling function
+ *		        e_eFSS_COREHL_RES_CLBCKREADERR     - The read callback reported an error
+ *		        e_eFSS_COREHL_RES_CLBCKERASEERR    - The erase callback reported an error
+ *		        e_eFSS_COREHL_RES_CLBCKWRITEERR    - The write callback reported an error
+ *		        e_eFSS_COREHL_RES_WRITENOMATCHREAD - Writen data dosent match what requested
+ *              e_eFSS_COREHL_RES_OK               - Operation ended correctly
+ */
+e_eFSS_COREHL_RES eFSS_COREHL_FlushBuffInPageNBkp(t_eFSS_COREHL_Ctx* const p_ptCtx, e_eFSS_TYPE_BUFFTYPE p_eBuffType,
+								                  const uint32_t p_uOrigIndx, const uint32_t p_uBackupIndx, 
+                                                  const uint32_t p_uOriSubType, const uint32_t p_uBckUpSubType );
+
+/**
  * @brief       Verify the validity of the page in p_uOrigIndx and p_uBackupIndx. If everithing goes well at the end
  *              we can also retrive the original page from the buffer 1.
  *              1 - If p_uOrigIndx and p_uBackupIndx are valid, verify if they are equals. If not copy p_uOrigIndx
@@ -200,9 +242,9 @@ e_eFSS_COREHL_RES eFSS_COREHL_CalcCrcInBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, e_
  *              e_eFSS_COREHL_RES_CLBCKREADERR      - Error reported from the callback
  *              e_eFSS_COREHL_RES_WRITENOMATCHREAD  - For some unknow reason data write dosent match data readed
  */
-e_eFSS_COREHL_RES eFSS_COREHL_VerifyNRipristBkup(t_eFSS_COREHL_Ctx* const p_ptCtx, const uint32_t p_uOrigIndx,
-                                                 const uint32_t p_uBackupIndx, const uint32_t p_uOriSubType,
-                                                 const uint32_t p_uBckUpSubType );
+e_eFSS_COREHL_RES eFSS_COREHL_LoadPageInBuffNRipBkp(t_eFSS_COREHL_Ctx* const p_ptCtx,
+                                                    const uint32_t p_uOrigIndx, const uint32_t p_uBackupIndx, 
+                                                    const uint32_t p_uOriSubType, const uint32_t p_uBckUpSubType );
 
 #ifdef __cplusplus
 } /* extern "C" */

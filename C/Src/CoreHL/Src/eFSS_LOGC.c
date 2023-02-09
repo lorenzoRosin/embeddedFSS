@@ -208,17 +208,7 @@ e_eFSS_LOGC_RES eFSS_LOGC_GetLogInfo(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t *p
                                 if( ( e_eFSS_LOGC_RES_OK == l_eRes ) || ( e_eFSS_LOGC_RES_OK_BKP_RCVRD == l_eRes ) )
                                 {
                                     /* Calculate n page */
-                                    l_uNPageU = l_tStorSet.uTotPages;
-
-                                    if( true == p_ptCtx->bFlashCache )
-                                    {
-                                        l_uNPageU -= 2u;
-                                    }
-
-                                    if( true == p_ptCtx->bFullBckup )
-                                    {
-                                        l_uNPageU = (uint32_t)( l_uNPageU / 2u );
-                                    }
+                                    l_uNPageU = eFSS_LOGCPRV_GetUsablePage(p_ptCtx, l_tStorSet);
 
                                     /* Copy result */
                                     *p_puNewLogI = l_tBuff.ptMeta->uPageUseSpec1;
