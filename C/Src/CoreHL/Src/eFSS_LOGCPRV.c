@@ -672,7 +672,7 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_LoadBufferAsNewestPage(t_eFSS_LOGC_Ctx* p_ptCtx, ui
 
                     /* Before reading fix any error in original and backup pages */
                     l_eResHL = eFSS_COREHL_VerifyNRipristBkup(&p_ptCtx->tCOREHLCtx, l_uOriPageIdx, l_uBkupPageIdx,
-                                                            EFSS_PAGESUBTYPE_LOGNEWESTORI, EFSS_PAGESUBTYPE_LOGNEWESTBKP );
+                                                              EFSS_PAGESUBTYPE_LOGNEWESTORI, EFSS_PAGESUBTYPE_LOGNEWESTBKP );
                     l_eRes = eFSS_LOGCPRV_HLtoLogRes(l_eResHL);
                 }
 

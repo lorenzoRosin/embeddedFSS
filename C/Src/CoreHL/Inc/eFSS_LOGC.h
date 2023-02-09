@@ -161,7 +161,7 @@ e_eFSS_LOGC_RES eFSS_LOGC_Format(t_eFSS_LOGC_Ctx* const p_ptCtx);
  *
  * @param[in]   p_ptCtx        - Log context
  * @param[in]   p_uindx        - Index to get data from
- * @param[in]   p_puBuf        - Pointer to the buffer where founded log will be stored
+ * @param[in]   p_ppuBuf       - Pointer pointing to a buffer where founded log will be stored
  * @param[in]   p_uBufL        - Size fo the p_puLogBuf buffer
  *
  * @return      e_eFSS_LOGC_RES_BADPOINTER         - In case of bad pointer passed to the function
