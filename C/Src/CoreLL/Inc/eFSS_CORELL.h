@@ -30,27 +30,18 @@ extern "C" {
  **********************************************************************************************************************/
 typedef struct
 {
-    uint8_t     uPageType;
-    uint16_t    uPageVersion;
-    uint32_t    uPageTot;
-    uint32_t    uPageMagicNumber;
-    uint32_t    uPageCrc;
-}t_eFSS_CORELL_privMeta;
-
-typedef struct
-{
     uint8_t*  puBuf;
     uint32_t  uBufL;
     t_eFSS_TYPE_PageMeta tMeta;
-}t_eFSS_TYPE_StorBufPrv;
+}t_eFSS_CORELL_StorBufPrv;
 
 typedef struct
 {
     bool_t   bIsInit;
     t_eFSS_TYPE_CbCtx tCtxCb;
     t_eFSS_TYPE_StorSet tStorSett;
-    t_eFSS_TYPE_StorBufPrv tBuff1;
-    t_eFSS_TYPE_StorBufPrv tBuff2;
+    t_eFSS_CORELL_StorBufPrv tBuff1;
+    t_eFSS_CORELL_StorBufPrv tBuff2;
 }t_eFSS_CORELL_Ctx;
 
 typedef enum
@@ -85,7 +76,7 @@ typedef enum
  * @param[in]   p_ptCtx          - Low Level Core context
  * @param[in]   p_tCtxCb         - All callback collection context
  * @param[in]   p_tStorSet       - Storage settings
- * @param[in]   p_puBuff         - Pointer to a buffer used by the modules to make calc, must ne pageSize * 2
+ * @param[in]   p_puBuff         - Pointer to a buffer used by the modules to make calc, must be pageSize * 2
  * @param[in]   p_uBuffL         - Size of p_puBuff
  *
  * @return      e_eFSS_CORELL_RES_BADPOINTER    - In case of bad pointer passed to the function
@@ -110,7 +101,7 @@ e_eFSS_CORELL_RES eFSS_CORELL_IsInit(t_eFSS_CORELL_Ctx* const p_ptCtx, bool_t* p
  * @brief       Get storage settings
  *
  * @param[in]   p_ptCtx       - Low Level Core context
- * @param[out]  p_ptStorSet   - Pointer to a storage settings
+ * @param[out]  p_ptStorSet   - Pointer to a storage settings that will be filled with data used during init
  *
  * @return      e_eFSS_CORELL_RES_BADPOINTER    - In case of bad pointer passed to the function
  *		        e_eFSS_CORELL_RES_CORRUPTCTX    - Context is corrupted
@@ -120,7 +111,7 @@ e_eFSS_CORELL_RES eFSS_CORELL_IsInit(t_eFSS_CORELL_Ctx* const p_ptCtx, bool_t* p
 e_eFSS_CORELL_RES eFSS_CORELL_GetStorSett(t_eFSS_CORELL_Ctx* const p_ptCtx, t_eFSS_TYPE_StorSet* p_ptStorSet);
 
 /**
- * @brief       Get reference of the two buffer used to read and write in storage
+ * @brief       Get reference of the two buffer used to read and write the storage area
  *
  * @param[in]   p_ptCtx       - Low Level Core context
  * @param[out]  p_ptBuff1     - Pointer to a pointer struct that will be filled with info about buffer 1
@@ -135,12 +126,13 @@ e_eFSS_CORELL_RES eFSS_CORELL_GetBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, t_eFSS_T
                                       t_eFSS_TYPE_StorBuf* p_ptBuff2);
 
 /**
- * @brief       Get reference of the two buffer used to read and write in storage
+ * @brief       Get reference of the two buffer used to read and write the storage area and get reference of storage
+ *              settings.
  *
  * @param[in]   p_ptCtx       - Low Level Core context
  * @param[out]  p_ptBuff1     - Pointer to a pointer struct that will be filled with info about buffer 1
  * @param[out]  p_ptBuff2     - Pointer to a pointer struct that will be filled with info about buffer 2
- * @param[out]  p_ptStorSet   - Pointer to a storage settings
+ * @param[out]  p_ptStorSet   - Pointer to a storage settings that will be filled with data used during init
  *
  * @return      e_eFSS_CORELL_RES_BADPOINTER    - In case of bad pointer passed to the function
  *		        e_eFSS_CORELL_RES_CORRUPTCTX    - Context is corrupted
@@ -171,9 +163,9 @@ e_eFSS_CORELL_RES eFSS_CORELL_LoadPageInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e
 								             const uint32_t p_uPageIndx);
 
 /**
- * @brief       Flush one of the two buffer in the storage are. Keep in mine that the other buffer well be used
- *              to check if the data was flushed corretly, and after this operation will contains different value.
- *              Only the buffer of the flushed area will be valid after this operation.
+ * @brief       Flush one of the two buffer in the storage are. Keep in mind that the other buffer will be used
+ *              to check if the data was flushed corretly, and so after this operation it will contains different value
+ *              from the one stored before. Only the buffer of the flushed area will be valid after this operation.
  *
  * @param[in]   p_ptCtx       - Low Level Core context
  * @param[in]   p_eBuffType   - Enum used to select wich buffer we want to select
@@ -183,9 +175,10 @@ e_eFSS_CORELL_RES eFSS_CORELL_LoadPageInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e
  *		        e_eFSS_CORELL_RES_BADPARAM         - In case of an invalid parameter passed to the function
  *		        e_eFSS_CORELL_RES_CORRUPTCTX       - Context is corrupted
  *		        e_eFSS_CORELL_RES_NOINITLIB        - Need to init lib before calling function
- *		        e_eFSS_CORELL_RES_CLBCKREADERR     - The read callback reported an error
+ *              e_eFSS_CORELL_RES_CLBCKCRCERR      - The crc callback reported an error
  *		        e_eFSS_CORELL_RES_CLBCKERASEERR    - The erase callback reported an error
  *		        e_eFSS_CORELL_RES_CLBCKWRITEERR    - The write callback reported an error
+ *		        e_eFSS_CORELL_RES_CLBCKREADERR     - The read callback reported an error
  *		        e_eFSS_CORELL_RES_WRITENOMATCHREAD - Writen data dosent match what requested
  *              e_eFSS_CORELL_RES_OK               - Operation ended correctly
  */
@@ -193,7 +186,7 @@ e_eFSS_CORELL_RES eFSS_CORELL_FlushBuffInPage(t_eFSS_CORELL_Ctx* const p_ptCtx, 
 								              const uint32_t p_uPageIndx);
 
 /**
- * @brief       Calculate the Crc of the data present in the choosen buffer. Can also select to calculate the crc of
+ * @brief       Calculate the Crc of the data present in the choosen buffer. We can also choose to calculate the crc of
  *              a given numbers of bytes.
  *
  * @param[in]   p_ptCtx       - Low Level Core context

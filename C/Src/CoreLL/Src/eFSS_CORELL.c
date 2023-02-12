@@ -251,7 +251,6 @@ e_eFSS_CORELL_RES eFSS_CORELL_GetBuffNStor(t_eFSS_CORELL_Ctx* const p_ptCtx, t_e
                 p_ptBuff2->uBufL = p_ptCtx->tBuff2.uBufL - EFSS_PAGEMETALLSIZE;
                 p_ptBuff2->ptMeta = &p_ptCtx->tBuff2.tMeta;
 
-
                 *p_ptStorSet = p_ptCtx->tStorSett;
 
                 l_eRes = e_eFSS_CORELL_RES_OK;
@@ -270,8 +269,8 @@ e_eFSS_CORELL_RES eFSS_CORELL_LoadPageInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e
     bool_t l_bCbRes;
 
     /* Local var used for storage  */
-    t_eFSS_TYPE_StorBufPrv* l_ptStorBuff;
-    t_eFSS_CORELL_privMeta l_tPrvMeta;
+    t_eFSS_CORELL_StorBufPrv* l_ptStorBuff;
+    t_eFSS_CORELLPRV_PrvMeta l_tPrvMeta;
 
     /* Local var used for calculation */
     uint32_t l_uTryPerformed;
@@ -414,9 +413,9 @@ e_eFSS_CORELL_RES eFSS_CORELL_FlushBuffInPage(t_eFSS_CORELL_Ctx* const p_ptCtx, 
     bool_t l_bCbRes;
 
     /* Local var used for storage  */
-    t_eFSS_TYPE_StorBufPrv* l_ptStorBuff;
-    t_eFSS_TYPE_StorBufPrv* l_ptSupBuff;
-    t_eFSS_CORELL_privMeta l_tPrvMeta;
+    t_eFSS_CORELL_StorBufPrv* l_ptStorBuff;
+    t_eFSS_CORELL_StorBufPrv* l_ptSupBuff;
+    t_eFSS_CORELLPRV_PrvMeta l_tPrvMeta;
 
     /* Local var used for calculation */
     uint32_t l_uTryPerformed;
@@ -646,7 +645,7 @@ e_eFSS_CORELL_RES eFSS_CORELL_CalcCrcInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e_
                     {
                         /* Calc */
                         l_bCbRes = (*(p_ptCtx->tCtxCb.fCrc32))(p_ptCtx->tCtxCb.ptCtxCrc32, p_uCrcSeed, l_puBuff,
-                                                               p_uLenCalc, p_puCrc );
+                                                               p_uLenCalc, p_puCrc);
 
                         if( true != l_bCbRes )
                         {
