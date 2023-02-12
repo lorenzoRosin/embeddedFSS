@@ -116,12 +116,6 @@ typedef struct
     f_eFSS_TYPE_CrcCb     fCrc32;
 }t_eFSS_TYPE_CbCtx;
 
-typedef enum
-{
-    e_eFSS_TYPE_BUFFTYPE_1 = 0,
-    e_eFSS_TYPE_BUFFTYPE_2
-}e_eFSS_TYPE_BUFFTYPE;
-
 typedef struct
 {
     uint32_t    uTotPages;
@@ -146,6 +140,12 @@ typedef struct
     uint32_t  uBufL;
     t_eFSS_TYPE_PageMeta* ptMeta;
 }t_eFSS_TYPE_StorBuf;
+
+typedef struct
+{
+    t_eFSS_TYPE_StorSet    tStorSet;
+    t_eFSS_TYPE_StorBuf    tStorBuff;
+}t_eFSS_TYPE_StorBufNSett;
 
 #ifdef __cplusplus
 } /* extern "C" */

@@ -70,6 +70,11 @@ typedef enum
 }e_eFSS_CORELL_RES;
 
 
+typedef enum
+{
+    e_eFSS_CORELL_BUFFTYPE_1 = 0,
+    e_eFSS_CORELL_BUFFTYPE_2
+}e_eFSS_CORELL_BUFFTYPE;
 
 /***********************************************************************************************************************
  * GLOBAL PROTOTYPES
@@ -130,6 +135,22 @@ e_eFSS_CORELL_RES eFSS_CORELL_GetBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, t_eFSS_T
                                       t_eFSS_TYPE_StorBuf* p_ptBuff2);
 
 /**
+ * @brief       Get reference of the two buffer used to read and write in storage
+ *
+ * @param[in]   p_ptCtx       - Low Level Core context
+ * @param[out]  p_ptBuff1     - Pointer to a pointer struct that will be filled with info about buffer 1
+ * @param[out]  p_ptBuff2     - Pointer to a pointer struct that will be filled with info about buffer 2
+ * @param[out]  p_ptStorSet   - Pointer to a storage settings
+ *
+ * @return      e_eFSS_CORELL_RES_BADPOINTER    - In case of bad pointer passed to the function
+ *		        e_eFSS_CORELL_RES_CORRUPTCTX    - Context is corrupted
+ *		        e_eFSS_CORELL_RES_NOINITLIB     - Need to init lib before calling function
+ *              e_eFSS_CORELL_RES_OK            - Operation ended correctly
+ */
+e_eFSS_CORELL_RES eFSS_CORELL_GetBuffNStor(t_eFSS_CORELL_Ctx* const p_ptCtx, t_eFSS_TYPE_StorBuf* p_ptBuff1,
+                                           t_eFSS_TYPE_StorBuf* p_ptBuff2, t_eFSS_TYPE_StorSet* p_ptStorSet);
+
+/**
  * @brief       Load a page from the storage area in one of he two internal buffer
  *
  * @param[in]   p_ptCtx       - Low Level Core context
@@ -146,7 +167,7 @@ e_eFSS_CORELL_RES eFSS_CORELL_GetBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, t_eFSS_T
  *              e_eFSS_CORELL_RES_NEWVERSIONFOUND - The readed page has a new version
  *              e_eFSS_CORELL_RES_OK              - Operation ended correctly
  */
-e_eFSS_CORELL_RES eFSS_CORELL_LoadPageInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e_eFSS_TYPE_BUFFTYPE p_eBuffType,
+e_eFSS_CORELL_RES eFSS_CORELL_LoadPageInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFFTYPE p_eBuffType,
 								             const uint32_t p_uPageIndx);
 
 /**
@@ -168,7 +189,7 @@ e_eFSS_CORELL_RES eFSS_CORELL_LoadPageInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e
  *		        e_eFSS_CORELL_RES_WRITENOMATCHREAD - Writen data dosent match what requested
  *              e_eFSS_CORELL_RES_OK               - Operation ended correctly
  */
-e_eFSS_CORELL_RES eFSS_CORELL_FlushBuffInPage(t_eFSS_CORELL_Ctx* const p_ptCtx, e_eFSS_TYPE_BUFFTYPE p_eBuffType,
+e_eFSS_CORELL_RES eFSS_CORELL_FlushBuffInPage(t_eFSS_CORELL_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFFTYPE p_eBuffType,
 								              const uint32_t p_uPageIndx);
 
 /**
@@ -188,7 +209,7 @@ e_eFSS_CORELL_RES eFSS_CORELL_FlushBuffInPage(t_eFSS_CORELL_Ctx* const p_ptCtx, 
  *		        e_eFSS_CORELL_RES_CLBCKCRCERR      - The CRC callback reported an error
  *              e_eFSS_CORELL_RES_OK               - Operation ended correctly
  */
-e_eFSS_CORELL_RES eFSS_CORELL_CalcCrcInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e_eFSS_TYPE_BUFFTYPE p_eBuffType,
+e_eFSS_CORELL_RES eFSS_CORELL_CalcCrcInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFFTYPE p_eBuffType,
 								            uint32_t p_uCrcSeed, uint32_t p_uLenCalc, uint32_t* p_puCrc);
 
 #ifdef __cplusplus
