@@ -205,14 +205,15 @@ e_eFSS_COREHL_RES eFSS_COREHL_FlushBuffInPageNBkp(t_eFSS_COREHL_Ctx* const p_ptC
                                                   const uint32_t p_uOriSubType, const uint32_t p_uBckUpSubType);
 
 /**
- * @brief       Verify the validity of the page in p_uOrigIndx and p_uBackupIndx. If everithing goes well at the end
- *              we can also retrive the original page from the buffer 1.
+ * @brief       Verify the validity of the page present in p_uOrigIndx and of it's backup present in p_uBackupIndx.
+ *              If everithing goes well the original page is loaded in the internal buffer, and any error is fixd.
+ *              This function use this decision maps in order to load original page and verify it's backup:
  *              1 - If p_uOrigIndx and p_uBackupIndx are valid, verify if they are equals. If not copy p_uOrigIndx
  *                  in p_uBackupIndx
  *              2 - If p_uOrigIndx is not valid copy p_uBackupIndx in p_uOrigIndx
  *              3 - If p_uBackupIndx is not valid copy p_uOrigIndx in p_uBackupIndx
  *              4 - If p_uOrigIndx and p_uBackupIndx are not valid we cann not do nothing
- *              Note: page validity is checkd against subtype also
+ *              Note: page validity is checkd against subtype also.
  *
  * @param[in]   p_ptCtx         - Pointer to all callback context
  * @param[in]   p_uOrigIndx     - Page index of the original data
@@ -220,17 +221,19 @@ e_eFSS_COREHL_RES eFSS_COREHL_FlushBuffInPageNBkp(t_eFSS_COREHL_Ctx* const p_ptC
  * @param[in]   p_uOriSubType   - Sub type of the original page
  * @param[in]   p_uBckUpSubType - Sub type of the backup pages
  *
- * @return      e_eFSS_COREHL_RES_OK                - Operation ended successfully, page are correct
- *              e_eFSS_COREHL_RES_NOTVALIDPAGE      - both origin and backup pages are corrupted
- *              e_eFSS_COREHL_RES_OK_BKP_RCVRD      - operation ended successfully recovering a backup or an origin
- *                                                    page
- *              e_eFSS_COREHL_RES_BADPOINTER        - In case of bad pointer passed to the function
+ * @return      e_eFSS_COREHL_RES_BADPOINTER        - In case of bad pointer passed to the function
  *              e_eFSS_COREHL_RES_BADPARAM          - In case of bad parameter passed to the function
- *              e_eFSS_COREHL_RES_CLBCKCRCERR       - Error reported from the callback
+ *		        e_eFSS_COREHL_RES_CORRUPTCTX        - Context is corrupted
+ *		        e_eFSS_COREHL_RES_NOINITLIB         - Need to init lib before calling function
+ *		        e_eFSS_COREHL_RES_CLBCKREADERR      - The read callback reported an error
+ *              e_eFSS_COREHL_RES_CLBCKCRCERR       - The crc callback reported an error
+ *              e_eFSS_COREHL_RES_NOTVALIDPAGE      - both origin and backup pages are corrupted
  *              e_eFSS_COREHL_RES_CLBCKERASEERR     - Error reported from the callback
  *              e_eFSS_COREHL_RES_CLBCKWRITEERR     - Error reported from the callback
- *              e_eFSS_COREHL_RES_CLBCKREADERR      - Error reported from the callback
  *              e_eFSS_COREHL_RES_WRITENOMATCHREAD  - For some unknow reason data write dosent match data readed
+ *              e_eFSS_COREHL_RES_OK_BKP_RCVRD      - operation ended successfully recovering a backup or an origin
+ *                                                    page
+ *              e_eFSS_COREHL_RES_OK                - Operation ended successfully, page are correct
  */
 e_eFSS_COREHL_RES eFSS_COREHL_LoadPageInBuffNRipBkp(t_eFSS_COREHL_Ctx* const p_ptCtx,
                                                     const uint32_t p_uOrigIndx, const uint32_t p_uBackupIndx,
