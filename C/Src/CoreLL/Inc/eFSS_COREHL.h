@@ -180,9 +180,8 @@ e_eFSS_COREHL_RES eFSS_COREHL_CalcCrcInBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, ui
                                             uint32_t* p_puCrc);
 
 /**
- * @brief       Flush one of the two buffer in the storage are and generate a backup copy. Keep in mind that
- *              the other buffer will be used to check if the data was flushed corretly, and after this operation will
- *              contains different value. Only the buffer of the flushed area will be valid after this operation.
+ * @brief       Flush the internal buffer in to the storage area and generate a backup copy. The field uPageSubType
+ *              will be automatically update to the needed value.
  *
  * @param[in]   p_ptCtx         - High Level Core context
  * @param[in]   p_uOrigIndx     - Page index of the original data
@@ -197,6 +196,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_CalcCrcInBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, ui
  *		        e_eFSS_COREHL_RES_CLBCKREADERR     - The read callback reported an error
  *		        e_eFSS_COREHL_RES_CLBCKERASEERR    - The erase callback reported an error
  *		        e_eFSS_COREHL_RES_CLBCKWRITEERR    - The write callback reported an error
+ *		        e_eFSS_COREHL_RES_CLBCKREADERR     - The read callback reported an error
  *		        e_eFSS_COREHL_RES_WRITENOMATCHREAD - Writen data dosent match what requested
  *              e_eFSS_COREHL_RES_OK               - Operation ended correctly
  */
