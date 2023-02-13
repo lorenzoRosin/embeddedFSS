@@ -142,7 +142,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_GetBuffNStor(t_eFSS_COREHL_Ctx* p_ptCtx, t_eFSS_TY
 e_eFSS_COREHL_RES eFSS_COREHL_LoadPageInBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, const uint32_t p_uPageIndx);
 
 /**
- * @brief       Flush the intenral buffer in the storage area.
+ * @brief       Flush the internal buffer in to the storage area.
  *
  * @param[in]   p_ptCtx       - High Level Core context
  * @param[in]   p_uPageIndx   - uint32_t index rappresenting the page that we want to flush in storage
@@ -161,7 +161,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_LoadPageInBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, c
 e_eFSS_COREHL_RES eFSS_COREHL_FlushBuffInPage(t_eFSS_COREHL_Ctx* const p_ptCtx, const uint32_t p_uPageIndx);
 
 /**
- * @brief       Calculate the Crc of the data present in the choosen buffer. Can also select to calculate the crc of
+ * @brief       Calculate the Crc of the data present in the internal buffer. Can also select to calculate the crc of
  *              a given numbers of bytes.
  *
  * @param[in]   p_ptCtx       - High Level Core context
