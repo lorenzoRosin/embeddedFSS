@@ -82,13 +82,14 @@ e_eFSS_COREHL_RES eFSS_COREHL_GetStorSett(t_eFSS_COREHL_Ctx* p_ptCtx, t_eFSS_TYP
     return l_eRes;
 }
 
-e_eFSS_COREHL_RES eFSS_COREHL_GetBuff(t_eFSS_COREHL_Ctx* p_ptCtx, t_eFSS_TYPE_StorBuf* p_ptBuff1)
+e_eFSS_COREHL_RES eFSS_COREHL_GetBuff(t_eFSS_COREHL_Ctx* p_ptCtx, t_eFSS_TYPE_StorBuf* p_ptBuff)
 {
     /* Return local var */
     e_eFSS_COREHL_RES l_eRes;
     e_eFSS_CORELL_RES l_eResLL;
 
-    t_eFSS_TYPE_StorBuf* p_ptBuff2;
+    /* Calc local variable */
+    t_eFSS_TYPE_StorBuf l_tBuff2;
 
     if( NULL == p_ptCtx )
     {
@@ -96,21 +97,22 @@ e_eFSS_COREHL_RES eFSS_COREHL_GetBuff(t_eFSS_COREHL_Ctx* p_ptCtx, t_eFSS_TYPE_St
     }
     else
     {
-        l_eResLL = eFSS_CORELL_GetBuff(&p_ptCtx->tCORELLCtx, p_ptBuff1, p_ptBuff2);
+        l_eResLL = eFSS_CORELL_GetBuff(&p_ptCtx->tCORELLCtx, p_ptBuff, &l_tBuff2);
         l_eRes = eFSS_COREHL_LLtoHLRes(l_eResLL);
     }
 
     return l_eRes;
 }
 
-e_eFSS_COREHL_RES eFSS_COREHL_GetBuffNStor(t_eFSS_COREHL_Ctx* p_ptCtx, t_eFSS_TYPE_StorBuf* p_ptBuff1,
+e_eFSS_COREHL_RES eFSS_CORELL_GetBuffNStor(t_eFSS_COREHL_Ctx* p_ptCtx, t_eFSS_TYPE_StorBuf* p_ptBuff,
                                            t_eFSS_TYPE_StorSet* p_ptStorSet)
 {
     /* Return local var */
     e_eFSS_COREHL_RES l_eRes;
     e_eFSS_CORELL_RES l_eResLL;
 
-    t_eFSS_TYPE_StorBuf* p_ptBuff2;
+    /* Calc local variable */
+    t_eFSS_TYPE_StorBuf l_tBuff2;
 
     if( NULL == p_ptCtx )
     {
@@ -118,7 +120,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_GetBuffNStor(t_eFSS_COREHL_Ctx* p_ptCtx, t_eFSS_TY
     }
     else
     {
-        l_eResLL = eFSS_CORELL_GetBuffNStor(&p_ptCtx->tCORELLCtx, p_ptBuff1, p_ptBuff2, p_ptStorSet);
+        l_eResLL = eFSS_CORELL_GetBuffNStor(&p_ptCtx->tCORELLCtx, p_ptBuff, &l_tBuff2, p_ptStorSet);
         l_eRes = eFSS_COREHL_LLtoHLRes(l_eResLL);
     }
 

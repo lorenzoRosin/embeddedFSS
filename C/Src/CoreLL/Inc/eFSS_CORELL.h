@@ -163,7 +163,7 @@ e_eFSS_CORELL_RES eFSS_CORELL_LoadPageInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e
 								             const uint32_t p_uPageIndx);
 
 /**
- * @brief       Flush one of the two buffer in the storage are. Keep in mind that the other buffer will be used
+ * @brief       Flush one of the two buffer in the storage area. Keep in mind that the other buffer will be used
  *              to check if the data was flushed corretly, and so after this operation it will contains different value
  *              from the one stored before. Only the buffer of the flushed area will be valid after this operation.
  *

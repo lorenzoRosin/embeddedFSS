@@ -61,7 +61,7 @@ typedef struct
  * @param[in]   p_ptCtx          - High Level Core context
  * @param[in]   p_tCtxCb         - All callback collection context
  * @param[in]   p_tStorSet       - Storage settings
- * @param[in]   p_puBuff         - Pointer to a buffer used by the modules to make calc, must ne pageSize * 2
+ * @param[in]   p_puBuff         - Pointer to a buffer used by the modules to make calc, must be pageSize * 2
  * @param[in]   p_uBuffL         - Size of p_puBuff
  *
  * @return      e_eFSS_COREHL_RES_BADPOINTER    - In case of bad pointer passed to the function
@@ -86,7 +86,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_IsInit(t_eFSS_COREHL_Ctx* const p_ptCtx, bool_t* p
  * @brief       Get storage settings
  *
  * @param[in]   p_ptCtx       - High Level Core context
- * @param[out]  p_ptStorSet   - Pointer to a storage settings
+ * @param[out]  p_ptStorSet   - Pointer to a storage settings that will be filled with data used during init
  *
  * @return      e_eFSS_COREHL_RES_BADPOINTER    - In case of bad pointer passed to the function
  *		        e_eFSS_COREHL_RES_CORRUPTCTX    - Context is corrupted
@@ -96,23 +96,23 @@ e_eFSS_COREHL_RES eFSS_COREHL_IsInit(t_eFSS_COREHL_Ctx* const p_ptCtx, bool_t* p
 e_eFSS_COREHL_RES eFSS_COREHL_GetStorSett(t_eFSS_COREHL_Ctx* p_ptCtx, t_eFSS_TYPE_StorSet* p_ptStorSet);
 
 /**
- * @brief       Get reference of the two buffer used to read and write in storage
+ * @brief       Get the reference of buffer that we can use to read or write data from storage
  *
  * @param[in]   p_ptCtx       - High Level Core context
- * @param[out]  p_ptBuff1     - Pointer to a pointer struct that will be filled with info about buffer
+ * @param[out]  p_ptBuff      - Pointer to a struct that will be filled with info about buffer
  *
  * @return      e_eFSS_COREHL_RES_BADPOINTER    - In case of bad pointer passed to the function
  *		        e_eFSS_COREHL_RES_CORRUPTCTX    - Context is corrupted
  *		        e_eFSS_COREHL_RES_NOINITLIB     - Need to init lib before calling function
  *              e_eFSS_COREHL_RES_OK            - Operation ended correctly
  */
-e_eFSS_COREHL_RES eFSS_COREHL_GetBuff(t_eFSS_COREHL_Ctx* p_ptCtx, t_eFSS_TYPE_StorBuf* p_ptBuff1);
+e_eFSS_COREHL_RES eFSS_COREHL_GetBuff(t_eFSS_COREHL_Ctx* p_ptCtx, t_eFSS_TYPE_StorBuf* p_ptBuff);
 
 /**
- * @brief       Get storage settings and buffer
+ * @brief       Get storage settings and buffer all in one
  *
  * @param[in]   p_ptCtx       - High Level Core context
- * @param[out]  p_ptBuffCol   - Pointer to a storage collection struct that will be filled with info about internal buf
+ * @param[out]  p_ptBuff      - Pointer to a storage collection struct that will be filled with info about internal buf
  * @param[out]  p_ptStorSet   - Pointer to a storage settings
  *
  * @return      e_eFSS_COREHL_RES_BADPOINTER    - In case of bad pointer passed to the function
@@ -120,11 +120,11 @@ e_eFSS_COREHL_RES eFSS_COREHL_GetBuff(t_eFSS_COREHL_Ctx* p_ptCtx, t_eFSS_TYPE_St
  *		        e_eFSS_COREHL_RES_NOINITLIB     - Need to init lib before calling function
  *              e_eFSS_COREHL_RES_OK            - Operation ended correctly
  */
-e_eFSS_COREHL_RES eFSS_COREHL_GetBuffNStor(t_eFSS_COREHL_Ctx* p_ptCtx, t_eFSS_TYPE_StorBuf* p_ptBuff1,
+e_eFSS_COREHL_RES eFSS_COREHL_GetBuffNStor(t_eFSS_COREHL_Ctx* p_ptCtx, t_eFSS_TYPE_StorBuf* p_ptBuff,
                                            t_eFSS_TYPE_StorSet* p_ptStorSet);
 
 /**
- * @brief       Load a page from the storage area in one of he two internal buffer
+ * @brief       Load a page from the storage area in to the internal buffer
  *
  * @param[in]   p_ptCtx       - High Level Core context
  * @param[in]   p_uPageIndx   - uint32_t index rappresenting the page that we want to load from storage
@@ -142,9 +142,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_GetBuffNStor(t_eFSS_COREHL_Ctx* p_ptCtx, t_eFSS_TY
 e_eFSS_COREHL_RES eFSS_COREHL_LoadPageInBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, const uint32_t p_uPageIndx);
 
 /**
- * @brief       Flush one of the two buffer in the storage are. Keep in mine that the other buffer well be used
- *              to check if the data was flushed corretly, and after this operation will contains different value.
- *              Only the buffer of the flushed area will be valid after this operation.
+ * @brief       Flush the intenral buffer in the storage area.
  *
  * @param[in]   p_ptCtx       - High Level Core context
  * @param[in]   p_uPageIndx   - uint32_t index rappresenting the page that we want to flush in storage
@@ -153,9 +151,10 @@ e_eFSS_COREHL_RES eFSS_COREHL_LoadPageInBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, c
  *		        e_eFSS_COREHL_RES_BADPARAM         - In case of an invalid parameter passed to the function
  *		        e_eFSS_COREHL_RES_CORRUPTCTX       - Context is corrupted
  *		        e_eFSS_COREHL_RES_NOINITLIB        - Need to init lib before calling function
- *		        e_eFSS_COREHL_RES_CLBCKREADERR     - The read callback reported an error
+ *              e_eFSS_COREHL_RES_CLBCKCRCERR      - The crc callback reported an error
  *		        e_eFSS_COREHL_RES_CLBCKERASEERR    - The erase callback reported an error
  *		        e_eFSS_COREHL_RES_CLBCKWRITEERR    - The write callback reported an error
+ *		        e_eFSS_COREHL_RES_CLBCKREADERR     - The read callback reported an error
  *		        e_eFSS_COREHL_RES_WRITENOMATCHREAD - Writen data dosent match what requested
  *              e_eFSS_COREHL_RES_OK               - Operation ended correctly
  */
