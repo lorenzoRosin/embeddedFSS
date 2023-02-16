@@ -48,24 +48,24 @@ bool_t eFSS_LOGCPRV_IsStatusStillCoherent(t_eFSS_LOGC_Ctx* p_ptCtx);
 e_eFSS_LOGC_RES eFSS_LOGCPRV_HLtoLogRes(const e_eFSS_COREHL_RES p_eHLRes);
 
 /**
- * @brief       Get the value of the previous index. Be sure to not insert any NULL value and
- *              call eFSS_LOGCPRV_IsStatusStillCoherent before. Do not insert non valid index.
+ * @brief       Get the value of usable page to save a log. Be sure to not insert any NULL value and
+ *              call eFSS_LOGCPRV_IsStatusStillCoherent before.
  *
  * @param[in]   p_ptCtx          - Log Core context
  * @param[in]   p_tStorSet       - Storage settings
- * @param[in]   p_uIdx           - Index that we want to search for previous
  *
- * @return      Return the previous index of p_uIdx
+ * @return      Return the numbers of usable page to save a log, excluding flash cache and backup pages
  */
 uint32_t eFSS_LOGCPRV_GetUsablePage(const t_eFSS_LOGC_Ctx* p_ptCtx, t_eFSS_TYPE_StorSet p_tStorSet);
 
 /**
- * @brief       Get the value of the next index. Be sure to not insert any NULL value and
+ * @brief       Get the value of the next index given a passed one. Be sure to not insert any NULL value and
  *              call eFSS_LOGCPRV_IsStatusStillCoherent before. Do not insert non valid index.
  *
  * @param[in]   p_ptCtx          - Log Core context
  * @param[in]   p_tStorSet       - Storage settings
- * @param[in]   p_uIdx           - Index that we want to search for next
+ * @param[in]   p_uIdx           - Index that we want to search for next. Usable value: from zero to the value returned
+ *                                 by eFSS_LOGCPRV_GetUsablePage
  *
  * @return      Return the next index of p_uIdx
  */
@@ -77,35 +77,59 @@ uint32_t eFSS_LOGCPRV_GetNextIndex(const t_eFSS_LOGC_Ctx* p_ptCtx, t_eFSS_TYPE_S
  *
  * @param[in]   p_ptCtx          - Log Core context
  * @param[in]   p_tStorSet       - Storage settings
- * @param[in]   p_uIdx           - Index that we want to search for previous
+ * @param[in]   p_uIdx           - Index that we want to search for previous. Usable value: from zero to the value
+ *                                 returned by eFSS_LOGCPRV_GetUsablePage
  *
  * @return      Return the previous index of p_uIdx
  */
 uint32_t eFSS_LOGCPRV_GetPrevIndex(const t_eFSS_LOGC_Ctx* p_ptCtx, t_eFSS_TYPE_StorSet p_tStorSet, uint32_t p_uIdx);
 
 /**
- * @brief       Write in cache the value of new and fill index. This function take care of the backup pages.
- *              Do not pass to this function NULL pointer or invalid index, they are not checked.
- *              Make sure eFSS_LOGCPRV_IsStatusStillCoherent is called before calling this function
+ * @brief       Write in cache the value of the new index location and the numbers of filled pages.
+ *              This function take care of the backup pages. Do not pass to this function NULL pointer or invalid
+ *              index, they are not checked. Make sure eFSS_LOGCPRV_IsStatusStillCoherent is called before calling this
+ *              function. Use this function only if flash cache is enabled.
  *
  * @param[in]   p_ptCtx          - Log Core context
- * @param[in]   p_uIdxN          - Index of the new log page  that we want to save in cache
+ * @param[in]   p_uIdxN          - Index of the new log page that we want to save in cache
  * @param[in]   p_uIFlP          - Number of filled pages that we want to save
  *
- * @return      Return error related to read write erase function
+ * @return      e_eFSS_LOGC_RES_BADPOINTER        - In case of bad pointer passed to the function
+ *		        e_eFSS_LOGC_RES_BADPARAM          - In case of an invalid parameter passed to the function
+ *		        e_eFSS_LOGC_RES_CORRUPTCTX        - Context is corrupted
+ *		        e_eFSS_LOGC_RES_NOINITLIB         - Need to init lib before calling function
+ *              e_eFSS_LOGC_RES_CLBCKCRCERR       - The crc callback reported an error
+ *		        e_eFSS_LOGC_RES_CLBCKERASEERR     - The erase callback reported an error
+ *		        e_eFSS_LOGC_RES_CLBCKWRITEERR     - The write callback reported an error
+ *		        e_eFSS_LOGC_RES_CLBCKREADERR      - The read callback reported an error
+ *		        e_eFSS_LOGC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
+ *              e_eFSS_LOGC_RES_OK                - Operation ended correctly
  */
 e_eFSS_LOGC_RES eFSS_LOGCPRV_WriteCache(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t p_uIdxN, uint32_t p_uIFlP);
 
 /**
- * @brief       Read from cache the value of new index and fill index. This function take care of the backup pages.
- *              Do not pass to this function NULL pointer or invalid index, they are not checked.
- *              Make sure eFSS_LOGCPRV_IsStatusStillCoherent is called before calling this function
+ * @brief       Read from cache the value of new index location and the numbers of filled pages. This function take
+ *              care of the backup pages. Do not pass to this function NULL pointer or invalid index, they are
+ *              not checked. Make sure eFSS_LOGCPRV_IsStatusStillCoherent is called before calling this function.
+ *              Use this function only if flash cache is enabled.
  *
  * @param[in]   p_ptCtx          - Log Core context
  * @param[out]  p_puIdxN         - Index of the new log page that we want to read from cache
  * @param[out]  p_puIFlP         - Number of filled pages that we want to read
  *
- * @return      Return error related to read write erase function, even invalid page if found.
+ * @return      e_eFSS_LOGC_RES_BADPOINTER        - In case of bad pointer passed to the function
+ *		        e_eFSS_LOGC_RES_BADPARAM          - In case of an invalid parameter passed to the function
+ *		        e_eFSS_LOGC_RES_CORRUPTCTX        - Context is corrupted
+ *		        e_eFSS_LOGC_RES_NOINITLIB         - Need to init lib before calling function
+ *              e_eFSS_LOGC_RES_CLBCKCRCERR       - The crc callback reported an error
+ *		        e_eFSS_LOGC_RES_CLBCKERASEERR     - The erase callback reported an error
+ *		        e_eFSS_LOGC_RES_CLBCKWRITEERR     - The write callback reported an error
+ *		        e_eFSS_LOGC_RES_CLBCKREADERR      - The read callback reported an error
+ *		        e_eFSS_LOGC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
+ *              e_eFSS_LOGC_RES_NOTVALIDPAGE      - both origin and backup pages are corrupted
+ *              e_eFSS_LOGC_RES_OK_BKP_RCVRD      - operation ended successfully recovering a backup or an origin
+ *                                                  page
+ *              e_eFSS_LOGC_RES_OK                - Operation ended correctly
  */
 e_eFSS_LOGC_RES eFSS_LOGCPRV_ReadCache(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t* p_puIdxN, uint32_t* p_puIFlP);
 
@@ -116,7 +140,10 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_ReadCache(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t*
  * @param[in]   p_ptCtx          - Log Core context
  * @param[out]  p_ptBuff         - Pointer to a struct that will be filled with info about buffer
  *
- * @return      Return error related to read write erase function, even invalid page if found.
+ * @return      e_eFSS_LOGC_RES_BADPOINTER        - In case of bad pointer passed to the function
+ *		        e_eFSS_LOGC_RES_CORRUPTCTX        - Context is corrupted
+ *		        e_eFSS_LOGC_RES_NOINITLIB         - Need to init lib before calling function
+ *              e_eFSS_COREHL_RES_OK              - Operation ended correctly
  */
 e_eFSS_LOGC_RES eFSS_LOGCPRV_GetBuffer(t_eFSS_LOGC_Ctx* const p_ptCtx, t_eFSS_TYPE_StorBuf* p_ptBuff);
 
