@@ -157,7 +157,16 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_GetBuffer(t_eFSS_LOGC_Ctx* const p_ptCtx, t_eFSS_TY
  * @param[in]   p_ptCtx          - Log Core context
  * @param[in]   p_uIdx           - Index of the log page we want to write
  *
- * @return      Return error related to read write erase function, even invalid page if found.
+ * @return      e_eFSS_LOGC_RES_BADPOINTER        - In case of bad pointer passed to the function
+ *		        e_eFSS_LOGC_RES_BADPARAM          - In case of an invalid parameter passed to the function
+ *		        e_eFSS_LOGC_RES_CORRUPTCTX        - Context is corrupted
+ *		        e_eFSS_LOGC_RES_NOINITLIB         - Need to init lib before calling function
+ *              e_eFSS_LOGC_RES_CLBCKCRCERR       - The crc callback reported an error
+ *		        e_eFSS_LOGC_RES_CLBCKERASEERR     - The erase callback reported an error
+ *		        e_eFSS_LOGC_RES_CLBCKWRITEERR     - The write callback reported an error
+ *		        e_eFSS_LOGC_RES_CLBCKREADERR      - The read callback reported an error
+ *		        e_eFSS_LOGC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
+ *              e_eFSS_LOGC_RES_OK                - Operation ended correctly
  */
 e_eFSS_LOGC_RES eFSS_LOGCPRV_FlushBufferAsLog(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t p_uIdx);
 
@@ -171,9 +180,107 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_FlushBufferAsLog(t_eFSS_LOGC_Ctx* const p_ptCtx, ui
  * @param[in]   p_ptCtx          - Log Core context
  * @param[in]   p_uIdx           - Index of the log page we want to read
  *
- * @return      Return error related to read write erase function, even invalid page if found.
+ * @return      e_eFSS_LOGC_RES_BADPOINTER        - In case of bad pointer passed to the function
+ *		        e_eFSS_LOGC_RES_BADPARAM          - In case of an invalid parameter passed to the function
+ *		        e_eFSS_LOGC_RES_CORRUPTCTX        - Context is corrupted
+ *		        e_eFSS_LOGC_RES_NOINITLIB         - Need to init lib before calling function
+ *              e_eFSS_LOGC_RES_CLBCKCRCERR       - The crc callback reported an error
+ *		        e_eFSS_LOGC_RES_CLBCKERASEERR     - The erase callback reported an error
+ *		        e_eFSS_LOGC_RES_CLBCKWRITEERR     - The write callback reported an error
+ *		        e_eFSS_LOGC_RES_CLBCKREADERR      - The read callback reported an error
+ *		        e_eFSS_LOGC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
+ *              e_eFSS_LOGC_RES_NOTVALIDPAGE      - both origin and backup pages are corrupted
+ *              e_eFSS_LOGC_RES_OK_BKP_RCVRD      - operation ended successfully recovering a backup or an origin
+ *                                                  page
+ *              e_eFSS_LOGC_RES_OK                - Operation ended correctly
  */
 e_eFSS_LOGC_RES eFSS_LOGCPRV_LoadBufferAsLog(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t p_uIdx);
+
+/**
+ * @brief       Flush the buffer in a page at p_uIdx position as newest only. Do not pass to this function NULL value
+ *              or invalid index value. This function will take care of any support page.
+ *              Make sure eFSS_LOGCPRV_IsStatusStillCoherent is called before calling this function.
+ *              Do not use this function on Flash cache pages.
+ *              The buffer is managed with subtype related to newest page only.
+ *
+ * @param[in]   p_ptCtx          - Log Core context
+ * @param[in]   p_uIdx           - Index of the newest page we want to write
+ *
+ * @return      e_eFSS_LOGC_RES_BADPOINTER        - In case of bad pointer passed to the function
+ *		        e_eFSS_LOGC_RES_BADPARAM          - In case of an invalid parameter passed to the function
+ *		        e_eFSS_LOGC_RES_CORRUPTCTX        - Context is corrupted
+ *		        e_eFSS_LOGC_RES_NOINITLIB         - Need to init lib before calling function
+ *              e_eFSS_LOGC_RES_CLBCKCRCERR       - The crc callback reported an error
+ *		        e_eFSS_LOGC_RES_CLBCKERASEERR     - The erase callback reported an error
+ *		        e_eFSS_LOGC_RES_CLBCKWRITEERR     - The write callback reported an error
+ *		        e_eFSS_LOGC_RES_CLBCKREADERR      - The read callback reported an error
+ *		        e_eFSS_LOGC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
+ *              e_eFSS_LOGC_RES_OK                - Operation ended correctly
+ */
+e_eFSS_LOGC_RES eFSS_LOGCPRV_FlushBufferAsNewestOnly(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t p_uIdx);
+
+/**
+ * @brief       Flush the buffer in a page at p_uIdx position as newest bkup only. Do not pass to this function NULL
+ *              value or invalid index value. This function will take care of any support page.
+ *              Make sure eFSS_LOGCPRV_IsStatusStillCoherent is called before calling this function.
+ *              Do not use this function on Flash cache pages.
+ *              The buffer is managed with subtype related to newest page only.
+ *
+ * @param[in]   p_ptCtx          - Log Core context
+ * @param[in]   p_uIdx           - Index of the newest page we want to write
+ *
+ * @return      e_eFSS_LOGC_RES_BADPOINTER        - In case of bad pointer passed to the function
+ *		        e_eFSS_LOGC_RES_BADPARAM          - In case of an invalid parameter passed to the function
+ *		        e_eFSS_LOGC_RES_CORRUPTCTX        - Context is corrupted
+ *		        e_eFSS_LOGC_RES_NOINITLIB         - Need to init lib before calling function
+ *              e_eFSS_LOGC_RES_CLBCKCRCERR       - The crc callback reported an error
+ *		        e_eFSS_LOGC_RES_CLBCKERASEERR     - The erase callback reported an error
+ *		        e_eFSS_LOGC_RES_CLBCKWRITEERR     - The write callback reported an error
+ *		        e_eFSS_LOGC_RES_CLBCKREADERR      - The read callback reported an error
+ *		        e_eFSS_LOGC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
+ *              e_eFSS_LOGC_RES_OK                - Operation ended correctly
+ */
+e_eFSS_LOGC_RES eFSS_LOGCPRV_FlushBufferAsNewestBkupOnly(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t p_uIdx);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /**
  * @brief       Write a page of data at p_uIdx position. Do not pass to this function NULL value
@@ -187,7 +294,7 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_LoadBufferAsLog(t_eFSS_LOGC_Ctx* const p_ptCtx, uin
  *
  * @return      Return error related to read write erase function, even invalid page if found.
  */
-e_eFSS_LOGC_RES eFSS_LOGCPRV_FlushBufferAsNewestPage(t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t p_uIdx);
+e_eFSS_LOGC_RES eFSS_LOGCPRV_FlushBufferAsNewestNBkpPage(t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t p_uIdx);
 
 /**
  * @brief       Read a page of data at p_uIdx position. Do not pass to this function NULL value
@@ -198,7 +305,7 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_FlushBufferAsNewestPage(t_eFSS_LOGC_Ctx* p_ptCtx, u
  *
  * @return      Return error related to read write erase function, even invalid page if found.
  */
-e_eFSS_LOGC_RES eFSS_LOGCPRV_LoadBufferAsNewestPage(t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t p_uIdx);
+e_eFSS_LOGC_RES eFSS_LOGCPRV_LoadBufferAsNewestNBkpPage(t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t p_uIdx);
 
 
 #ifdef __cplusplus
