@@ -265,31 +265,26 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_FlushBufferAsNewestBkupOnly(t_eFSS_LOGC_Ctx* const 
  */
 e_eFSS_LOGC_RES eFSS_LOGCPRV_FlushBufferAsNewestNBkpPage(t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t p_uIdx);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /**
  * @brief       Read a page of data at p_uIdx position. Do not pass to this function NULL value
  *              or invalid index value. This function will take care of any support page.
+ *              Make sure eFSS_LOGCPRV_IsStatusStillCoherent is called before calling this function.
+ *              Do not use this function on Flash cache pages.
+ *              The buffer is managed with subtype related to newest page and newest backup only.
  *
  * @param[in]   p_ptCtx          - Log Core context
  * @param[in]   p_uIdx           - Index of the new log page that we want to read from cache
  *
- * @return      Return error related to read write erase function, even invalid page if found.
+ * @return      e_eFSS_LOGC_RES_BADPOINTER        - In case of bad pointer passed to the function
+ *		        e_eFSS_LOGC_RES_BADPARAM          - In case of an invalid parameter passed to the function
+ *		        e_eFSS_LOGC_RES_CORRUPTCTX        - Context is corrupted
+ *		        e_eFSS_LOGC_RES_NOINITLIB         - Need to init lib before calling function
+ *              e_eFSS_LOGC_RES_CLBCKCRCERR       - The crc callback reported an error
+ *		        e_eFSS_LOGC_RES_CLBCKERASEERR     - The erase callback reported an error
+ *		        e_eFSS_LOGC_RES_CLBCKWRITEERR     - The write callback reported an error
+ *		        e_eFSS_LOGC_RES_CLBCKREADERR      - The read callback reported an error
+ *		        e_eFSS_LOGC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
+ *              e_eFSS_LOGC_RES_OK                - Operation ended correctly
  */
 e_eFSS_LOGC_RES eFSS_LOGCPRV_LoadBufferAsNewestNBkpPage(t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t p_uIdx);
 

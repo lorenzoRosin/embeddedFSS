@@ -552,7 +552,7 @@ static e_eFSS_LOGC_RES eFSS_LOGC_LoadIndexFromCache(t_eFSS_LOGC_Ctx* const p_ptC
 {
 	/* Local return variable */
 	e_eFSS_LOGC_RES l_eRes;
-    uint32_t l_uIdxN; 
+    uint32_t l_uIdxN;
     uint32_t l_uIFlP;
     t_eFSS_TYPE_StorBuf l_tBuff;
 
@@ -571,7 +571,7 @@ static e_eFSS_LOGC_RES eFSS_LOGC_LoadIndexFromCache(t_eFSS_LOGC_Ctx* const p_ptC
             {
                 if( ( l_tBuff.ptMeta->uPageUseSpec1 != l_uIdxN ) || ( l_tBuff.ptMeta->uPageUseSpec2 != l_uIFlP ) )
                 {
-                    l_eRes = e_eFSS_LOGC_RES_NOTVALIDLOG;       
+                    l_eRes = e_eFSS_LOGC_RES_NOTVALIDLOG;
                 }
             }
         }
@@ -607,10 +607,10 @@ static e_eFSS_LOGC_RES eFSS_LOGC_LoadIndxBySearch(t_eFSS_LOGC_Ctx* const p_ptCtx
 
             if( e_eFSS_LOGC_RES_OK == l_eRes )
             {
-                if( ( l_tBuff.ptMeta->uPageUseSpec1 != p_ptCtx->uNewPagIdx ) || 
+                if( ( l_tBuff.ptMeta->uPageUseSpec1 != p_ptCtx->uNewPagIdx ) ||
                     ( l_tBuff.ptMeta->uPageUseSpec2 != p_ptCtx->uFullFilledP ) )
                 {
-                    l_bIsIndexFound = false;       
+                    l_bIsIndexFound = false;
                 }
                 else
                 {
@@ -619,7 +619,7 @@ static e_eFSS_LOGC_RES eFSS_LOGC_LoadIndxBySearch(t_eFSS_LOGC_Ctx* const p_ptCtx
             }
             else if( e_eFSS_LOGC_RES_NOTVALIDLOG == l_eRes )
             {
-                l_bIsIndexFound = false; 
+                l_bIsIndexFound = false;
             }
 
             if( ( e_eFSS_LOGC_RES_OK == l_eRes ) || ( e_eFSS_LOGC_RES_NOTVALIDLOG == l_eRes ) )
@@ -641,7 +641,7 @@ static e_eFSS_LOGC_RES eFSS_LOGC_LoadIndxBySearch(t_eFSS_LOGC_Ctx* const p_ptCtx
                     else if( e_eFSS_LOGC_RES_NOTVALIDLOG == l_eRes )
                     {
                         /* Not this one */
-                        l_bIsIndexFound = false; 
+                        l_bIsIndexFound = false;
                         l_uIdxSearch = eFSS_LOGCPRV_GetNextIndex( p_ptCtx, l_tStorSet, l_uIdxSearch );
                         l_unSearched++;
                     }
@@ -650,5 +650,5 @@ static e_eFSS_LOGC_RES eFSS_LOGC_LoadIndxBySearch(t_eFSS_LOGC_Ctx* const p_ptCtx
         }
     }
 
-	return l_eRes;    
+	return l_eRes;
 }

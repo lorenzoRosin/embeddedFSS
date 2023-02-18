@@ -259,8 +259,8 @@ e_eFSS_COREHL_RES eFSS_COREHL_LoadPageInBuffNRipBkp(t_eFSS_COREHL_Ctx* const p_p
     t_eFSS_TYPE_StorBuf l_tBuff2;
 
     /* Local var used for calculation */
-    bool_t isOriginValid;
-    bool_t isBackupValid;
+    bool_t l_bIsOrigValid;
+    bool_t l_bIsBkupValid;
 
     if( NULL == p_ptCtx )
     {
@@ -290,11 +290,11 @@ e_eFSS_COREHL_RES eFSS_COREHL_LoadPageInBuffNRipBkp(t_eFSS_COREHL_Ctx* const p_p
                     /* Page readed, is valid? */
                     if( ( e_eFSS_COREHL_RES_OK == l_eRes ) && ( p_uOriSubType == l_tBuff1.ptMeta->uPageSubType ) )
                     {
-                        isOriginValid = true;
+                        l_bIsOrigValid = true;
                     }
                     else
                     {
-                        isOriginValid = false;
+                        l_bIsOrigValid = false;
                     }
 
                     /* Load backup page in internal buffer */
@@ -307,15 +307,15 @@ e_eFSS_COREHL_RES eFSS_COREHL_LoadPageInBuffNRipBkp(t_eFSS_COREHL_Ctx* const p_p
                         /* Page readed, is valid? */
                         if( ( e_eFSS_COREHL_RES_OK == l_eRes ) && ( p_uBckUpSubType == l_tBuff2.ptMeta->uPageSubType ) )
                         {
-                            isBackupValid = true;
+                            l_bIsBkupValid = true;
                         }
                         else
                         {
-                            isBackupValid = false;
+                            l_bIsBkupValid = false;
                         }
 
                         /* We have all the data needed to make a decision */
-                        if( ( true == isOriginValid ) && ( true == isBackupValid ) )
+                        if( ( true == l_bIsOrigValid ) && ( true == l_bIsBkupValid ) )
                         {
                             /* Both page are valid, are they identical? */
                             if( ( 0 == memcmp(l_tBuff1.puBuf, l_tBuff2.puBuf, l_tBuff2.uBufL ) ) &&
@@ -345,7 +345,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_LoadPageInBuffNRipBkp(t_eFSS_COREHL_Ctx* const p_p
                                 }
                             }
                         }
-                        else if( ( false == isOriginValid ) && ( true == isBackupValid ) )
+                        else if( ( false == l_bIsOrigValid ) && ( true == l_bIsBkupValid ) )
                         {
                             /* Original page is not valid, ripristinate it from the backup one */
                             l_tBuff2.ptMeta->uPageSubType = p_uOriSubType;
@@ -367,7 +367,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_LoadPageInBuffNRipBkp(t_eFSS_COREHL_Ctx* const p_p
                                 l_eRes = e_eFSS_COREHL_RES_OK_BKP_RCVRD;
                             }
                         }
-                        else if( ( true == isOriginValid ) && ( false == isBackupValid ) )
+                        else if( ( true == l_bIsOrigValid ) && ( false == l_bIsBkupValid ) )
                         {
                             /* Backup is not valid, ripristinate it from the origin one */
                             l_tBuff1.ptMeta->uPageSubType = p_uBckUpSubType;

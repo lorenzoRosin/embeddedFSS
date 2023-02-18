@@ -557,57 +557,142 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_LoadBufferAsNewestNBkpPage(t_eFSS_LOGC_Ctx* p_ptCtx
 
     /* Local var used for storage */
     t_eFSS_TYPE_StorSet l_tStorSet;
-    t_eFSS_TYPE_StorBuf l_tBuff1;
-    t_eFSS_TYPE_StorBuf l_tBuff2;
 
     /* Local calc variable */
 	uint32_t l_uOriPageIdx;
     uint32_t l_uBkupPageIdx;
     uint32_t l_uNPageU;
 
+    /* page status local var */
+    bool_t l_bIsOrigValid;
+    bool_t l_bIsBkupValid;
+
     /* Get storage settings */
-    l_eResHL =  eFSS_COREHL_GetBuffNStor(&p_ptCtx->tCOREHLCtx, &l_tStorSet, &l_tBuff1, &l_tBuff2);
+    l_eResHL = eFSS_COREHL_GetStorSett(&p_ptCtx->tCOREHLCtx, &l_tStorSet);
     l_eRes = eFSS_LOGCPRV_HLtoLogRes(l_eResHL);
 
     if( e_eFSS_LOGC_RES_OK == l_eRes )
     {
-        if( true == p_ptCtx->bFullBckup )
-        {
-            /* Calculate n page */
-            l_uNPageU = eFSS_LOGCPRV_GetUsablePage(p_ptCtx, l_tStorSet);
+        /* Calculate n page */
+        l_uNPageU = eFSS_LOGCPRV_GetUsablePage(p_ptCtx, l_tStorSet);
 
-            /* Setup index */
-            l_uOriPageIdx = p_uIdx;
-            l_uBkupPageIdx = l_uNPageU + p_uIdx;
+        /* Setup index */
+        l_uOriPageIdx = p_uIdx;
+        l_uBkupPageIdx = l_uNPageU + l_uOriPageIdx;
 
-            /* Before reading fix any error in original and backup pages */
-            l_eResHL = eFSS_COREHL_LoadPageInBuffNRipBkp(&p_ptCtx->tCOREHLCtx, l_uOriPageIdx, l_uBkupPageIdx,
-                                                      EFSS_PAGESUBTYPE_LOGNEWESTORI, EFSS_PAGESUBTYPE_LOGNEWESTBKP );
-            l_eRes = eFSS_LOGCPRV_HLtoLogRes(l_eResHL);
-        }
+        /* Read newest page first */
+        l_eRes =  eFSS_LOGCPRV_LoadPageInBuffNRipBkp(p_ptCtx, p_ptCtx->bFullBckup, l_uOriPageIdx, l_uBkupPageIdx,
+                                                     EFSS_PAGESUBTYPE_LOGNEWESTORI, EFSS_PAGESUBTYPE_LOGNEWESTBKP);
 
         if( ( e_eFSS_LOGC_RES_OK == l_eRes ) || ( e_eFSS_LOGC_RES_OK_BKP_RCVRD == l_eRes ) ||
-            ( e_eFSS_LOGC_RES_NEWVERSIONLOG == l_eRes )  || ( e_eFSS_LOGC_RES_NEWVERSIONLOG == l_eRes ) )
+            ( e_eFSS_LOGC_RES_NOTVALIDLOG == l_eRes ) )
         {
-            if( true == p_ptCtx->bFullBckup )
+            /* Page readed, is valid? */
+            if( ( e_eFSS_LOGC_RES_OK == l_eRes ) || ( e_eFSS_LOGC_RES_OK_BKP_RCVRD == l_eRes ) )
             {
-                /* Calculate n page */
-                l_uNPageU = eFSS_LOGCPRV_GetUsablePage(p_ptCtx, l_tStorSet);
-
-                /* Setup index */
-                l_uOriPageIdx = p_uIdx;
-                l_uBkupPageIdx = l_uNPageU + p_uIdx;
-
-                /* Before reading fix any error in original and backup pages */
-                l_eResHL = eFSS_COREHL_LoadPageInBuffNRipBkp(&p_ptCtx->tCOREHLCtx, l_uOriPageIdx, l_uBkupPageIdx,
-                                                          EFSS_PAGESUBTYPE_LOGNEWESTORI, EFSS_PAGESUBTYPE_LOGNEWESTBKP );
-                l_eRes = eFSS_LOGCPRV_HLtoLogRes(l_eResHL);
+                l_bIsOrigValid = true;
+            }
+            else
+            {
+                l_bIsOrigValid = false;
             }
 
-            if( ( e_eFSS_LOGC_RES_OK == l_eRes ) || ( e_eFSS_LOGC_RES_OK_BKP_RCVRD == l_eRes ) ||
-                ( e_eFSS_LOGC_RES_NEWVERSIONLOG == l_eRes )  || ( e_eFSS_LOGC_RES_NEWVERSIONLOG == l_eRes ) )
-            {
+            /* Setup index */
+            l_uOriPageIdx = eFSS_LOGCPRV_GetNextIndex(p_ptCtx, l_tStorSet, p_uIdx);
+            l_uBkupPageIdx = l_uNPageU + l_uOriPageIdx;
 
+            /* Read backup pages now */
+            l_eRes =  eFSS_LOGCPRV_LoadPageInBuffNRipBkp(p_ptCtx, p_ptCtx->bFullBckup, l_uOriPageIdx, l_uBkupPageIdx,
+                                                        EFSS_PAGESUBTYPE_LOGNEWESTBKPORI, EFSS_PAGESUBTYPE_LOGNEWESTBKPBKP);
+
+            if( ( e_eFSS_LOGC_RES_OK == l_eRes ) || ( e_eFSS_LOGC_RES_OK_BKP_RCVRD == l_eRes ) ||
+                ( e_eFSS_LOGC_RES_NOTVALIDLOG == l_eRes ) )
+            {
+                /* Page readed, is valid? */
+                if( ( e_eFSS_LOGC_RES_OK == l_eRes ) || ( e_eFSS_LOGC_RES_OK_BKP_RCVRD == l_eRes ) )
+                {
+                    l_bIsBkupValid = true;
+                }
+                else
+                {
+                    l_bIsBkupValid = false;
+                }
+
+                /* We have all the data needed to make a decision */
+                if( ( true == l_bIsOrigValid ) && ( true == l_bIsBkupValid ) )
+                {
+                    /* Both page are valid, are they identical? */
+                    if( ( 0 == memcmp(l_tBuff1.puBuf, l_tBuff2.puBuf, l_tBuff2.uBufL ) ) &&
+                        ( l_tBuff1.ptMeta->uPageUseSpec1 == l_tBuff2.ptMeta->uPageUseSpec1 ) &&
+                        ( l_tBuff1.ptMeta->uPageUseSpec2 == l_tBuff2.ptMeta->uPageUseSpec2 ) &&
+                        ( l_tBuff1.ptMeta->uPageUseSpec3 == l_tBuff2.ptMeta->uPageUseSpec3 ) &&
+                        ( l_tBuff1.ptMeta->uPageUseSpec4 == l_tBuff2.ptMeta->uPageUseSpec4 ) )
+                    {
+                        /* Page are equals */
+                        l_eRes = e_eFSS_COREHL_RES_OK;
+                    }
+                    else
+                    {
+                        /* Page are not equals, copy origin in backup */
+                        l_tBuff1.ptMeta->uPageSubType = p_uBckUpSubType;
+                        l_eResLL = eFSS_CORELL_FlushBuffInPage(&p_ptCtx->tCORELLCtx, e_eFSS_CORELL_BUFFTYPE_1,
+                                                               p_uBackupIndx);
+                        l_eRes = eFSS_COREHL_LLtoHLRes(l_eResLL);
+
+                        /* Ripristinate original one */
+                        l_tBuff1.ptMeta->uPageSubType = p_uOriSubType;
+
+                        /* If recovered return it */
+                        if( e_eFSS_COREHL_RES_OK == l_eRes )
+                        {
+                            l_eRes = e_eFSS_COREHL_RES_OK_BKP_RCVRD;
+                        }
+                    }
+                }
+                else if( ( false == l_bIsOrigValid ) && ( true == l_bIsBkupValid ) )
+                {
+                    /* Original page is not valid, ripristinate it from the backup one */
+                    l_tBuff2.ptMeta->uPageSubType = p_uOriSubType;
+                    l_eResLL = eFSS_CORELL_FlushBuffInPage(&p_ptCtx->tCORELLCtx, e_eFSS_CORELL_BUFFTYPE_2,
+                                                           p_uOrigIndx);
+                    l_eRes = eFSS_COREHL_LLtoHLRes(l_eResLL);
+
+                    /* Ripristinate backup one */
+                    l_tBuff2.ptMeta->uPageSubType = p_uBckUpSubType;
+
+                    /* If recovered return it */
+                    if( e_eFSS_COREHL_RES_OK == l_eRes )
+                    {
+                        /* Buffer 1 must contains the original page */
+                        memcpy(l_tBuff1.puBuf, l_tBuff2.puBuf, l_tBuff2.uBufL);
+                        memcpy(l_tBuff1.ptMeta, l_tBuff2.ptMeta, sizeof(t_eFSS_TYPE_PageMeta) );
+                        l_tBuff1.ptMeta->uPageSubType = p_uOriSubType;
+
+                        l_eRes = e_eFSS_COREHL_RES_OK_BKP_RCVRD;
+                    }
+                }
+                else if( ( true == l_bIsOrigValid ) && ( false == l_bIsBkupValid ) )
+                {
+                    /* Backup is not valid, ripristinate it from the origin one */
+                    l_tBuff1.ptMeta->uPageSubType = p_uBckUpSubType;
+                    l_eResLL = eFSS_CORELL_FlushBuffInPage(&p_ptCtx->tCORELLCtx, e_eFSS_CORELL_BUFFTYPE_1,
+                                                           p_uBackupIndx);
+                    l_eRes = eFSS_COREHL_LLtoHLRes(l_eResLL);
+
+                    /* Ripristinate original one */
+                    l_tBuff1.ptMeta->uPageSubType = p_uOriSubType;
+
+                    /* If recovered return it */
+                    if( e_eFSS_COREHL_RES_OK == l_eRes )
+                    {
+                        l_eRes = e_eFSS_COREHL_RES_OK_BKP_RCVRD;
+                    }
+                }
+                else
+                {
+                    /* No a single valid pages found */
+                    l_eRes = e_eFSS_COREHL_RES_NOTVALIDPAGE;
+                }
             }
         }
     }
