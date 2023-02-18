@@ -173,8 +173,8 @@ e_eFSS_LOGC_RES eFSS_LOGC_GetStorageStatus(t_eFSS_LOGC_Ctx* const p_ptCtx)
 	return l_eRes;
 }
 
-e_eFSS_LOGC_RES eFSS_LOGC_GetLogInfo(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t *p_puNewLogI, uint32_t *p_puNpageUsed,
-                                     uint32_t *p_puNpageTot)
+e_eFSS_LOGC_RES eFSS_LOGC_GetLogInfo(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t *p_puNewLogI, uint32_t *p_puOldLogI,
+                                     uint32_t *p_puNpageUsed, uint32_t *p_puNpageTot)
 {
 	/* Local return variable */
 	e_eFSS_LOGC_RES l_eRes;
@@ -187,7 +187,8 @@ e_eFSS_LOGC_RES eFSS_LOGC_GetLogInfo(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t *p
     uint32_t l_uNPageU;
 
 	/* Check pointer validity */
-	if( ( NULL == p_ptCtx ) || ( NULL == p_puNewLogI ) || ( NULL == p_puNpageUsed ) || ( NULL == p_puNpageTot ) )
+	if( ( NULL == p_ptCtx ) || ( NULL == p_puNewLogI ) || ( NULL == p_puOldLogI ) || ( NULL == p_puNpageUsed ) ||
+        ( NULL == p_puNpageTot ) )
 	{
 		l_eRes = e_eFSS_LOGC_RES_BADPOINTER;
 	}
@@ -212,12 +213,15 @@ e_eFSS_LOGC_RES eFSS_LOGC_GetLogInfo(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t *p
                 }
                 else
                 {
+                    /* Retrive storage settings */
                     l_eResHL = eFSS_COREHL_GetStorSett(&p_ptCtx->tCOREHLCtx, &l_tStorSet);
                     l_eRes = eFSS_LOGCPRV_HLtoLogRes(l_eResHL);
 
                     if( e_eFSS_LOGC_RES_OK == l_eRes )
                     {
-                        l_eRes = eFSS_LOGCPRV_GetBuffer(p_ptCtx, &l_tBuff);
+
+                        l_eResHL = eFSS_COREHL_GetBuff(&p_ptCtx->tCOREHLCtx, &l_tBuff);
+                        l_eRes = eFSS_LOGCPRV_HLtoLogRes(l_eResHL);
                         if( e_eFSS_LOGC_RES_OK == l_eRes )
                         {
                             l_eRes = eFSS_LOGC_LoadIndexNRepair(p_ptCtx);
@@ -243,6 +247,19 @@ e_eFSS_LOGC_RES eFSS_LOGC_GetLogInfo(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t *p
 	}
 
 	return l_eRes;
+}
+
+e_eFSS_LOGC_RES eFSS_LOGCPRV_GetBuffer(t_eFSS_LOGC_Ctx* const p_ptCtx, t_eFSS_TYPE_StorBuf* p_ptBuff)
+{
+	/* Local return variable */
+	e_eFSS_LOGC_RES l_eRes;
+    e_eFSS_COREHL_RES l_eResHL;
+
+    /* Get storage area, we need to return only the first buffer */
+    l_eResHL = eFSS_COREHL_GetBuff(&p_ptCtx->tCOREHLCtx, p_ptBuff);
+    l_eRes = eFSS_LOGCPRV_HLtoLogRes(l_eResHL);
+
+    return l_eRes;
 }
 
 e_eFSS_LOGC_RES eFSS_LOGC_Format(t_eFSS_LOGC_Ctx* const p_ptCtx)
@@ -288,7 +305,8 @@ e_eFSS_LOGC_RES eFSS_LOGC_Format(t_eFSS_LOGC_Ctx* const p_ptCtx)
 
                     if( e_eFSS_LOGC_RES_OK == l_eRes )
                     {
-                        l_eRes = eFSS_LOGCPRV_GetBuffer(p_ptCtx, &l_tBuff);
+                        l_eResHL = eFSS_COREHL_GetBuff(&p_ptCtx->tCOREHLCtx, &l_tBuff);
+                        l_eRes = eFSS_LOGCPRV_HLtoLogRes(l_eResHL);
                         if( e_eFSS_LOGC_RES_OK == l_eRes )
                         {
                             /* In case of many page a full erase of the area could take too much times.
@@ -417,7 +435,8 @@ e_eFSS_LOGC_RES eFSS_LOGC_GetLogOfASpecificPage(t_eFSS_LOGC_Ctx* const p_ptCtx, 
 
                     if( e_eFSS_LOGC_RES_OK == l_eRes )
                     {
-                        l_eRes = eFSS_LOGCPRV_GetBuffer(p_ptCtx, &l_tBuff);
+                        l_eResHL = eFSS_COREHL_GetBuff(&p_ptCtx->tCOREHLCtx, &l_tBuff);
+                        l_eRes = eFSS_LOGCPRV_HLtoLogRes(l_eResHL);
                         if( e_eFSS_LOGC_RES_OK == l_eRes )
                         {
                             l_eRes = eFSS_LOGC_LoadIndexNRepair(p_ptCtx);
@@ -492,7 +511,8 @@ e_eFSS_LOGC_RES eFSS_LOGC_AddLog(t_eFSS_LOGC_Ctx* const p_ptCtx, uint8_t* p_puLo
 
                     if( e_eFSS_LOGC_RES_OK == l_eRes )
                     {
-                        l_eRes = eFSS_LOGCPRV_GetBuffer(p_ptCtx, &l_tBuff);
+                        l_eResHL = eFSS_COREHL_GetBuff(&p_ptCtx->tCOREHLCtx, &l_tBuff);
+                        l_eRes = eFSS_LOGCPRV_HLtoLogRes(l_eResHL);
                         if( e_eFSS_LOGC_RES_OK == l_eRes )
                         {
                             l_eRes = eFSS_LOGC_LoadIndexNRepair(p_ptCtx);
@@ -574,8 +594,11 @@ static e_eFSS_LOGC_RES eFSS_LOGC_LoadIndexFromCache(t_eFSS_LOGC_Ctx* const p_ptC
     uint32_t l_uIdxN;
     uint32_t l_uIFlP;
     t_eFSS_TYPE_StorBuf l_tBuff;
+    e_eFSS_COREHL_RES l_eResHL;
 
-    l_eRes = eFSS_LOGCPRV_GetBuffer(p_ptCtx, &l_tBuff);
+    l_eResHL = eFSS_COREHL_GetBuff(&p_ptCtx->tCOREHLCtx, &l_tBuff);
+    l_eRes = eFSS_LOGCPRV_HLtoLogRes(l_eResHL);
+
     if( e_eFSS_LOGC_RES_OK == l_eRes )
     {
         /* Read cache */
@@ -618,7 +641,9 @@ static e_eFSS_LOGC_RES eFSS_LOGC_LoadIndxBySearch(t_eFSS_LOGC_Ctx* const p_ptCtx
 
     if( e_eFSS_LOGC_RES_OK == l_eRes )
     {
-        l_eRes = eFSS_LOGCPRV_GetBuffer(p_ptCtx, &l_tBuff);
+        l_eResHL = eFSS_COREHL_GetBuff(&p_ptCtx->tCOREHLCtx, &l_tBuff);
+        l_eRes = eFSS_LOGCPRV_HLtoLogRes(l_eResHL);
+
         if( e_eFSS_LOGC_RES_OK == l_eRes )
         {
             /* First check if pages pointed by caches index are already OK */

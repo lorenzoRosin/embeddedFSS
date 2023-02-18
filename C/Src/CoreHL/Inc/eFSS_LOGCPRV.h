@@ -134,20 +134,6 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_WriteCache(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t
 e_eFSS_LOGC_RES eFSS_LOGCPRV_ReadCache(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t* p_puIdxN, uint32_t* p_puIFlP);
 
 /**
- * @brief       Get read and write buffer. Do not pass to this function NULL value.
- *              Make sure eFSS_LOGCPRV_IsStatusStillCoherent is called before calling this function.
- *
- * @param[in]   p_ptCtx          - Log Core context
- * @param[out]  p_ptBuff         - Pointer to a struct that will be filled with info about buffer
- *
- * @return      e_eFSS_LOGC_RES_BADPOINTER        - In case of bad pointer passed to the function
- *		        e_eFSS_LOGC_RES_CORRUPTCTX        - Context is corrupted
- *		        e_eFSS_LOGC_RES_NOINITLIB         - Need to init lib before calling function
- *              e_eFSS_COREHL_RES_OK              - Operation ended correctly
- */
-e_eFSS_LOGC_RES eFSS_LOGCPRV_GetBuffer(t_eFSS_LOGC_Ctx* const p_ptCtx, t_eFSS_TYPE_StorBuf* p_ptBuff);
-
-/**
  * @brief       Flush the buffer in a page at p_uIdx position. Do not pass to this function NULL value
  *              or invalid index value. This function will take care of any support page.
  *              Make sure eFSS_LOGCPRV_IsStatusStillCoherent is called before calling this function.

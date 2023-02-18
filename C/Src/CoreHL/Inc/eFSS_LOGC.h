@@ -116,7 +116,8 @@ e_eFSS_LOGC_RES eFSS_LOGC_GetStorageStatus(t_eFSS_LOGC_Ctx* const p_ptCtx);
  * @brief       Get info about the stored log
  *
  * @param[in]   p_ptCtx       - Log context
- * @param[out]  p_puNewLogI   - Pointer to a uint32_t that will be filled with the New log index
+ * @param[out]  p_puNewLogI   - Pointer to a uint32_t that will be filled with the Newest log index
+ * @param[out]  p_puOldLogI   - Pointer to a uint32_t that will be filled with the oldest log index
  * @param[out]  p_puNpageUsed - Pointer to a uint32_t that will be filled with the number of valorized page
  * @param[out]  p_puNpageTot  - Pointer to a uint32_t that will be filled with the number of redable page
  *
@@ -133,8 +134,22 @@ e_eFSS_LOGC_RES eFSS_LOGC_GetStorageStatus(t_eFSS_LOGC_Ctx* const p_ptCtx);
  *              e_eFSS_LOGC_RES_CLBCKCRCERR        - Crc callback returned error
  *              e_eFSS_LOGC_RES_WRITENOMATCHREAD   - After Write operation the Read operation readed different data
  */
-e_eFSS_LOGC_RES eFSS_LOGC_GetLogInfo(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t *p_puNewLogI, uint32_t *p_puNpageUsed,
-                                     uint32_t *p_puNpageTot);
+e_eFSS_LOGC_RES eFSS_LOGC_GetLogInfo(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t *p_puNewLogI, uint32_t *p_puOldLogI,
+                                     uint32_t *p_puNpageUsed, uint32_t *p_puNpageTot);
+
+/**
+ * @brief       Get read and write buffer. Do not pass to this function NULL value.
+ *              Make sure eFSS_LOGCPRV_IsStatusStillCoherent is called before calling this function.
+ *
+ * @param[in]   p_ptCtx          - Log Core context
+ * @param[out]  p_ptBuff         - Pointer to a struct that will be filled with info about buffer
+ *
+ * @return      e_eFSS_LOGC_RES_BADPOINTER        - In case of bad pointer passed to the function
+ *		        e_eFSS_LOGC_RES_CORRUPTCTX        - Context is corrupted
+ *		        e_eFSS_LOGC_RES_NOINITLIB         - Need to init lib before calling function
+ *              e_eFSS_COREHL_RES_OK              - Operation ended correctly
+ */
+e_eFSS_LOGC_RES eFSS_LOGCPRV_GetBuffer(t_eFSS_LOGC_Ctx* const p_ptCtx, t_eFSS_TYPE_StorBuf* p_ptBuff);
 
 /**
  * @brief       Format the memory used for the log, previous data, if present, will be lost.
