@@ -529,26 +529,6 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_FlushBufferAsNewestNBkpPage(t_eFSS_LOGC_Ctx* p_ptCt
     return l_eRes;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 e_eFSS_LOGC_RES eFSS_LOGCPRV_LoadBufferAsNewestNBkpPage(t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t p_uIdx)
 {
 	/* Local return variable */
@@ -619,79 +599,36 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_LoadBufferAsNewestNBkpPage(t_eFSS_LOGC_Ctx* p_ptCtx
                 }
 
                 /* We have all the data needed to make a decision */
-                if( ( true == l_bIsOrigValid ) && ( true == l_bIsBkupValid ) )
+                if( ( false == l_bIsOrigValid ) && ( false == l_bIsBkupValid ) )
                 {
-                    /* Both page are valid, are they identical? */
-                    if( ( 0 == memcmp(l_tBuff1.puBuf, l_tBuff2.puBuf, l_tBuff2.uBufL ) ) &&
-                        ( l_tBuff1.ptMeta->uPageUseSpec1 == l_tBuff2.ptMeta->uPageUseSpec1 ) &&
-                        ( l_tBuff1.ptMeta->uPageUseSpec2 == l_tBuff2.ptMeta->uPageUseSpec2 ) &&
-                        ( l_tBuff1.ptMeta->uPageUseSpec3 == l_tBuff2.ptMeta->uPageUseSpec3 ) &&
-                        ( l_tBuff1.ptMeta->uPageUseSpec4 == l_tBuff2.ptMeta->uPageUseSpec4 ) )
-                    {
-                        /* Page are equals */
-                        l_eRes = e_eFSS_COREHL_RES_OK;
-                    }
-                    else
-                    {
-                        /* Page are not equals, copy origin in backup */
-                        l_tBuff1.ptMeta->uPageSubType = p_uBckUpSubType;
-                        l_eResLL = eFSS_CORELL_FlushBuffInPage(&p_ptCtx->tCORELLCtx, e_eFSS_CORELL_BUFFTYPE_1,
-                                                               p_uBackupIndx);
-                        l_eRes = eFSS_COREHL_LLtoHLRes(l_eResLL);
-
-                        /* Ripristinate original one */
-                        l_tBuff1.ptMeta->uPageSubType = p_uOriSubType;
-
-                        /* If recovered return it */
-                        if( e_eFSS_COREHL_RES_OK == l_eRes )
-                        {
-                            l_eRes = e_eFSS_COREHL_RES_OK_BKP_RCVRD;
-                        }
-                    }
-                }
-                else if( ( false == l_bIsOrigValid ) && ( true == l_bIsBkupValid ) )
-                {
-                    /* Original page is not valid, ripristinate it from the backup one */
-                    l_tBuff2.ptMeta->uPageSubType = p_uOriSubType;
-                    l_eResLL = eFSS_CORELL_FlushBuffInPage(&p_ptCtx->tCORELLCtx, e_eFSS_CORELL_BUFFTYPE_2,
-                                                           p_uOrigIndx);
-                    l_eRes = eFSS_COREHL_LLtoHLRes(l_eResLL);
-
-                    /* Ripristinate backup one */
-                    l_tBuff2.ptMeta->uPageSubType = p_uBckUpSubType;
-
-                    /* If recovered return it */
-                    if( e_eFSS_COREHL_RES_OK == l_eRes )
-                    {
-                        /* Buffer 1 must contains the original page */
-                        memcpy(l_tBuff1.puBuf, l_tBuff2.puBuf, l_tBuff2.uBufL);
-                        memcpy(l_tBuff1.ptMeta, l_tBuff2.ptMeta, sizeof(t_eFSS_TYPE_PageMeta) );
-                        l_tBuff1.ptMeta->uPageSubType = p_uOriSubType;
-
-                        l_eRes = e_eFSS_COREHL_RES_OK_BKP_RCVRD;
-                    }
-                }
-                else if( ( true == l_bIsOrigValid ) && ( false == l_bIsBkupValid ) )
-                {
-                    /* Backup is not valid, ripristinate it from the origin one */
-                    l_tBuff1.ptMeta->uPageSubType = p_uBckUpSubType;
-                    l_eResLL = eFSS_CORELL_FlushBuffInPage(&p_ptCtx->tCORELLCtx, e_eFSS_CORELL_BUFFTYPE_1,
-                                                           p_uBackupIndx);
-                    l_eRes = eFSS_COREHL_LLtoHLRes(l_eResLL);
-
-                    /* Ripristinate original one */
-                    l_tBuff1.ptMeta->uPageSubType = p_uOriSubType;
-
-                    /* If recovered return it */
-                    if( e_eFSS_COREHL_RES_OK == l_eRes )
-                    {
-                        l_eRes = e_eFSS_COREHL_RES_OK_BKP_RCVRD;
-                    }
+                    /* No a single valid pages found */
+                    l_eRes = e_eFSS_LOGC_RES_NOTVALIDLOG;
                 }
                 else
                 {
-                    /* No a single valid pages found */
-                    l_eRes = e_eFSS_COREHL_RES_NOTVALIDPAGE;
+                    /* Need to cross do verifycation now */
+                    /* Setup index */
+                    l_uOriPageIdx  = p_uIdx;
+                    l_uBkupPageIdx = eFSS_LOGCPRV_GetNextIndex(p_ptCtx, l_tStorSet, l_uOriPageIdx);;
+
+                    /* Read newest page first */
+                    l_eRes =  eFSS_LOGCPRV_LoadPageInBuffNRipBkp(p_ptCtx, true, l_uOriPageIdx, l_uBkupPageIdx,
+                                                                EFSS_PAGESUBTYPE_LOGNEWESTORI, EFSS_PAGESUBTYPE_LOGNEWESTBKPORI);
+
+                    if( ( e_eFSS_LOGC_RES_OK == l_eRes ) || ( e_eFSS_LOGC_RES_OK_BKP_RCVRD == l_eRes ) )
+                    {
+                        if( true == p_ptCtx->bFullBckup )
+                        {
+                            /* Need to cross do verifycation now */
+                            /* Setup index */
+                            l_uOriPageIdx  = p_uIdx + l_uNPageU;
+                            l_uBkupPageIdx = eFSS_LOGCPRV_GetNextIndex(p_ptCtx, l_tStorSet, l_uOriPageIdx);;
+
+                            /* Read newest page first */
+                            l_eRes =  eFSS_LOGCPRV_LoadPageInBuffNRipBkp(p_ptCtx, true, l_uOriPageIdx, l_uBkupPageIdx,
+                                                                        EFSS_PAGESUBTYPE_LOGNEWESTBKP, EFSS_PAGESUBTYPE_LOGNEWESTBKPBKP);
+                        }
+                    }
                 }
             }
         }
@@ -699,38 +636,6 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_LoadBufferAsNewestNBkpPage(t_eFSS_LOGC_Ctx* p_ptCtx
 
     return l_eRes;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
