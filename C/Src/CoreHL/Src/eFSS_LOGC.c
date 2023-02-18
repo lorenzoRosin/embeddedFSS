@@ -30,6 +30,13 @@
  * An unused page is always left after newer page and backup index.
  * Newest and oldest page index can be identical only when the log storage is empty. When the storage is full an empty
  * page is always present between new and old log index.
+ * Es of full :
+ * LOG | NEWEST PAGE | NEWEST PAGE BLUP | FREE PAGE | OLDEST LOG | ...
+ *
+ * uPageUseSpec2 (Number of Filled index page, or p_ptCtx->uFullFilledP) is calculated without counting the newest page
+ * ES:
+ * LOG | NEWEST PAGE | NEWEST PAGE BLUP | FREE PAGE | OLDEST LOG | LOG
+ * uPageUseSpec2 = 3
  */
 
 /***********************************************************************************************************************
@@ -125,6 +132,8 @@ e_eFSS_LOGC_RES eFSS_LOGC_GetStorageStatus(t_eFSS_LOGC_Ctx* const p_ptCtx)
 	/* Local variable */
 	e_eFSS_LOGC_RES l_eRes;
     e_eFSS_COREHL_RES l_eResHL;
+
+    /* Local var used for calculation */
     bool_t l_bIsInit;
 
 	/* Check pointer validity */
@@ -153,6 +162,8 @@ e_eFSS_LOGC_RES eFSS_LOGC_GetStorageStatus(t_eFSS_LOGC_Ctx* const p_ptCtx)
                 }
                 else
                 {
+                    /* How to know the status of the storage? Load storage index, if they are not found the storage
+                       is corrupted or non initialized */
                     l_eRes = eFSS_LOGC_LoadIndexNRepair(p_ptCtx);
                 }
             }

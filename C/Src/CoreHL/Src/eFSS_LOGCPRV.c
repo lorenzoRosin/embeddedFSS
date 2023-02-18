@@ -30,6 +30,13 @@
  * An unused page is always left after newer page and backup index.
  * Newest and oldest page index can be identical only when the log storage is empty. When the storage is full an empty
  * page is always present between new and old log index.
+ * Es of full :
+ * LOG | NEWEST PAGE | NEWEST PAGE BLUP | FREE PAGE | OLDEST LOG | ...
+ *
+ * uPageUseSpec2 (Number of Filled index page, or p_ptCtx->uFullFilledP) is calculated without counting the newest page
+ * ES:
+ * LOG | NEWEST PAGE | NEWEST PAGE BLUP | FREE PAGE | OLDEST LOG | LOG
+ * uPageUseSpec2 = 3
  */
 
 /***********************************************************************************************************************

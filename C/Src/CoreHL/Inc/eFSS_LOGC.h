@@ -93,7 +93,7 @@ e_eFSS_LOGC_RES eFSS_LOGC_IsInit(t_eFSS_LOGC_Ctx* const p_ptCtx, bool_t* p_pbIsI
  * @brief       Get the status of the storage. This operation will restore any corrupted information if possible.
  *              In the case it's not possible to restore corrupted contex e_eFSS_LOGC_RES_NOTVALIDLOG will be returned.
  *              When e_eFSS_LOGC_RES_NOTVALIDLOG is returned we need to call eFSS_LOGC_Format in order to format the
- *              storage area because no other operation is possible.
+ *              storage area because no other operations are possible.
  *
  * @param[in]   p_ptCtx       - Log context
  *
