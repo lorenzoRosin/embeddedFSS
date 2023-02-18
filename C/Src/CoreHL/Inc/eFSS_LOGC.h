@@ -147,7 +147,7 @@ e_eFSS_LOGC_RES eFSS_LOGC_GetLogInfo(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t *p
  * @return      e_eFSS_LOGC_RES_BADPOINTER        - In case of bad pointer passed to the function
  *		        e_eFSS_LOGC_RES_CORRUPTCTX        - Context is corrupted
  *		        e_eFSS_LOGC_RES_NOINITLIB         - Need to init lib before calling function
- *              e_eFSS_COREHL_RES_OK              - Operation ended correctly
+ *              e_eFSS_LOGC_RES_OK                - Operation ended correctly
  */
 e_eFSS_LOGC_RES eFSS_LOGCPRV_GetBuffer(t_eFSS_LOGC_Ctx* const p_ptCtx, t_eFSS_TYPE_StorBuf* p_ptBuff);
 

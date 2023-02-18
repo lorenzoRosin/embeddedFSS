@@ -183,8 +183,8 @@ e_eFSS_LOGC_RES eFSS_LOGC_GetLogInfo(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t *p
     /* Local var used for calculation */
     bool_t l_bIsInit;
     t_eFSS_TYPE_StorSet l_tStorSet;
-    t_eFSS_TYPE_StorBuf l_tBuff;
     uint32_t l_uNPageU;
+    uint32_t l_uRemain;
 
 	/* Check pointer validity */
 	if( ( NULL == p_ptCtx ) || ( NULL == p_puNewLogI ) || ( NULL == p_puOldLogI ) || ( NULL == p_puNpageUsed ) ||
@@ -219,26 +219,27 @@ e_eFSS_LOGC_RES eFSS_LOGC_GetLogInfo(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t *p
 
                     if( e_eFSS_LOGC_RES_OK == l_eRes )
                     {
-
-                        l_eResHL = eFSS_COREHL_GetBuff(&p_ptCtx->tCOREHLCtx, &l_tBuff);
-                        l_eRes = eFSS_LOGCPRV_HLtoLogRes(l_eResHL);
+                        /* Verify storage integrity and load in the context the log index */
+                        l_eRes = eFSS_LOGC_LoadIndexNRepair(p_ptCtx);
                         if( e_eFSS_LOGC_RES_OK == l_eRes )
                         {
-                            l_eRes = eFSS_LOGC_LoadIndexNRepair(p_ptCtx);
-                            if( e_eFSS_LOGC_RES_OK == l_eRes )
-                            {
-                                l_eRes = eFSS_LOGCPRV_LoadBufferAsNewestPage(p_ptCtx, p_ptCtx->uNewPagIdx);
-                                if( ( e_eFSS_LOGC_RES_OK == l_eRes ) || ( e_eFSS_LOGC_RES_OK_BKP_RCVRD == l_eRes ) )
-                                {
-                                    /* Calculate n page */
-                                    l_uNPageU = eFSS_LOGCPRV_GetUsablePage(p_ptCtx, l_tStorSet);
+                            /* Calculate n page */
+                            l_uNPageU = eFSS_LOGCPRV_GetUsablePage(p_ptCtx, l_tStorSet);
 
-                                    /* Copy result */
-                                    *p_puNewLogI = l_tBuff.ptMeta->uPageUseSpec1;
-                                    *p_puNpageUsed = l_tBuff.ptMeta->uPageUseSpec2;
-                                    *p_puNpageTot = l_uNPageU;
-                                }
+                            /* Copy result */
+                            *p_puNewLogI = p_ptCtx->uNewPagIdx;
+                            *p_puNpageUsed = p_ptCtx->uFullFilledP;
+                            if( p_ptCtx->uNewPagIdx < p_ptCtx->uFullFilledP )
+                            {
+                                l_uRemain = p_ptCtx->uFullFilledP - p_ptCtx->uNewPagIdx;
+                                *p_puOldLogI = l_uNPageU - l_uRemain;
                             }
+                            else
+                            {
+                                *p_puOldLogI = p_ptCtx->uNewPagIdx - p_ptCtx->uFullFilledP;
+                            }
+
+                            *p_puNpageTot = l_uNPageU;
                         }
                     }
                 }
