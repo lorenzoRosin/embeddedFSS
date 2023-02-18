@@ -8,10 +8,15 @@
  **********************************************************************************************************************/
 
 /* In this module the page field has the following meaning:
- * - uPageUseSpecific1 -> New page Index
- * - uPageUseSpecific2 -> Number of Filled index page
- * - uPageUseSpecific3 -> Valorized byte in page
- * - uPageUseSpecific4 -> N page used
+ * ------------------------------------------------------------------ User data
+ * - [uint8_t] -                    -> N byte of user data           |
+ * ------------------------------------------------------------------ Metadata  (17 byte)
+ * - uint32_t  - uPageUseSpec1      -> New page Index                |
+ * - uint32_t  - uPageUseSpec2      -> Number of Filled index page   |
+ * - uint32_t  - uPageUseSpec3      -> Valorized byte in page        |
+ * - uint32_t  - uPageUseSpec4      -> No value defined              |
+ * - uint8_t   - uPageSubType       -> Page subtype                  |
+ * ------------------------------------------------------------------+
  *
  * In this module the storage is organizated as follow :
  *
@@ -22,8 +27,8 @@
  * - [ uTotPages - 1                -    uTotPages - 1                 ]  -> Cache backup
  *
  * First write original pages and after the backup pages
- * An unused page is always left after newer page abckup index.
- * Newest and ondest page index can be identical only when the log storage is empty. When the storage is full an empty
+ * An unused page is always left after newer page and backup index.
+ * Newest and oldest page index can be identical only when the log storage is empty. When the storage is full an empty
  * page is always present between new and old log index.
  */
 
@@ -65,16 +70,19 @@ e_eFSS_LOGC_RES eFSS_LOGC_InitCtx(t_eFSS_LOGC_Ctx* const p_ptCtx, t_eFSS_TYPE_Cb
 	else
 	{
         l_uNPage = p_tStorSet.uTotPages;
+
         /* Check numbers of page validity */
-        if( ( ( false == p_ptCtx->bFullBckup ) && ( false == p_ptCtx->bFlashCache ) && ( l_uNPage < 4u  ) ) ||
-            ( ( false == p_ptCtx->bFullBckup ) && ( true  == p_ptCtx->bFlashCache ) && ( l_uNPage < 6u  ) ) ||
-            ( ( true  == p_ptCtx->bFullBckup ) && ( false == p_ptCtx->bFlashCache ) && ( l_uNPage < 8u  ) ) ||
-            ( ( true  == p_ptCtx->bFullBckup ) && ( true  == p_ptCtx->bFlashCache ) && ( l_uNPage < 10u ) ) )
+        if( ( ( false == p_bFullBckup ) && ( false == p_bFlashCache ) && ( l_uNPage < 4u  ) ) ||
+            ( ( false == p_bFullBckup ) && ( true  == p_bFlashCache ) && ( l_uNPage < 6u  ) ) ||
+            ( ( true  == p_bFullBckup ) && ( false == p_bFlashCache ) && ( l_uNPage < 8u  ) ) ||
+            ( ( true  == p_bFullBckup ) && ( true  == p_bFlashCache ) && ( l_uNPage < 10u ) ) ||
+            ( ( true  == p_bFullBckup ) && ( 0u != ( l_uNPage % 2u ) ) ) )
         {
             l_eRes = e_eFSS_LOGC_RES_BADPARAM;
         }
         else
         {
+            /* Can init low level context */
             l_eResHL = eFSS_COREHL_InitCtx(&p_ptCtx->tCOREHLCtx, p_tCtxCb, p_tStorSet, p_puBuff, p_uBuffL);
             l_eRes = eFSS_LOGCPRV_HLtoLogRes(l_eResHL);
 
