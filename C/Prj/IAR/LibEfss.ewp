@@ -1172,9 +1172,6 @@
     </group>
     <group>
         <name>Db</name>
-        <excluded>
-            <configuration>Library</configuration>
-        </excluded>
         <group>
             <name>Inc</name>
             <file>
@@ -1182,6 +1179,9 @@
             </file>
             <file>
                 <name>$PROJ_DIR$\..\..\Src\Db\Inc\eFSS_DBVL.h</name>
+                <excluded>
+                    <configuration>Library</configuration>
+                </excluded>
             </file>
         </group>
         <group>
@@ -1191,6 +1191,9 @@
             </file>
             <file>
                 <name>$PROJ_DIR$\..\..\Src\Db\Src\eFSS_DBVL.c</name>
+                <excluded>
+                    <configuration>Library</configuration>
+                </excluded>
             </file>
         </group>
     </group>
