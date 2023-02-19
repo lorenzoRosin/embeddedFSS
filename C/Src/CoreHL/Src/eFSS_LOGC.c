@@ -633,6 +633,8 @@ e_eFSS_LOGC_RES eFSS_LOGC_AddLog(t_eFSS_LOGC_Ctx* const p_ptCtx, uint8_t* p_puLo
 	return l_eRes;
 }
 
+
+
 /***********************************************************************************************************************
  *  PRIVATE FUNCTION
  **********************************************************************************************************************/
@@ -659,10 +661,12 @@ static e_eFSS_LOGC_RES eFSS_LOGC_LoadIndexFromCache(t_eFSS_LOGC_Ctx* const p_ptC
 {
 	/* Local return variable */
 	e_eFSS_LOGC_RES l_eRes;
+    e_eFSS_COREHL_RES l_eResHL;
+
+    /* Local variable used for calculation */
     uint32_t l_uIdxN;
     uint32_t l_uIFlP;
     t_eFSS_TYPE_StorBuf l_tBuff;
-    e_eFSS_COREHL_RES l_eResHL;
 
     l_eResHL = eFSS_COREHL_GetBuff(&p_ptCtx->tCOREHLCtx, &l_tBuff);
     l_eRes = eFSS_LOGCPRV_HLtoLogRes(l_eResHL);
@@ -674,14 +678,21 @@ static e_eFSS_LOGC_RES eFSS_LOGC_LoadIndexFromCache(t_eFSS_LOGC_Ctx* const p_ptC
 
         if( ( e_eFSS_LOGC_RES_OK == l_eRes ) || ( e_eFSS_LOGC_RES_OK_BKP_RCVRD == l_eRes ) )
         {
-            /* Ok, index are readed, verify if pointed page is relay the newest page */
-            l_eRes = eFSS_LOGCPRV_LoadBufferAsNewestPage(p_ptCtx, l_uIdxN);
+            /* Ok, index are readed, verify if pointed page is rely the newest page */
+            l_eRes = eFSS_LOGCPRV_LoadBufferAsNewestNBkpPage(p_ptCtx, l_uIdxN);
 
-            if( e_eFSS_LOGC_RES_OK == l_eRes )
+            if( ( e_eFSS_LOGC_RES_OK == l_eRes ) || ( e_eFSS_LOGC_RES_OK_BKP_RCVRD == l_eRes ) )
             {
+                /* Correct pages! Check value */
                 if( ( l_tBuff.ptMeta->uPageUseSpec1 != l_uIdxN ) || ( l_tBuff.ptMeta->uPageUseSpec2 != l_uIFlP ) )
                 {
                     l_eRes = e_eFSS_LOGC_RES_NOTVALIDLOG;
+                }
+                else
+                {
+                    /* Update cache */
+                    p_ptCtx->uFullFilledP = l_uIFlP;
+                    p_ptCtx->uNewPagIdx = l_uIdxN;
                 }
             }
         }
