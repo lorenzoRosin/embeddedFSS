@@ -172,12 +172,13 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_GetBuffer(t_eFSS_LOGC_Ctx* const p_ptCtx, t_eFSS_TY
 e_eFSS_LOGC_RES eFSS_LOGC_Format(t_eFSS_LOGC_Ctx* const p_ptCtx);
 
 /**
- * @brief       Get all the log present on a specific page
+ * @brief       Get all the log present on a specific page.
  *
  * @param[in]   p_ptCtx        - Log context
  * @param[in]   p_uindx        - Index to get data from
- * @param[in]   p_ppuBuf       - Pointer pointing to a buffer where founded log will be stored
- * @param[in]   p_uBufL        - Size fo the p_puLogBuf buffer
+ * @param[in]   p_puBuf        - Pointer to a buffer where founded log will be copied
+ * @param[in]   p_puBufL       - Size of the copied log
+ * @param[in]   p_uBufMaxL     - Max size of p_puBuf
  *
  * @return      e_eFSS_LOGC_RES_BADPOINTER         - In case of bad pointer passed to the function
  *              e_eFSS_LOGC_RES_OK                 - Operation ended correctly
@@ -192,8 +193,33 @@ e_eFSS_LOGC_RES eFSS_LOGC_Format(t_eFSS_LOGC_Ctx* const p_ptCtx);
  *              e_eFSS_LOGC_RES_CLBCKCRCERR        - Crc callback returned error
  *              e_eFSS_LOGC_RES_WRITENOMATCHREAD   - After Write operation the Read operation readed different data
  */
-e_eFSS_LOGC_RES eFSS_LOGC_GetLogOfASpecificPage(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t p_uindx, uint8_t** p_ppuBuf,
-                                                uint32_t* p_uBufL);
+e_eFSS_LOGC_RES eFSS_LOGC_GetLogOfASpecificPage(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t p_uindx, uint8_t* p_puBuf,
+                                                uint32_t* p_puBufL, uint32_t p_uBufMaxL);
+
+/**
+ * @brief       Add a log with an header
+ *
+ * @param[in]   p_ptCtx        - Log context
+ * @param[in]   p_puLogToSaveH - Pointer to the buffer containing the header of the log to store
+ * @param[in]   p_uLogLH       - Dimension in byte of the log header to store
+ * @param[in]   p_puLogToSave  - Pointer to the buffer containing the log to store
+ * @param[in]   p_uLogL        - Dimension in byte of the log to store
+ *
+ * @return      e_eFSS_LOGC_RES_BADPOINTER         - In case of bad pointer passed to the function
+ *              e_eFSS_LOGC_RES_OK                 - Operation ended correctly
+ *              e_eFSS_LOGC_RES_OK_BKP_RCVRD       - All ok, but some page where recovered
+ *              e_eFSS_LOGC_RES_NOTVALIDBLOB       - No valid blob founded
+ *              e_eFSS_LOGC_RES_NEWVERSIONLOG      - New version of the blob requested
+ *              e_eFSS_LOGC_RES_NOINITLIB          - Need to init the lib before calling this function
+ *              e_eFSS_LOGC_RES_CORRUPTCTX         - Context is corrupted
+ *              e_eFSS_LOGC_RES_CLBCKERASEERR      - Erase callback returned error
+ *              e_eFSS_LOGC_RES_CLBCKWRITEERR      - Write callback returned error
+ *              e_eFSS_LOGC_RES_CLBCKREADERR       - Read callback returned error
+ *              e_eFSS_LOGC_RES_CLBCKCRCERR        - Crc callback returned error
+ *              e_eFSS_LOGC_RES_WRITENOMATCHREAD   - After Write operation the Read operation readed different data
+ */
+e_eFSS_LOGC_RES eFSS_LOGC_AddLogAndHeader(t_eFSS_LOGC_Ctx* const p_ptCtx, uint8_t* p_puLogToSaveH, uint32_t p_uLogLH,
+                                          uint8_t* p_puLogToSave, uint32_t p_uLogL);
 
 /**
  * @brief       Add a log
