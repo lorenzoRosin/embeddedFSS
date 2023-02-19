@@ -30,7 +30,7 @@ static e_eFSS_DB_RES eFSS_DB_RetrivePageAndOffset(const t_eFSS_DB_Ctx* p_ptCtx, 
 /***********************************************************************************************************************
  *   GLOBAL FUNCTIONS
  **********************************************************************************************************************/
-e_eFSS_DB_RES eFSS_DB_InitCtx(t_eFSS_DB_Ctx* const p_ptCtx, t_eFSS_TYPE_CbCtx* const p_ptCtxCb,
+e_eFSS_DB_RES eFSS_DB_InitCtx(t_eFSS_DB_Ctx* const p_ptCtx, t_eFSS_TYPE_CbStorCtx* const p_ptCtxCb,
                                   const uint32_t p_uPageToUse, const uint32_t p_uPageSize, uint8_t* const p_puBuff,
                                   uint32_t p_uBuffL, t_eFSS_DB_DbStruct p_tDBS)
 {
@@ -96,7 +96,7 @@ e_eFSS_DB_RES eFSS_DB_IsInit(t_eFSS_DB_Ctx* const p_ptCtx, bool_t* p_pbIsInit)
 	return l_eRes;
 }
 
-e_eFSS_DB_RES eFSS_DB_GetStorageStatus(t_eFSS_DB_Ctx* const p_ptCtx, t_eFSS_TYPE_CbCtx* const p_peStatus)
+e_eFSS_DB_RES eFSS_DB_GetStorageStatus(t_eFSS_DB_Ctx* const p_ptCtx, t_eFSS_TYPE_CbStorCtx* const p_peStatus)
 {
 	/* Local variable */
 	e_eFSS_DB_RES l_eRes;

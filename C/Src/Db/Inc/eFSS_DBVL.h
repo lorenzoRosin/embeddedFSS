@@ -57,7 +57,7 @@ typedef enum
 typedef struct
 {
     bool_t   bIsInit;
-    t_eFSS_TYPE_CbCtx* ptCtxCb;
+    t_eFSS_TYPE_CbStorCtx* ptCtxCb;
 	uint8_t* puBuff1;
 	uint32_t uBuff1L;
 	uint8_t* puBuff2;
@@ -85,7 +85,7 @@ typedef struct
  *		        e_eFSS_DB_RES_BADPARAM      - In case of an invalid parameter passed to the function
  *              e_eFSS_DB_RES_OK            - Operation ended correctly
  */
-e_eFSS_DB_RES eFSS_DB_InitCtx(t_eFSS_DB_Ctx* const p_ptCtx, t_eFSS_TYPE_CbCtx* const p_ptCtxCb,
+e_eFSS_DB_RES eFSS_DB_InitCtx(t_eFSS_DB_Ctx* const p_ptCtx, t_eFSS_TYPE_CbStorCtx* const p_ptCtxCb,
                                   const uint32_t p_uPageToUse, const uint32_t p_uPageSize, uint8_t* const p_puBuff,
                                   uint32_t p_uBuffL, t_eFSS_DB_DbStruct p_tDBS);
 
@@ -112,7 +112,7 @@ e_eFSS_DB_RES eFSS_DB_IsInit(t_eFSS_DB_Ctx* const p_ptCtx, bool_t* p_pbIsInit);
  *		        e_eFSS_DB_RES_BADPARAM      - In case of an invalid parameter passed to the function
  *              e_eFSS_DB_RES_OK            - Operation ended correctly
  */
-e_eFSS_DB_RES eFSS_DB_GetStorageStatus(t_eFSS_DB_Ctx* const p_ptCtx, t_eFSS_TYPE_CbCtx* const p_peStatus);
+e_eFSS_DB_RES eFSS_DB_GetStorageStatus(t_eFSS_DB_Ctx* const p_ptCtx, t_eFSS_TYPE_CbStorCtx* const p_peStatus);
 
 /**
  * @brief       Initialize the byte stuffer context

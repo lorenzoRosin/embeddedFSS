@@ -66,7 +66,7 @@ typedef struct
  *		        e_eFSS_DBC_RES_BADPARAM      - In case of an invalid parameter passed to the function
  *              e_eFSS_DBC_RES_OK            - Operation ended correctly
  */
-e_eFSS_DBC_RES eFSS_DBC_InitCtx(t_eFSS_DBC_Ctx* const p_ptCtx, t_eFSS_TYPE_CbCtx const p_tCtxCb,
+e_eFSS_DBC_RES eFSS_DBC_InitCtx(t_eFSS_DBC_Ctx* const p_ptCtx, t_eFSS_TYPE_CbStorCtx const p_tCtxCb,
                                 t_eFSS_TYPE_StorSet p_tStorSet, uint8_t* const p_puBuff, uint32_t p_uBuffL);
 
 /**

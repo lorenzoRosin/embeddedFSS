@@ -46,7 +46,7 @@ static e_eFSS_BLOB_RES eFSS_BLOB_WriteBlobNPrm(t_eFSS_BLOB_Ctx* const p_ptCtx, u
 /***********************************************************************************************************************
  *   GLOBAL FUNCTIONS
  **********************************************************************************************************************/
-e_eFSS_BLOB_RES eFSS_BLOB_InitCtx(t_eFSS_BLOB_Ctx* const p_ptCtx, const t_eFSS_TYPE_CbCtx p_tCtxCb,
+e_eFSS_BLOB_RES eFSS_BLOB_InitCtx(t_eFSS_BLOB_Ctx* const p_ptCtx, const t_eFSS_TYPE_CbStorCtx p_tCtxCb,
                                   uint8_t* const p_puBuff, uint32_t p_uBuffL, t_eFSS_TYPE_StorageSettings p_tStorSet)
 {
     e_eFSS_BLOB_RES l_eRes;

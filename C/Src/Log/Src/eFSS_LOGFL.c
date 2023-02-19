@@ -40,7 +40,7 @@ static uint32_t eFSS_LOG_GetPrevIndex(uint32_t p_uCurrIdx, uint32_t p_uTotPage);
 /***********************************************************************************************************************
  *   GLOBAL FUNCTIONS
  **********************************************************************************************************************/
-e_eFSS_LOG_RES eFSS_LOG_InitCtx(t_eFSS_LOG_Ctx* const p_ptCtx, t_eFSS_TYPE_CbCtx* const p_ptCtxCb,
+e_eFSS_LOG_RES eFSS_LOG_InitCtx(t_eFSS_LOG_Ctx* const p_ptCtx, t_eFSS_TYPE_CbStorCtx* const p_ptCtxCb,
                                 const uint32_t p_uPageToUse, const uint32_t p_uPageSize, uint8_t* const p_puBuff,
                                 uint32_t p_uBuffL, uint16_t p_uLogVersion, uint32_t p_uRetry,
                                 bool_t p_bUseFlashCache, bool_t p_bUseFullBckup)

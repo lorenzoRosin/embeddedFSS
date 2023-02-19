@@ -1,14 +1,14 @@
 /**
- * @file       eFSS_DB.h
+ * @file       eFSS_DBFL.h
  *
- * @brief      Database module
+ * @brief      Database of fixed length data module
  *
  * @author     Lorenzo Rosin
  *
  **********************************************************************************************************************/
 
-#ifndef EFSS_DB_H
-#define EFSS_DB_H
+#ifndef EFSS_DBFL_H
+#define EFSS_DBFL_H
 
 
 
@@ -21,50 +21,47 @@ extern "C" {
 /***********************************************************************************************************************
  *      INCLUDES
  **********************************************************************************************************************/
-#include "eFSS_UTILSLLPRV.h"
+#include "eFSS_DBC.h"
 
 
 
 /***********************************************************************************************************************
  *      PRIVATE TYPEDEFS
  **********************************************************************************************************************/
+typedef enum
+{
+    e_eFSS_DBFL_RES_OK = 0,
+    e_eFSS_DBFL_RES_NOINITLIB,
+    e_eFSS_DBFL_RES_BADPARAM,
+    e_eFSS_DBFL_RES_BADPOINTER,
+    e_eFSS_DBFL_RES_CORRUPTCTX,
+    e_eFSS_DBFL_RES_CLBCKERASEERR,
+    e_eFSS_DBFL_RES_CLBCKWRITEERR,
+    e_eFSS_DBFL_RES_CLBCKREADERR,
+    e_eFSS_DBFL_RES_CLBCKCRCERR,
+    e_eFSS_DBFL_RES_NOTVALIDLOG,
+    e_eFSS_DBFL_RES_NEWVERSIONLOG,
+    e_eFSS_DBFL_RES_WRITENOMATCHREAD,
+    e_eFSS_DBFL_RES_OK_BKP_RCVRD,
+}e_eFSS_DBFL_RES;
+
 typedef struct
 {
-    uint16_t uID;
-	uint16_t uLen;
 	uint16_t uVer;
-    uint8_t* puDefVal;
+    t_eFSS_DBFL_SingleDbElement* ptDefVal;
 }t_eFSS_DB_DbElement;
 
 typedef struct
 {
     uint32_t uNumberOfElement;
+    uint32_t uSerialEleSize;
     t_eFSS_DB_DbElement* ptElementList;
 }t_eFSS_DB_DbStruct;
 
-typedef enum
-{
-    e_eFSS_DB_RES_OK = 0,
-    e_eFSS_DB_RES_OK_BKP_RCVRD,
-    e_eFSS_DB_RES_BADPARAM,
-    e_eFSS_DB_RES_BADPOINTER,
-    e_eFSS_DB_RES_CLBCKREPORTERROR,
-    e_eFSS_DB_RES_NOTVALIDBLOB,
-    e_eFSS_DB_RES_CORRUPTCTX,
-    e_eFSS_DB_RES_NOINITLIB,
-}e_eFSS_DB_RES;
 
 typedef struct
 {
-    bool_t   bIsInit;
-    t_eFSS_TYPE_CbCtx* ptCtxCb;
-	uint8_t* puBuff1;
-	uint32_t uBuff1L;
-	uint8_t* puBuff2;
-	uint32_t uBuff2L;
-    uint32_t uNPage;
-    uint32_t uPageSize;
-    uint32_t uReTry;
+    t_eFSS_DBC_Ctx  tDbCtx;
     t_eFSS_DB_DbStruct tDBS;
 }t_eFSS_DB_Ctx;
 
@@ -85,21 +82,20 @@ typedef struct
  *		        e_eFSS_DB_RES_BADPARAM      - In case of an invalid parameter passed to the function
  *              e_eFSS_DB_RES_OK            - Operation ended correctly
  */
-e_eFSS_DB_RES eFSS_DB_InitCtx(t_eFSS_DB_Ctx* const p_ptCtx, t_eFSS_TYPE_CbCtx* const p_ptCtxCb,
+e_eFSS_DB_RES eFSS_DB_InitCtx(t_eFSS_DB_Ctx* const p_ptCtx, t_eFSS_TYPE_CbStorCtx* const p_ptCtxCb,
                                   const uint32_t p_uPageToUse, const uint32_t p_uPageSize, uint8_t* const p_puBuff,
                                   uint32_t p_uBuffL, t_eFSS_DB_DbStruct p_tDBS);
 
 /**
  * @brief       Check if the lib is initialized
  *
- * @param[in]   p_ptCtx       - Blob context
+ * @param[in]   p_ptCtx          - Database Core context
  * @param[out]  p_pbIsInit    - Pointer to a bool_t variable that will be filled with true if the lib is initialized
  *
- * @return      e_eFSS_DB_RES_BADPOINTER    - In case of bad pointer passed to the function
- *		        e_eFSS_DB_RES_BADPARAM      - In case of an invalid parameter passed to the function
- *              e_eFSS_DB_RES_OK            - Operation ended correctly
+ * @return      e_eFSS_DBC_RES_BADPOINTER    - In case of bad pointer passed to the function
+ *              e_eFSS_DBC_RES_OK            - Operation ended correctly
  */
-e_eFSS_DB_RES eFSS_DB_IsInit(t_eFSS_DB_Ctx* const p_ptCtx, bool_t* p_pbIsInit);
+e_eFSS_DBC_RES eFSS_DBC_IsInit(t_eFSS_DBC_Ctx* const p_ptCtx, bool_t* p_pbIsInit);
 
 /**
  * @brief       Initialize the byte stuffer context
@@ -112,7 +108,7 @@ e_eFSS_DB_RES eFSS_DB_IsInit(t_eFSS_DB_Ctx* const p_ptCtx, bool_t* p_pbIsInit);
  *		        e_eFSS_DB_RES_BADPARAM      - In case of an invalid parameter passed to the function
  *              e_eFSS_DB_RES_OK            - Operation ended correctly
  */
-e_eFSS_DB_RES eFSS_DB_GetStorageStatus(t_eFSS_DB_Ctx* const p_ptCtx, t_eFSS_TYPE_CbCtx* const p_peStatus);
+e_eFSS_DB_RES eFSS_DB_GetStorageStatus(t_eFSS_DB_Ctx* const p_ptCtx, t_eFSS_TYPE_CbStorCtx* const p_peStatus);
 
 /**
  * @brief       Initialize the byte stuffer context
@@ -159,4 +155,4 @@ e_eFSS_DB_RES eFSS_DB_GetElement(t_eFSS_DB_Ctx* const p_ptCtx, uint32_t p_uPos, 
 
 
 
-#endif /* EFSS_DB_H */
+#endif /* EFSS_DBFL_H */

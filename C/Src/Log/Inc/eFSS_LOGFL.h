@@ -48,7 +48,7 @@ typedef enum
 typedef struct
 {
     bool_t   bIsInit;
-    t_eFSS_TYPE_CbCtx* ptCtxCb;
+    t_eFSS_TYPE_CbStorCtx* ptCtxCb;
 	uint8_t* puBuff1;
 	uint32_t uBuff1L;
 	uint8_t* puBuff2;
@@ -86,7 +86,7 @@ typedef struct
  *		        e_eFSS_BLOB_RES_BADPARAM      - In case of an invalid parameter passed to the function
  *              e_eFSS_BLOB_RES_OK            - Operation ended correctly
  */
-e_eFSS_LOG_RES eFSS_LOG_InitCtx(t_eFSS_LOG_Ctx* const p_ptCtx, t_eFSS_TYPE_CbCtx* const p_ptCtxCb,
+e_eFSS_LOG_RES eFSS_LOG_InitCtx(t_eFSS_LOG_Ctx* const p_ptCtx, t_eFSS_TYPE_CbStorCtx* const p_ptCtxCb,
                                 const uint32_t p_uPageToUse, const uint32_t p_uPageSize, uint8_t* const p_puBuff,
                                 uint32_t p_uBuffL, uint16_t p_uLogVersion, uint32_t p_uRetry,
                                 bool_t p_bUseFlashCache, bool_t p_bUseFullBckup);
