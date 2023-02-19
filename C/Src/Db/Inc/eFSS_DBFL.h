@@ -48,43 +48,43 @@ typedef enum
 typedef struct
 {
 	uint16_t uVer;
-    t_eFSS_DBFL_SingleDbElement* ptDefVal;
-}t_eFSS_DB_DbElement;
+    t_eFSS_TYPE_SingleDbElement* ptDefVal;
+}t_eFSS_DBFL_DbElement;
 
 typedef struct
 {
     uint32_t uNumberOfElement;
     uint32_t uSerialEleSize;
-    t_eFSS_DB_DbElement* ptElementList;
-}t_eFSS_DB_DbStruct;
+    t_eFSS_DBFL_DbElement* ptElementList;
+}t_eFSS_DBFL_DbStruct;
 
 
 typedef struct
 {
-    t_eFSS_DBC_Ctx  tDbCtx;
-    t_eFSS_DB_DbStruct tDBS;
-}t_eFSS_DB_Ctx;
+    t_eFSS_DBC_Ctx         tDbCtx;
+    t_eFSS_DBFL_DbStruct   tDBS;
+    t_eFSS_TYPE_CbDeSerCtx tSeDeserCtx;
+}t_eFSS_DBFL_Ctx;
 
 /***********************************************************************************************************************
  * GLOBAL PROTOTYPES
  **********************************************************************************************************************/
 /**
- * @brief       Initialize the database context
+ * @brief       Initialize the Log Fixed length module context
  *
- * @param[in]   p_ptCtx       - Blob context
- * @param[in]   p_ptCtxCb     - All callback collection context
- * @param[in]   p_uPageToUse  - How many page use for the blob module
- * @param[in]   p_uPageSize   - Size of the used pages
- * @param[in]   p_puBuff      - Pointer to a buffer used by the modules to make calc
- * @param[in]   p_uBuffL      - Size of p_puBuff
+ * @param[in]   p_ptCtx          - Database Fixed length context
+ * @param[in]   p_tCtxCb         - All callback collection context
+ * @param[in]   p_tStorSet       - Storage settings
+ * @param[in]   p_puBuff         - Pointer to a buffer used by the modules to make calc, must ne pageSize * 2
+ * @param[in]   p_uBuffL         - Size of p_puBuff
  *
- * @return      e_eFSS_DB_RES_BADPOINTER    - In case of bad pointer passed to the function
- *		        e_eFSS_DB_RES_BADPARAM      - In case of an invalid parameter passed to the function
- *              e_eFSS_DB_RES_OK            - Operation ended correctly
+ * @return      e_eFSS_DBFL_RES_BADPOINTER    - In case of bad pointer passed to the function
+ *		        e_eFSS_DBFL_RES_BADPARAM      - In case of an invalid parameter passed to the function
+ *              e_eFSS_DBFL_RES_OK            - Operation ended correctly
  */
-e_eFSS_DB_RES eFSS_DB_InitCtx(t_eFSS_DB_Ctx* const p_ptCtx, t_eFSS_TYPE_CbStorCtx* const p_ptCtxCb,
-                                  const uint32_t p_uPageToUse, const uint32_t p_uPageSize, uint8_t* const p_puBuff,
-                                  uint32_t p_uBuffL, t_eFSS_DB_DbStruct p_tDBS);
+e_eFSS_DBFL_RES eFSS_DBFL_InitCtx(t_eFSS_DBFL_Ctx* const p_ptCtx, t_eFSS_TYPE_CbStorCtx const p_tCtxCb,
+                                  t_eFSS_TYPE_StorSet p_tStorSet, uint8_t* const p_puBuff, uint32_t p_uBuffL,
+                                  t_eFSS_TYPE_CbDeSerCtx const p_tSerDeseCb, t_eFSS_DBFL_DbStruct p_tDbStruct);
 
 /**
  * @brief       Check if the lib is initialized
@@ -92,13 +92,13 @@ e_eFSS_DB_RES eFSS_DB_InitCtx(t_eFSS_DB_Ctx* const p_ptCtx, t_eFSS_TYPE_CbStorCt
  * @param[in]   p_ptCtx          - Database Core context
  * @param[out]  p_pbIsInit    - Pointer to a bool_t variable that will be filled with true if the lib is initialized
  *
- * @return      e_eFSS_DBC_RES_BADPOINTER    - In case of bad pointer passed to the function
- *              e_eFSS_DBC_RES_OK            - Operation ended correctly
+ * @return      e_eFSS_DBFL_RES_BADPOINTER    - In case of bad pointer passed to the function
+ *              e_eFSS_DBFL_RES_OK            - Operation ended correctly
  */
-e_eFSS_DBC_RES eFSS_DBC_IsInit(t_eFSS_DBC_Ctx* const p_ptCtx, bool_t* p_pbIsInit);
+e_eFSS_DBFL_RES eFSS_DBFL_IsInit(t_eFSS_DBFL_Ctx* const p_ptCtx, bool_t* p_pbIsInit);
 
 /**
- * @brief       Initialize the byte stuffer context
+ * @brief       Check the database status
  *
  * @param[in]   p_ptCtx    - Byte stuffer context
  * @param[in]   p_puBuff   - Pointer to a memory area that we will use to store data that needs to be stuffed
@@ -108,10 +108,10 @@ e_eFSS_DBC_RES eFSS_DBC_IsInit(t_eFSS_DBC_Ctx* const p_ptCtx, bool_t* p_pbIsInit
  *		        e_eFSS_DB_RES_BADPARAM      - In case of an invalid parameter passed to the function
  *              e_eFSS_DB_RES_OK            - Operation ended correctly
  */
-e_eFSS_DB_RES eFSS_DB_GetStorageStatus(t_eFSS_DB_Ctx* const p_ptCtx, t_eFSS_TYPE_CbStorCtx* const p_peStatus);
+e_eFSS_DBFL_RES eFSS_DBFL_GetDBStatus(t_eFSS_DBFL_Ctx* const p_ptCtx);
 
 /**
- * @brief       Initialize the byte stuffer context
+ * @brief       Erase all the data present in the DB and restore default value
  *
  * @param[in]   p_ptCtx    - Byte stuffer context
  * @param[in]   p_puBuff   - Pointer to a memory area that we will use to store data that needs to be stuffed
@@ -121,7 +121,7 @@ e_eFSS_DB_RES eFSS_DB_GetStorageStatus(t_eFSS_DB_Ctx* const p_ptCtx, t_eFSS_TYPE
  *		        e_eFSS_DB_RES_BADPARAM      - In case of an invalid parameter passed to the function
  *              e_eFSS_DB_RES_OK            - Operation ended correctly
  */
-e_eFSS_DB_RES eFSS_DB_Format(t_eFSS_DB_Ctx* const p_ptCtx);
+e_eFSS_DBFL_RES eFSS_DBFL_Format(t_eFSS_DBFL_Ctx* const p_ptCtx);
 
 /**
  * @brief       Check if the lib is initialized
@@ -133,7 +133,8 @@ e_eFSS_DB_RES eFSS_DB_Format(t_eFSS_DB_Ctx* const p_ptCtx);
  *		        e_eFSS_DB_RES_BADPARAM      - In case of an invalid parameter passed to the function
  *              e_eFSS_DB_RES_OK            - Operation ended correctly
  */
-e_eFSS_DB_RES eFSS_DB_SaveElemen(t_eFSS_DB_Ctx* const p_ptCtx, uint32_t p_uPos, uint8_t* p_puBuff, uint32_t p_uBuffL);
+e_eFSS_DBFL_RES eFSS_DBFL_SaveElemen(t_eFSS_DBFL_Ctx* const p_ptCtx, uint32_t p_uPos,
+                                     t_eFSS_TYPE_SingleDbElement* p_ptElem);
 
 /**
  * @brief       Check if the lib is initialized
@@ -145,7 +146,8 @@ e_eFSS_DB_RES eFSS_DB_SaveElemen(t_eFSS_DB_Ctx* const p_ptCtx, uint32_t p_uPos, 
  *		        e_eFSS_DB_RES_BADPARAM      - In case of an invalid parameter passed to the function
  *              e_eFSS_DB_RES_OK            - Operation ended correctly
  */
-e_eFSS_DB_RES eFSS_DB_GetElement(t_eFSS_DB_Ctx* const p_ptCtx, uint32_t p_uPos, uint8_t* p_puBuff, uint8_t* p_puBuffL);
+e_eFSS_DBFL_RES eFSS_DBFL_GetElement(t_eFSS_DBFL_Ctx* const p_ptCtx, uint32_t p_uPos,
+                                     t_eFSS_TYPE_SingleDbElement* p_ptElem);
 
 
 

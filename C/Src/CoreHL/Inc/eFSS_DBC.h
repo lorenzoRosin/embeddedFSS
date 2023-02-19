@@ -54,7 +54,7 @@ typedef struct
  * GLOBAL PROTOTYPES
  **********************************************************************************************************************/
 /**
- * @brief       Initialize the Log Core module context
+ * @brief       Initialize the Database Core module context
  *
  * @param[in]   p_ptCtx          - Database Core context
  * @param[in]   p_tCtxCb         - All callback collection context
