@@ -615,7 +615,6 @@ e_eFSS_LOGC_RES eFSS_LOGC_AddLog(t_eFSS_LOGC_Ctx* const p_ptCtx, uint8_t* p_puLo
 {
 	/* Local return variable */
 	e_eFSS_LOGC_RES l_eRes;
-    e_eFSS_COREHL_RES l_eResHL;
 
     /* Local var used for calculation */
     uint8_t l_uDummyP;
@@ -707,68 +706,48 @@ static e_eFSS_LOGC_RES eFSS_LOGC_LoadIndxBySearch(t_eFSS_LOGC_Ctx* const p_ptCtx
 	e_eFSS_LOGC_RES l_eRes;
     e_eFSS_COREHL_RES l_eResHL;
 
-    /* Local var used for calculation */
-    bool_t l_bIsInit;
+    /* Local var used for settings */
     t_eFSS_TYPE_StorSet l_tStorSet;
     t_eFSS_TYPE_StorBuf l_tBuff;
-    bool_t l_bIsIndexFound;
-    uint32_t l_unSearched;
-    uint32_t l_uIdxSearch;
 
-    l_eResHL = eFSS_COREHL_GetStorSett(&p_ptCtx->tCOREHLCtx, &l_tStorSet);
+    /* Local var used for search */
+    uint32_t l_uNSearched;
+    uint32_t l_uIdxSearch;
+    uint32_t l_uUsablePage;
+
+    l_eResHL = eFSS_COREHL_GetBuffNStor(&p_ptCtx->tCOREHLCtx, &l_tBuff, &l_tStorSet);
     l_eRes = eFSS_LOGCPRV_HLtoLogRes(l_eResHL);
 
     if( e_eFSS_LOGC_RES_OK == l_eRes )
     {
-        l_eResHL = eFSS_COREHL_GetBuff(&p_ptCtx->tCOREHLCtx, &l_tBuff);
-        l_eRes = eFSS_LOGCPRV_HLtoLogRes(l_eResHL);
+        l_uUsablePage = eFSS_LOGCPRV_GetUsablePage(p_ptCtx, l_tStorSet);
 
-        if( e_eFSS_LOGC_RES_OK == l_eRes )
+        /* Init variable */
+        l_uNSearched = 0u;
+
+        /* Start searching from the cached page */
+        l_uIdxSearch = p_ptCtx->uNewPagIdx;
+        l_eRes = e_eFSS_LOGC_RES_NOTVALIDLOG;
+
+        while( ( l_uNSearched < l_uUsablePage ) && ( e_eFSS_LOGC_RES_NOTVALIDLOG == l_eRes )  )
         {
-            /* First check if pages pointed by caches index are already OK */
-            l_eRes = eFSS_LOGCPRV_LoadBufferAsNewestPage(p_ptCtx, p_ptCtx->uNewPagIdx);
+            l_eRes = eFSS_LOGCPRV_LoadBufferAsNewestNBkpPage(p_ptCtx, p_ptCtx->uNewPagIdx);
 
             if( e_eFSS_LOGC_RES_OK == l_eRes )
             {
-                if( ( l_tBuff.ptMeta->uPageUseSpec1 != p_ptCtx->uNewPagIdx ) ||
-                    ( l_tBuff.ptMeta->uPageUseSpec2 != p_ptCtx->uFullFilledP ) )
-                {
-                    l_bIsIndexFound = false;
-                }
-                else
-                {
-                    l_bIsIndexFound = true;
-                }
+                /* Founded, super!! */
+                p_ptCtx->uNewPagIdx   = l_uIdxSearch;
+                p_ptCtx->uFullFilledP = l_tBuff.ptMeta->uPageUseSpec2;
             }
             else if( e_eFSS_LOGC_RES_NOTVALIDLOG == l_eRes )
             {
-                l_bIsIndexFound = false;
+                /* Not this one */
+                l_uIdxSearch = eFSS_LOGCPRV_GetNextIndex( p_ptCtx, l_tStorSet, l_uIdxSearch );
+                l_uNSearched++;
             }
-
-            if( ( e_eFSS_LOGC_RES_OK == l_eRes ) || ( e_eFSS_LOGC_RES_NOTVALIDLOG == l_eRes ) )
+            else
             {
-                l_unSearched = 0u;
-                l_uIdxSearch = p_ptCtx->uNewPagIdx;
-
-                while( ( false == l_bIsIndexFound ) && ( l_unSearched < totalPageSearch ) )
-                {
-                    l_eRes = eFSS_LOGCPRV_LoadBufferAsNewestPage(p_ptCtx, l_uIdxSearch);
-
-                    if( e_eFSS_LOGC_RES_OK == l_eRes )
-                    {
-                        /* Founded, super!! */
-                        l_bIsIndexFound = true;
-                        p_ptCtx->uNewPagIdx    = l_uIdxSearch;
-                        p_ptCtx->uFullFilledP = l_tBuff.ptMeta->uPageUseSpec2;
-                    }
-                    else if( e_eFSS_LOGC_RES_NOTVALIDLOG == l_eRes )
-                    {
-                        /* Not this one */
-                        l_bIsIndexFound = false;
-                        l_uIdxSearch = eFSS_LOGCPRV_GetNextIndex( p_ptCtx, l_tStorSet, l_uIdxSearch );
-                        l_unSearched++;
-                    }
-                }
+                /* Unreparable error */
             }
         }
     }
