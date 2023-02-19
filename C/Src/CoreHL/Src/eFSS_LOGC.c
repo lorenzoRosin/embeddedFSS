@@ -313,65 +313,40 @@ e_eFSS_LOGC_RES eFSS_LOGC_Format(t_eFSS_LOGC_Ctx* const p_ptCtx)
                         l_eRes = eFSS_LOGCPRV_HLtoLogRes(l_eResHL);
                         if( e_eFSS_LOGC_RES_OK == l_eRes )
                         {
-                            /* In case of many page a full erase of the area could take too much times.
-                               1 - First erase the newest page and it's backup. In this ways even if a power loss occours we have
-                                   completly invalidated the whole memory.
-                               2 - If present set the index cache to point to the first page of the area. In this ways even if a
-                                   power outage occours we have that cache is not pointing to valid page anymore.
-                               3 - Setup first page as original newest page.
-                               4 - Set second page as backup of first page.
-                            */
+                            /* Load index */
                             l_eRes = eFSS_LOGC_LoadIndexNRepair(p_ptCtx);
 
                             if( ( e_eFSS_LOGC_RES_OK == l_eRes ) || ( e_eFSS_LOGC_RES_OK_BKP_RCVRD == l_eRes ) )
                             {
-                                if( true == p_ptCtx->bFlashCache )
+                                /* Flash cache, so we find a valid newest page pointed by cache.
+                                   If the newest page is at index zero just format that page at index zero, withouth
+                                   modifyng the caches, otherwise invalidate
+                                   the current page (during a power outage the state of the storage will be invalid)
+                                   write newest page on index zero, and finaly update the flash cache (even
+                                   if a power outage occours, and the state of the storage will be invalid, no
+                                   problem: we were formatting the storage anyway.. ) */
+
+                                /* No flash cache, so we find a valid newest page.
+                                   If the newest page is at index zero just format that page otherwise invalidate
+                                   the current page and just after write newest on index zero */
+
+                                if( 0u != p_ptCtx->uNewPagIdx )
                                 {
-                                    /* Flash cache, so we find a valid newest page pointed by cache.
-                                       If the newest page is at index zero just format that page at index zero, withouth
-                                       modifyng the caches, otherwise invalidate
-                                       the current page (during a power outage the state of the storage will be invalid)
-                                       write newest page on index zero, and finaly update the flash cache (even
-                                       if a power outage occours, and the state of the storage will be invalid, no
-                                       problem: we were formatting the storage anyway.. ) */
-                                    if( 0u != p_ptCtx->uNewPagIdx )
-                                    {
-                                        l_bInvalidateCurrent = true;
-                                    }
-                                    else
-                                    {
-                                        l_bInvalidateCurrent = false;
-                                    }
+                                    l_bInvalidateCurrent = true;
                                 }
                                 else
                                 {
-                                    /* No flash cache, so we find a valid newest page.
-                                       If the newest page is at index zero just format that page otherwise invalidate
-                                       the current page and just after write newest on index zero */
-                                    if( 0u != p_ptCtx->uNewPagIdx )
-                                    {
-                                        l_bInvalidateCurrent = true;
-                                    }
-                                    else
-                                    {
-                                        l_bInvalidateCurrent = false;
-                                    }
+                                    l_bInvalidateCurrent = false;
                                 }
                             }
                             else if( e_eFSS_LOGC_RES_NOTVALIDLOG == l_eRes )
                             {
-                                if( true == p_ptCtx->bFlashCache )
-                                {
-                                    /* We could be in the cases where chache has bad index.
-                                       first write newest page in index zero and after update caches */
-                                    l_bInvalidateCurrent = false;
-                                }
-                                else
-                                {
-                                    /* No flash cache, so we didnt find any new page inside the log storage area.
-                                       just write newest page in index 0 */
-                                    l_bInvalidateCurrent = false;
-                                }
+                                /* Flash cache: We could be in the cases where chache has bad index.
+                                   first write newest page in index zero and after update caches */
+
+                                /* No flash cache: no newest found. just write newest page in index 0 */
+
+                                l_bInvalidateCurrent = false;
                             }
                             else
                             {
@@ -382,7 +357,7 @@ e_eFSS_LOGC_RES eFSS_LOGC_Format(t_eFSS_LOGC_Ctx* const p_ptCtx)
                             if( ( e_eFSS_LOGC_RES_OK == l_eRes ) || ( e_eFSS_LOGC_RES_OK_BKP_RCVRD == l_eRes ) ||
                                 ( e_eFSS_LOGC_RES_NOTVALIDLOG == l_eRes ) )
                             {
-                                /* Invalidate current */
+                                /* Invalidate the current pages */
                                 if( true == l_bInvalidateCurrent )
                                 {
                                     /* Clear buffer  */
@@ -393,25 +368,27 @@ e_eFSS_LOGC_RES eFSS_LOGC_Format(t_eFSS_LOGC_Ctx* const p_ptCtx)
 
                                     if( e_eFSS_LOGC_RES_OK == l_eRes )
                                     {
+                                        /* Invalidate newest backup also */
                                         l_uNextIndex = eFSS_LOGCPRV_GetNextIndex(p_ptCtx, l_tStorSet, p_ptCtx->uNewPagIdx);
                                         l_eRes = eFSS_LOGCPRV_FlushBufferAsLog(p_ptCtx, l_uNextIndex);
-
-                                        if( e_eFSS_LOGC_RES_OK == l_eRes )
-                                        {
-                                        }
                                     }
                                 }
 
-                                /* Write zero index */
-                                /* Clear buffer  */
-                                memset(l_tBuff.puBuf, 0u, l_tBuff.uBufL);
-                                memset(&l_tBuff.ptMeta, 0u, sizeof(t_eFSS_TYPE_PageMeta));
-                                l_eRes = eFSS_LOGCPRV_FlushBufferAsNewestPage(p_ptCtx, 0u);
-
-                                /* write cache */
-                                if( true == p_ptCtx->bFlashCache )
+                                if( e_eFSS_LOGC_RES_OK == l_eRes )
                                 {
-                                    e_eFSS_LOGC_RES eFSS_LOGCPRV_WriteCache(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t p_uIdxN, uint32_t p_uIFlP);
+                                    /* Write newest in first index */
+                                    memset(l_tBuff.puBuf, 0u, l_tBuff.uBufL);
+                                    memset(&l_tBuff.ptMeta, 0u, sizeof(t_eFSS_TYPE_PageMeta));
+                                    l_eRes = eFSS_LOGCPRV_FlushBufferAsNewestNBkpPage(p_ptCtx, 0u);
+
+                                    if( e_eFSS_LOGC_RES_OK == l_eRes )
+                                    {
+                                        /* write cache */
+                                        if( true == p_ptCtx->bFlashCache )
+                                        {
+                                            l_eRes = eFSS_LOGCPRV_WriteCache(p_ptCtx, 0u, 0u);
+                                        }
+                                    }
                                 }
                             }
                         }
