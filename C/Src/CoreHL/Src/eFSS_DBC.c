@@ -7,7 +7,25 @@
  *
  **********************************************************************************************************************/
 
-
+/* In this module the page field has the following meaning:
+ * ------------------------------------------------------------------ User data
+ * - [uint8_t] -                    -> N byte of user data           |
+ * ------------------------------------------------------------------ Metadata  (17 byte)
+ * - uint32_t  - uPageUseSpec1      -> No value defined              |
+ * - uint32_t  - uPageUseSpec2      -> No value defined              |
+ * - uint32_t  - uPageUseSpec3      -> No value defined              |
+ * - uint32_t  - uPageUseSpec4      -> Page Index                    |
+ * - uint8_t   - uPageSubType       -> Page subtype                  |
+ * ------------------------------------------------------------------+
+ *
+ * In this module the storage is organizated as follow :
+ *
+ *   bFullBckup = true, bFlashCache = true
+ * - [ 0                            -    ( uTotPages / 2 ) - 1    ]  -> Original pages
+ * - [ ( uTotPages / 2 ) - 1        -    uTotPages - 1            ]  -> Backup pages
+ *
+ * First write original pages and after the backup pages
+ */
 
 /***********************************************************************************************************************
  *      INCLUDES

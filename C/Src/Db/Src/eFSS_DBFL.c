@@ -7,6 +7,17 @@
  *
  **********************************************************************************************************************/
 
+
+/* In this module the page field has the following meaning:
+ * ------------------------------------------------------------------ User data
+ * - [uint8_t] -                    -> N byte of user data           |
+ * ------------------------------------------------------------------ Metadata  (17 byte)
+ * - uint32_t  - uPageUseSpec1      -> Parameter length              |
+ * - uint32_t  - uPageUseSpec2      -> No value defined              |
+ * - uint32_t  - uPageUseSpec3      -> No value defined              |
+ * ------------------------------------------------------------------+
+ */
+
 /***********************************************************************************************************************
  *      INCLUDES
  **********************************************************************************************************************/
@@ -18,8 +29,13 @@
  **********************************************************************************************************************/
 static bool_t eFSS_DBFL_IsStatusStillCoherent(const t_eFSS_DBFL_Ctx* p_ptCtx);
 static e_eFSS_DBFL_RES eFSS_DBFL_DBCtoDBFLRes(const e_eFSS_DBC_RES p_eDBCRes);
-static t_eFSS_DBFL_DbElement eFSS_DBFL_GetElementInBuffer(const uint32_t p_uIndex, uint8_t* p_puBuffer);
-static bool_t eFSS_DBFL_SetElementInBuffer(const uint32_t p_uIndex, uint8_t* p_puBuffer, t_eFSS_DBFL_DbElement p_tElem);
+static void eFSS_DBFL_GetElementInBuffer(const uint32_t p_uEleL, const uint32_t p_uIndexInPage, uint8_t* p_puBuffer, 
+                                        f_eFSS_TYPE_DeserialCb p_fDeSerial, t_eFSS_DBFL_DbElement* p_tElem);
+static void eFSS_DBFL_SetElementInBuffer(const uint32_t p_uEleL, const uint32_t p_uIndexInPage, uint8_t* p_puBuffer, 
+                                           f_eFSS_TYPE_SerrialzCb p_fSerial, t_eFSS_DBFL_DbElement* p_tElem);
+static void eFSS_DBFL_GetPageAndPagePosition(const uint32_t p_uPageL, const uint32_t p_uEleL, const uint32_t p_uIndex, 
+                                             uint32_t* p_puPageIdx, uint32_t* p_puLogPos);
+
 
 
 /***********************************************************************************************************************
@@ -195,240 +211,246 @@ e_eFSS_DBFL_RES eFSS_DBFL_GetDBStatus(t_eFSS_DBFL_Ctx* const p_ptCtx)
 
 e_eFSS_DBFL_RES eFSS_DBFL_Format(t_eFSS_DBFL_Ctx* const p_ptCtx)
 {
-	/* Local variable */
-	e_eFSS_DB_RES l_eRes;
-    e_eFSS_UTILSHLPRV_RES l_eHLRes;
-    uint32_t l_uCrcZeroBlob;
-    uint32_t l_i;
-    t_eFSS_TYPE_PageMeta l_tPagePrmToWrite;
+	/* Local return variable */
+    e_eFSS_DBFL_RES l_eRes;
+    e_eFSS_DBC_RES  l_eDBCRes;
+
+    /* Local variable for calculation */
+    t_eFSS_TYPE_StorBuf l_tBuff;
+    t_eFSS_TYPE_StorSet l_tStorSet;
+    bool_t l_bIsInit;
+    uint32_t l_uIndexToCheck;
+    uint32_t l_uMaxIndex;
+    uint32_t l_uMaxElemPageIndex;
+    uint32_t l_uElemDone;
+    uint32_t l_uElemInPageDone;
+    t_eFSS_DBFL_DbElement l_tCurrElem;
 
 	/* Check pointer validity */
 	if( NULL == p_ptCtx )
 	{
-		l_eRes = e_eFSS_DB_RES_BADPOINTER;
+		l_eRes = e_eFSS_DBFL_RES_BADPOINTER;
 	}
 	else
 	{
 		/* Check Init */
-		if( false == p_ptCtx->bIsInit )
-		{
-			l_eRes = e_eFSS_DB_RES_NOINITLIB;
-		}
-		else
-		{
-            /* Check internal status validity */
-            if( false == eFSS_DB_IsStatusStillCoherent(p_ptCtx) )
+        l_eDBCRes = eFSS_DBC_IsInit(&p_ptCtx->tDbCtx, &l_bIsInit);
+        l_eRes = eFSS_DBFL_DBCtoDBFLRes(l_eDBCRes);
+
+        if( e_eFSS_DBFL_RES_OK == l_eRes )
+        {
+            if( false == l_bIsInit )
             {
-                l_eRes = e_eFSS_DB_RES_CORRUPTCTX;
+                l_eRes = e_eFSS_DBFL_RES_NOINITLIB;
             }
             else
             {
-                /* Calculate the CRC of the zero data blob */
-                l_uCrcZeroBlob = 10u;
-
-                /* Format to zero everything */
-
-                /* First format the original pages, update blob size and CRC value  */
-                l_eRes = e_eFSS_DB_RES_OK;
-                l_i = 0u;
-
-                while( (l_i < p_ptCtx->uNPage / 2u)  && ( e_eFSS_DB_RES_OK == l_eRes ) )
+                /* Check internal status validity */
+                if( false == eFSS_DBFL_IsStatusStillCoherent(p_ptCtx) )
                 {
-                    memset(p_ptCtx->puBuff1, 0u, p_ptCtx->uBuff1L);
-                    l_tPagePrmToWrite.uPageType = 0u;
-                    l_tPagePrmToWrite.uPageSubType = 0u;
-                    l_tPagePrmToWrite.uPageVersion = 0u;
-                    l_tPagePrmToWrite.uPageUseSpecific1 = 0u;
-                    l_tPagePrmToWrite.uPageUseSpecific2 = l_uCrcZeroBlob;
-                    l_tPagePrmToWrite.uPageUseSpecific3 = 0u;
-                    l_tPagePrmToWrite.uPageMagicNumber = EFSS_PAGEMAGICNUMBER;
-                    l_tPagePrmToWrite.uPageCrc = 0u;
-
-                    l_eHLRes =  eFSS_UTILSHLPRV_WritePagePrmNUpCrc(p_ptCtx->ptCtxCb, l_i,
-                                                         p_ptCtx->puBuff1, p_ptCtx->uBuff1L,
-                                                         p_ptCtx->puBuff2, p_ptCtx->uBuff2L,
-                                                         &l_tPagePrmToWrite, p_ptCtx->uReTry);
-                    l_eRes = eFSS_DB_HLtoDBRes(l_eHLRes);
-
-                }
-
-                /* Now format the backup pages, update blob size and CRC value  */
-                if( e_eFSS_DB_RES_OK == l_eRes )
-                {
-                    l_i = p_ptCtx->uNPage / 2u;
-
-                    while( (l_i < p_ptCtx->uNPage)  && ( e_eFSS_DB_RES_OK == l_eRes ) )
-                    {
-                        memset(p_ptCtx->puBuff1, 0u, p_ptCtx->uBuff1L);
-                        l_tPagePrmToWrite.uPageType = 0u;
-                        l_tPagePrmToWrite.uPageSubType = 0u;
-                        l_tPagePrmToWrite.uPageVersion = 0u;
-                        l_tPagePrmToWrite.uPageUseSpecific1 = 0u;
-                        l_tPagePrmToWrite.uPageUseSpecific2 = l_uCrcZeroBlob;
-                        l_tPagePrmToWrite.uPageUseSpecific3 = 0u;
-                        l_tPagePrmToWrite.uPageMagicNumber = EFSS_PAGEMAGICNUMBER;
-                        l_tPagePrmToWrite.uPageCrc = 0u;
-
-                        l_eHLRes =  eFSS_UTILSHLPRV_WritePagePrmNUpCrc(p_ptCtx->ptCtxCb, l_i,
-                                                             p_ptCtx->puBuff1, p_ptCtx->uBuff1L,
-                                                             p_ptCtx->puBuff2, p_ptCtx->uBuff2L,
-                                                             &l_tPagePrmToWrite, p_ptCtx->uReTry);
-                        l_eRes = eFSS_DB_HLtoDBRes(l_eHLRes);
-
-                    }
-                }
-            }
-		}
-	}
-
-	return l_eRes;
-}
-
-
-e_eFSS_DB_RES eFSS_DB_SaveElemen(t_eFSS_DB_Ctx* const p_ptCtx, uint32_t p_uPos, uint8_t* p_puBuff, uint32_t p_uBuffL)
-{
-	/* Local variable */
-	e_eFSS_DB_RES l_eRes;
-    e_eFSS_UTILSHLPRV_RES l_eHLRes;
-    uint32_t l_i;
-    uint32_t l_uWritten;
-    uint32_t l_uPageToCheck;
-    uint32_t l_uOffsetToCheck;
-    t_eFSS_TYPE_PageMeta p_ptPagePrm;
-
-	/* Check pointer validity */
-	if( ( NULL == p_ptCtx ) || ( NULL == p_puBuff ) )
-	{
-		l_eRes = e_eFSS_DB_RES_BADPOINTER;
-	}
-	else
-	{
-		/* Check Init */
-		if( false == p_ptCtx->bIsInit )
-		{
-			l_eRes = e_eFSS_DB_RES_NOINITLIB;
-		}
-		else
-		{
-            /* Check internal status validity */
-            if( false == eFSS_DB_IsStatusStillCoherent(p_ptCtx) )
-            {
-                l_eRes = e_eFSS_DB_RES_CORRUPTCTX;
-            }
-            else
-            {
-                /* Check data validity */
-                if( p_uBuffL <= 0u )
-                {
-                    l_eRes = e_eFSS_DB_RES_BADPARAM;
+                    l_eRes = e_eFSS_DBFL_RES_CORRUPTCTX;
                 }
                 else
                 {
-                    /* Get element and offset */
-                    l_eRes =  eFSS_DB_RetrivePageAndOffset(p_ptCtx, p_uPos, &l_uPageToCheck, &l_uOffsetToCheck);
+                    /* Get storage info */
+                    l_eDBCRes = eFSS_DBC_GetBuffNStor(&p_ptCtx->tDbCtx, &l_tBuff, &l_tStorSet);
+                    l_eRes = eFSS_DBFL_DBCtoDBFLRes(l_eDBCRes);
 
-                    if( e_eFSS_DB_RES_OK == l_eRes )
+                    if( e_eFSS_DBFL_RES_OK == l_eRes )
                     {
-                        /* Ovviamente */
-                        l_eHLRes = eFSS_UTILSHLPRV_VerifyNRipristBkup( p_ptCtx->ptCtxCb, p_ptCtx->uReTry,
-                                                                    p_ptCtx->puBuff1, p_ptCtx->uBuff1L,
-                                                                    p_ptCtx->puBuff2, p_ptCtx->uBuff2L,
-                                                                    l_i, l_i +  (p_ptCtx->uNPage / 2u) );
-                        l_eRes = eFSS_DB_HLtoDBRes(l_eHLRes);
+                        /* Copy DB struct now */
+                        l_uIndexToCheck = 0u;
+                        l_uElemDone = 0u;
+                        l_uMaxIndex = ( l_tStorSet.uTotPages / 2u ) ;
+                        l_uMaxElemPageIndex = (uint32_t)( l_tBuff.uBufL / p_ptCtx->tDBS.uSerialEleSize ) ;
 
-                        if( ( e_eFSS_DB_RES_OK == l_eRes ) || ( e_eFSS_DB_RES_OK_BKP_RCVRD == l_eRes ) )
+                        while( ( ( e_eFSS_DBFL_RES_OK == l_eRes ) || ( e_eFSS_DBFL_RES_OK_BKP_RCVRD == l_eRes ) ) || 
+                               ( l_uIndexToCheck < l_uMaxIndex ) )
                         {
-                            l_eHLRes = eFSS_UTILSHLPRV_ReadPageNPrm(p_ptCtx->ptCtxCb, l_i,  p_ptCtx->puBuff1, p_ptCtx->uBuff1L,
-                                                                &p_ptPagePrm, p_ptCtx->uReTry);
-                            l_eRes = eFSS_DB_HLtoDBRes(l_eHLRes);
+                            l_eDBCRes = eFSS_DBC_LoadPageInBuff(&p_ptCtx->tDbCtx, l_uIndexToCheck);
+                            l_eRes = eFSS_DBFL_DBCtoDBFLRes(l_eDBCRes);
 
-                            if( e_eFSS_DB_RES_OK == l_eRes )
+                            if( ( e_eFSS_DBFL_RES_OK == l_eRes ) || ( e_eFSS_DBFL_RES_OK_BKP_RCVRD == l_eRes ) )
                             {
-                                memcpy(&p_ptCtx->puBuff1[l_uOffsetToCheck], p_puBuff, p_uBuffL);
+                                /* Check against DB default */
+                                l_uElemInPageDone = 0u;
 
-                                /* Now write the page origin */
-                                l_eHLRes =  eFSS_UTILSHLPRV_WritePagePrmNUpCrc(p_ptCtx->ptCtxCb, l_i,
-                                                                    p_ptCtx->puBuff1, p_ptCtx->uBuff1L,
-                                                                    p_ptCtx->puBuff2, p_ptCtx->uBuff2L,
-                                                                    &p_ptPagePrm, p_ptCtx->uReTry);
-                                l_eRes = eFSS_DB_HLtoDBRes(l_eHLRes);
+                                while( ( l_uElemInPageDone < l_uMaxElemPageIndex ) )
+                                {
+                                    /* Update version, ripristinate default */
+                                    if( false == eFSS_DBFL_SetElementInBuffer(l_uElemInPageDone, l_tBuff.puBuf, p_ptCtx->tDBS.ptElementList[l_uElemDone]) )
+                                    {
+                                        l_eRes = e_eFSS_DBFL_RES_BADPARAM;
+                                    }
 
-                                /* Now write the page backup */
-                                l_eHLRes =  eFSS_UTILSHLPRV_WritePagePrmNUpCrc(p_ptCtx->ptCtxCb, l_i,
-                                                                    p_ptCtx->puBuff1, p_ptCtx->uBuff1L,
-                                                                    p_ptCtx->puBuff2, p_ptCtx->uBuff2L,
-                                                                    &p_ptPagePrm, p_ptCtx->uReTry);
-                                l_eRes = eFSS_DB_HLtoDBRes(l_eHLRes);
+                                    l_uElemDone++;
+                                    l_uElemInPageDone++;
+                                }
+
+                                l_eDBCRes = eFSS_DBC_FlushBuffInPage(&p_ptCtx->tDbCtx, l_uIndexToCheck);
+                                l_eRes = eFSS_DBFL_DBCtoDBFLRes(l_eDBCRes);
+
                             }
+
+                            l_uIndexToCheck++;
                         }
                     }
                 }
             }
-		}
+        }
 	}
 
 	return l_eRes;
 }
 
-
-e_eFSS_DB_RES eFSS_DB_GetElement(t_eFSS_DB_Ctx* const p_ptCtx, uint32_t p_uPos, uint8_t* p_puBuff, uint8_t* p_puBuffL)
+e_eFSS_DBFL_RES eFSS_DBFL_SaveElemen(t_eFSS_DBFL_Ctx* const p_ptCtx, uint32_t p_uPos,
+                                     t_eFSS_TYPE_SingleDbElement* p_ptElem)
 {
-	/* Local variable */
-	e_eFSS_DB_RES l_eRes;
-    e_eFSS_UTILSHLPRV_RES l_eHLRes;
-    uint32_t l_i;
-    uint32_t l_uWritten;
-    uint32_t l_uPageToCheck;
-    uint32_t l_uOffsetToCheck;
-    t_eFSS_TYPE_PageMeta p_ptPagePrm;
+	/* Local return variable */
+    e_eFSS_DBFL_RES l_eRes;
+    e_eFSS_DBC_RES  l_eDBCRes;
+
+    /* Local variable for calculation */
+    t_eFSS_TYPE_StorBuf l_tBuff;
+    t_eFSS_TYPE_StorSet l_tStorSet;
+    bool_t l_bIsInit;
+    uint32_t l_uIndexToCheck;
+    uint32_t l_uMaxIndex;
+    uint32_t l_uMaxElemPageIndex;
+    uint32_t l_uElemDone;
+    uint32_t l_uElemInPageDone;
+    t_eFSS_DBFL_DbElement l_tCurrElem;
+
+    uint32_t p_puPageIdx;
+    uint32_t p_puPagePos;
 
 	/* Check pointer validity */
-	if( ( NULL == p_ptCtx ) || ( NULL == p_puBuff ) )
+	if( NULL == p_ptCtx )
 	{
-		l_eRes = e_eFSS_DB_RES_BADPOINTER;
+		l_eRes = e_eFSS_DBFL_RES_BADPOINTER;
 	}
 	else
 	{
 		/* Check Init */
-		if( false == p_ptCtx->bIsInit )
-		{
-			l_eRes = e_eFSS_DB_RES_NOINITLIB;
-		}
-		else
-		{
-            /* Check internal status validity */
-            if( false == eFSS_DB_IsStatusStillCoherent(p_ptCtx) )
+        l_eDBCRes = eFSS_DBC_IsInit(&p_ptCtx->tDbCtx, &l_bIsInit);
+        l_eRes = eFSS_DBFL_DBCtoDBFLRes(l_eDBCRes);
+
+        if( e_eFSS_DBFL_RES_OK == l_eRes )
+        {
+            if( false == l_bIsInit )
             {
-                l_eRes = e_eFSS_DB_RES_CORRUPTCTX;
+                l_eRes = e_eFSS_DBFL_RES_NOINITLIB;
             }
             else
             {
-                /* Get element and offset */
-                l_eRes =  eFSS_DB_RetrivePageAndOffset(p_ptCtx, p_uPos, &l_uPageToCheck, &l_uOffsetToCheck);
-
-                if( e_eFSS_DB_RES_OK == l_eRes )
+                /* Check internal status validity */
+                if( false == eFSS_DBFL_IsStatusStillCoherent(p_ptCtx) )
                 {
-                    /* Ovviamente */
-                    l_eHLRes = eFSS_UTILSHLPRV_VerifyNRipristBkup( p_ptCtx->ptCtxCb, p_ptCtx->uReTry,
-                                                                p_ptCtx->puBuff1, p_ptCtx->uBuff1L,
-                                                                p_ptCtx->puBuff2, p_ptCtx->uBuff2L,
-                                                                l_i, l_i +  (p_ptCtx->uNPage / 2u) );
-                    l_eRes = eFSS_DB_HLtoDBRes(l_eHLRes);
+                    l_eRes = e_eFSS_DBFL_RES_CORRUPTCTX;
+                }
+                else
+                {
+                    /* Get storage info */
+                    l_eDBCRes = eFSS_DBC_GetBuffNStor(&p_ptCtx->tDbCtx, &l_tBuff, &l_tStorSet);
+                    l_eRes = eFSS_DBFL_DBCtoDBFLRes(l_eDBCRes);
 
-                    if( ( e_eFSS_DB_RES_OK == l_eRes ) || ( e_eFSS_DB_RES_OK_BKP_RCVRD == l_eRes ) )
+                    if( e_eFSS_DBFL_RES_OK == l_eRes )
                     {
-                        l_eHLRes = eFSS_UTILSHLPRV_ReadPageNPrm(p_ptCtx->ptCtxCb, l_i,  p_ptCtx->puBuff1, p_ptCtx->uBuff1L,
-                                                            &p_ptPagePrm, p_ptCtx->uReTry);
-                        l_eRes = eFSS_DB_HLtoDBRes(l_eHLRes);
+                        /* Where */
+                        eFSS_DBFL_GetPageAndPagePosition(p_uPos, &p_puPageIdx, &p_puPagePos);
 
-                        if( e_eFSS_DB_RES_OK == l_eRes )
+                        l_eDBCRes = eFSS_DBC_LoadPageInBuff(&p_ptCtx->tDbCtx, p_puPageIdx);
+                        l_eRes = eFSS_DBFL_DBCtoDBFLRes(l_eDBCRes);
+
+                        if( ( e_eFSS_DBFL_RES_OK == l_eRes ) || ( e_eFSS_DBFL_RES_OK_BKP_RCVRD == l_eRes ) )
                         {
-                            memcpy(p_puBuff, &p_ptCtx->puBuff1[l_uOffsetToCheck], 10u);
+                            if( false == eFSS_DBFL_SetElementInBuffer(p_puPagePos, l_tBuff.puBuf, p_ptElem) )
+                            {
+                                l_eRes = e_eFSS_DBFL_RES_BADPARAM;
+                            }
+
+                            l_eDBCRes = eFSS_DBC_FlushBuffInPage(&p_ptCtx->tDbCtx, l_uIndexToCheck);
+                            l_eRes = eFSS_DBFL_DBCtoDBFLRes(l_eDBCRes);
                         }
                     }
                 }
             }
-		}
+        }
+	}
+
+	return l_eRes;
+}
+
+e_eFSS_DBFL_RES eFSS_DBFL_GetElement(t_eFSS_DBFL_Ctx* const p_ptCtx, uint32_t p_uPos,
+                                     t_eFSS_TYPE_SingleDbElement* p_ptElem)
+{
+	/* Local return variable */
+    e_eFSS_DBFL_RES l_eRes;
+    e_eFSS_DBC_RES  l_eDBCRes;
+
+    /* Local variable for calculation */
+    t_eFSS_TYPE_StorBuf l_tBuff;
+    t_eFSS_TYPE_StorSet l_tStorSet;
+    bool_t l_bIsInit;
+    uint32_t l_uIndexToCheck;
+    uint32_t l_uMaxIndex;
+    uint32_t l_uMaxElemPageIndex;
+    uint32_t l_uElemDone;
+    uint32_t l_uElemInPageDone;
+    t_eFSS_DBFL_DbElement l_tCurrElem;
+
+    uint32_t p_puPageIdx;
+    uint32_t p_puPagePos;
+
+	/* Check pointer validity */
+	if( NULL == p_ptCtx )
+	{
+		l_eRes = e_eFSS_DBFL_RES_BADPOINTER;
+	}
+	else
+	{
+		/* Check Init */
+        l_eDBCRes = eFSS_DBC_IsInit(&p_ptCtx->tDbCtx, &l_bIsInit);
+        l_eRes = eFSS_DBFL_DBCtoDBFLRes(l_eDBCRes);
+
+        if( e_eFSS_DBFL_RES_OK == l_eRes )
+        {
+            if( false == l_bIsInit )
+            {
+                l_eRes = e_eFSS_DBFL_RES_NOINITLIB;
+            }
+            else
+            {
+                /* Check internal status validity */
+                if( false == eFSS_DBFL_IsStatusStillCoherent(p_ptCtx) )
+                {
+                    l_eRes = e_eFSS_DBFL_RES_CORRUPTCTX;
+                }
+                else
+                {
+                    /* Get storage info */
+                    l_eDBCRes = eFSS_DBC_GetBuffNStor(&p_ptCtx->tDbCtx, &l_tBuff, &l_tStorSet);
+                    l_eRes = eFSS_DBFL_DBCtoDBFLRes(l_eDBCRes);
+
+                    if( e_eFSS_DBFL_RES_OK == l_eRes )
+                    {
+                        /* Where */
+                        eFSS_DBFL_GetPageAndPagePosition(p_uPos, &p_puPageIdx, &p_puPagePos);
+
+                        l_eDBCRes = eFSS_DBC_LoadPageInBuff(&p_ptCtx->tDbCtx, p_puPageIdx);
+                        l_eRes = eFSS_DBFL_DBCtoDBFLRes(l_eDBCRes);
+
+                        if( ( e_eFSS_DBFL_RES_OK == l_eRes ) || ( e_eFSS_DBFL_RES_OK_BKP_RCVRD == l_eRes ) )
+                        {
+                            *p_ptElem = eFSS_DBFL_GetElementInBuffer(p_puPagePos, l_tBuff.puBuf, p_ptElem);
+
+                            l_eDBCRes = eFSS_DBC_FlushBuffInPage(&p_ptCtx->tDbCtx, l_uIndexToCheck);
+                            l_eRes = eFSS_DBFL_DBCtoDBFLRes(l_eDBCRes);
+                        }
+                    }
+                }
+            }
+        }
 	}
 
 	return l_eRes;
@@ -438,7 +460,7 @@ e_eFSS_DB_RES eFSS_DB_GetElement(t_eFSS_DB_Ctx* const p_ptCtx, uint32_t p_uPos, 
 /***********************************************************************************************************************
  *  PRIVATE FUNCTION
  **********************************************************************************************************************/
-static bool_t eFSS_DB_IsStatusStillCoherent(const t_eFSS_DB_Ctx* p_ptCtx)
+static bool_t eFSS_DB_IsStatusStillCoherent(const t_eFSS_DBFL_Ctx* p_ptCtx)
 {
     bool_t l_eRes;
 
@@ -455,11 +477,11 @@ static bool_t eFSS_DB_IsStatusStillCoherent(const t_eFSS_DB_Ctx* p_ptCtx)
     return l_eRes;
 }
 
-static e_eFSS_DB_RES eFSS_DB_HLtoDBRes(const e_eFSS_UTILSHLPRV_RES p_eHLRes)
+static e_eFSS_DBFL_RES eFSS_DBFL_DBCtoDBFLRes(const e_eFSS_DBC_RES p_eDBCRes)
 {
-    e_eFSS_DB_RES l_eRes;
+    e_eFSS_DBFL_RES l_eRes;
 
-    switch(p_eHLRes)
+    switch(p_eDBCRes)
     {
         case e_eFSS_UTILSHLPRV_RES_OK:
         {
@@ -537,19 +559,73 @@ static e_eFSS_DB_RES eFSS_DB_HLtoDBRes(const e_eFSS_UTILSHLPRV_RES p_eHLRes)
     return l_eRes;
 }
 
-static e_eFSS_DB_RES eFSS_DB_RetrivePageAndOffset(const t_eFSS_DB_Ctx* p_ptCtx, uint32_t p_Index, uint32_t* p_puPage,
-                                                  uint32_t* p_puOffset)
+static void eFSS_DBFL_GetElementInBuffer(const uint32_t p_uEleL, const uint32_t p_uIndexInPage, uint8_t* p_puBuffer, 
+                                        f_eFSS_TYPE_DeserialCb p_fDeSerial, t_eFSS_DBFL_DbElement* p_tElem)
 {
+    /* Local variable */
+    uint32_t l_uElemPos;
+    uint32_t l_uCurroffset;
+    uint32_t l_uTemp;
 
+    /* Calc position */
+    l_uElemPos = p_uEleL * p_uIndexInPage;
 
+    /* First, copy the element version in Little endian */
+    l_uCurroffset = 0u;
+    p_tElem->uVer = 0u;
+    l_uTemp = (uint16_t) p_puBuffer[l_uElemPos+l_uCurroffset];
+    p_tElem->uVer |= ( l_uTemp & 0x00FFu );
+    l_uCurroffset++;
+
+    l_uTemp =  (uint16_t) ( ( (uint16_t) p_puBuffer[l_uElemPos+l_uCurroffset] ) << 8u  );
+    p_tElem->uVer |= ( l_uTemp & 0xFF00u );
+    l_uCurroffset++;
+
+    /* Now insert resialed data from the user */
+    (*p_fDeSerial)(l_uElemPos, p_uEleL, p_tElem->ptDefVal, &p_puBuffer[l_uElemPos+l_uCurroffset]);
 }
 
-static t_eFSS_DBFL_DbElement eFSS_DBFL_GetElementInBuffer(const uint32_t p_uIndex, uint8_t* p_puBuffer)
+static void eFSS_DBFL_SetElementInBuffer(const uint32_t p_uEleL, const uint32_t p_uIndexInPage, uint8_t* p_puBuffer, 
+                                           f_eFSS_TYPE_SerrialzCb p_fSerial, t_eFSS_DBFL_DbElement* p_tElem)
 {
+    /* Local variable */
+    uint32_t l_uElemPos;
+    uint32_t l_uCurroffset;
 
+    /* Calc position */
+    l_uElemPos = p_uEleL * p_uIndexInPage;
+
+    /* First, insert the element version in Little endian */
+    l_uCurroffset = 0u;
+    p_puBuffer[l_uElemPos+l_uCurroffset] = (uint8_t) ( ( p_tElem->uVer        ) & 0x00FFu );
+    l_uCurroffset++;
+
+    p_puBuffer[l_uElemPos+l_uCurroffset] = (uint8_t) ( ( p_tElem->uVer  >> 8u  ) & 0x00FFu );
+    l_uCurroffset++;
+
+    /* Now insert resialed data from the user */
+    (*p_fSerial)(l_uElemPos, p_uEleL, p_tElem->ptDefVal, &p_puBuffer[l_uElemPos+l_uCurroffset]);
 }
 
-static bool_t eFSS_DBFL_SetElementInBuffer(const uint32_t p_uIndex, uint8_t* p_puBuffer, t_eFSS_DBFL_DbElement p_tElem)
+static void eFSS_DBFL_GetPageAndPagePosition(const uint32_t p_uPageL, const uint32_t p_uEleL, const uint32_t p_uIndex, 
+                                             uint32_t* p_puPageIdx, uint32_t* p_puLogPos)
 {
+    /* Local variable */
+    uint32_t l_uLogPerPage;
+    uint32_t l_uPagePosition;
+    uint32_t l_uLogPositionInPage;
+
+    /* Calc how many log we cat store in a page */
+    l_uLogPerPage = (uint32_t)( p_uPageL / p_uEleL );
+
+    /* Calculate page offset */
+    l_uPagePosition = (uint32_t)( p_uIndex / l_uLogPerPage );
+
+    /* Calculate log offset in page */
+    l_uLogPositionInPage = (uint32_t)( p_uIndex % l_uLogPerPage );
+
+    /* Return */
+    *p_puPageIdx = l_uPagePosition;
+    *p_puLogPos  = l_uLogPositionInPage;
 
 }

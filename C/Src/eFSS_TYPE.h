@@ -111,7 +111,7 @@ typedef struct t_eFSS_TYPE_UserSingleDbElement t_eFSS_TYPE_SingleDbElement;
  * the p_ptCtx parameter is a custom pointer that can be used by the creator of this CRC callback, and will not be used
  * by the CRCdigest module */
 typedef bool_t (*f_eFSS_TYPE_SerrialzCb) ( uint32_t p_uElePos, const uint32_t p_uEleSerSize,
-                                           t_eFSS_TYPE_SingleDbElement const p_ptEleToSer,
+                                           t_eFSS_TYPE_SingleDbElement const *p_ptEleToSer,
                                            const uint8_t* p_puSerialDestination );
 
 /* Call back of a function that will calculate the CRC for this modules.
