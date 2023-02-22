@@ -29,10 +29,10 @@
  **********************************************************************************************************************/
 static bool_t eFSS_DBFL_IsStatusStillCoherent(const t_eFSS_DBFL_Ctx* p_ptCtx);
 static e_eFSS_DBFL_RES eFSS_DBFL_DBCtoDBFLRes(const e_eFSS_DBC_RES p_eDBCRes);
-static void eFSS_DBFL_GetElementInBuffer(const uint32_t p_uEleL, const uint32_t p_uIndexInPage, uint8_t* p_puBuffer,
-                                        f_eFSS_TYPE_DeserialCb p_fDeSerial, t_eFSS_DBFL_DbElement* p_tElem);
-static void eFSS_DBFL_SetElementInBuffer(const uint32_t p_uEleL, const uint32_t p_uIndexInPage, uint8_t* p_puBuffer,
-                                           f_eFSS_TYPE_SerrialzCb p_fSerial, t_eFSS_DBFL_DbElement* p_tElem);
+static void eFSS_DBFL_GetEleRawInBuffer(const uint32_t p_uEleL, const uint32_t p_uIndexInPage, uint8_t* p_puBuffer,
+                                        uint16_t* p_uVer, uint8_t** p_ppuEleRaw);
+static void eFSS_DBFL_SetEleInBuffer(const uint32_t p_uEleL, const uint32_t p_uIndexInPage, uint8_t* p_puBuffer,
+                                     f_eFSS_TYPE_SerrialzCb p_fSerial, t_eFSS_DBFL_DbElement* p_tElem);
 static void eFSS_DBFL_GetPageAndPagePosition(const uint32_t p_uPageL, const uint32_t p_uEleL, const uint32_t p_uIndex,
                                              uint32_t* p_puPageIdx, uint32_t* p_puLogPos);
 
@@ -118,12 +118,13 @@ e_eFSS_DBFL_RES eFSS_DBFL_GetDBStatus(t_eFSS_DBFL_Ctx* const p_ptCtx)
     t_eFSS_TYPE_StorSet l_tStorSet;
     bool_t l_bIsInit;
     bool_t l_bIsPageMod;
-    uint32_t l_uIndexToCheck;
-    uint32_t l_uMaxIndex;
+    uint32_t l_uIndexPToCheck;
+    uint32_t l_uMaxPIndex;
     uint32_t l_uMaxElemPageIndex;
     uint32_t l_uElemDone;
     uint32_t l_uElemInPageDone;
-    t_eFSS_DBFL_DbElement l_tCurrElem;
+    uint16_t l_uCurrEleVer;
+    uint8_t* l_puCurrEleData;
 
 	/* Check pointer validity */
 	if( NULL == p_ptCtx )
@@ -158,16 +159,16 @@ e_eFSS_DBFL_RES eFSS_DBFL_GetDBStatus(t_eFSS_DBFL_Ctx* const p_ptCtx)
                     if( e_eFSS_DBFL_RES_OK == l_eRes )
                     {
                         /* Check every parameter against DB struct now */
-                        l_uIndexToCheck = 0u;
+                        l_uIndexPToCheck = 0u;
                         l_uElemDone = 0u;
-                        l_uMaxIndex = ( l_tStorSet.uTotPages / 2u ) ;
+                        l_uMaxPIndex = (uint32_t)( l_tStorSet.uTotPages / 2u ) ;
                         l_uMaxElemPageIndex = (uint32_t)( l_tBuff.uBufL / p_ptCtx->tDBS.uRawElemL ) ;
 
                         while( ( ( e_eFSS_DBFL_RES_OK == l_eRes ) || ( e_eFSS_DBFL_RES_OK_BKP_RCVRD == l_eRes ) ) ||
-                               ( l_uIndexToCheck < l_uMaxIndex ) )
+                               ( l_uIndexPToCheck < l_uMaxPIndex ) || ( l_uElemDone < p_ptCtx->tDBS.uNumberOfElement ) )
                         {
                             l_bIsPageMod = false;
-                            l_eDBCRes = eFSS_DBC_LoadPageInBuff(&p_ptCtx->tDbCtx, l_uIndexToCheck);
+                            l_eDBCRes = eFSS_DBC_LoadPageInBuff(&p_ptCtx->tDbCtx, l_uIndexPToCheck);
                             l_eRes = eFSS_DBFL_DBCtoDBFLRes(l_eDBCRes);
 
                             if( ( e_eFSS_DBFL_RES_OK == l_eRes ) || ( e_eFSS_DBFL_RES_OK_BKP_RCVRD == l_eRes ) )
@@ -177,16 +178,17 @@ e_eFSS_DBFL_RES eFSS_DBFL_GetDBStatus(t_eFSS_DBFL_Ctx* const p_ptCtx)
 
                                 while( l_uElemInPageDone < l_uMaxElemPageIndex )
                                 {
-                                    eFSS_DBFL_GetElementInBuffer(l_uIndexToCheck, l_uElemInPageDone, l_tBuff.puBuf,
-                                                                 p_ptCtx->tSeDeserCtx.fDeserial, &l_tCurrElem);
+                                    eFSS_DBFL_GetEleRawInBuffer(p_ptCtx->tDBS.uRawElemL, l_uElemInPageDone,
+                                                                 l_tBuff.puBuf, &l_uCurrEleVer, &l_puCurrEleData);
 
                                     /* Verify version */
-                                    if( l_tCurrElem.uVer != p_ptCtx->tDBS.ptElementList[l_uElemDone].uVer )
+                                    if( l_uCurrEleVer != p_ptCtx->tDBS.ptElementList[l_uElemDone].uVer )
                                     {
                                         /* Update version, ripristinate default */
-                                        eFSS_DBFL_SetElementInBuffer(l_uIndexToCheck, l_uElemInPageDone, l_tBuff.puBuf,
-                                                                     p_ptCtx->tSeDeserCtx.fSerial,
-                                                                     &p_ptCtx->tDBS.ptElementList[l_uElemDone]);
+
+                                        eFSS_DBFL_SetEleInBuffer(p_ptCtx->tDBS.uRawElemL, l_uElemInPageDone,
+                                                                 l_tBuff.puBuf, p_ptCtx->tSeDeserCtx.fSerial,
+                                                                 &p_ptCtx->tDBS.ptElementList[l_uElemDone]);
                                         l_bIsPageMod = true;
                                     }
 
@@ -196,12 +198,12 @@ e_eFSS_DBFL_RES eFSS_DBFL_GetDBStatus(t_eFSS_DBFL_Ctx* const p_ptCtx)
 
                                 if( true == l_bIsPageMod )
                                 {
-                                    eFSS_DBC_FlushBuffInPage(&p_ptCtx->tDbCtx, l_uIndexToCheck);
+                                    l_eDBCRes = eFSS_DBC_FlushBuffInPage(&p_ptCtx->tDbCtx, l_uIndexPToCheck);
+                                    l_eRes = eFSS_DBFL_DBCtoDBFLRes(l_eDBCRes);
                                 }
-
                             }
 
-                            l_uIndexToCheck++;
+                            l_uIndexPToCheck++;
                         }
                     }
                 }
@@ -222,12 +224,11 @@ e_eFSS_DBFL_RES eFSS_DBFL_Format(t_eFSS_DBFL_Ctx* const p_ptCtx)
     t_eFSS_TYPE_StorBuf l_tBuff;
     t_eFSS_TYPE_StorSet l_tStorSet;
     bool_t l_bIsInit;
-    uint32_t l_uIndexToCheck;
-    uint32_t l_uMaxIndex;
+    uint32_t l_uIndexPToCheck;
+    uint32_t l_uMaxPIndex;
     uint32_t l_uMaxElemPageIndex;
     uint32_t l_uElemDone;
     uint32_t l_uElemInPageDone;
-    t_eFSS_DBFL_DbElement l_tCurrElem;
 
 	/* Check pointer validity */
 	if( NULL == p_ptCtx )
@@ -261,16 +262,16 @@ e_eFSS_DBFL_RES eFSS_DBFL_Format(t_eFSS_DBFL_Ctx* const p_ptCtx)
 
                     if( e_eFSS_DBFL_RES_OK == l_eRes )
                     {
-                        /* Copy DB struct now */
-                        l_uIndexToCheck = 0u;
+                        /* Check every parameter against DB struct now */
+                        l_uIndexPToCheck = 0u;
                         l_uElemDone = 0u;
-                        l_uMaxIndex = ( l_tStorSet.uTotPages / 2u ) ;
+                        l_uMaxPIndex = (uint32_t)( l_tStorSet.uTotPages / 2u ) ;
                         l_uMaxElemPageIndex = (uint32_t)( l_tBuff.uBufL / p_ptCtx->tDBS.uRawElemL ) ;
 
                         while( ( ( e_eFSS_DBFL_RES_OK == l_eRes ) || ( e_eFSS_DBFL_RES_OK_BKP_RCVRD == l_eRes ) ) ||
-                               ( l_uIndexToCheck < l_uMaxIndex ) )
+                               ( l_uIndexPToCheck < l_uMaxPIndex ) || ( l_uElemDone < p_ptCtx->tDBS.uNumberOfElement ) )
                         {
-                            l_eDBCRes = eFSS_DBC_LoadPageInBuff(&p_ptCtx->tDbCtx, l_uIndexToCheck);
+                            l_eDBCRes = eFSS_DBC_LoadPageInBuff(&p_ptCtx->tDbCtx, l_uIndexPToCheck);
                             l_eRes = eFSS_DBFL_DBCtoDBFLRes(l_eDBCRes);
 
                             if( ( e_eFSS_DBFL_RES_OK == l_eRes ) || ( e_eFSS_DBFL_RES_OK_BKP_RCVRD == l_eRes ) )
@@ -278,23 +279,22 @@ e_eFSS_DBFL_RES eFSS_DBFL_Format(t_eFSS_DBFL_Ctx* const p_ptCtx)
                                 /* Check against DB default */
                                 l_uElemInPageDone = 0u;
 
-                                while( ( l_uElemInPageDone < l_uMaxElemPageIndex ) )
+                                while( l_uElemInPageDone < l_uMaxElemPageIndex )
                                 {
                                     /* Update version, ripristinate default */
-                                    eFSS_DBFL_SetElementInBuffer(l_uIndexToCheck, l_uElemInPageDone, l_tBuff.puBuf,
-                                                                 p_ptCtx->tSeDeserCtx.fSerial,
-                                                                 &p_ptCtx->tDBS.ptElementList[l_uElemDone]);
+                                    eFSS_DBFL_SetEleInBuffer(p_ptCtx->tDBS.uRawElemL, l_uElemInPageDone,
+                                                             l_tBuff.puBuf, p_ptCtx->tSeDeserCtx.fSerial,
+                                                             &p_ptCtx->tDBS.ptElementList[l_uElemDone]);
 
                                     l_uElemDone++;
                                     l_uElemInPageDone++;
                                 }
 
-                                l_eDBCRes = eFSS_DBC_FlushBuffInPage(&p_ptCtx->tDbCtx, l_uIndexToCheck);
+                                l_eDBCRes = eFSS_DBC_FlushBuffInPage(&p_ptCtx->tDbCtx, l_uIndexPToCheck);
                                 l_eRes = eFSS_DBFL_DBCtoDBFLRes(l_eDBCRes);
-
                             }
 
-                            l_uIndexToCheck++;
+                            l_uIndexPToCheck++;
                         }
                     }
                 }
@@ -316,8 +316,8 @@ e_eFSS_DBFL_RES eFSS_DBFL_SaveElemen(t_eFSS_DBFL_Ctx* const p_ptCtx, uint32_t p_
     t_eFSS_TYPE_StorBuf l_tBuff;
     t_eFSS_TYPE_StorSet l_tStorSet;
     bool_t l_bIsInit;
-    uint32_t l_uIndexToCheck;
-    uint32_t l_uMaxIndex;
+    uint32_t l_uIndexPToCheck;
+    uint32_t l_uMaxPIndex;
     uint32_t l_uMaxElemPageIndex;
     uint32_t l_uElemDone;
     uint32_t l_uElemInPageDone;
@@ -369,11 +369,11 @@ e_eFSS_DBFL_RES eFSS_DBFL_SaveElemen(t_eFSS_DBFL_Ctx* const p_ptCtx, uint32_t p_
                         {
                             l_tCurrElem.ptDefVal = p_ptElem;
                             l_tCurrElem.uVer = 10u;
-                            eFSS_DBFL_SetElementInBuffer(l_uIndexToCheck, l_uElemInPageDone, l_tBuff.puBuf,
+                            eFSS_DBFL_SetEleInBuffer(l_uIndexPToCheck, l_uElemInPageDone, l_tBuff.puBuf,
                                                          p_ptCtx->tSeDeserCtx.fSerial,
                                                          &l_tCurrElem);
 
-                            l_eDBCRes = eFSS_DBC_FlushBuffInPage(&p_ptCtx->tDbCtx, l_uIndexToCheck);
+                            l_eDBCRes = eFSS_DBC_FlushBuffInPage(&p_ptCtx->tDbCtx, l_uIndexPToCheck);
                             l_eRes = eFSS_DBFL_DBCtoDBFLRes(l_eDBCRes);
                         }
                     }
@@ -396,8 +396,8 @@ e_eFSS_DBFL_RES eFSS_DBFL_GetElement(t_eFSS_DBFL_Ctx* const p_ptCtx, uint32_t p_
     t_eFSS_TYPE_StorBuf l_tBuff;
     t_eFSS_TYPE_StorSet l_tStorSet;
     bool_t l_bIsInit;
-    uint32_t l_uIndexToCheck;
-    uint32_t l_uMaxIndex;
+    uint32_t l_uIndexPToCheck;
+    uint32_t l_uMaxPIndex;
     uint32_t l_uMaxElemPageIndex;
     uint32_t l_uElemDone;
     uint32_t l_uElemInPageDone;
@@ -449,10 +449,10 @@ e_eFSS_DBFL_RES eFSS_DBFL_GetElement(t_eFSS_DBFL_Ctx* const p_ptCtx, uint32_t p_
                         {
                             l_tCurrElem.ptDefVal = p_ptElem;
                             l_tCurrElem.uVer = 10u;
-                            eFSS_DBFL_GetElementInBuffer(l_uIndexToCheck, l_uElemInPageDone, l_tBuff.puBuf,
+                            eFSS_DBFL_GetEleRawInBuffer(l_uIndexPToCheck, l_uElemInPageDone, l_tBuff.puBuf,
                                                          p_ptCtx->tSeDeserCtx.fDeserial, &l_tCurrElem);
 
-                            l_eDBCRes = eFSS_DBC_FlushBuffInPage(&p_ptCtx->tDbCtx, l_uIndexToCheck);
+                            l_eDBCRes = eFSS_DBC_FlushBuffInPage(&p_ptCtx->tDbCtx, l_uIndexPToCheck);
                             l_eRes = eFSS_DBFL_DBCtoDBFLRes(l_eDBCRes);
                         }
                     }
@@ -513,8 +513,8 @@ static e_eFSS_DBFL_RES eFSS_DBFL_DBCtoDBFLRes(const e_eFSS_DBC_RES p_eDBCRes)
     return l_eRes;
 }
 
-static void eFSS_DBFL_GetElementInBuffer(const uint32_t p_uEleL, const uint32_t p_uIndexInPage, uint8_t* p_puBuffer,
-                                        f_eFSS_TYPE_DeserialCb p_fDeSerial, t_eFSS_DBFL_DbElement* p_tElem)
+static void eFSS_DBFL_GetEleRawInBuffer(const uint32_t p_uEleL, const uint32_t p_uIndexInPage, uint8_t* p_puBuffer,
+                                        uint16_t* p_uVer, uint8_t** p_ppuEleRaw)
 {
     /* Local variable */
     uint32_t l_uElemPos;
@@ -539,7 +539,7 @@ static void eFSS_DBFL_GetElementInBuffer(const uint32_t p_uEleL, const uint32_t 
     (*p_fDeSerial)(l_uElemPos, p_uEleL, p_tElem->ptDefVal, &p_puBuffer[l_uElemPos+l_uCurroffset]);
 }
 
-static void eFSS_DBFL_SetElementInBuffer(const uint32_t p_uEleL, const uint32_t p_uIndexInPage, uint8_t* p_puBuffer,
+static void eFSS_DBFL_SetEleInBuffer(const uint32_t p_uEleL, const uint32_t p_uIndexInPage, uint8_t* p_puBuffer,
                                            f_eFSS_TYPE_SerrialzCb p_fSerial, t_eFSS_DBFL_DbElement* p_tElem)
 {
     /* Local variable */
