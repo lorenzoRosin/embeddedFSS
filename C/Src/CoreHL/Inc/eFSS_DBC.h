@@ -39,8 +39,8 @@ typedef enum
     e_eFSS_DBC_RES_CLBCKWRITEERR,
     e_eFSS_DBC_RES_CLBCKREADERR,
     e_eFSS_DBC_RES_CLBCKCRCERR,
-    e_eFSS_DBC_RES_NOTVALIDLOG,
-    e_eFSS_DBC_RES_NEWVERSIONLOG,
+    e_eFSS_DBC_RES_NOTVALIDDB,
+    e_eFSS_DBC_RES_NEWVERSIONDB,
     e_eFSS_DBC_RES_WRITENOMATCHREAD,
     e_eFSS_DBC_RES_OK_BKP_RCVRD,
 }e_eFSS_DBC_RES;
@@ -49,6 +49,8 @@ typedef struct
 {
     t_eFSS_COREHL_Ctx tCOREHLCtx;
 }t_eFSS_DBC_Ctx;
+
+
 
 /***********************************************************************************************************************
  * GLOBAL PROTOTYPES
@@ -119,7 +121,7 @@ e_eFSS_DBC_RES eFSS_DBC_GetBuff(t_eFSS_DBC_Ctx* p_ptCtx, t_eFSS_TYPE_StorBuf* p_
  *              e_eFSS_DBC_RES_OK            - Operation ended correctly
  */
 e_eFSS_DBC_RES eFSS_DBC_GetBuffNStor(t_eFSS_DBC_Ctx* p_ptCtx, t_eFSS_TYPE_StorBuf* p_ptBuff,
-                                           t_eFSS_TYPE_StorSet* p_ptStorSet);
+                                     t_eFSS_TYPE_StorSet* p_ptStorSet);
 
 /**
  * @brief       Load a page from the storage area in to the internal buffer
@@ -156,7 +158,7 @@ e_eFSS_DBC_RES eFSS_DBC_LoadPageInBuff(t_eFSS_DBC_Ctx* const p_ptCtx, const uint
  *		        e_eFSS_DBC_RES_WRITENOMATCHREAD - Writen data dosent match what requested
  *              e_eFSS_DBC_RES_OK               - Operation ended correctly
  */
-e_eFSS_COREHL_RES eFSS_DBC_FlushBuffInPage(t_eFSS_DBC_Ctx* const p_ptCtx, const uint32_t p_uPageIndx);
+e_eFSS_DBC_RES eFSS_DBC_FlushBuffInPage(t_eFSS_DBC_Ctx* const p_ptCtx, const uint32_t p_uPageIndx);
 
 
 

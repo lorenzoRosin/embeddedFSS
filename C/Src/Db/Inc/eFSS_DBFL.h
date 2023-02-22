@@ -39,8 +39,8 @@ typedef enum
     e_eFSS_DBFL_RES_CLBCKWRITEERR,
     e_eFSS_DBFL_RES_CLBCKREADERR,
     e_eFSS_DBFL_RES_CLBCKCRCERR,
-    e_eFSS_DBFL_RES_NOTVALIDLOG,
-    e_eFSS_DBFL_RES_NEWVERSIONLOG,
+    e_eFSS_DBFL_RES_NOTVALIDDB,
+    e_eFSS_DBFL_RES_NEWVERSIONDB,
     e_eFSS_DBFL_RES_WRITENOMATCHREAD,
     e_eFSS_DBFL_RES_OK_BKP_RCVRD,
 }e_eFSS_DBFL_RES;
@@ -57,7 +57,6 @@ typedef struct
     uint32_t uSerialEleSize;
     t_eFSS_DBFL_DbElement* ptElementList;
 }t_eFSS_DBFL_DbStruct;
-
 
 typedef struct
 {
@@ -77,6 +76,8 @@ typedef struct
  * @param[in]   p_tStorSet       - Storage settings
  * @param[in]   p_puBuff         - Pointer to a buffer used by the modules to make calc, must ne pageSize * 2
  * @param[in]   p_uBuffL         - Size of p_puBuff
+ * @param[in]   p_tSerDeseCb     - List of serializer deserializer function to store data in database
+ * @param[in]   p_tDbStruct      - Struct containing the default struct of the database
  *
  * @return      e_eFSS_DBFL_RES_BADPOINTER    - In case of bad pointer passed to the function
  *		        e_eFSS_DBFL_RES_BADPARAM      - In case of an invalid parameter passed to the function
@@ -89,8 +90,8 @@ e_eFSS_DBFL_RES eFSS_DBFL_InitCtx(t_eFSS_DBFL_Ctx* const p_ptCtx, t_eFSS_TYPE_Cb
 /**
  * @brief       Check if the lib is initialized
  *
- * @param[in]   p_ptCtx          - Database Core context
- * @param[out]  p_pbIsInit    - Pointer to a bool_t variable that will be filled with true if the lib is initialized
+ * @param[in]   p_ptCtx         - Database Fixed length context
+ * @param[out]  p_pbIsInit      - Pointer to a bool_t variable that will be filled with true if the lib is initialized
  *
  * @return      e_eFSS_DBFL_RES_BADPOINTER    - In case of bad pointer passed to the function
  *              e_eFSS_DBFL_RES_OK            - Operation ended correctly
@@ -98,53 +99,55 @@ e_eFSS_DBFL_RES eFSS_DBFL_InitCtx(t_eFSS_DBFL_Ctx* const p_ptCtx, t_eFSS_TYPE_Cb
 e_eFSS_DBFL_RES eFSS_DBFL_IsInit(t_eFSS_DBFL_Ctx* const p_ptCtx, bool_t* p_pbIsInit);
 
 /**
- * @brief       Check the database status
+ * @brief       Check the whole database status. This function must be called before proceeding with other operation,
+ *              so we are sure to run on a valid database.
  *
- * @param[in]   p_ptCtx    - Byte stuffer context
+ * @param[in]   p_ptCtx    - Database Fixed length context
  * @param[in]   p_puBuff   - Pointer to a memory area that we will use to store data that needs to be stuffed
  * @param[in]   p_uBuffL   - Dimension in byte of the memory area
  *
- * @return      e_eFSS_DB_RES_BADPOINTER    - In case of bad pointer passed to the function
- *		        e_eFSS_DB_RES_BADPARAM      - In case of an invalid parameter passed to the function
- *              e_eFSS_DB_RES_OK            - Operation ended correctly
+ * @return      e_eFSS_DB_DBFL_BADPOINTER    - In case of bad pointer passed to the function
+ *		        e_eFSS_DB_DBFL_BADPARAM      - In case of an invalid parameter passed to the function
+ *              e_eFSS_DB_DBFL_OK            - Operation ended correctly
  */
 e_eFSS_DBFL_RES eFSS_DBFL_GetDBStatus(t_eFSS_DBFL_Ctx* const p_ptCtx);
 
 /**
- * @brief       Erase all the data present in the DB and restore default value
+ * @brief       Erase all the data present in the DB and restore default value. This function is the only function 
+ *              that is able to recover a corrupted database.
  *
- * @param[in]   p_ptCtx    - Byte stuffer context
+ * @param[in]   p_ptCtx    - Database Fixed length context
  * @param[in]   p_puBuff   - Pointer to a memory area that we will use to store data that needs to be stuffed
  * @param[in]   p_uBuffL   - Dimension in byte of the memory area
  *
- * @return      e_eFSS_DB_RES_BADPOINTER    - In case of bad pointer passed to the function
- *		        e_eFSS_DB_RES_BADPARAM      - In case of an invalid parameter passed to the function
- *              e_eFSS_DB_RES_OK            - Operation ended correctly
+ * @return      e_eFSS_DBFL_RES_BADPOINTER    - In case of bad pointer passed to the function
+ *		        e_eFSS_DBFL_RES_BADPARAM      - In case of an invalid parameter passed to the function
+ *              e_eFSS_DBFL_RES_OK            - Operation ended correctly
  */
 e_eFSS_DBFL_RES eFSS_DBFL_Format(t_eFSS_DBFL_Ctx* const p_ptCtx);
 
 /**
- * @brief       Check if the lib is initialized
+ * @brief       Save an element in to the database
  *
- * @param[in]   p_ptCtx       - Byte stuffer context
+ * @param[in]   p_ptCtx       - Database Fixed length context
  * @param[out]  p_pbIsInit    - Pointer to a bool_t variable that will be filled with true if the lib is initialized
  *
- * @return      e_eFSS_DB_RES_BADPOINTER    - In case of bad pointer passed to the function
- *		        e_eFSS_DB_RES_BADPARAM      - In case of an invalid parameter passed to the function
- *              e_eFSS_DB_RES_OK            - Operation ended correctly
+ * @return      e_eFSS_DBFL_RES_BADPOINTER    - In case of bad pointer passed to the function
+ *		        e_eFSS_DBFL_RES_BADPARAM      - In case of an invalid parameter passed to the function
+ *              e_eFSS_DBFL_RES_OK            - Operation ended correctly
  */
 e_eFSS_DBFL_RES eFSS_DBFL_SaveElemen(t_eFSS_DBFL_Ctx* const p_ptCtx, uint32_t p_uPos,
                                      t_eFSS_TYPE_SingleDbElement* p_ptElem);
 
 /**
- * @brief       Check if the lib is initialized
+ * @brief       Get an element stored in to the database
  *
- * @param[in]   p_ptCtx       - Byte stuffer context
+ * @param[in]   p_ptCtx       - Database Fixed length context
  * @param[out]  p_pbIsInit    - Pointer to a bool_t variable that will be filled with true if the lib is initialized
  *
- * @return      e_eFSS_DB_RES_BADPOINTER    - In case of bad pointer passed to the function
- *		        e_eFSS_DB_RES_BADPARAM      - In case of an invalid parameter passed to the function
- *              e_eFSS_DB_RES_OK            - Operation ended correctly
+ * @return      e_eFSS_DBFL_RES_BADPOINTER    - In case of bad pointer passed to the function
+ *		        e_eFSS_DBFL_RES_BADPARAM      - In case of an invalid parameter passed to the function
+ *              e_eFSS_DBFL_RES_OK            - Operation ended correctly
  */
 e_eFSS_DBFL_RES eFSS_DBFL_GetElement(t_eFSS_DBFL_Ctx* const p_ptCtx, uint32_t p_uPos,
                                      t_eFSS_TYPE_SingleDbElement* p_ptElem);

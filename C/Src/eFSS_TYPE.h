@@ -55,8 +55,8 @@ extern "C" {
 #define EFSS_PAGESUBTYPE_LOGCACHEBKP                                                             ( ( uint32_t )  0x08u )
 
 /* Page DB subtypes */
-#define EFSS_PAGESUBTYPE_DB                                                                      ( ( uint32_t )  0x01u )
-
+#define EFSS_PAGESUBTYPE_DBORI                                                                   ( ( uint32_t )  0x01u )
+#define EFSS_PAGESUBTYPE_DBBKP                                                                   ( ( uint32_t )  0x01u )
 
 
 

@@ -22,7 +22,7 @@
  *
  *   bFullBckup = true, bFlashCache = true
  * - [ 0                            -    ( uTotPages / 2 ) - 1    ]  -> Original pages
- * - [ ( uTotPages / 2 ) - 1        -    uTotPages - 1            ]  -> Backup pages
+ * - [ ( uTotPages / 2 )            -    uTotPages - 1            ]  -> Backup pages
  *
  * First write original pages and after the backup pages
  */
@@ -37,9 +37,8 @@
 /***********************************************************************************************************************
  *  PRIVATE STATIC FUNCTION DECLARATION
  **********************************************************************************************************************/
-static bool_t eFSS_DB_IsStatusStillCoherent(t_eFSS_DBC_Ctx* p_ptCtx);
+static bool_t eFSS_DBC_IsStatusStillCoherent(t_eFSS_DBC_Ctx* p_ptCtx);
 static e_eFSS_DBC_RES eFSS_DB_HLtoDBRes(const e_eFSS_COREHL_RES p_eHLRes);
-
 
 
 
@@ -74,7 +73,7 @@ e_eFSS_DBC_RES eFSS_DBC_InitCtx(t_eFSS_DBC_Ctx* const p_ptCtx, t_eFSS_TYPE_CbSto
         {
             /* Can init low level context */
             l_eResHL = eFSS_COREHL_InitCtx(&p_ptCtx->tCOREHLCtx, p_tCtxCb, p_tStorSet, p_puBuff, p_uBuffL);
-            l_eRes = eFSS_LOGCPRV_HLtoLogRes(l_eResHL);
+            l_eRes = eFSS_DB_HLtoDBRes(l_eResHL);
         }
     }
 
@@ -95,7 +94,7 @@ e_eFSS_DBC_RES eFSS_DBC_IsInit(t_eFSS_DBC_Ctx* const p_ptCtx, bool_t* p_pbIsInit
 	else
 	{
         l_eResHL = eFSS_COREHL_IsInit(&p_ptCtx->tCOREHLCtx, p_pbIsInit);
-        l_eRes = eFSS_LOGCPRV_HLtoLogRes(l_eResHL);
+        l_eRes = eFSS_DB_HLtoDBRes(l_eResHL);
 	}
 
 	return l_eRes;
@@ -107,6 +106,9 @@ e_eFSS_DBC_RES eFSS_DBC_GetStorSett(t_eFSS_DBC_Ctx* p_ptCtx, t_eFSS_TYPE_StorSet
 	e_eFSS_DBC_RES l_eRes;
     e_eFSS_COREHL_RES l_eResHL;
 
+    /* Local var used for calculation */
+    bool_t l_bIsInit;
+
 	/* Check pointer validity */
 	if( ( NULL == p_ptCtx ) || ( NULL == p_ptStorSet ) )
 	{
@@ -114,8 +116,30 @@ e_eFSS_DBC_RES eFSS_DBC_GetStorSett(t_eFSS_DBC_Ctx* p_ptCtx, t_eFSS_TYPE_StorSet
 	}
 	else
 	{
-        l_eResHL = eFSS_COREHL_GetStorSett(&p_ptCtx->tCOREHLCtx, p_ptStorSet);
-        l_eRes = eFSS_LOGCPRV_HLtoLogRes(l_eResHL);
+		/* Check Init */
+        l_eResHL = eFSS_COREHL_IsInit(&p_ptCtx->tCOREHLCtx, &l_bIsInit);
+        l_eRes = eFSS_DB_HLtoDBRes(l_eResHL);
+
+        if( e_eFSS_DBC_RES_OK == l_eRes )
+        {
+            if( false == l_bIsInit )
+            {
+                l_eRes = e_eFSS_DBC_RES_NOINITLIB;
+            }
+            else
+            {
+                /* Check internal status validity */
+                if( false == eFSS_DBC_IsStatusStillCoherent(p_ptCtx) )
+                {
+                    l_eRes = e_eFSS_DBC_RES_CORRUPTCTX;
+                }
+                else
+                {
+                    l_eResHL = eFSS_COREHL_GetStorSett(&p_ptCtx->tCOREHLCtx, p_ptStorSet);
+                    l_eRes = eFSS_DB_HLtoDBRes(l_eResHL);
+                }
+            }
+        }
 	}
 
 	return l_eRes;
@@ -127,6 +151,9 @@ e_eFSS_DBC_RES eFSS_DBC_GetBuff(t_eFSS_DBC_Ctx* p_ptCtx, t_eFSS_TYPE_StorBuf* p_
 	e_eFSS_DBC_RES l_eRes;
     e_eFSS_COREHL_RES l_eResHL;
 
+    /* Local var used for calculation */
+    bool_t l_bIsInit;
+
 	/* Check pointer validity */
 	if( ( NULL == p_ptCtx ) || ( NULL == p_ptBuff ) )
 	{
@@ -134,8 +161,30 @@ e_eFSS_DBC_RES eFSS_DBC_GetBuff(t_eFSS_DBC_Ctx* p_ptCtx, t_eFSS_TYPE_StorBuf* p_
 	}
 	else
 	{
-        l_eResHL = eFSS_COREHL_GetBuff(&p_ptCtx->tCOREHLCtx, p_ptBuff);
-        l_eRes = eFSS_LOGCPRV_HLtoLogRes(l_eResHL);
+		/* Check Init */
+        l_eResHL = eFSS_COREHL_IsInit(&p_ptCtx->tCOREHLCtx, &l_bIsInit);
+        l_eRes = eFSS_DB_HLtoDBRes(l_eResHL);
+
+        if( e_eFSS_DBC_RES_OK == l_eRes )
+        {
+            if( false == l_bIsInit )
+            {
+                l_eRes = e_eFSS_DBC_RES_NOINITLIB;
+            }
+            else
+            {
+                /* Check internal status validity */
+                if( false == eFSS_DBC_IsStatusStillCoherent(p_ptCtx) )
+                {
+                    l_eRes = e_eFSS_DBC_RES_CORRUPTCTX;
+                }
+                else
+                {
+                    l_eResHL = eFSS_COREHL_GetBuff(&p_ptCtx->tCOREHLCtx, p_ptBuff);
+                    l_eRes = eFSS_DB_HLtoDBRes(l_eResHL);
+                }
+            }
+        }
 	}
 
 	return l_eRes;
@@ -148,6 +197,9 @@ e_eFSS_DBC_RES eFSS_DBC_GetBuffNStor(t_eFSS_DBC_Ctx* p_ptCtx, t_eFSS_TYPE_StorBu
 	e_eFSS_DBC_RES l_eRes;
     e_eFSS_COREHL_RES l_eResHL;
 
+    /* Local var used for calculation */
+    bool_t l_bIsInit;
+
 	/* Check pointer validity */
 	if( ( NULL == p_ptCtx ) || ( NULL == p_ptBuff ) || ( NULL == p_ptStorSet ) )
 	{
@@ -155,8 +207,30 @@ e_eFSS_DBC_RES eFSS_DBC_GetBuffNStor(t_eFSS_DBC_Ctx* p_ptCtx, t_eFSS_TYPE_StorBu
 	}
 	else
 	{
-        l_eResHL = eFSS_COREHL_GetBuffNStor(&p_ptCtx->tCOREHLCtx, p_ptBuff, p_ptStorSet);
-        l_eRes = eFSS_LOGCPRV_HLtoLogRes(l_eResHL);
+		/* Check Init */
+        l_eResHL = eFSS_COREHL_IsInit(&p_ptCtx->tCOREHLCtx, &l_bIsInit);
+        l_eRes = eFSS_DB_HLtoDBRes(l_eResHL);
+
+        if( e_eFSS_DBC_RES_OK == l_eRes )
+        {
+            if( false == l_bIsInit )
+            {
+                l_eRes = e_eFSS_DBC_RES_NOINITLIB;
+            }
+            else
+            {
+                /* Check internal status validity */
+                if( false == eFSS_DBC_IsStatusStillCoherent(p_ptCtx) )
+                {
+                    l_eRes = e_eFSS_DBC_RES_CORRUPTCTX;
+                }
+                else
+                {
+                    l_eResHL = eFSS_COREHL_GetBuffNStor(&p_ptCtx->tCOREHLCtx, p_ptBuff, p_ptStorSet);
+                    l_eRes = eFSS_DB_HLtoDBRes(l_eResHL);
+                }
+            }
+        }
 	}
 
 	return l_eRes;
@@ -168,6 +242,14 @@ e_eFSS_DBC_RES eFSS_DBC_LoadPageInBuff(t_eFSS_DBC_Ctx* const p_ptCtx, const uint
 	e_eFSS_DBC_RES l_eRes;
     e_eFSS_COREHL_RES l_eResHL;
 
+    /* Local var used for storage */
+    t_eFSS_TYPE_StorSet l_tStorSet;
+    t_eFSS_TYPE_StorBuf p_ptBuff;
+
+    /* Local var used for calculation */
+    bool_t l_bIsInit;
+    uint32_t l_uTotPages;
+
 	/* Check pointer validity */
 	if( NULL == p_ptCtx )
 	{
@@ -175,19 +257,73 @@ e_eFSS_DBC_RES eFSS_DBC_LoadPageInBuff(t_eFSS_DBC_Ctx* const p_ptCtx, const uint
 	}
 	else
 	{
-        l_eResHL = eFSS_COREHL_LoadPageInBuff(&p_ptCtx->tCOREHLCtx, p_uPageIndx);
-        l_eRes = eFSS_LOGCPRV_HLtoLogRes(l_eResHL);
+		/* Check Init */
+        l_eResHL = eFSS_COREHL_IsInit(&p_ptCtx->tCOREHLCtx, &l_bIsInit);
+        l_eRes = eFSS_DB_HLtoDBRes(l_eResHL);
+
+        if( e_eFSS_DBC_RES_OK == l_eRes )
+        {
+            if( false == l_bIsInit )
+            {
+                l_eRes = e_eFSS_DBC_RES_NOINITLIB;
+            }
+            else
+            {
+                /* Check internal status validity */
+                if( false == eFSS_DBC_IsStatusStillCoherent(p_ptCtx) )
+                {
+                    l_eRes = e_eFSS_DBC_RES_CORRUPTCTX;
+                }
+                else
+                {
+                    l_eResHL = eFSS_COREHL_GetBuffNStor(&p_ptCtx->tCOREHLCtx, &p_ptBuff, &l_tStorSet);
+                    l_eRes = eFSS_DB_HLtoDBRes(l_eResHL);
+                
+                    if( e_eFSS_DBC_RES_OK == l_eRes )
+                    {
+                        l_uTotPages = l_tStorSet.uTotPages;
+                        if( p_uPageIndx >= ( l_uTotPages / 2u ) )
+                        {
+                            l_eRes = e_eFSS_DBC_RES_BADPARAM;
+                        }
+                        else
+                        {
+                            l_eResHL = eFSS_COREHL_LoadPageInBuffNRipBkp(&p_ptCtx->tCOREHLCtx, p_uPageIndx, 
+                                                                         ( p_uPageIndx + ( l_uTotPages / 2u) ),  
+                                                                         EFSS_PAGESUBTYPE_DBORI, EFSS_PAGESUBTYPE_DBBKP);
+                            l_eRes = eFSS_DB_HLtoDBRes(l_eResHL);
+
+                            if( ( e_eFSS_DBC_RES_OK == l_eRes ) || ( e_eFSS_DBC_RES_OK_BKP_RCVRD == l_eRes ) )
+                            {
+                                if( p_uPageIndx != p_ptBuff.ptMeta->uPageUseSpec4 )
+                                {
+                                    l_eRes = e_eFSS_DBC_RES_NOTVALIDDB;
+                                }                                
+                            }
+                        }
+                    }
+                }
+            }
+        }
 	}
 
 	return l_eRes;
 }
 
-e_eFSS_COREHL_RES eFSS_DBC_FlushBuffInPage(t_eFSS_DBC_Ctx* const p_ptCtx, const uint32_t p_uPageIndx)
+e_eFSS_DBC_RES eFSS_DBC_FlushBuffInPage(t_eFSS_DBC_Ctx* const p_ptCtx, const uint32_t p_uPageIndx)
 {
 	/* Local variable */
 	e_eFSS_DBC_RES l_eRes;
     e_eFSS_COREHL_RES l_eResHL;
 
+    /* Local var used for storage */
+    t_eFSS_TYPE_StorSet l_tStorSet;
+    t_eFSS_TYPE_StorBuf p_ptBuff;
+
+    /* Local var used for calculation */
+    bool_t l_bIsInit;
+    uint32_t l_uTotPages;
+
 	/* Check pointer validity */
 	if( NULL == p_ptCtx )
 	{
@@ -195,18 +331,58 @@ e_eFSS_COREHL_RES eFSS_DBC_FlushBuffInPage(t_eFSS_DBC_Ctx* const p_ptCtx, const 
 	}
 	else
 	{
-        l_eResHL = eFSS_COREHL_LoadPageInBuff(&p_ptCtx->tCOREHLCtx, p_uPageIndx);
-        l_eRes = eFSS_LOGCPRV_HLtoLogRes(l_eResHL);
+		/* Check Init */
+        l_eResHL = eFSS_COREHL_IsInit(&p_ptCtx->tCOREHLCtx, &l_bIsInit);
+        l_eRes = eFSS_DB_HLtoDBRes(l_eResHL);
+
+        if( e_eFSS_DBC_RES_OK == l_eRes )
+        {
+            if( false == l_bIsInit )
+            {
+                l_eRes = e_eFSS_DBC_RES_NOINITLIB;
+            }
+            else
+            {
+                /* Check internal status validity */
+                if( false == eFSS_DBC_IsStatusStillCoherent(p_ptCtx) )
+                {
+                    l_eRes = e_eFSS_DBC_RES_CORRUPTCTX;
+                }
+                else
+                {
+                    l_eResHL = eFSS_COREHL_GetBuffNStor(&p_ptCtx->tCOREHLCtx,& p_ptBuff, &l_tStorSet);
+                    l_eRes = eFSS_DB_HLtoDBRes(l_eResHL);
+                
+                    if( e_eFSS_DBC_RES_OK == l_eRes )
+                    {
+                        l_uTotPages = l_tStorSet.uTotPages;
+                        if( p_uPageIndx >= ( l_uTotPages / 2u ) )
+                        {
+                            l_eRes = e_eFSS_DBC_RES_BADPARAM;
+                        }
+                        else
+                        {
+                            p_ptBuff.ptMeta->uPageUseSpec4 = p_uPageIndx;
+                            l_eResHL = eFSS_COREHL_FlushBuffInPageNBkp(&p_ptCtx->tCOREHLCtx, p_uPageIndx, 
+                                                                         ( p_uPageIndx + ( l_uTotPages / 2u) ),  
+                                                                         EFSS_PAGESUBTYPE_DBORI, EFSS_PAGESUBTYPE_DBBKP);
+                            l_eRes = eFSS_DB_HLtoDBRes(l_eResHL);
+                        }
+                    }
+                }
+            }
+        }
 	}
 
 	return l_eRes;
 }
 
 
+
 /***********************************************************************************************************************
  *  PRIVATE FUNCTION
  **********************************************************************************************************************/
-static bool_t eFSS_DB_IsStatusStillCoherent(t_eFSS_DBC_Ctx* p_ptCtx)
+static bool_t eFSS_DBC_IsStatusStillCoherent(t_eFSS_DBC_Ctx* p_ptCtx)
 {
     /* Return local var */
     bool_t l_bRes;
@@ -301,13 +477,13 @@ static e_eFSS_DBC_RES eFSS_DB_HLtoDBRes(const e_eFSS_COREHL_RES p_eHLRes)
 
         case e_eFSS_COREHL_RES_NOTVALIDPAGE:
         {
-            l_eRes = e_eFSS_DBC_RES_NOTVALIDLOG;
+            l_eRes = e_eFSS_DBC_RES_NOTVALIDDB;
             break;
         }
 
         case e_eFSS_COREHL_RES_NEWVERSIONFOUND:
         {
-            l_eRes = e_eFSS_DBC_RES_NEWVERSIONLOG;
+            l_eRes = e_eFSS_DBC_RES_NEWVERSIONDB;
             break;
         }
 
@@ -332,4 +508,3 @@ static e_eFSS_DBC_RES eFSS_DB_HLtoDBRes(const e_eFSS_COREHL_RES p_eHLRes)
 
     return l_eRes;
 }
-
