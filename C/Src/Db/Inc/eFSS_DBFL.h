@@ -48,13 +48,13 @@ typedef enum
 typedef struct
 {
 	uint16_t uVer;
-    t_eFSS_TYPE_SingleDbElement* ptDefVal;
+    t_eFSS_TYPE_DbRawElement* ptDefVal;
 }t_eFSS_DBFL_DbElement;
 
 typedef struct
 {
     uint32_t uNumberOfElement;
-    uint32_t uSerialEleSize;
+    uint32_t uRawElemL;
     t_eFSS_DBFL_DbElement* ptElementList;
 }t_eFSS_DBFL_DbStruct;
 
@@ -103,8 +103,6 @@ e_eFSS_DBFL_RES eFSS_DBFL_IsInit(t_eFSS_DBFL_Ctx* const p_ptCtx, bool_t* p_pbIsI
  *              so we are sure to run on a valid database.
  *
  * @param[in]   p_ptCtx    - Database Fixed length context
- * @param[in]   p_puBuff   - Pointer to a memory area that we will use to store data that needs to be stuffed
- * @param[in]   p_uBuffL   - Dimension in byte of the memory area
  *
  * @return      e_eFSS_DB_DBFL_BADPOINTER    - In case of bad pointer passed to the function
  *		        e_eFSS_DB_DBFL_BADPARAM      - In case of an invalid parameter passed to the function
@@ -113,7 +111,7 @@ e_eFSS_DBFL_RES eFSS_DBFL_IsInit(t_eFSS_DBFL_Ctx* const p_ptCtx, bool_t* p_pbIsI
 e_eFSS_DBFL_RES eFSS_DBFL_GetDBStatus(t_eFSS_DBFL_Ctx* const p_ptCtx);
 
 /**
- * @brief       Erase all the data present in the DB and restore default value. This function is the only function 
+ * @brief       Erase all the data present in the DB and restore default value. This function is the only function
  *              that is able to recover a corrupted database.
  *
  * @param[in]   p_ptCtx    - Database Fixed length context
@@ -137,7 +135,7 @@ e_eFSS_DBFL_RES eFSS_DBFL_Format(t_eFSS_DBFL_Ctx* const p_ptCtx);
  *              e_eFSS_DBFL_RES_OK            - Operation ended correctly
  */
 e_eFSS_DBFL_RES eFSS_DBFL_SaveElemen(t_eFSS_DBFL_Ctx* const p_ptCtx, uint32_t p_uPos,
-                                     t_eFSS_TYPE_SingleDbElement* p_ptElem);
+                                     t_eFSS_TYPE_DbRawElement* p_ptElem);
 
 /**
  * @brief       Get an element stored in to the database
@@ -150,7 +148,7 @@ e_eFSS_DBFL_RES eFSS_DBFL_SaveElemen(t_eFSS_DBFL_Ctx* const p_ptCtx, uint32_t p_
  *              e_eFSS_DBFL_RES_OK            - Operation ended correctly
  */
 e_eFSS_DBFL_RES eFSS_DBFL_GetElement(t_eFSS_DBFL_Ctx* const p_ptCtx, uint32_t p_uPos,
-                                     t_eFSS_TYPE_SingleDbElement* p_ptElem);
+                                     t_eFSS_TYPE_DbRawElement* p_ptElem);
 
 
 

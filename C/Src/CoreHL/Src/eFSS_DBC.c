@@ -278,7 +278,7 @@ e_eFSS_DBC_RES eFSS_DBC_LoadPageInBuff(t_eFSS_DBC_Ctx* const p_ptCtx, const uint
                 {
                     l_eResHL = eFSS_COREHL_GetBuffNStor(&p_ptCtx->tCOREHLCtx, &p_ptBuff, &l_tStorSet);
                     l_eRes = eFSS_DB_HLtoDBRes(l_eResHL);
-                
+
                     if( e_eFSS_DBC_RES_OK == l_eRes )
                     {
                         l_uTotPages = l_tStorSet.uTotPages;
@@ -288,8 +288,8 @@ e_eFSS_DBC_RES eFSS_DBC_LoadPageInBuff(t_eFSS_DBC_Ctx* const p_ptCtx, const uint
                         }
                         else
                         {
-                            l_eResHL = eFSS_COREHL_LoadPageInBuffNRipBkp(&p_ptCtx->tCOREHLCtx, p_uPageIndx, 
-                                                                         ( p_uPageIndx + ( l_uTotPages / 2u) ),  
+                            l_eResHL = eFSS_COREHL_LoadPageInBuffNRipBkp(&p_ptCtx->tCOREHLCtx, p_uPageIndx,
+                                                                         ( p_uPageIndx + ( l_uTotPages / 2u) ),
                                                                          EFSS_PAGESUBTYPE_DBORI, EFSS_PAGESUBTYPE_DBBKP);
                             l_eRes = eFSS_DB_HLtoDBRes(l_eResHL);
 
@@ -298,7 +298,7 @@ e_eFSS_DBC_RES eFSS_DBC_LoadPageInBuff(t_eFSS_DBC_Ctx* const p_ptCtx, const uint
                                 if( p_uPageIndx != p_ptBuff.ptMeta->uPageUseSpec4 )
                                 {
                                     l_eRes = e_eFSS_DBC_RES_NOTVALIDDB;
-                                }                                
+                                }
                             }
                         }
                     }
@@ -352,7 +352,7 @@ e_eFSS_DBC_RES eFSS_DBC_FlushBuffInPage(t_eFSS_DBC_Ctx* const p_ptCtx, const uin
                 {
                     l_eResHL = eFSS_COREHL_GetBuffNStor(&p_ptCtx->tCOREHLCtx,& p_ptBuff, &l_tStorSet);
                     l_eRes = eFSS_DB_HLtoDBRes(l_eResHL);
-                
+
                     if( e_eFSS_DBC_RES_OK == l_eRes )
                     {
                         l_uTotPages = l_tStorSet.uTotPages;
@@ -363,8 +363,8 @@ e_eFSS_DBC_RES eFSS_DBC_FlushBuffInPage(t_eFSS_DBC_Ctx* const p_ptCtx, const uin
                         else
                         {
                             p_ptBuff.ptMeta->uPageUseSpec4 = p_uPageIndx;
-                            l_eResHL = eFSS_COREHL_FlushBuffInPageNBkp(&p_ptCtx->tCOREHLCtx, p_uPageIndx, 
-                                                                         ( p_uPageIndx + ( l_uTotPages / 2u) ),  
+                            l_eResHL = eFSS_COREHL_FlushBuffInPageNBkp(&p_ptCtx->tCOREHLCtx, p_uPageIndx,
+                                                                         ( p_uPageIndx + ( l_uTotPages / 2u) ),
                                                                          EFSS_PAGESUBTYPE_DBORI, EFSS_PAGESUBTYPE_DBBKP);
                             l_eRes = eFSS_DB_HLtoDBRes(l_eResHL);
                         }
