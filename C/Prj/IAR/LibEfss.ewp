@@ -1199,9 +1199,6 @@
     </group>
     <group>
         <name>Log</name>
-        <excluded>
-            <configuration>Library</configuration>
-        </excluded>
         <group>
             <name>Inc</name>
             <file>
@@ -1209,6 +1206,9 @@
             </file>
             <file>
                 <name>$PROJ_DIR$\..\..\Src\Log\Inc\eFSS_LOGVL.h</name>
+                <excluded>
+                    <configuration>Library</configuration>
+                </excluded>
             </file>
         </group>
         <group>
@@ -1218,6 +1218,9 @@
             </file>
             <file>
                 <name>$PROJ_DIR$\..\..\Src\Log\Src\eFSS_LOGVL.c</name>
+                <excluded>
+                    <configuration>Library</configuration>
+                </excluded>
             </file>
         </group>
     </group>
