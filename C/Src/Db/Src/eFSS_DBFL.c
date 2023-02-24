@@ -32,7 +32,7 @@ static e_eFSS_DBFL_RES eFSS_DBFL_DBCtoDBFLRes(const e_eFSS_DBC_RES p_eDBCRes);
 static void eFSS_DBFL_GetEleRawInBuffer(const uint32_t p_uEleL, const uint32_t p_uIndexInPage, uint8_t* p_puBuffer,
                                         uint16_t* p_uVer, uint8_t** p_ppuEleRaw);
 static void eFSS_DBFL_SetEleInBuffer(const uint32_t p_uEleL, const uint32_t p_uIndexInPage, uint8_t* p_puBuffer,
-                                     f_eFSS_TYPE_SerrialzCb p_fSerial, t_eFSS_DBFL_DbElement* p_tElem);
+                                     f_eFSS_TYPE_DbSerrialzCb p_fSerial, t_eFSS_DBFL_DbElement* p_tElem);
 static void eFSS_DBFL_GetPageAndPagePosition(const uint32_t p_uPageL, const uint32_t p_uEleL, const uint32_t p_uIndex,
                                              uint32_t* p_puPageIdx, uint32_t* p_puLogPos);
 
@@ -531,7 +531,7 @@ static void eFSS_DBFL_GetEleRawInBuffer(const uint32_t p_uEleL, const uint32_t p
 }
 
 static void eFSS_DBFL_SetEleInBuffer(const uint32_t p_uEleL, const uint32_t p_uIndexInPage, uint8_t* p_puBuffer,
-                                           f_eFSS_TYPE_SerrialzCb p_fSerial, t_eFSS_DBFL_DbElement* p_tElem)
+                                           f_eFSS_TYPE_DbSerrialzCb p_fSerial, t_eFSS_DBFL_DbElement* p_tElem)
 {
     /* Local variable */
     uint32_t l_uElemPos;

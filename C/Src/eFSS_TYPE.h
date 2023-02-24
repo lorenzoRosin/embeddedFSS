@@ -110,16 +110,16 @@ typedef struct t_eFSS_TYPE_UserDbRawElement t_eFSS_TYPE_DbRawElement;
 /* Call back of a function that will calculate the CRC for this modules.
  * the p_ptCtx parameter is a custom pointer that can be used by the creator of this CRC callback, and will not be used
  * by the CRCdigest module */
-typedef bool_t (*f_eFSS_TYPE_SerrialzCb) ( uint32_t p_uElePos, const uint32_t p_uEleSerSize,
-                                           t_eFSS_TYPE_DbRawElement const *p_ptEleToSer,
-                                           const uint8_t* p_puSerialDestination );
+typedef bool_t (*f_eFSS_TYPE_DbSerrialzCb) ( uint32_t p_uElePos, const uint32_t p_uEleSerSize,
+                                             t_eFSS_TYPE_DbRawElement const *p_ptEleToSer,
+                                             const uint8_t* p_puSerialDestination );
 
 /* Call back of a function that will calculate the CRC for this modules.
  * the p_ptCtx parameter is a custom pointer that can be used by the creator of this CRC callback, and will not be used
  * by the CRCdigest module */
-typedef bool_t (*f_eFSS_TYPE_DeserialCb) ( uint32_t p_uElePos, const uint32_t p_uEleSerSize,
-                                           t_eFSS_TYPE_DbRawElement const *p_ptEleToDeSer,
-                                           const uint8_t* p_puDeSerSource );
+typedef bool_t (*f_eFSS_TYPE_DbDeserialCb) ( uint32_t p_uElePos, const uint32_t p_uEleSerSize,
+                                             t_eFSS_TYPE_DbRawElement const *p_ptEleToDeSer,
+                                             const uint8_t* p_puDeSerSource );
 
 typedef struct
 {
@@ -135,8 +135,8 @@ typedef struct
 
 typedef struct
 {
-    f_eFSS_TYPE_SerrialzCb   fSerial;
-    f_eFSS_TYPE_DeserialCb   fDeserial;
+    f_eFSS_TYPE_DbSerrialzCb   fSerial;
+    f_eFSS_TYPE_DbDeserialCb   fDeserial;
 }t_eFSS_TYPE_CbDeSerCtx;
 
 typedef struct
