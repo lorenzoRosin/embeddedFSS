@@ -49,6 +49,7 @@ typedef struct
 {
     t_eFSS_LOGC_Ctx tLOGCCtx;
     t_eFSS_TYPE_CbLogDeSerCtx tSeDeserCtx;
+    uint32_t uLogL;
 }t_eFSS_LOGFL_Ctx;
 
 
@@ -66,6 +67,7 @@ typedef struct
  * @param[in]   p_uBuffL         - Size of p_puBuff
  * @param[in]   p_bFlashCache    - Use flash as cache for storing and resuming index
  * @param[in]   p_bFullBckup     - Save every log data in a backup pages
+ * @param[in]   p_uLogL          - Lenght of every log
  * @param[in]   p_tSerDeseCb     - List of serializer deserializer function to store data in log
  *
  * @return      e_eFSS_LOGFL_RES_BADPOINTER    - In case of bad pointer passed to the function
@@ -74,7 +76,7 @@ typedef struct
  */
 e_eFSS_LOGFL_RES eFSS_LOGFL_InitCtx(t_eFSS_LOGFL_Ctx* const p_ptCtx, t_eFSS_TYPE_CbStorCtx const p_tCtxCb,
                                   t_eFSS_TYPE_StorSet p_tStorSet, uint8_t* const p_puBuff, uint32_t p_uBuffL,
-                                  bool_t p_bFlashCache, bool_t p_bFullBckup,
+                                  bool_t p_bFlashCache, bool_t p_bFullBckup, uint32_t p_uLogL,
                                   t_eFSS_TYPE_CbLogDeSerCtx const p_tSerDeseCb);
 
 /**
