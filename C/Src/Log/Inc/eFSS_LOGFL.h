@@ -48,10 +48,7 @@ typedef enum
 typedef struct
 {
     t_eFSS_LOGC_Ctx tLOGCCtx;
-    uint32_t uNewPagIdx;
-    uint32_t uFullFilledP;
-    bool_t bFlashCache;
-    bool_t bFullBckup;
+    t_eFSS_TYPE_CbLogDeSerCtx tSeDeserCtx;
 }t_eFSS_LOGFL_Ctx;
 
 
@@ -60,15 +57,16 @@ typedef struct
  * GLOBAL PROTOTYPES
  **********************************************************************************************************************/
 /**
- * @brief       Initialize the Log Core module context
+ * @brief       Initialize the Log module context
  *
- * @param[in]   p_ptCtx          - Log Core context
+ * @param[in]   p_ptCtx          - Log fiexd length context
  * @param[in]   p_tCtxCb         - All callback collection context
  * @param[in]   p_tStorSet       - Storage settings
  * @param[in]   p_puBuff         - Pointer to a buffer used by the modules to make calc, must ne pageSize * 2
  * @param[in]   p_uBuffL         - Size of p_puBuff
  * @param[in]   p_bFlashCache    - Use flash as cache for storing and resuming index
  * @param[in]   p_bFullBckup     - Save every log data in a backup pages
+ * @param[in]   p_tSerDeseCb     - List of serializer deserializer function to store data in log
  *
  * @return      e_eFSS_LOGFL_RES_BADPOINTER    - In case of bad pointer passed to the function
  *		        e_eFSS_LOGFL_RES_BADPARAM      - In case of an invalid parameter passed to the function
@@ -76,12 +74,13 @@ typedef struct
  */
 e_eFSS_LOGFL_RES eFSS_LOGFL_InitCtx(t_eFSS_LOGFL_Ctx* const p_ptCtx, t_eFSS_TYPE_CbStorCtx const p_tCtxCb,
                                   t_eFSS_TYPE_StorSet p_tStorSet, uint8_t* const p_puBuff, uint32_t p_uBuffL,
-                                  bool_t p_bFlashCache, bool_t p_bFullBckup);
+                                  bool_t p_bFlashCache, bool_t p_bFullBckup,
+                                  t_eFSS_TYPE_CbLogDeSerCtx const p_tSerDeseCb);
 
 /**
  * @brief       Check if the lib is initialized
  *
- * @param[in]   p_ptCtx       - Log Core context
+ * @param[in]   p_ptCtx       - Log fiexd length context
  * @param[out]  p_pbIsInit    - Pointer to a bool_t variable that will be filled with true if the lib is initialized
  *
  * @return      e_eFSS_LOGFL_RES_BADPOINTER    - In case of bad pointer passed to the function
@@ -95,7 +94,7 @@ e_eFSS_LOGFL_RES eFSS_LOGFL_IsInit(t_eFSS_LOGFL_Ctx* const p_ptCtx, bool_t* p_pb
  *              When e_eFSS_LOGFL_RES_NOTVALIDLOG is returned we need to call eFSS_LOGFL_Format in order to format the
  *              storage area because no other operations are possible.
  *
- * @param[in]   p_ptCtx       - Log context
+ * @param[in]   p_ptCtx          - Log fiexd length context
  *
  * @return      e_eFSS_LOGFL_RES_BADPOINTER         - In case of bad pointer passed to the function
  *              e_eFSS_LOGFL_RES_OK                 - Operation ended correctly
@@ -115,7 +114,7 @@ e_eFSS_LOGFL_RES eFSS_LOGFL_GetStorageStatus(t_eFSS_LOGFL_Ctx* const p_ptCtx);
 /**
  * @brief       Get info about the stored log
  *
- * @param[in]   p_ptCtx       - Log context
+ * @param[in]   p_ptCtx       - Log fiexd length context
  * @param[out]  p_puNewLogI   - Pointer to a uint32_t that will be filled with the Newest log index
  * @param[out]  p_puOldLogI   - Pointer to a uint32_t that will be filled with the oldest log index
  * @param[out]  p_puNpageUsed - Pointer to a uint32_t that will be filled with the number of valorized page
@@ -135,26 +134,12 @@ e_eFSS_LOGFL_RES eFSS_LOGFL_GetStorageStatus(t_eFSS_LOGFL_Ctx* const p_ptCtx);
  *              e_eFSS_LOGFL_RES_WRITENOMATCHREAD   - After Write operation the Read operation readed different data
  */
 e_eFSS_LOGFL_RES eFSS_LOGFL_GetLogInfo(t_eFSS_LOGFL_Ctx* const p_ptCtx, uint32_t *p_puNewLogI, uint32_t *p_puOldLogI,
-                                     uint32_t *p_puNpageUsed, uint32_t *p_puNpageTot);
-
-/**
- * @brief       Get read and write buffer. Do not pass to this function NULL value.
- *              Make sure eFSS_LOGFLPRV_IsStatusStillCoherent is called before calling this function.
- *
- * @param[in]   p_ptCtx          - Log Core context
- * @param[out]  p_ptBuff         - Pointer to a struct that will be filled with info about buffer
- *
- * @return      e_eFSS_LOGFL_RES_BADPOINTER        - In case of bad pointer passed to the function
- *		        e_eFSS_LOGFL_RES_CORRUPTCTX        - Context is corrupted
- *		        e_eFSS_LOGFL_RES_NOINITLIB         - Need to init lib before calling function
- *              e_eFSS_LOGFL_RES_OK                - Operation ended correctly
- */
-e_eFSS_LOGFL_RES eFSS_LOGFLPRV_GetBuffer(t_eFSS_LOGFL_Ctx* const p_ptCtx, t_eFSS_TYPE_StorBuf* p_ptBuff);
+                                       uint32_t *p_puNpageUsed, uint32_t *p_puNpageTot);
 
 /**
  * @brief       Format the memory used for the log, previous data, if present, will be lost.
  *
- * @param[in]   p_ptCtx       - Log context
+ * @param[in]   p_ptCtx          - Log fiexd length context
  *
  * @return      e_eFSS_LOGFL_RES_BADPOINTER         - In case of bad pointer passed to the function
  *              e_eFSS_LOGFL_RES_OK                 - Operation ended correctly
@@ -174,7 +159,7 @@ e_eFSS_LOGFL_RES eFSS_LOGFL_Format(t_eFSS_LOGFL_Ctx* const p_ptCtx);
 /**
  * @brief       Get all the log present on a specific page.
  *
- * @param[in]   p_ptCtx        - Log context
+ * @param[in]   p_ptCtx        - Log fiexd length context
  * @param[in]   p_uindx        - Index to get data from
  * @param[in]   p_puBuf        - Pointer to a buffer where founded log will be copied
  * @param[in]   p_puBufL       - Size of the copied log
@@ -194,39 +179,13 @@ e_eFSS_LOGFL_RES eFSS_LOGFL_Format(t_eFSS_LOGFL_Ctx* const p_ptCtx);
  *              e_eFSS_LOGFL_RES_WRITENOMATCHREAD   - After Write operation the Read operation readed different data
  */
 e_eFSS_LOGFL_RES eFSS_LOGFL_GetLogOfASpecificPage(t_eFSS_LOGFL_Ctx* const p_ptCtx, uint32_t p_uindx, uint8_t* p_puBuf,
-                                                uint32_t* p_puBufL, uint32_t p_uBufMaxL);
-
-/**
- * @brief       Add a log with an header
- *
- * @param[in]   p_ptCtx        - Log context
- * @param[in]   p_puLogToSaveH - Pointer to the buffer containing the header of the log to store
- * @param[in]   p_uLogLH       - Dimension in byte of the log header to store
- * @param[in]   p_puLogToSave  - Pointer to the buffer containing the log to store
- * @param[in]   p_uLogL        - Dimension in byte of the log to store
- *
- * @return      e_eFSS_LOGFL_RES_BADPOINTER         - In case of bad pointer passed to the function
- *              e_eFSS_LOGFL_RES_OK                 - Operation ended correctly
- *              e_eFSS_LOGFL_RES_OK_BKP_RCVRD       - All ok, but some page where recovered
- *              e_eFSS_LOGFL_RES_NOTVALIDBLOB       - No valid blob founded
- *              e_eFSS_LOGFL_RES_NEWVERSIONLOG      - New version of the blob requested
- *              e_eFSS_LOGFL_RES_NOINITLIB          - Need to init the lib before calling this function
- *              e_eFSS_LOGFL_RES_CORRUPTCTX         - Context is corrupted
- *              e_eFSS_LOGFL_RES_CLBCKERASEERR      - Erase callback returned error
- *              e_eFSS_LOGFL_RES_CLBCKWRITEERR      - Write callback returned error
- *              e_eFSS_LOGFL_RES_CLBCKREADERR       - Read callback returned error
- *              e_eFSS_LOGFL_RES_CLBCKCRCERR        - Crc callback returned error
- *              e_eFSS_LOGFL_RES_WRITENOMATCHREAD   - After Write operation the Read operation readed different data
- */
-e_eFSS_LOGFL_RES eFSS_LOGFL_AddLogAndHeader(t_eFSS_LOGFL_Ctx* const p_ptCtx, uint8_t* p_puLogToSaveH, uint32_t p_uLogLH,
-                                          uint8_t* p_puLogToSave, uint32_t p_uLogL);
+                                                  uint32_t* p_puBufL, uint32_t p_uBufMaxL);
 
 /**
  * @brief       Add a log
  *
- * @param[in]   p_ptCtx       - Log context
- * @param[in]   p_puLogToSave - Pointer to the buffer containing the log to store
- * @param[in]   p_uLogL       - Dimension in byte of the log to store
+ * @param[in]   p_ptCtx       - Log fiexd length context
+ * @param[in]   p_ptLog       - Log to add
  *
  * @return      e_eFSS_LOGFL_RES_BADPOINTER         - In case of bad pointer passed to the function
  *              e_eFSS_LOGFL_RES_OK                 - Operation ended correctly
@@ -241,7 +200,7 @@ e_eFSS_LOGFL_RES eFSS_LOGFL_AddLogAndHeader(t_eFSS_LOGFL_Ctx* const p_ptCtx, uin
  *              e_eFSS_LOGFL_RES_CLBCKCRCERR        - Crc callback returned error
  *              e_eFSS_LOGFL_RES_WRITENOMATCHREAD   - After Write operation the Read operation readed different data
  */
-e_eFSS_LOGFL_RES eFSS_LOGFL_AddLog(t_eFSS_LOGFL_Ctx* const p_ptCtx, uint8_t* p_puLogToSave, uint32_t p_uLogL);
+e_eFSS_LOGFL_RES eFSS_LOGFL_AddLog(t_eFSS_LOGFL_Ctx* const p_ptCtx, t_eFSS_TYPE_LogRawElement* p_ptLog);
 
 #ifdef __cplusplus
 } /* extern "C" */

@@ -62,7 +62,7 @@ typedef struct
 {
     t_eFSS_DBC_Ctx         tDbCtx;
     t_eFSS_DBFL_DbStruct   tDBS;
-    t_eFSS_TYPE_CbDeSerCtx tSeDeserCtx;
+    t_eFSS_TYPE_CbDbDeSerCtx tSeDeserCtx;
 }t_eFSS_DBFL_Ctx;
 
 /***********************************************************************************************************************
@@ -75,7 +75,6 @@ typedef struct
  * @param[in]   p_tCtxCb         - All callback collection context
  * @param[in]   p_tStorSet       - Storage settings
  * @param[in]   p_puBuff         - Pointer to a buffer used by the modules to make calc, must ne pageSize * 2
- *
  * @param[in]   p_uBuffL         - Size of p_puBuff
  * @param[in]   p_tSerDeseCb     - List of serializer deserializer function to store data in database
  * @param[in]   p_tDbStruct      - Struct containing the default struct of the database
@@ -86,7 +85,7 @@ typedef struct
  */
 e_eFSS_DBFL_RES eFSS_DBFL_InitCtx(t_eFSS_DBFL_Ctx* const p_ptCtx, t_eFSS_TYPE_CbStorCtx const p_tCtxCb,
                                   t_eFSS_TYPE_StorSet p_tStorSet, uint8_t* const p_puBuff, uint32_t p_uBuffL,
-                                  t_eFSS_TYPE_CbDeSerCtx const p_tSerDeseCb, t_eFSS_DBFL_DbStruct p_tDbStruct);
+                                  t_eFSS_TYPE_CbDbDeSerCtx const p_tSerDeseCb, t_eFSS_DBFL_DbStruct p_tDbStruct);
 
 /**
  * @brief       Check if the lib is initialized

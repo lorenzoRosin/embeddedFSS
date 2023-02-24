@@ -121,6 +121,23 @@ typedef bool_t (*f_eFSS_TYPE_DbDeserialCb) ( uint32_t p_uElePos, const uint32_t 
                                              t_eFSS_TYPE_DbRawElement const *p_ptEleToDeSer,
                                              const uint8_t* p_puDeSerSource );
 
+/* Define a generic DB struct context that must be implemented by the user */
+typedef struct t_eFSS_TYPE_UserLogRawElement t_eFSS_TYPE_LogRawElement;
+
+/* Call back of a function that will calculate the CRC for this modules.
+ * the p_ptCtx parameter is a custom pointer that can be used by the creator of this CRC callback, and will not be used
+ * by the CRCdigest module */
+typedef bool_t (*f_eFSS_TYPE_LogSerrialzCb) ( const uint32_t p_uLogSerSize,
+                                              t_eFSS_TYPE_LogRawElement const *p_ptLogToSer,
+                                              const uint8_t* p_puSerialDestination );
+
+/* Call back of a function that will calculate the CRC for this modules.
+ * the p_ptCtx parameter is a custom pointer that can be used by the creator of this CRC callback, and will not be used
+ * by the CRCdigest module */
+typedef bool_t (*f_eFSS_TYPE_LogDeserialCb) ( const uint32_t p_uLogSerSize,
+                                              t_eFSS_TYPE_LogRawElement const *p_ptEleToDeSer,
+                                              const uint8_t* p_puDeSerSource );
+
 typedef struct
 {
     t_eFSS_TYPE_EraseCtx* ptCtxErase;
@@ -137,7 +154,13 @@ typedef struct
 {
     f_eFSS_TYPE_DbSerrialzCb   fSerial;
     f_eFSS_TYPE_DbDeserialCb   fDeserial;
-}t_eFSS_TYPE_CbDeSerCtx;
+}t_eFSS_TYPE_CbDbDeSerCtx;
+
+typedef struct
+{
+    f_eFSS_TYPE_LogSerrialzCb   fSerial;
+    f_eFSS_TYPE_LogDeserialCb   fDeserial;
+}t_eFSS_TYPE_CbLogDeSerCtx;
 
 typedef struct
 {

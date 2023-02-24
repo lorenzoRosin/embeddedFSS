@@ -43,7 +43,7 @@ static void eFSS_DBFL_GetPageAndPagePosition(const uint32_t p_uPageL, const uint
  **********************************************************************************************************************/
 e_eFSS_DBFL_RES eFSS_DBFL_InitCtx(t_eFSS_DBFL_Ctx* const p_ptCtx, t_eFSS_TYPE_CbStorCtx const p_tCtxCb,
                                   t_eFSS_TYPE_StorSet p_tStorSet, uint8_t* const p_puBuff, uint32_t p_uBuffL,
-                                  t_eFSS_TYPE_CbDeSerCtx const p_tSerDeseCb, t_eFSS_DBFL_DbStruct p_tDbStruct)
+                                  t_eFSS_TYPE_CbDbDeSerCtx const p_tSerDeseCb, t_eFSS_DBFL_DbStruct p_tDbStruct)
 {
     e_eFSS_DBFL_RES l_eRes;
     e_eFSS_DBC_RES  l_eDBCRes;
