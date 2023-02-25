@@ -48,6 +48,8 @@ typedef enum
 typedef struct
 {
     t_eFSS_COREHL_Ctx tCOREHLCtx;
+    bool_t bIsWriteOnGoing;
+    uint32_t uDataWritten;
 }t_eFSS_BLOBC_Ctx;
 
 
