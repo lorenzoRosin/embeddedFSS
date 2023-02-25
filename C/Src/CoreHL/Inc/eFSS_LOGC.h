@@ -138,20 +138,6 @@ e_eFSS_LOGC_RES eFSS_LOGC_GetLogInfo(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t *p
                                      uint32_t *p_puNpageUsed, uint32_t *p_puNpageTot);
 
 /**
- * @brief       Get read and write buffer. Do not pass to this function NULL value.
- *              Make sure eFSS_LOGCPRV_IsStatusStillCoherent is called before calling this function.
- *
- * @param[in]   p_ptCtx          - Log Core context
- * @param[out]  p_ptBuff         - Pointer to a struct that will be filled with info about buffer
- *
- * @return      e_eFSS_LOGC_RES_BADPOINTER        - In case of bad pointer passed to the function
- *		        e_eFSS_LOGC_RES_CORRUPTCTX        - Context is corrupted
- *		        e_eFSS_LOGC_RES_NOINITLIB         - Need to init lib before calling function
- *              e_eFSS_LOGC_RES_OK                - Operation ended correctly
- */
-e_eFSS_LOGC_RES eFSS_LOGCPRV_GetBuffer(t_eFSS_LOGC_Ctx* const p_ptCtx, t_eFSS_TYPE_StorBuf* p_ptBuff);
-
-/**
  * @brief       Format the memory used for the log, previous data, if present, will be lost.
  *
  * @param[in]   p_ptCtx       - Log context
