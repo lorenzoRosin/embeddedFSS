@@ -61,7 +61,7 @@ typedef struct
  * @param[in]   p_ptCtx          - Database Core context
  * @param[in]   p_tCtxCb         - All callback collection context
  * @param[in]   p_tStorSet       - Storage settings
- * @param[in]   p_puBuff         - Pointer to a buffer used by the modules to make calc, must ne pageSize * 2
+ * @param[in]   p_puBuff         - Pointer to a buffer used by the modules to make calc, must be pageSize * 2
  * @param[in]   p_uBuffL         - Size of p_puBuff
  *
  * @return      e_eFSS_DBC_RES_BADPOINTER    - In case of bad pointer passed to the function

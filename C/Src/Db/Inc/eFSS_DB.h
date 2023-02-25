@@ -1,14 +1,14 @@
 /**
  * @file       eFSS_DB.h
  *
- * @brief      Database of fixed length data module
+ * @brief      Database module
  *
  * @author     Lorenzo Rosin
  *
  **********************************************************************************************************************/
 
-#ifndef EFSS_DBFL_H
-#define EFSS_DBFL_H
+#ifndef EFSS_DB_H
+#define EFSS_DB_H
 
 
 
@@ -26,7 +26,23 @@ extern "C" {
 
 
 /***********************************************************************************************************************
- *      PRIVATE TYPEDEFS
+ *      DATABASE TYPEDEFS
+ **********************************************************************************************************************/
+typedef struct
+{
+	uint16_t uElemVer;
+    uint16_t uElemL;
+    uint8_t* puRawVal;
+}t_eFSS_DB_DbElement;
+
+typedef struct
+{
+    uint32_t uNOfElem;
+    t_eFSS_DB_DbElement* ptDefValElemList;
+}t_eFSS_DB_DbStruct;
+
+/***********************************************************************************************************************
+ *      PUBLIC TYPEDEFS
  **********************************************************************************************************************/
 typedef enum
 {
@@ -47,36 +63,21 @@ typedef enum
 
 typedef struct
 {
-	uint16_t uVer;
-    t_eFSS_TYPE_DbRawElement* ptDefVal;
-}t_eFSS_DB_DbElement;
-
-typedef struct
-{
-    uint32_t uNumberOfElement;
-    uint32_t uRawElemL;
-    t_eFSS_DB_DbElement* ptElementList;
-}t_eFSS_DB_DbStruct;
-
-typedef struct
-{
-    t_eFSS_DBC_Ctx         tDbCtx;
-    t_eFSS_DB_DbStruct   tDBS;
-    t_eFSS_TYPE_CbDbDeSerCtx tSeDeserCtx;
+    t_eFSS_DBC_Ctx           tDbCtx;
+    t_eFSS_DB_DbStruct       tDBS;
 }t_eFSS_DB_Ctx;
 
 /***********************************************************************************************************************
  * GLOBAL PROTOTYPES
  **********************************************************************************************************************/
 /**
- * @brief       Initialize the Log Fixed length module context
+ * @brief       Initialize the Database module context
  *
- * @param[in]   p_ptCtx          - Database Fixed length context
+ * @param[in]   p_ptCtx          - Database context
  * @param[in]   p_tCtxCb         - All callback collection context
  * @param[in]   p_tStorSet       - Storage settings
  * @param[in]   p_puBuff         - Pointer to a buffer used by the modules to make calc, must ne pageSize * 2
  * @param[in]   p_uBuffL         - Size of p_puBuff
- * @param[in]   p_tSerDeseCb     - List of serializer deserializer function to store data in database
  * @param[in]   p_tDbStruct      - Struct containing the default struct of the database
  *
  * @return      e_eFSS_DB_RES_BADPOINTER    - In case of bad pointer passed to the function
@@ -84,13 +85,13 @@ typedef struct
  *              e_eFSS_DB_RES_OK            - Operation ended correctly
  */
 e_eFSS_DB_RES eFSS_DB_InitCtx(t_eFSS_DB_Ctx* const p_ptCtx, t_eFSS_TYPE_CbStorCtx const p_tCtxCb,
-                                  t_eFSS_TYPE_StorSet p_tStorSet, uint8_t* const p_puBuff, uint32_t p_uBuffL,
-                                  t_eFSS_TYPE_CbDbDeSerCtx const p_tSerDeseCb, t_eFSS_DB_DbStruct p_tDbStruct);
+                              t_eFSS_TYPE_StorSet p_tStorSet, uint8_t* const p_puBuff, uint32_t p_uBuffL,
+                              t_eFSS_DB_DbStruct p_tDbStruct);
 
 /**
  * @brief       Check if the lib is initialized
  *
- * @param[in]   p_ptCtx         - Database Fixed length context
+ * @param[in]   p_ptCtx         - Database context
  * @param[out]  p_pbIsInit      - Pointer to a bool_t variable that will be filled with true if the lib is initialized
  *
  * @return      e_eFSS_DB_RES_BADPOINTER    - In case of bad pointer passed to the function
@@ -102,7 +103,7 @@ e_eFSS_DB_RES eFSS_DB_IsInit(t_eFSS_DB_Ctx* const p_ptCtx, bool_t* p_pbIsInit);
  * @brief       Check the whole database status. This function must be called before proceeding with other operation,
  *              so we are sure to run on a valid database.
  *
- * @param[in]   p_ptCtx    - Database Fixed length context
+ * @param[in]   p_ptCtx          - Database context
  *
  * @return      e_eFSS_DB_DBFL_BADPOINTER    - In case of bad pointer passed to the function
  *		        e_eFSS_DB_DBFL_BADPARAM      - In case of an invalid parameter passed to the function
@@ -114,41 +115,43 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx);
  * @brief       Erase all the data present in the DB and restore default value. This function is the only function
  *              that is able to recover a corrupted database.
  *
- * @param[in]   p_ptCtx    - Database Fixed length context
- * @param[in]   p_puBuff   - Pointer to a memory area that we will use to store data that needs to be stuffed
- * @param[in]   p_uBuffL   - Dimension in byte of the memory area
+ * @param[in]   p_ptCtx    - Database context
  *
  * @return      e_eFSS_DB_RES_BADPOINTER    - In case of bad pointer passed to the function
  *		        e_eFSS_DB_RES_BADPARAM      - In case of an invalid parameter passed to the function
  *              e_eFSS_DB_RES_OK            - Operation ended correctly
  */
-e_eFSS_DB_RES eFSS_DB_Format(t_eFSS_DB_Ctx* const p_ptCtx);
+e_eFSS_DB_RES eFSS_DB_FormatToDefault(t_eFSS_DB_Ctx* const p_ptCtx);
 
 /**
  * @brief       Save an element in to the database
  *
- * @param[in]   p_ptCtx       - Database Fixed length context
- * @param[out]  p_pbIsInit    - Pointer to a bool_t variable that will be filled with true if the lib is initialized
+ * @param[in]   p_ptCtx       - Database context
+ * @param[in]   p_uPos        - Position of the element we want to save in the database
+ * @param[out]  p_uElemL      - Length of the element
+ * @param[out]  p_puRawVal    - Raw value of the element we want to save
  *
  * @return      e_eFSS_DB_RES_BADPOINTER    - In case of bad pointer passed to the function
  *		        e_eFSS_DB_RES_BADPARAM      - In case of an invalid parameter passed to the function
  *              e_eFSS_DB_RES_OK            - Operation ended correctly
  */
-e_eFSS_DB_RES eFSS_DB_SaveElemen(t_eFSS_DB_Ctx* const p_ptCtx, uint32_t p_uPos,
-                                     t_eFSS_TYPE_DbRawElement* p_ptElem);
+e_eFSS_DB_RES eFSS_DB_SaveElemen(t_eFSS_DB_Ctx* const p_ptCtx, uint32_t p_uPos, uint16_t p_uElemL,
+                                 uint8_t* p_puRawVal);
 
 /**
- * @brief       Get an element stored in to the database
+ * @brief       Get an element stored in the database
  *
- * @param[in]   p_ptCtx       - Database Fixed length context
- * @param[out]  p_pbIsInit    - Pointer to a bool_t variable that will be filled with true if the lib is initialized
+ * @param[in]   p_ptCtx       - Database context
+ * @param[in]   p_uPos        - Position of the element we want to read from the database
+ * @param[out]  p_uElemL      - Length of the element
+ * @param[out]  p_puRawVal    - Storage are of size p_uElemL were we will save the element
  *
  * @return      e_eFSS_DB_RES_BADPOINTER    - In case of bad pointer passed to the function
  *		        e_eFSS_DB_RES_BADPARAM      - In case of an invalid parameter passed to the function
  *              e_eFSS_DB_RES_OK            - Operation ended correctly
  */
-e_eFSS_DB_RES eFSS_DB_GetElement(t_eFSS_DB_Ctx* const p_ptCtx, uint32_t p_uPos,
-                                     t_eFSS_TYPE_DbRawElement* p_ptElem);
+e_eFSS_DB_RES eFSS_DB_GetElement(t_eFSS_DB_Ctx* const p_ptCtx, uint32_t p_uPos, uint16_t p_uElemL,
+                                 uint8_t* p_puRawVal);
 
 
 
@@ -158,4 +161,4 @@ e_eFSS_DB_RES eFSS_DB_GetElement(t_eFSS_DB_Ctx* const p_ptCtx, uint32_t p_uPos,
 
 
 
-#endif /* EFSS_DBFL_H */
+#endif /* EFSS_DB_H */
