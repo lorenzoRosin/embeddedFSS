@@ -1088,6 +1088,9 @@
     </configuration>
     <group>
         <name>Blob</name>
+        <excluded>
+            <configuration>Library</configuration>
+        </excluded>
         <group>
             <name>Inc</name>
             <file>
@@ -1113,30 +1116,48 @@
             <name>Inc</name>
             <file>
                 <name>$PROJ_DIR$\..\..\Src\CoreHL\Inc\eFSS_BLOBC.h</name>
+                <excluded>
+                    <configuration>Library</configuration>
+                </excluded>
             </file>
             <file>
                 <name>$PROJ_DIR$\..\..\Src\CoreHL\Inc\eFSS_DBC.h</name>
             </file>
             <file>
                 <name>$PROJ_DIR$\..\..\Src\CoreHL\Inc\eFSS_LOGC.h</name>
+                <excluded>
+                    <configuration>Library</configuration>
+                </excluded>
             </file>
             <file>
                 <name>$PROJ_DIR$\..\..\Src\CoreHL\Inc\eFSS_LOGCPRV.h</name>
+                <excluded>
+                    <configuration>Library</configuration>
+                </excluded>
             </file>
         </group>
         <group>
             <name>Src</name>
             <file>
                 <name>$PROJ_DIR$\..\..\Src\CoreHL\Src\eFSS_BLOBC.c</name>
+                <excluded>
+                    <configuration>Library</configuration>
+                </excluded>
             </file>
             <file>
                 <name>$PROJ_DIR$\..\..\Src\CoreHL\Src\eFSS_DBC.c</name>
             </file>
             <file>
                 <name>$PROJ_DIR$\..\..\Src\CoreHL\Src\eFSS_LOGC.c</name>
+                <excluded>
+                    <configuration>Library</configuration>
+                </excluded>
             </file>
             <file>
                 <name>$PROJ_DIR$\..\..\Src\CoreHL\Src\eFSS_LOGCPRV.c</name>
+                <excluded>
+                    <configuration>Library</configuration>
+                </excluded>
             </file>
         </group>
     </group>
@@ -1184,6 +1205,9 @@
     </group>
     <group>
         <name>Log</name>
+        <excluded>
+            <configuration>Library</configuration>
+        </excluded>
         <group>
             <name>Inc</name>
             <file>
