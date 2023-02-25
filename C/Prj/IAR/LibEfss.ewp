@@ -1178,13 +1178,13 @@
         <group>
             <name>Inc</name>
             <file>
-                <name>$PROJ_DIR$\..\..\Src\Db\Inc\eFSS_DBFL.h</name>
+                <name>$PROJ_DIR$\..\..\Src\Db\Inc\eFSS_DB.h</name>
             </file>
         </group>
         <group>
             <name>Src</name>
             <file>
-                <name>$PROJ_DIR$\..\..\Src\Db\Src\eFSS_DBFL.c</name>
+                <name>$PROJ_DIR$\..\..\Src\Db\Src\eFSS_DB.c</name>
             </file>
         </group>
     </group>
