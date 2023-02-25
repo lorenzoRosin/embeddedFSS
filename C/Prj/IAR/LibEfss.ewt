@@ -1518,19 +1518,13 @@
         <group>
             <name>Inc</name>
             <file>
-                <name>$PROJ_DIR$\..\..\Src\Log\Inc\eFSS_LOGFL.h</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\..\Src\Log\Inc\eFSS_LOGVL.h</name>
+                <name>$PROJ_DIR$\..\..\Src\Log\Inc\eFSS_LOG.h</name>
             </file>
         </group>
         <group>
             <name>Src</name>
             <file>
-                <name>$PROJ_DIR$\..\..\Src\Log\Src\eFSS_LOGFL.c</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\..\Src\Log\Src\eFSS_LOGVL.c</name>
+                <name>$PROJ_DIR$\..\..\Src\Log\Src\eFSS_LOG.c</name>
             </file>
         </group>
     </group>

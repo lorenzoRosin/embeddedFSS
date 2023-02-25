@@ -1491,7 +1491,7 @@
         <group>
             <name>Inc</name>
             <file>
-                <name>$PROJ_DIR$\..\..\Src\Log\Inc\eFSS_LOGFLTST.h</name>
+                <name>$PROJ_DIR$\..\..\Src\Log\Inc\eFSS_LOGTST.h</name>
             </file>
             <file>
                 <name>$PROJ_DIR$\..\..\Src\Log\Inc\eFSS_LOGVLTST.h</name>
@@ -1500,7 +1500,7 @@
         <group>
             <name>Src</name>
             <file>
-                <name>$PROJ_DIR$\..\..\Src\Log\Src\eFSS_LOGFLTST.c</name>
+                <name>$PROJ_DIR$\..\..\Src\Log\Src\eFSS_LOGTST.c</name>
             </file>
             <file>
                 <name>$PROJ_DIR$\..\..\Src\Log\Src\eFSS_LOGVLTST.c</name>

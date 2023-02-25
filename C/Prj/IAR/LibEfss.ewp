@@ -1193,31 +1193,13 @@
         <group>
             <name>Inc</name>
             <file>
-                <name>$PROJ_DIR$\..\..\Src\Log\Inc\eFSS_LOGFL.h</name>
-                <excluded>
-                    <configuration>Library</configuration>
-                </excluded>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\..\Src\Log\Inc\eFSS_LOGVL.h</name>
-                <excluded>
-                    <configuration>Library</configuration>
-                </excluded>
+                <name>$PROJ_DIR$\..\..\Src\Log\Inc\eFSS_LOG.h</name>
             </file>
         </group>
         <group>
             <name>Src</name>
             <file>
-                <name>$PROJ_DIR$\..\..\Src\Log\Src\eFSS_LOGFL.c</name>
-                <excluded>
-                    <configuration>Library</configuration>
-                </excluded>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\..\Src\Log\Src\eFSS_LOGVL.c</name>
-                <excluded>
-                    <configuration>Library</configuration>
-                </excluded>
+                <name>$PROJ_DIR$\..\..\Src\Log\Src\eFSS_LOG.c</name>
             </file>
         </group>
     </group>
