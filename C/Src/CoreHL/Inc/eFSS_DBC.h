@@ -42,7 +42,7 @@ typedef enum
     e_eFSS_DBC_RES_NOTVALIDDB,
     e_eFSS_DBC_RES_NEWVERSIONDB,
     e_eFSS_DBC_RES_WRITENOMATCHREAD,
-    e_eFSS_DBC_RES_OK_BKP_RCVRD,
+    e_eFSS_DBC_RES_OK_BKP_RCVRD
 }e_eFSS_DBC_RES;
 
 typedef struct
@@ -137,6 +137,7 @@ e_eFSS_DBC_RES eFSS_DBC_GetBuffNStor(t_eFSS_DBC_Ctx* p_ptCtx, t_eFSS_TYPE_StorBu
  *              e_eFSS_DBC_RES_CLBCKCRCERR     - The crc callback reported an error
  *              e_eFSS_DBC_RES_NOTVALIDPAGE    - The readed page is invalid
  *              e_eFSS_DBC_RES_NEWVERSIONFOUND - The readed page has a new version
+ *              e_eFSS_DBC_RES_OK_BKP_RCVRD    - operation ended successfully recovering a backup or an origin page
  *              e_eFSS_DBC_RES_OK              - Operation ended correctly
  */
 e_eFSS_DBC_RES eFSS_DBC_LoadPageInBuff(t_eFSS_DBC_Ctx* const p_ptCtx, const uint32_t p_uPageIndx);
