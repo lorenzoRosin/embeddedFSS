@@ -1505,17 +1505,11 @@
             <file>
                 <name>$PROJ_DIR$\..\..\Src\Db\Inc\eFSS_DBFL.h</name>
             </file>
-            <file>
-                <name>$PROJ_DIR$\..\..\Src\Db\Inc\eFSS_DBVL.h</name>
-            </file>
         </group>
         <group>
             <name>Src</name>
             <file>
                 <name>$PROJ_DIR$\..\..\Src\Db\Src\eFSS_DBFL.c</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\..\Src\Db\Src\eFSS_DBVL.c</name>
             </file>
         </group>
     </group>
