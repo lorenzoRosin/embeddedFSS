@@ -41,6 +41,8 @@ typedef struct
     t_eFSS_DB_DbElement* ptDefValElemList;
 }t_eFSS_DB_DbStruct;
 
+
+
 /***********************************************************************************************************************
  *      PUBLIC TYPEDEFS
  **********************************************************************************************************************/
@@ -58,14 +60,17 @@ typedef enum
     e_eFSS_DB_RES_NOTVALIDDB,
     e_eFSS_DB_RES_NEWVERSIONDB,
     e_eFSS_DB_RES_WRITENOMATCHREAD,
-    e_eFSS_DB_RES_OK_BKP_RCVRD,
+    e_eFSS_DB_RES_OK_BKP_RCVRD
 }e_eFSS_DB_RES;
 
 typedef struct
 {
     t_eFSS_DBC_Ctx           tDbCtx;
     t_eFSS_DB_DbStruct       tDBS;
+    bool_t                   bIsDbStatusChecked;
 }t_eFSS_DB_Ctx;
+
+
 
 /***********************************************************************************************************************
  * GLOBAL PROTOTYPES
@@ -76,7 +81,7 @@ typedef struct
  * @param[in]   p_ptCtx          - Database context
  * @param[in]   p_tCtxCb         - All callback collection context
  * @param[in]   p_tStorSet       - Storage settings
- * @param[in]   p_puBuff         - Pointer to a buffer used by the modules to make calc, must ne pageSize * 2
+ * @param[in]   p_puBuff         - Pointer to a buffer used by the modules to make calc, must be pageSize * 2
  * @param[in]   p_uBuffL         - Size of p_puBuff
  * @param[in]   p_tDbStruct      - Struct containing the default struct of the database
  *
@@ -100,8 +105,8 @@ e_eFSS_DB_RES eFSS_DB_InitCtx(t_eFSS_DB_Ctx* const p_ptCtx, t_eFSS_TYPE_CbStorCt
 e_eFSS_DB_RES eFSS_DB_IsInit(t_eFSS_DB_Ctx* const p_ptCtx, bool_t* p_pbIsInit);
 
 /**
- * @brief       Check the whole database status. This function must be called before proceeding with other operation,
- *              so we are sure to run on a valid database.
+ * @brief       Check the whole database status. This function should be called before doing anything else with the
+ *              the database. In anycase this function is called automatically on the firt action against the db.
  *
  * @param[in]   p_ptCtx          - Database context
  *
@@ -128,8 +133,8 @@ e_eFSS_DB_RES eFSS_DB_FormatToDefault(t_eFSS_DB_Ctx* const p_ptCtx);
  *
  * @param[in]   p_ptCtx       - Database context
  * @param[in]   p_uPos        - Position of the element we want to save in the database
- * @param[out]  p_uElemL      - Length of the element
- * @param[out]  p_puRawVal    - Raw value of the element we want to save
+ * @param[in]   p_uElemL      - Length of the element
+ * @param[in]   p_puRawVal    - Raw value of the element we want to save
  *
  * @return      e_eFSS_DB_RES_BADPOINTER    - In case of bad pointer passed to the function
  *		        e_eFSS_DB_RES_BADPARAM      - In case of an invalid parameter passed to the function
@@ -139,11 +144,11 @@ e_eFSS_DB_RES eFSS_DB_SaveElemen(t_eFSS_DB_Ctx* const p_ptCtx, uint32_t p_uPos, 
                                  uint8_t* p_puRawVal);
 
 /**
- * @brief       Get an element stored in the database
+ * @brief       Get an element stored from the database
  *
  * @param[in]   p_ptCtx       - Database context
  * @param[in]   p_uPos        - Position of the element we want to read from the database
- * @param[out]  p_uElemL      - Length of the element
+ * @param[in]   p_uElemL      - Length of the element
  * @param[out]  p_puRawVal    - Storage are of size p_uElemL were we will save the element
  *
  * @return      e_eFSS_DB_RES_BADPOINTER    - In case of bad pointer passed to the function
@@ -152,8 +157,6 @@ e_eFSS_DB_RES eFSS_DB_SaveElemen(t_eFSS_DB_Ctx* const p_ptCtx, uint32_t p_uPos, 
  */
 e_eFSS_DB_RES eFSS_DB_GetElement(t_eFSS_DB_Ctx* const p_ptCtx, uint32_t p_uPos, uint16_t p_uElemL,
                                  uint8_t* p_puRawVal);
-
-
 
 #ifdef __cplusplus
 } /* extern "C" */
