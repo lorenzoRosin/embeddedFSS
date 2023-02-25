@@ -7,8 +7,8 @@
  *
  **********************************************************************************************************************/
 
-#ifndef EFSS_LOGFL_H
-#define EFSS_LOGFL_H
+#ifndef EFSS_LOG_H
+#define EFSS_LOG_H
 
 
 
@@ -24,9 +24,19 @@ extern "C" {
 #include "eFSS_LOGC.h"
 
 
+/***********************************************************************************************************************
+ *      LOG TYPEDEFS
+ **********************************************************************************************************************/
+typedef struct
+{
+    uint16_t uLogL;
+    uint8_t* puRawVal;
+}t_eFSS_LOG_LogElement;
+
+
 
 /***********************************************************************************************************************
- *      PRIVATE TYPEDEFS
+ *      PUBLIC TYPEDEFS
  **********************************************************************************************************************/
 typedef enum
 {
@@ -48,8 +58,6 @@ typedef enum
 typedef struct
 {
     t_eFSS_LOGC_Ctx tLOGCCtx;
-    t_eFSS_TYPE_CbLogDeSerCtx tSeDeserCtx;
-    uint32_t uLogL;
 }t_eFSS_LOG_Ctx;
 
 
@@ -67,8 +75,6 @@ typedef struct
  * @param[in]   p_uBuffL         - Size of p_puBuff
  * @param[in]   p_bFlashCache    - Use flash as cache for storing and resuming index
  * @param[in]   p_bFullBckup     - Save every log data in a backup pages
- * @param[in]   p_uLogL          - Lenght of every log
- * @param[in]   p_tSerDeseCb     - List of serializer deserializer function to store data in log
  *
  * @return      e_eFSS_LOG_RES_BADPOINTER    - In case of bad pointer passed to the function
  *		        e_eFSS_LOG_RES_BADPARAM      - In case of an invalid parameter passed to the function
@@ -76,8 +82,7 @@ typedef struct
  */
 e_eFSS_LOG_RES eFSS_LOG_InitCtx(t_eFSS_LOG_Ctx* const p_ptCtx, t_eFSS_TYPE_CbStorCtx const p_tCtxCb,
                                   t_eFSS_TYPE_StorSet p_tStorSet, uint8_t* const p_puBuff, uint32_t p_uBuffL,
-                                  bool_t p_bFlashCache, bool_t p_bFullBckup, uint32_t p_uLogL,
-                                  t_eFSS_TYPE_CbLogDeSerCtx const p_tSerDeseCb);
+                                  bool_t p_bFlashCache, bool_t p_bFullBckup);
 
 /**
  * @brief       Check if the lib is initialized
@@ -111,7 +116,7 @@ e_eFSS_LOG_RES eFSS_LOG_IsInit(t_eFSS_LOG_Ctx* const p_ptCtx, bool_t* p_pbIsInit
  *              e_eFSS_LOG_RES_CLBCKCRCERR        - Crc callback returned error
  *              e_eFSS_LOG_RES_WRITENOMATCHREAD   - After Write operation the Read operation readed different data
  */
-e_eFSS_LOG_RES eFSS_LOG_GetStorageStatus(t_eFSS_LOG_Ctx* const p_ptCtx);
+e_eFSS_LOG_RES eFSS_LOG_GetLogStatus(t_eFSS_LOG_Ctx* const p_ptCtx);
 
 /**
  * @brief       Get info about the stored log
@@ -159,6 +164,28 @@ e_eFSS_LOG_RES eFSS_LOG_GetLogInfo(t_eFSS_LOG_Ctx* const p_ptCtx, uint32_t *p_pu
 e_eFSS_LOG_RES eFSS_LOG_Format(t_eFSS_LOG_Ctx* const p_ptCtx);
 
 /**
+ * @brief       Add a log
+ *
+ * @param[in]   p_ptCtx       - Log fiexd length context
+ * @param[out]  p_uElemL      - Length of the element
+ * @param[out]  p_puRawVal    - Raw value of the element we want to save
+ *
+ * @return      e_eFSS_LOG_RES_BADPOINTER         - In case of bad pointer passed to the function
+ *              e_eFSS_LOG_RES_OK                 - Operation ended correctly
+ *              e_eFSS_LOG_RES_OK_BKP_RCVRD       - All ok, but some page where recovered
+ *              e_eFSS_LOG_RES_NOTVALIDBLOB       - No valid blob founded
+ *              e_eFSS_LOG_RES_NEWVERSIONLOG      - New version of the blob requested
+ *              e_eFSS_LOG_RES_NOINITLIB          - Need to init the lib before calling this function
+ *              e_eFSS_LOG_RES_CORRUPTCTX         - Context is corrupted
+ *              e_eFSS_LOG_RES_CLBCKERASEERR      - Erase callback returned error
+ *              e_eFSS_LOG_RES_CLBCKWRITEERR      - Write callback returned error
+ *              e_eFSS_LOG_RES_CLBCKREADERR       - Read callback returned error
+ *              e_eFSS_LOG_RES_CLBCKCRCERR        - Crc callback returned error
+ *              e_eFSS_LOG_RES_WRITENOMATCHREAD   - After Write operation the Read operation readed different data
+ */
+e_eFSS_LOG_RES eFSS_LOG_AddLog(t_eFSS_LOG_Ctx* const p_ptCtx, uint16_t p_uElemL, uint8_t* p_puRawVal);
+
+/**
  * @brief       Get all the log present on a specific page.
  *
  * @param[in]   p_ptCtx        - Log fiexd length context
@@ -181,28 +208,7 @@ e_eFSS_LOG_RES eFSS_LOG_Format(t_eFSS_LOG_Ctx* const p_ptCtx);
  *              e_eFSS_LOG_RES_WRITENOMATCHREAD   - After Write operation the Read operation readed different data
  */
 e_eFSS_LOG_RES eFSS_LOG_GetLogOfASpecificPage(t_eFSS_LOG_Ctx* const p_ptCtx, uint32_t p_uindx, uint8_t* p_puBuf,
-                                                  uint32_t* p_puBufL, uint32_t p_uBufMaxL);
-
-/**
- * @brief       Add a log
- *
- * @param[in]   p_ptCtx       - Log fiexd length context
- * @param[in]   p_ptLog       - Log to add
- *
- * @return      e_eFSS_LOG_RES_BADPOINTER         - In case of bad pointer passed to the function
- *              e_eFSS_LOG_RES_OK                 - Operation ended correctly
- *              e_eFSS_LOG_RES_OK_BKP_RCVRD       - All ok, but some page where recovered
- *              e_eFSS_LOG_RES_NOTVALIDBLOB       - No valid blob founded
- *              e_eFSS_LOG_RES_NEWVERSIONLOG      - New version of the blob requested
- *              e_eFSS_LOG_RES_NOINITLIB          - Need to init the lib before calling this function
- *              e_eFSS_LOG_RES_CORRUPTCTX         - Context is corrupted
- *              e_eFSS_LOG_RES_CLBCKERASEERR      - Erase callback returned error
- *              e_eFSS_LOG_RES_CLBCKWRITEERR      - Write callback returned error
- *              e_eFSS_LOG_RES_CLBCKREADERR       - Read callback returned error
- *              e_eFSS_LOG_RES_CLBCKCRCERR        - Crc callback returned error
- *              e_eFSS_LOG_RES_WRITENOMATCHREAD   - After Write operation the Read operation readed different data
- */
-e_eFSS_LOG_RES eFSS_LOG_AddLog(t_eFSS_LOG_Ctx* const p_ptCtx, t_eFSS_TYPE_LogRawElement* p_ptLog);
+                                              uint32_t* p_puBufL, uint32_t p_uBufMaxL);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -210,4 +216,4 @@ e_eFSS_LOG_RES eFSS_LOG_AddLog(t_eFSS_LOG_Ctx* const p_ptCtx, t_eFSS_TYPE_LogRaw
 
 
 
-#endif /* EFSS_LOGFL_H */
+#endif /* EFSS_LOG_H */
