@@ -100,68 +100,89 @@ e_eFSS_LOGC_RES eFSS_LOGC_IsInit(t_eFSS_LOGC_Ctx* const p_ptCtx, bool_t* p_pbIsI
  */
 e_eFSS_LOGC_RES eFSS_LOGC_GetBuff(t_eFSS_LOGC_Ctx* p_ptCtx, t_eFSS_TYPE_StorBuf* p_ptBuff);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /**
- * @brief       Get the value of usable page to save a log. Be sure to not insert any NULL value and
- *              call eFSS_LOGC_IsStatusStillCoherent before.
+ * @brief       Get the value of usable page to save a log.
  *
  * @param[in]   p_ptCtx          - Log Core context
- * @param[in]   p_tStorSet       - Storage settings
+ * @param[out]  p_puUsableP      - Pointer where the number of usable pages will be copied
  *
- * @return      Return the numbers of usable page to save a log, excluding flash cache and backup pages
+ * @return      e_eFSS_LOGC_RES_BADPOINTER    - In case of bad pointer passed to the function
+ *		        e_eFSS_LOGC_RES_CORRUPTCTX    - Context is corrupted
+ *		        e_eFSS_LOGC_RES_NOINITLIB     - Need to init lib before calling function
+ *              e_eFSS_LOGC_RES_OK            - Operation ended correctly
  */
-uint32_t eFSS_LOGC_GetUsablePage(const t_eFSS_LOGC_Ctx* p_ptCtx, t_eFSS_TYPE_StorSet p_tStorSet);
+e_eFSS_LOGC_RES eFSS_LOGC_GetUsablePage(t_eFSS_LOGC_Ctx* p_ptCtx, uint8_t* p_puUsableP);
 
 /**
- * @brief       Get the value of the next index given a passed one. Be sure to not insert any NULL value and
- *              call eFSS_LOGC_IsStatusStillCoherent before. Do not insert non valid index.
+ * @brief       Get the value of the next index given a passed one.
  *
  * @param[in]   p_ptCtx          - Log Core context
- * @param[in]   p_tStorSet       - Storage settings
  * @param[in]   p_uIdx           - Index that we want to search for next. Usable value: from zero to the value returned
- *                                 by eFSS_LOGCPRV_GetUsablePage
+ *                                 by eFSS_LOGC_GetUsablePage
+ * @param[out]  p_puNextIdx      - Pointer where the value of the next index will be copied
  *
- * @return      Return the next index of p_uIdx
+ * @return      e_eFSS_LOGC_RES_BADPOINTER    - In case of bad pointer passed to the function
+ *		        e_eFSS_LOGC_RES_CORRUPTCTX    - Context is corrupted
+ *		        e_eFSS_LOGC_RES_NOINITLIB     - Need to init lib before calling function
+ *              e_eFSS_LOGC_RES_OK            - Operation ended correctly
  */
-uint32_t eFSS_LOGCPRV_GetNextIndex(const t_eFSS_LOGC_Ctx* p_ptCtx, t_eFSS_TYPE_StorSet p_tStorSet, uint32_t p_uIdx);
+e_eFSS_LOGC_RES eFSS_LOGC_GetNextIndex(t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t p_uIdx, uint32_t* p_puNextIdx);
 
 /**
- * @brief       Get the value of the previous index. Be sure to not insert any NULL value and
- *              call eFSS_LOGC_IsStatusStillCoherent before. Do not insert non valid index.
+ * @brief       Get the value of the previous index.
  *
  * @param[in]   p_ptCtx          - Log Core context
- * @param[in]   p_tStorSet       - Storage settings
  * @param[in]   p_uIdx           - Index that we want to search for previous. Usable value: from zero to the value
- *                                 returned by eFSS_LOGCPRV_GetUsablePage
+ *                                 returned by eFSS_LOGC_GetUsablePage
+ * @param[out]  p_puPrevIdx      - Pointer where the value of the previous index will be copied
  *
  * @return      Return the previous index of p_uIdx
  */
-uint32_t eFSS_LOGCPRV_GetPrevIndex(const t_eFSS_LOGC_Ctx* p_ptCtx, t_eFSS_TYPE_StorSet p_tStorSet, uint32_t p_uIdx);
+e_eFSS_LOGC_RES eFSS_LOGC_GetPrevIndex(t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t p_uIdx, uint32_t* p_puPrevIdx);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 /**
