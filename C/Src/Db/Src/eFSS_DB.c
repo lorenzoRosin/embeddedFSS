@@ -658,20 +658,22 @@ static e_eFSS_DB_RES eFSS_DB_DBCtoDBRes(const e_eFSS_DBC_RES p_eDBCRes)
 
 static bool_t eFSS_DB_IsDbDefStructValid(t_eFSS_DB_DbStruct p_tDefaultDb)
 {
-
+    /* Check db validity, each element need to be different from zero and ver must not be equals to zero  */
+    return true;
 }
 
 static bool_t eFSS_DB_IsDbDefStructUsable(t_eFSS_DB_DbStruct p_tDefaultDb, uint32_t p_uNPage, uint32_t p_uPageL)
 {
-
+    /* Do we have enough space to salve the whole DB in flash? */
+    return true;
 }
 
 static void eFSS_DB_GetEleRawInBuffer(t_eFSS_DB_DbElement* p_gettedElem, uint8_t* p_puBuff)
 {
     /* Local variable */
-    uint32_t l_uElemPos;
-    uint32_t l_uCurroffset;
-    uint32_t l_uTemp;
+    // uint32_t l_uElemPos;
+    // uint32_t l_uCurroffset;
+    // uint32_t l_uTemp;
 
     // /* Calc position */
     // l_uElemPos = p_uEleL * p_uIndexInPage;
@@ -694,8 +696,8 @@ static void eFSS_DB_GetEleRawInBuffer(t_eFSS_DB_DbElement* p_gettedElem, uint8_t
 static void eFSS_DB_SetEleRawInBuffer(t_eFSS_DB_DbElement p_gettedElem, uint8_t* p_puBuff)
 {
     /* Local variable */
-    uint32_t l_uElemPos;
-    uint32_t l_uCurroffset;
+     // uint32_t l_uElemPos;
+     // uint32_t l_uCurroffset;
 
     // /* Calc position */
     // l_uElemPos = p_uEleL * p_uIndexInPage;
@@ -715,11 +717,11 @@ static void eFSS_DB_SetEleRawInBuffer(t_eFSS_DB_DbElement p_gettedElem, uint8_t*
 static void eFSS_DB_GetPageAndPagePosition(const uint32_t p_uPageL, t_eFSS_DB_DbStruct p_tDbStruct,
                                            const uint32_t p_uIndex, uint32_t* p_puPageIdx, uint32_t* p_puLogPos)
 {
-    /* Local variable */
-    uint32_t l_uLogPerPage;
-    uint32_t l_uPagePosition;
-    uint32_t l_uLogPositionInPage;
-
+    // /* Local variable */
+    // uint32_t l_uLogPerPage;
+    // uint32_t l_uPagePosition;
+    // uint32_t l_uLogPositionInPage;
+//
     // /* Calc how many log we cat store in a page */
     // l_uLogPerPage = (uint32_t)( p_uPageL / p_uEleL );
 //
