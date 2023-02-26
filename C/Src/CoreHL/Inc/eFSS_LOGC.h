@@ -87,64 +87,37 @@ e_eFSS_LOGC_RES eFSS_LOGC_InitCtx(t_eFSS_LOGC_Ctx* const p_ptCtx, t_eFSS_TYPE_Cb
  */
 e_eFSS_LOGC_RES eFSS_LOGC_IsInit(t_eFSS_LOGC_Ctx* const p_ptCtx, bool_t* p_pbIsInit);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/**
- * @brief       Get storage settings
- *
- * @param[in]   p_ptCtx       - Database Core context
- * @param[out]  p_ptStorSet   - Pointer to a storage settings that will be filled with data used during init
- *
- * @return      e_eFSS_DBC_RES_BADPOINTER    - In case of bad pointer passed to the function
- *		        e_eFSS_DBC_RES_CORRUPTCTX    - Context is corrupted
- *		        e_eFSS_DBC_RES_NOINITLIB     - Need to init lib before calling function
- *              e_eFSS_DBC_RES_OK            - Operation ended correctly
- */
-e_eFSS_DBC_RES eFSS_DBC_GetStorSett(t_eFSS_DBC_Ctx* p_ptCtx, t_eFSS_TYPE_StorSet* p_ptStorSet);
-
 /**
  * @brief       Get the reference of buffer that we can use to read or write data from storage
  *
- * @param[in]   p_ptCtx       - Database Core context
+ * @param[in]   p_ptCtx       - Log Core context
  * @param[out]  p_ptBuff      - Pointer to a struct that will be filled with info about buffer
  *
- * @return      e_eFSS_DBC_RES_BADPOINTER    - In case of bad pointer passed to the function
- *		        e_eFSS_DBC_RES_CORRUPTCTX    - Context is corrupted
- *		        e_eFSS_DBC_RES_NOINITLIB     - Need to init lib before calling function
- *              e_eFSS_DBC_RES_OK            - Operation ended correctly
+ * @return      e_eFSS_LOGC_RES_BADPOINTER    - In case of bad pointer passed to the function
+ *		        e_eFSS_LOGC_RES_CORRUPTCTX    - Context is corrupted
+ *		        e_eFSS_LOGC_RES_NOINITLIB     - Need to init lib before calling function
+ *              e_eFSS_LOGC_RES_OK            - Operation ended correctly
  */
-e_eFSS_DBC_RES eFSS_DBC_GetBuff(t_eFSS_DBC_Ctx* p_ptCtx, t_eFSS_TYPE_StorBuf* p_ptBuff);
+e_eFSS_LOGC_RES eFSS_LOGC_GetBuff(t_eFSS_LOGC_Ctx* p_ptCtx, t_eFSS_TYPE_StorBuf* p_ptBuff);
 
-/**
- * @brief       Get storage settings and buffer all in one
- *
- * @param[in]   p_ptCtx       - Database Core context
- * @param[out]  p_ptBuff      - Pointer to a storage collection struct that will be filled with info about internal buf
- * @param[out]  p_ptStorSet   - Pointer to a storage settings
- *
- * @return      e_eFSS_DBC_RES_BADPOINTER    - In case of bad pointer passed to the function
- *		        e_eFSS_DBC_RES_CORRUPTCTX    - Context is corrupted
- *		        e_eFSS_DBC_RES_NOINITLIB     - Need to init lib before calling function
- *              e_eFSS_DBC_RES_OK            - Operation ended correctly
- */
-e_eFSS_DBC_RES eFSS_DBC_GetBuffNStor(t_eFSS_DBC_Ctx* p_ptCtx, t_eFSS_TYPE_StorBuf* p_ptBuff,
-                                     t_eFSS_TYPE_StorSet* p_ptStorSet);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -163,10 +136,6 @@ e_eFSS_DBC_RES eFSS_DBC_GetBuffNStor(t_eFSS_DBC_Ctx* p_ptCtx, t_eFSS_TYPE_StorBu
  * @return      Return the numbers of usable page to save a log, excluding flash cache and backup pages
  */
 uint32_t eFSS_LOGC_GetUsablePage(const t_eFSS_LOGC_Ctx* p_ptCtx, t_eFSS_TYPE_StorSet p_tStorSet);
-
-
-
-
 
 /**
  * @brief       Get the value of the next index given a passed one. Be sure to not insert any NULL value and

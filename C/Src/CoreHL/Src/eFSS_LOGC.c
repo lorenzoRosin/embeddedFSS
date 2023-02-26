@@ -131,94 +131,10 @@ e_eFSS_LOGC_RES eFSS_LOGC_IsInit(t_eFSS_LOGC_Ctx* const p_ptCtx, bool_t* p_pbIsI
 	return l_eRes;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-e_eFSS_DBC_RES eFSS_DBC_GetStorSett(t_eFSS_DBC_Ctx* p_ptCtx, t_eFSS_TYPE_StorSet* p_ptStorSet)
+e_eFSS_LOGC_RES eFSS_LOGC_GetBuff(t_eFSS_LOGC_Ctx* p_ptCtx, t_eFSS_TYPE_StorBuf* p_ptBuff)
 {
 	/* Local variable */
-	e_eFSS_DBC_RES l_eRes;
-    e_eFSS_COREHL_RES l_eResHL;
-
-    /* Local var used for calculation */
-    bool_t l_bIsInit;
-
-	/* Check pointer validity */
-	if( ( NULL == p_ptCtx ) || ( NULL == p_ptStorSet ) )
-	{
-		l_eRes = e_eFSS_DBC_RES_BADPOINTER;
-	}
-	else
-	{
-		/* Check Init */
-        l_eResHL = eFSS_COREHL_IsInit(&p_ptCtx->tCOREHLCtx, &l_bIsInit);
-        l_eRes = eFSS_DB_HLtoDBCRes(l_eResHL);
-
-        if( e_eFSS_DBC_RES_OK == l_eRes )
-        {
-            if( false == l_bIsInit )
-            {
-                l_eRes = e_eFSS_DBC_RES_NOINITLIB;
-            }
-            else
-            {
-                /* Check internal status validity */
-                if( false == eFSS_DBC_IsStatusStillCoherent(p_ptCtx) )
-                {
-                    l_eRes = e_eFSS_DBC_RES_CORRUPTCTX;
-                }
-                else
-                {
-                    l_eResHL = eFSS_COREHL_GetStorSett(&p_ptCtx->tCOREHLCtx, p_ptStorSet);
-                    l_eRes = eFSS_DB_HLtoDBCRes(l_eResHL);
-                }
-            }
-        }
-	}
-
-	return l_eRes;
-}
-
-e_eFSS_DBC_RES eFSS_DBC_GetBuff(t_eFSS_DBC_Ctx* p_ptCtx, t_eFSS_TYPE_StorBuf* p_ptBuff)
-{
-	/* Local variable */
-	e_eFSS_DBC_RES l_eRes;
+	e_eFSS_LOGC_RES l_eRes;
     e_eFSS_COREHL_RES l_eResHL;
 
     /* Local var used for calculation */
@@ -227,31 +143,31 @@ e_eFSS_DBC_RES eFSS_DBC_GetBuff(t_eFSS_DBC_Ctx* p_ptCtx, t_eFSS_TYPE_StorBuf* p_
 	/* Check pointer validity */
 	if( ( NULL == p_ptCtx ) || ( NULL == p_ptBuff ) )
 	{
-		l_eRes = e_eFSS_DBC_RES_BADPOINTER;
+		l_eRes = e_eFSS_LOGC_RES_BADPOINTER;
 	}
 	else
 	{
 		/* Check Init */
         l_eResHL = eFSS_COREHL_IsInit(&p_ptCtx->tCOREHLCtx, &l_bIsInit);
-        l_eRes = eFSS_DB_HLtoDBCRes(l_eResHL);
+        l_eRes = eFSS_DB_HLtoLOGCRes(l_eResHL);
 
-        if( e_eFSS_DBC_RES_OK == l_eRes )
+        if( e_eFSS_LOGC_RES_OK == l_eRes )
         {
             if( false == l_bIsInit )
             {
-                l_eRes = e_eFSS_DBC_RES_NOINITLIB;
+                l_eRes = e_eFSS_LOGC_RES_NOINITLIB;
             }
             else
             {
                 /* Check internal status validity */
-                if( false == eFSS_DBC_IsStatusStillCoherent(p_ptCtx) )
+                if( false == eFSS_LOGC_IsStatusStillCoherent(p_ptCtx) )
                 {
-                    l_eRes = e_eFSS_DBC_RES_CORRUPTCTX;
+                    l_eRes = e_eFSS_LOGC_RES_CORRUPTCTX;
                 }
                 else
                 {
                     l_eResHL = eFSS_COREHL_GetBuff(&p_ptCtx->tCOREHLCtx, p_ptBuff);
-                    l_eRes = eFSS_DB_HLtoDBCRes(l_eResHL);
+                    l_eRes = eFSS_DB_HLtoLOGCRes(l_eResHL);
                 }
             }
         }
@@ -260,51 +176,46 @@ e_eFSS_DBC_RES eFSS_DBC_GetBuff(t_eFSS_DBC_Ctx* p_ptCtx, t_eFSS_TYPE_StorBuf* p_
 	return l_eRes;
 }
 
-e_eFSS_DBC_RES eFSS_DBC_GetBuffNStor(t_eFSS_DBC_Ctx* p_ptCtx, t_eFSS_TYPE_StorBuf* p_ptBuff,
-                                     t_eFSS_TYPE_StorSet* p_ptStorSet)
-{
-	/* Local variable */
-	e_eFSS_DBC_RES l_eRes;
-    e_eFSS_COREHL_RES l_eResHL;
 
-    /* Local var used for calculation */
-    bool_t l_bIsInit;
 
-	/* Check pointer validity */
-	if( ( NULL == p_ptCtx ) || ( NULL == p_ptBuff ) || ( NULL == p_ptStorSet ) )
-	{
-		l_eRes = e_eFSS_DBC_RES_BADPOINTER;
-	}
-	else
-	{
-		/* Check Init */
-        l_eResHL = eFSS_COREHL_IsInit(&p_ptCtx->tCOREHLCtx, &l_bIsInit);
-        l_eRes = eFSS_DB_HLtoDBCRes(l_eResHL);
 
-        if( e_eFSS_DBC_RES_OK == l_eRes )
-        {
-            if( false == l_bIsInit )
-            {
-                l_eRes = e_eFSS_DBC_RES_NOINITLIB;
-            }
-            else
-            {
-                /* Check internal status validity */
-                if( false == eFSS_DBC_IsStatusStillCoherent(p_ptCtx) )
-                {
-                    l_eRes = e_eFSS_DBC_RES_CORRUPTCTX;
-                }
-                else
-                {
-                    l_eResHL = eFSS_COREHL_GetBuffNStor(&p_ptCtx->tCOREHLCtx, p_ptBuff, p_ptStorSet);
-                    l_eRes = eFSS_DB_HLtoDBCRes(l_eResHL);
-                }
-            }
-        }
-	}
 
-	return l_eRes;
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 uint32_t eFSS_LOGC_GetUsablePage(const t_eFSS_LOGC_Ctx* p_ptCtx, t_eFSS_TYPE_StorSet p_tStorSet)
 {
