@@ -255,38 +255,6 @@ e_eFSS_LOGC_RES eFSS_LOGC_LoadBufferAsLog(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32
  */
 e_eFSS_LOGC_RES eFSS_LOGC_FlushBufferAsNewestOnly(t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t p_uIdx);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /**
  * @brief       Flush the buffer in a page at p_uIdx position as newest bkup only. Do not pass to this function NULL
  *              value or invalid index value. This function will take care of any support page.
@@ -308,7 +276,7 @@ e_eFSS_LOGC_RES eFSS_LOGC_FlushBufferAsNewestOnly(t_eFSS_LOGC_Ctx* p_ptCtx, uint
  *		        e_eFSS_LOGC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
  *              e_eFSS_LOGC_RES_OK                - Operation ended correctly
  */
-e_eFSS_LOGC_RES eFSS_LOGCPRV_FlushBufferAsNewestBkupOnly(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t p_uIdx);
+e_eFSS_LOGC_RES eFSS_LOGC_FlushBufferAsNewestBkupOnly(t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t p_uIdx);
 
 /**
  * @brief       Write a page of data at p_uIdx position as newest and bkup. Do not pass to this function NULL value
@@ -331,7 +299,7 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_FlushBufferAsNewestBkupOnly(t_eFSS_LOGC_Ctx* const 
  *		        e_eFSS_LOGC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
  *              e_eFSS_LOGC_RES_OK                - Operation ended correctly
  */
-e_eFSS_LOGC_RES eFSS_LOGCPRV_FlushBufferAsNewestNBkpPage(t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t p_uIdx);
+e_eFSS_LOGC_RES eFSS_LOGC_FlushBufferAsNewestNBkpPage(t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t p_uIdx);
 
 /**
  * @brief       Read a page of data at p_uIdx position. Do not pass to this function NULL value
@@ -354,18 +322,7 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_FlushBufferAsNewestNBkpPage(t_eFSS_LOGC_Ctx* p_ptCt
  *		        e_eFSS_LOGC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
  *              e_eFSS_LOGC_RES_OK                - Operation ended correctly
  */
-e_eFSS_LOGC_RES eFSS_LOGCPRV_LoadBufferAsNewestNBkpPage(t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t p_uIdx);
-
-
-
-
-
-
-
-
-
-
-
+e_eFSS_LOGC_RES eFSS_LOGC_LoadBufferAsNewestNBkpPage(t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t p_uIdx);
 
 #ifdef __cplusplus
 } /* extern "C" */
