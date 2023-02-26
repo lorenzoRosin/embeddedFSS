@@ -17,7 +17,8 @@
  *  PRIVATE STATIC FUNCTION DECLARATION
  **********************************************************************************************************************/
 static bool_t eFSS_DB_IsStatusStillCoherent(const t_eFSS_DB_Ctx* p_ptCtx);
-static e_eFSS_DB_RES eFSS_DB_DBCtoDBFLRes(const e_eFSS_DBC_RES p_eDBCRes);
+static e_eFSS_DB_RES eFSS_DB_DBCtoDBRes(const e_eFSS_DBC_RES p_eDBCRes);
+static bool_t eFSS_DB_IsDbDefStructValid(t_eFSS_DB_DbStruct p_tDefaultDb);
 static void eFSS_DB_GetEleRawInBuffer(t_eFSS_DB_DbElement* p_gettedElem, uint8_t* p_puBuff);
 static void eFSS_DB_SetEleRawInBuffer(t_eFSS_DB_DbElement p_gettedElem, uint8_t* p_puBuff);
 static void eFSS_DB_GetPageAndPagePosition(const uint32_t p_uPageL, t_eFSS_DB_DbStruct p_tDbStruct,
@@ -32,8 +33,10 @@ e_eFSS_DB_RES eFSS_DB_InitCtx(t_eFSS_DB_Ctx* const p_ptCtx, t_eFSS_TYPE_CbStorCt
                               t_eFSS_TYPE_StorSet p_tStorSet, uint8_t* const p_puBuff, uint32_t p_uBuffL,
                               t_eFSS_DB_DbStruct p_tDbStruct)
 {
+    /* Local return variable */
     e_eFSS_DB_RES l_eRes;
     e_eFSS_DBC_RES  l_eDBCRes;
+    bool_t l_bIsDbStructValid;
 
 	/* Check pointer validity */
 	if( ( NULL == p_ptCtx ) || ( NULL == p_puBuff ) )
@@ -56,14 +59,25 @@ e_eFSS_DB_RES eFSS_DB_InitCtx(t_eFSS_DB_Ctx* const p_ptCtx, t_eFSS_TYPE_CbStorCt
             }
             else
             {
-                /* Can init low level context */
-                l_eDBCRes = eFSS_DBC_InitCtx(&p_ptCtx->tDbCtx, p_tCtxCb, p_tStorSet, p_puBuff, p_uBuffL);
-                l_eRes = eFSS_DB_DBCtoDBFLRes(l_eDBCRes);
+                /* Check validity of the passed db struct */
+                l_bIsDbStructValid = eFSS_DB_IsDbDefStructValid(p_tDbStruct);
 
-                if( e_eFSS_DB_RES_OK == l_eRes )
+                if( false == l_bIsDbStructValid )
                 {
-                    /* Fill context */
-                    p_ptCtx->tDBS = p_tDbStruct;
+                    l_eRes = e_eFSS_DB_RES_BADPARAM;
+                }
+                else
+                {
+                    /* Can init low level context */
+                    l_eDBCRes = eFSS_DBC_InitCtx(&p_ptCtx->tDbCtx, p_tCtxCb, p_tStorSet, p_puBuff, p_uBuffL);
+                    l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
+
+                    if( e_eFSS_DB_RES_OK == l_eRes )
+                    {
+                        /* Fill context */
+                        p_ptCtx->tDBS = p_tDbStruct;
+                        p_ptCtx->bIsDbStatusChecked = false;
+                    }
                 }
             }
         }
@@ -86,7 +100,7 @@ e_eFSS_DB_RES eFSS_DB_IsInit(t_eFSS_DB_Ctx* const p_ptCtx, bool_t* p_pbIsInit)
 	else
 	{
         l_eDBCRes = eFSS_DBC_IsInit(&p_ptCtx->tDbCtx, p_pbIsInit);
-        l_eRes = eFSS_DB_DBCtoDBFLRes(l_eDBCRes);
+        l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
 	}
 
 	return l_eRes;
@@ -119,7 +133,7 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
 	{
 		/* Check Init */
         l_eDBCRes = eFSS_DBC_IsInit(&p_ptCtx->tDbCtx, &l_bIsInit);
-        l_eRes = eFSS_DB_DBCtoDBFLRes(l_eDBCRes);
+        l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
 
         if( e_eFSS_DB_RES_OK == l_eRes )
         {
@@ -138,7 +152,7 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
                 {
                     /* Get storage info */
                     l_eDBCRes = eFSS_DBC_GetBuffNStor(&p_ptCtx->tDbCtx, &l_tBuff, &l_tStorSet);
-                    l_eRes = eFSS_DB_DBCtoDBFLRes(l_eDBCRes);
+                    l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
 
                     if( e_eFSS_DB_RES_OK == l_eRes )
                     {
@@ -152,7 +166,7 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
                         {
                             l_bIsPageMod = false;
                             l_eDBCRes = eFSS_DBC_LoadPageInBuff(&p_ptCtx->tDbCtx, l_uIndexPToCheck);
-                            l_eRes = eFSS_DB_DBCtoDBFLRes(l_eDBCRes);
+                            l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
 
                             if( ( e_eFSS_DB_RES_OK == l_eRes ) || ( e_eFSS_DB_RES_OK_BKP_RCVRD == l_eRes ) )
                             {
@@ -199,7 +213,7 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
                                 if( true == l_bIsPageMod )
                                 {
                                     l_eDBCRes = eFSS_DBC_FlushBuffInPage(&p_ptCtx->tDbCtx, l_uIndexPToCheck);
-                                    l_eRes = eFSS_DB_DBCtoDBFLRes(l_eDBCRes);
+                                    l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
                                 }
                             }
 
@@ -240,7 +254,7 @@ e_eFSS_DB_RES eFSS_DB_FormatToDefault(t_eFSS_DB_Ctx* const p_ptCtx)
 	{
 		/* Check Init */
         l_eDBCRes = eFSS_DBC_IsInit(&p_ptCtx->tDbCtx, &l_bIsInit);
-        l_eRes = eFSS_DB_DBCtoDBFLRes(l_eDBCRes);
+        l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
 
         if( e_eFSS_DB_RES_OK == l_eRes )
         {
@@ -259,7 +273,7 @@ e_eFSS_DB_RES eFSS_DB_FormatToDefault(t_eFSS_DB_Ctx* const p_ptCtx)
                 {
                     /* Get storage info */
                     l_eDBCRes = eFSS_DBC_GetBuffNStor(&p_ptCtx->tDbCtx, &l_tBuff, &l_tStorSet);
-                    l_eRes = eFSS_DB_DBCtoDBFLRes(l_eDBCRes);
+                    l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
 
                     if( e_eFSS_DB_RES_OK == l_eRes )
                     {
@@ -272,7 +286,7 @@ e_eFSS_DB_RES eFSS_DB_FormatToDefault(t_eFSS_DB_Ctx* const p_ptCtx)
                                ( l_uIndexPToCheck < l_uMaxPIndex ) || ( l_uElemDone < p_ptCtx->tDBS.uNOfElem ) )
                         {
                             l_eDBCRes = eFSS_DBC_LoadPageInBuff(&p_ptCtx->tDbCtx, l_uIndexPToCheck);
-                            l_eRes = eFSS_DB_DBCtoDBFLRes(l_eDBCRes);
+                            l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
 
                             if( ( e_eFSS_DB_RES_OK == l_eRes ) || ( e_eFSS_DB_RES_OK_BKP_RCVRD == l_eRes ) )
                             {
@@ -290,7 +304,7 @@ e_eFSS_DB_RES eFSS_DB_FormatToDefault(t_eFSS_DB_Ctx* const p_ptCtx)
                                 }
 
                                 l_eDBCRes = eFSS_DBC_FlushBuffInPage(&p_ptCtx->tDbCtx, l_uIndexPToCheck);
-                                l_eRes = eFSS_DB_DBCtoDBFLRes(l_eDBCRes);
+                                l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
                             }
 
                             l_uIndexPToCheck++;
@@ -328,7 +342,7 @@ e_eFSS_DB_RES eFSS_DB_SaveElemen(t_eFSS_DB_Ctx* const p_ptCtx, uint32_t p_uPos, 
 	{
 		/* Check Init */
         l_eDBCRes = eFSS_DBC_IsInit(&p_ptCtx->tDbCtx, &l_bIsInit);
-        l_eRes = eFSS_DB_DBCtoDBFLRes(l_eDBCRes);
+        l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
 
         if( e_eFSS_DB_RES_OK == l_eRes )
         {
@@ -347,7 +361,7 @@ e_eFSS_DB_RES eFSS_DB_SaveElemen(t_eFSS_DB_Ctx* const p_ptCtx, uint32_t p_uPos, 
                 {
                     /* Get storage info */
                     l_eDBCRes = eFSS_DBC_GetBuffNStor(&p_ptCtx->tDbCtx, &l_tBuff, &l_tStorSet);
-                    l_eRes = eFSS_DB_DBCtoDBFLRes(l_eDBCRes);
+                    l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
 
                     if( e_eFSS_DB_RES_OK == l_eRes )
                     {
@@ -356,7 +370,7 @@ e_eFSS_DB_RES eFSS_DB_SaveElemen(t_eFSS_DB_Ctx* const p_ptCtx, uint32_t p_uPos, 
 
                         /* Load the page where we can find the needed element */
                         l_eDBCRes = eFSS_DBC_LoadPageInBuff(&p_ptCtx->tDbCtx, p_puPageIdx);
-                        l_eRes = eFSS_DB_DBCtoDBFLRes(l_eDBCRes);
+                        l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
 
                         if( ( e_eFSS_DB_RES_OK == l_eRes ) || ( e_eFSS_DB_RES_OK_BKP_RCVRD == l_eRes ) )
                         {
@@ -367,7 +381,7 @@ e_eFSS_DB_RES eFSS_DB_SaveElemen(t_eFSS_DB_Ctx* const p_ptCtx, uint32_t p_uPos, 
 
                             /* Flush the page */
                             l_eDBCRes = eFSS_DBC_FlushBuffInPage(&p_ptCtx->tDbCtx, p_puPagePos);
-                            l_eRes = eFSS_DB_DBCtoDBFLRes(l_eDBCRes);
+                            l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
                         }
                     }
                 }
@@ -405,7 +419,7 @@ e_eFSS_DB_RES eFSS_DB_GetElement(t_eFSS_DB_Ctx* const p_ptCtx, uint32_t p_uPos, 
 	{
 		/* Check Init */
         l_eDBCRes = eFSS_DBC_IsInit(&p_ptCtx->tDbCtx, &l_bIsInit);
-        l_eRes = eFSS_DB_DBCtoDBFLRes(l_eDBCRes);
+        l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
 
         if( e_eFSS_DB_RES_OK == l_eRes )
         {
@@ -424,7 +438,7 @@ e_eFSS_DB_RES eFSS_DB_GetElement(t_eFSS_DB_Ctx* const p_ptCtx, uint32_t p_uPos, 
                 {
                     /* Get storage info */
                     l_eDBCRes = eFSS_DBC_GetBuffNStor(&p_ptCtx->tDbCtx, &l_tBuff, &l_tStorSet);
-                    l_eRes = eFSS_DB_DBCtoDBFLRes(l_eDBCRes);
+                    l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
 
                     if( e_eFSS_DB_RES_OK == l_eRes )
                     {
@@ -433,7 +447,7 @@ e_eFSS_DB_RES eFSS_DB_GetElement(t_eFSS_DB_Ctx* const p_ptCtx, uint32_t p_uPos, 
 
                         /* Load the page where we can find the needed element */
                         l_eDBCRes = eFSS_DBC_LoadPageInBuff(&p_ptCtx->tDbCtx, p_puPageIdx);
-                        l_eRes = eFSS_DB_DBCtoDBFLRes(l_eDBCRes);
+                        l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
 
                         if( ( e_eFSS_DB_RES_OK == l_eRes ) || ( e_eFSS_DB_RES_OK_BKP_RCVRD == l_eRes ) )
                         {
@@ -470,7 +484,7 @@ static bool_t eFSS_DB_IsStatusStillCoherent(const t_eFSS_DB_Ctx* p_ptCtx)
     return l_eRes;
 }
 
-static e_eFSS_DB_RES eFSS_DB_DBCtoDBFLRes(const e_eFSS_DBC_RES p_eDBCRes)
+static e_eFSS_DB_RES eFSS_DB_DBCtoDBRes(const e_eFSS_DBC_RES p_eDBCRes)
 {
     e_eFSS_DB_RES l_eRes;
 
@@ -496,6 +510,11 @@ static e_eFSS_DB_RES eFSS_DB_DBCtoDBFLRes(const e_eFSS_DBC_RES p_eDBCRes)
     }
 
     return l_eRes;
+}
+
+static bool_t eFSS_DB_IsDbDefStructValid(t_eFSS_DB_DbStruct p_tDefaultDb)
+{
+
 }
 
 static void eFSS_DB_GetEleRawInBuffer(t_eFSS_DB_DbElement* p_gettedElem, uint8_t* p_puBuff)
