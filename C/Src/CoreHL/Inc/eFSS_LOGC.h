@@ -88,6 +88,17 @@ e_eFSS_LOGC_RES eFSS_LOGC_InitCtx(t_eFSS_LOGC_Ctx* const p_ptCtx, t_eFSS_TYPE_Cb
 e_eFSS_LOGC_RES eFSS_LOGC_IsInit(t_eFSS_LOGC_Ctx* const p_ptCtx, bool_t* p_pbIsInit);
 
 /**
+ * @brief       Check if the lib is initialized
+ *
+ * @param[in]   p_ptCtx       - Log Core context
+ * @param[out]  p_pbIsInit    - Pointer to a bool_t variable that will be filled with true if the lib is initialized
+ *
+ * @return      e_eFSS_LOGC_RES_BADPOINTER    - In case of bad pointer passed to the function
+ *              e_eFSS_LOGC_RES_OK            - Operation ended correctly
+ */
+e_eFSS_LOGC_RES eFSS_LOGC_IsFlashCacheUsed(t_eFSS_LOGC_Ctx* const p_ptCtx, bool_t* p_pbIsFlashCacheUsed);
+
+/**
  * @brief       Get the reference of buffer that we can use to read or write data from storage
  *
  * @param[in]   p_ptCtx       - Log Core context
@@ -111,7 +122,7 @@ e_eFSS_LOGC_RES eFSS_LOGC_GetBuff(t_eFSS_LOGC_Ctx* p_ptCtx, t_eFSS_TYPE_StorBuf*
  *		        e_eFSS_LOGC_RES_NOINITLIB     - Need to init lib before calling function
  *              e_eFSS_LOGC_RES_OK            - Operation ended correctly
  */
-e_eFSS_LOGC_RES eFSS_LOGC_GetUsablePage(t_eFSS_LOGC_Ctx* p_ptCtx, uint8_t* p_puUsableP);
+e_eFSS_LOGC_RES eFSS_LOGC_GetUsablePage(t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t* p_puUsableP);
 
 /**
  * @brief       Get the value of the next index given a passed one.

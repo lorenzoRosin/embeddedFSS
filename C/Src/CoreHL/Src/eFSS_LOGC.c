@@ -134,6 +134,26 @@ e_eFSS_LOGC_RES eFSS_LOGC_IsInit(t_eFSS_LOGC_Ctx* const p_ptCtx, bool_t* p_pbIsI
 	return l_eRes;
 }
 
+e_eFSS_LOGC_RES eFSS_LOGC_IsFlashCacheUsed(t_eFSS_LOGC_Ctx* const p_ptCtx, bool_t* p_pbIsFlashCacheUsed)
+{
+	/* Local variable */
+	e_eFSS_LOGC_RES l_eRes;
+    e_eFSS_COREHL_RES l_eResHL;
+
+	/* Check pointer validity */
+	if( ( NULL == p_ptCtx ) || ( NULL == p_pbIsFlashCacheUsed ) )
+	{
+		l_eRes = e_eFSS_LOGC_RES_BADPOINTER;
+	}
+	else
+	{
+        l_eResHL = eFSS_COREHL_IsInit(&p_ptCtx->tCOREHLCtx, p_pbIsFlashCacheUsed);
+        l_eRes = eFSS_LOGC_HLtoLOGCRes(l_eResHL);
+	}
+
+	return l_eRes;
+}
+
 e_eFSS_LOGC_RES eFSS_LOGC_GetBuff(t_eFSS_LOGC_Ctx* p_ptCtx, t_eFSS_TYPE_StorBuf* p_ptBuff)
 {
 	/* Local variable */
@@ -179,7 +199,7 @@ e_eFSS_LOGC_RES eFSS_LOGC_GetBuff(t_eFSS_LOGC_Ctx* p_ptCtx, t_eFSS_TYPE_StorBuf*
 	return l_eRes;
 }
 
-e_eFSS_LOGC_RES eFSS_LOGC_GetUsablePage(t_eFSS_LOGC_Ctx* p_ptCtx, uint8_t* p_puUsableP)
+e_eFSS_LOGC_RES eFSS_LOGC_GetUsablePage(t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t* p_puUsableP)
 {
 	/* Local variable */
 	e_eFSS_LOGC_RES l_eRes;
