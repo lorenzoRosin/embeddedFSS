@@ -140,56 +140,9 @@ e_eFSS_LOGC_RES eFSS_LOGC_GetNextIndex(t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t p_uIdx
  */
 e_eFSS_LOGC_RES eFSS_LOGC_GetPrevIndex(t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t p_uIdx, uint32_t* p_puPrevIdx);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /**
  * @brief       Write in cache the value of the new index location and the numbers of filled pages.
- *              This function take care of the backup pages. Do not pass to this function NULL pointer or invalid
- *              index, they are not checked. Make sure eFSS_LOGC_IsStatusStillCoherent is called before calling this
- *              function. Use this function only if flash cache is enabled.
+ *              Use this function only if flash cache is enabled.
  *
  * @param[in]   p_ptCtx          - Log Core context
  * @param[in]   p_uIdxN          - Index of the new log page that we want to save in cache
@@ -206,12 +159,11 @@ e_eFSS_LOGC_RES eFSS_LOGC_GetPrevIndex(t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t p_uIdx
  *		        e_eFSS_LOGC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
  *              e_eFSS_LOGC_RES_OK                - Operation ended correctly
  */
-e_eFSS_LOGC_RES eFSS_LOGCPRV_WriteCache(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t p_uIdxN, uint32_t p_uIFlP);
+e_eFSS_LOGC_RES eFSS_LOGC_WriteCache(t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t p_uIdxN, uint32_t p_uIFlP);
 
 /**
  * @brief       Read from cache the value of new index location and the numbers of filled pages. This function take
- *              care of the backup pages. Do not pass to this function NULL pointer or invalid index, they are
- *              not checked. Make sure eFSS_LOGC_IsStatusStillCoherent is called before calling this function.
+ *              care of the backup pages.
  *              Use this function only if flash cache is enabled.
  *
  * @param[in]   p_ptCtx          - Log Core context
@@ -232,7 +184,46 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_WriteCache(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t
  *                                                  page
  *              e_eFSS_LOGC_RES_OK                - Operation ended correctly
  */
-e_eFSS_LOGC_RES eFSS_LOGCPRV_ReadCache(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t* p_puIdxN, uint32_t* p_puIFlP);
+e_eFSS_LOGC_RES eFSS_LOGC_ReadCache(t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t* p_puIdxN, uint32_t* p_puIFlP);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /**
  * @brief       Flush the buffer in a page at p_uIdx position. Do not pass to this function NULL value
