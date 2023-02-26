@@ -1,7 +1,7 @@
 /**
  * @file       eFSS_LOG.h
  *
- * @brief      LOG of fiexd length module
+ * @brief      LOG module
  *
  * @author     Lorenzo Rosin
  *
@@ -26,8 +26,8 @@ static e_eFSS_LOG_RES eFSS_LOG_DBCtoDBFLRes(const e_eFSS_LOGC_RES p_eDBCRes);
  *   GLOBAL FUNCTIONS
  **********************************************************************************************************************/
 e_eFSS_LOG_RES eFSS_LOG_InitCtx(t_eFSS_LOG_Ctx* const p_ptCtx, t_eFSS_TYPE_CbStorCtx const p_tCtxCb,
-                                  t_eFSS_TYPE_StorSet p_tStorSet, uint8_t* const p_puBuff, uint32_t p_uBuffL,
-                                  bool_t p_bFlashCache, bool_t p_bFullBckup)
+                                t_eFSS_TYPE_StorSet p_tStorSet, uint8_t* const p_puBuff, uint32_t p_uBuffL,
+                                bool_t p_bFlashCache, bool_t p_bFullBckup)
 {
     e_eFSS_LOG_RES l_eRes;
     e_eFSS_LOGC_RES  l_eDBCRes;
@@ -125,7 +125,7 @@ e_eFSS_LOG_RES eFSS_LOG_GetLogStatus(t_eFSS_LOG_Ctx* const p_ptCtx)
 }
 
 e_eFSS_LOG_RES eFSS_LOG_GetLogInfo(t_eFSS_LOG_Ctx* const p_ptCtx, uint32_t *p_puNewLogI, uint32_t *p_puOldLogI,
-                                       uint32_t *p_puNpageUsed, uint32_t *p_puNpageTot)
+                                   uint32_t *p_puNpageUsed, uint32_t *p_puNpageTot)
 {
 	/* Local return variable */
     e_eFSS_LOG_RES l_eRes;
@@ -294,8 +294,8 @@ e_eFSS_LOG_RES eFSS_LOG_AddLog(t_eFSS_LOG_Ctx* const p_ptCtx, uint16_t p_uElemL,
 	return l_eRes;
 }
 
-e_eFSS_LOG_RES eFSS_LOG_GetLogOfASpecificPage(t_eFSS_LOG_Ctx* const p_ptCtx, uint32_t p_uindx, uint8_t* p_puBuf,
-                                              uint32_t* p_puBufL, uint32_t p_uBufMaxL)
+e_eFSS_LOG_RES eFSS_LOG_GetLogOfAPage(t_eFSS_LOG_Ctx* const p_ptCtx, uint32_t p_uindx, uint8_t* p_puBuf,
+                                      uint32_t* p_puBufL, uint32_t p_uBufMaxL)
 {
 	/* Local return variable */
     e_eFSS_LOG_RES l_eRes;
