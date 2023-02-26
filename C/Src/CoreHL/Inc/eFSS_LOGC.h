@@ -87,6 +87,24 @@ e_eFSS_LOGC_RES eFSS_LOGC_InitCtx(t_eFSS_LOGC_Ctx* const p_ptCtx, t_eFSS_TYPE_Cb
  */
 e_eFSS_LOGC_RES eFSS_LOGC_IsInit(t_eFSS_LOGC_Ctx* const p_ptCtx, bool_t* p_pbIsInit);
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /**
  * @brief       Get storage settings
  *
@@ -137,7 +155,7 @@ e_eFSS_DBC_RES eFSS_DBC_GetBuffNStor(t_eFSS_DBC_Ctx* p_ptCtx, t_eFSS_TYPE_StorBu
 
 /**
  * @brief       Get the value of usable page to save a log. Be sure to not insert any NULL value and
- *              call eFSS_LOGCPRV_IsStatusStillCoherent before.
+ *              call eFSS_LOGC_IsStatusStillCoherent before.
  *
  * @param[in]   p_ptCtx          - Log Core context
  * @param[in]   p_tStorSet       - Storage settings
@@ -152,7 +170,7 @@ uint32_t eFSS_LOGC_GetUsablePage(const t_eFSS_LOGC_Ctx* p_ptCtx, t_eFSS_TYPE_Sto
 
 /**
  * @brief       Get the value of the next index given a passed one. Be sure to not insert any NULL value and
- *              call eFSS_LOGCPRV_IsStatusStillCoherent before. Do not insert non valid index.
+ *              call eFSS_LOGC_IsStatusStillCoherent before. Do not insert non valid index.
  *
  * @param[in]   p_ptCtx          - Log Core context
  * @param[in]   p_tStorSet       - Storage settings
@@ -165,7 +183,7 @@ uint32_t eFSS_LOGCPRV_GetNextIndex(const t_eFSS_LOGC_Ctx* p_ptCtx, t_eFSS_TYPE_S
 
 /**
  * @brief       Get the value of the previous index. Be sure to not insert any NULL value and
- *              call eFSS_LOGCPRV_IsStatusStillCoherent before. Do not insert non valid index.
+ *              call eFSS_LOGC_IsStatusStillCoherent before. Do not insert non valid index.
  *
  * @param[in]   p_ptCtx          - Log Core context
  * @param[in]   p_tStorSet       - Storage settings
@@ -180,7 +198,7 @@ uint32_t eFSS_LOGCPRV_GetPrevIndex(const t_eFSS_LOGC_Ctx* p_ptCtx, t_eFSS_TYPE_S
 /**
  * @brief       Write in cache the value of the new index location and the numbers of filled pages.
  *              This function take care of the backup pages. Do not pass to this function NULL pointer or invalid
- *              index, they are not checked. Make sure eFSS_LOGCPRV_IsStatusStillCoherent is called before calling this
+ *              index, they are not checked. Make sure eFSS_LOGC_IsStatusStillCoherent is called before calling this
  *              function. Use this function only if flash cache is enabled.
  *
  * @param[in]   p_ptCtx          - Log Core context
@@ -203,7 +221,7 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_WriteCache(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t
 /**
  * @brief       Read from cache the value of new index location and the numbers of filled pages. This function take
  *              care of the backup pages. Do not pass to this function NULL pointer or invalid index, they are
- *              not checked. Make sure eFSS_LOGCPRV_IsStatusStillCoherent is called before calling this function.
+ *              not checked. Make sure eFSS_LOGC_IsStatusStillCoherent is called before calling this function.
  *              Use this function only if flash cache is enabled.
  *
  * @param[in]   p_ptCtx          - Log Core context
@@ -229,7 +247,7 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_ReadCache(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t*
 /**
  * @brief       Flush the buffer in a page at p_uIdx position. Do not pass to this function NULL value
  *              or invalid index value. This function will take care of any support page.
- *              Make sure eFSS_LOGCPRV_IsStatusStillCoherent is called before calling this function.
+ *              Make sure eFSS_LOGC_IsStatusStillCoherent is called before calling this function.
  *              Do not use this function on Flash cache pages.
  *              The buffer is managed with subtype related to log only.
  *
@@ -252,7 +270,7 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_FlushBufferAsLog(t_eFSS_LOGC_Ctx* const p_ptCtx, ui
 /**
  * @brief       Read a page of data at p_uIdx position. Do not pass to this function NULL value
  *              or invalid index value. This function will take care of any support page.
- *              Make sure eFSS_LOGCPRV_IsStatusStillCoherent is called before calling this function.
+ *              Make sure eFSS_LOGC_IsStatusStillCoherent is called before calling this function.
  *              Do not use this function on Flash cache pages.
  *              The buffer is managed with subtype related to log only.
  *
@@ -278,7 +296,7 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_LoadBufferAsLog(t_eFSS_LOGC_Ctx* const p_ptCtx, uin
 /**
  * @brief       Flush the buffer in a page at p_uIdx position as newest only. Do not pass to this function NULL value
  *              or invalid index value. This function will take care of any support page.
- *              Make sure eFSS_LOGCPRV_IsStatusStillCoherent is called before calling this function.
+ *              Make sure eFSS_LOGC_IsStatusStillCoherent is called before calling this function.
  *              Do not use this function on Flash cache pages.
  *              The buffer is managed with subtype related to newest page only.
  *
@@ -301,7 +319,7 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_FlushBufferAsNewestOnly(t_eFSS_LOGC_Ctx* const p_pt
 /**
  * @brief       Flush the buffer in a page at p_uIdx position as newest bkup only. Do not pass to this function NULL
  *              value or invalid index value. This function will take care of any support page.
- *              Make sure eFSS_LOGCPRV_IsStatusStillCoherent is called before calling this function.
+ *              Make sure eFSS_LOGC_IsStatusStillCoherent is called before calling this function.
  *              Do not use this function on Flash cache pages.
  *              The buffer is managed with subtype related to newest page only.
  *
@@ -324,7 +342,7 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_FlushBufferAsNewestBkupOnly(t_eFSS_LOGC_Ctx* const 
 /**
  * @brief       Write a page of data at p_uIdx position as newest and bkup. Do not pass to this function NULL value
  *              or invalid index value. This function will take care of any support page.
- *              Make sure eFSS_LOGCPRV_IsStatusStillCoherent is called before calling this function.
+ *              Make sure eFSS_LOGC_IsStatusStillCoherent is called before calling this function.
  *              Do not use this function on Flash cache pages.
  *              The buffer is managed with subtype related to newest page only.
  *
@@ -347,7 +365,7 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_FlushBufferAsNewestNBkpPage(t_eFSS_LOGC_Ctx* p_ptCt
 /**
  * @brief       Read a page of data at p_uIdx position. Do not pass to this function NULL value
  *              or invalid index value. This function will take care of any support page.
- *              Make sure eFSS_LOGCPRV_IsStatusStillCoherent is called before calling this function.
+ *              Make sure eFSS_LOGC_IsStatusStillCoherent is called before calling this function.
  *              Do not use this function on Flash cache pages.
  *              The buffer is managed with subtype related to newest page and newest backup only.
  *
