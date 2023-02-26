@@ -1187,9 +1187,6 @@
     </group>
     <group>
         <name>Log</name>
-        <excluded>
-            <configuration>Library</configuration>
-        </excluded>
         <group>
             <name>Inc</name>
             <file>
