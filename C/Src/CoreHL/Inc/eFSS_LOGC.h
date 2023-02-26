@@ -186,50 +186,9 @@ e_eFSS_LOGC_RES eFSS_LOGC_WriteCache(t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t p_uIdxN,
  */
 e_eFSS_LOGC_RES eFSS_LOGC_ReadCache(t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t* p_puIdxN, uint32_t* p_puIFlP);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /**
  * @brief       Flush the buffer in a page at p_uIdx position. Do not pass to this function NULL value
  *              or invalid index value. This function will take care of any support page.
- *              Make sure eFSS_LOGC_IsStatusStillCoherent is called before calling this function.
- *              Do not use this function on Flash cache pages.
  *              The buffer is managed with subtype related to log only.
  *
  * @param[in]   p_ptCtx          - Log Core context
@@ -246,12 +205,11 @@ e_eFSS_LOGC_RES eFSS_LOGC_ReadCache(t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t* p_puIdxN
  *		        e_eFSS_LOGC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
  *              e_eFSS_LOGC_RES_OK                - Operation ended correctly
  */
-e_eFSS_LOGC_RES eFSS_LOGCPRV_FlushBufferAsLog(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t p_uIdx);
+e_eFSS_LOGC_RES eFSS_LOGC_FlushBufferAsLog(t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t p_uIdx);
 
 /**
  * @brief       Read a page of data at p_uIdx position. Do not pass to this function NULL value
  *              or invalid index value. This function will take care of any support page.
- *              Make sure eFSS_LOGC_IsStatusStillCoherent is called before calling this function.
  *              Do not use this function on Flash cache pages.
  *              The buffer is managed with subtype related to log only.
  *
@@ -272,7 +230,7 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_FlushBufferAsLog(t_eFSS_LOGC_Ctx* const p_ptCtx, ui
  *                                                  page
  *              e_eFSS_LOGC_RES_OK                - Operation ended correctly
  */
-e_eFSS_LOGC_RES eFSS_LOGCPRV_LoadBufferAsLog(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t p_uIdx);
+e_eFSS_LOGC_RES eFSS_LOGC_LoadBufferAsLog(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t p_uIdx);
 
 /**
  * @brief       Flush the buffer in a page at p_uIdx position as newest only. Do not pass to this function NULL value
@@ -295,7 +253,39 @@ e_eFSS_LOGC_RES eFSS_LOGCPRV_LoadBufferAsLog(t_eFSS_LOGC_Ctx* const p_ptCtx, uin
  *		        e_eFSS_LOGC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
  *              e_eFSS_LOGC_RES_OK                - Operation ended correctly
  */
-e_eFSS_LOGC_RES eFSS_LOGCPRV_FlushBufferAsNewestOnly(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t p_uIdx);
+e_eFSS_LOGC_RES eFSS_LOGC_FlushBufferAsNewestOnly(t_eFSS_LOGC_Ctx* p_ptCtx, uint32_t p_uIdx);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /**
  * @brief       Flush the buffer in a page at p_uIdx position as newest bkup only. Do not pass to this function NULL
