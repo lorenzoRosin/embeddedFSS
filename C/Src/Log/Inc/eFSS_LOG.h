@@ -59,6 +59,8 @@ typedef enum
 typedef struct
 {
     t_eFSS_LOGC_Ctx tLOGCCtx;
+    uint32_t uNewPagIdx;
+    uint32_t uFullFilledP;
 }t_eFSS_LOG_Ctx;
 
 
