@@ -13,8 +13,8 @@
  * --------------------------------------------------------------------------------------------- Metadata  (17 byte)
  * - uint32_t  - uPageUseSpec1      -> (Valid only on the last page) Size of the stored blob    |
  * - uint32_t  - uPageUseSpec2      -> (Valid only on the last page) Crc of the stored blob     |
- * - uint32_t  - uPageUseSpec3      -> Total page given during formatting                       |
- * - uint32_t  - uPageUseSpec4      -> Sequential number of the page                            |
+ * - uint32_t  - uPageUseSpec3      -> Sequential number of the page                            |
+ * - uint32_t  - uPageUseSpec4      -> Page id                                                  |
  * - uint8_t   - uPageSubType       -> Page subtype                                             |
  * ---------------------------------------------------------------------------------------------+
  *
@@ -152,6 +152,67 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_GetBuff(t_eFSS_BLOBC_Ctx* p_ptCtx, t_eFSS_TYPE_StorB
 	return l_eRes;
 }
 
+e_eFSS_BLOBC_RES eFSS_LOGC_GetOriginalPageMeta(t_eFSS_BLOBC_Ctx* p_ptCtx, uint32_t p_uIdx)
+{
+
+}
+
+e_eFSS_BLOBC_RES eFSS_LOGC_GetBckupPageMeta(t_eFSS_BLOBC_Ctx* p_ptCtx, uint32_t p_uIdx)
+{
+
+}
+
+e_eFSS_BLOBC_RES eFSS_LOGC_FlushBufferInNewPage(t_eFSS_BLOBC_Ctx* p_ptCtx, uint32_t p_uIdx)
+{
+	/* Local variable */
+	e_eFSS_BLOBC_RES l_eRes;
+    e_eFSS_COREHL_RES l_eResHL;
+
+	return l_eRes;
+}
+
+e_eFSS_BLOBC_RES eFSS_LOGC_LoadBufferFromNewPage(t_eFSS_BLOBC_Ctx* p_ptCtx, uint32_t p_uIdx)
+{
+	/* Local variable */
+	e_eFSS_BLOBC_RES l_eRes;
+    e_eFSS_COREHL_RES l_eResHL;
+
+	return l_eRes;
+}
+
+e_eFSS_BLOBC_RES eFSS_LOGC_FlushBufferInBkupPage(t_eFSS_BLOBC_Ctx* p_ptCtx, uint32_t p_uIdx)
+{
+	/* Local variable */
+	e_eFSS_BLOBC_RES l_eRes;
+    e_eFSS_COREHL_RES l_eResHL;
+
+	return l_eRes;
+}
+
+e_eFSS_BLOBC_RES eFSS_LOGC_LoadBufferFromBkupPage(t_eFSS_BLOBC_Ctx* p_ptCtx, uint32_t p_uIdx)
+{
+	/* Local variable */
+	e_eFSS_BLOBC_RES l_eRes;
+    e_eFSS_COREHL_RES l_eResHL;
+
+	return l_eRes;
+}
+
+e_eFSS_BLOBC_RES eFSS_LOGC_GetCrcFromTheBuffer(t_eFSS_BLOBC_Ctx* p_ptCtx, uint32_t p_uIdx)
+{
+
+}
+
+e_eFSS_BLOBC_RES eFSS_LOGC_GenerateBkup(t_eFSS_BLOBC_Ctx* p_ptCtx, uint32_t p_uIdx)
+{
+
+}
+
+e_eFSS_BLOBC_RES eFSS_LOGC_RipristinateOriginal(t_eFSS_BLOBC_Ctx* p_ptCtx, uint32_t p_uIdx)
+{
+
+
+}
 
 
 /***********************************************************************************************************************

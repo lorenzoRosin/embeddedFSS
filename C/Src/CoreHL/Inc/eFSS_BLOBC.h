@@ -95,7 +95,195 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_IsInit(t_eFSS_BLOBC_Ctx* const p_ptCtx, bool_t* p_pb
  */
 e_eFSS_BLOBC_RES eFSS_BLOBC_GetBuff(t_eFSS_BLOBC_Ctx* p_ptCtx, t_eFSS_TYPE_StorBuf* p_ptBuff);
 
+/**
+ * @brief       Flush the buffer in a page at p_uIdx position. Do not pass to this function NULL value
+ *              or invalid index value. This function will take care of any support page.
+ *              The buffer is managed with subtype related to log only.
+ *
+ * @param[in]   p_ptCtx          - Log Core context
+ * @param[in]   p_uIdx           - Index of the log page we want to write
+ *
+ * @return      e_eFSS_BLOBC_RES_BADPOINTER        - In case of bad pointer passed to the function
+ *		        e_eFSS_BLOBC_RES_BADPARAM          - In case of an invalid parameter passed to the function
+ *		        e_eFSS_BLOBC_RES_CORRUPTCTX        - Context is corrupted
+ *		        e_eFSS_BLOBC_RES_NOINITLIB         - Need to init lib before calling function
+ *              e_eFSS_BLOBC_RES_CLBCKCRCERR       - The crc callback reported an error
+ *		        e_eFSS_BLOBC_RES_CLBCKERASEERR     - The erase callback reported an error
+ *		        e_eFSS_BLOBC_RES_CLBCKWRITEERR     - The write callback reported an error
+ *		        e_eFSS_BLOBC_RES_CLBCKREADERR      - The read callback reported an error
+ *		        e_eFSS_BLOBC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
+ *              e_eFSS_BLOBC_RES_OK                - Operation ended correctly
+ */
+e_eFSS_BLOBC_RES eFSS_LOGC_GetOriginalPageMeta(t_eFSS_BLOBC_Ctx* p_ptCtx, uint32_t p_uIdx);
 
+
+/**
+ * @brief       Flush the buffer in a page at p_uIdx position. Do not pass to this function NULL value
+ *              or invalid index value. This function will take care of any support page.
+ *              The buffer is managed with subtype related to log only.
+ *
+ * @param[in]   p_ptCtx          - Log Core context
+ * @param[in]   p_uIdx           - Index of the log page we want to write
+ *
+ * @return      e_eFSS_BLOBC_RES_BADPOINTER        - In case of bad pointer passed to the function
+ *		        e_eFSS_BLOBC_RES_BADPARAM          - In case of an invalid parameter passed to the function
+ *		        e_eFSS_BLOBC_RES_CORRUPTCTX        - Context is corrupted
+ *		        e_eFSS_BLOBC_RES_NOINITLIB         - Need to init lib before calling function
+ *              e_eFSS_BLOBC_RES_CLBCKCRCERR       - The crc callback reported an error
+ *		        e_eFSS_BLOBC_RES_CLBCKERASEERR     - The erase callback reported an error
+ *		        e_eFSS_BLOBC_RES_CLBCKWRITEERR     - The write callback reported an error
+ *		        e_eFSS_BLOBC_RES_CLBCKREADERR      - The read callback reported an error
+ *		        e_eFSS_BLOBC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
+ *              e_eFSS_BLOBC_RES_OK                - Operation ended correctly
+ */
+e_eFSS_BLOBC_RES eFSS_LOGC_GetBckupPageMeta(t_eFSS_BLOBC_Ctx* p_ptCtx, uint32_t p_uIdx);
+
+/**
+ * @brief       Flush the buffer in a page at p_uIdx position. Do not pass to this function NULL value
+ *              or invalid index value. This function will take care of any support page.
+ *              The buffer is managed with subtype related to log only.
+ *
+ * @param[in]   p_ptCtx          - Log Core context
+ * @param[in]   p_uIdx           - Index of the log page we want to write
+ *
+ * @return      e_eFSS_BLOBC_RES_BADPOINTER        - In case of bad pointer passed to the function
+ *		        e_eFSS_BLOBC_RES_BADPARAM          - In case of an invalid parameter passed to the function
+ *		        e_eFSS_BLOBC_RES_CORRUPTCTX        - Context is corrupted
+ *		        e_eFSS_BLOBC_RES_NOINITLIB         - Need to init lib before calling function
+ *              e_eFSS_BLOBC_RES_CLBCKCRCERR       - The crc callback reported an error
+ *		        e_eFSS_BLOBC_RES_CLBCKERASEERR     - The erase callback reported an error
+ *		        e_eFSS_BLOBC_RES_CLBCKWRITEERR     - The write callback reported an error
+ *		        e_eFSS_BLOBC_RES_CLBCKREADERR      - The read callback reported an error
+ *		        e_eFSS_BLOBC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
+ *              e_eFSS_BLOBC_RES_OK                - Operation ended correctly
+ */
+e_eFSS_BLOBC_RES eFSS_LOGC_FlushBufferInNewPage(t_eFSS_BLOBC_Ctx* p_ptCtx, uint32_t p_uIdx);
+
+/**
+ * @brief       Flush the buffer in a page at p_uIdx position. Do not pass to this function NULL value
+ *              or invalid index value. This function will take care of any support page.
+ *              The buffer is managed with subtype related to log only.
+ *
+ * @param[in]   p_ptCtx          - Log Core context
+ * @param[in]   p_uIdx           - Index of the log page we want to write
+ *
+ * @return      e_eFSS_BLOBC_RES_BADPOINTER        - In case of bad pointer passed to the function
+ *		        e_eFSS_BLOBC_RES_BADPARAM          - In case of an invalid parameter passed to the function
+ *		        e_eFSS_BLOBC_RES_CORRUPTCTX        - Context is corrupted
+ *		        e_eFSS_BLOBC_RES_NOINITLIB         - Need to init lib before calling function
+ *              e_eFSS_BLOBC_RES_CLBCKCRCERR       - The crc callback reported an error
+ *		        e_eFSS_BLOBC_RES_CLBCKERASEERR     - The erase callback reported an error
+ *		        e_eFSS_BLOBC_RES_CLBCKWRITEERR     - The write callback reported an error
+ *		        e_eFSS_BLOBC_RES_CLBCKREADERR      - The read callback reported an error
+ *		        e_eFSS_BLOBC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
+ *              e_eFSS_BLOBC_RES_OK                - Operation ended correctly
+ */
+e_eFSS_BLOBC_RES eFSS_LOGC_LoadBufferFromNewPage(t_eFSS_BLOBC_Ctx* p_ptCtx, uint32_t p_uIdx);
+
+/**
+ * @brief       Flush the buffer in a page at p_uIdx position. Do not pass to this function NULL value
+ *              or invalid index value. This function will take care of any support page.
+ *              The buffer is managed with subtype related to log only.
+ *
+ * @param[in]   p_ptCtx          - Log Core context
+ * @param[in]   p_uIdx           - Index of the log page we want to write
+ *
+ * @return      e_eFSS_BLOBC_RES_BADPOINTER        - In case of bad pointer passed to the function
+ *		        e_eFSS_BLOBC_RES_BADPARAM          - In case of an invalid parameter passed to the function
+ *		        e_eFSS_BLOBC_RES_CORRUPTCTX        - Context is corrupted
+ *		        e_eFSS_BLOBC_RES_NOINITLIB         - Need to init lib before calling function
+ *              e_eFSS_BLOBC_RES_CLBCKCRCERR       - The crc callback reported an error
+ *		        e_eFSS_BLOBC_RES_CLBCKERASEERR     - The erase callback reported an error
+ *		        e_eFSS_BLOBC_RES_CLBCKWRITEERR     - The write callback reported an error
+ *		        e_eFSS_BLOBC_RES_CLBCKREADERR      - The read callback reported an error
+ *		        e_eFSS_BLOBC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
+ *              e_eFSS_BLOBC_RES_OK                - Operation ended correctly
+ */
+e_eFSS_BLOBC_RES eFSS_LOGC_FlushBufferInBkupPage(t_eFSS_BLOBC_Ctx* p_ptCtx, uint32_t p_uIdx);
+
+/**
+ * @brief       Flush the buffer in a page at p_uIdx position. Do not pass to this function NULL value
+ *              or invalid index value. This function will take care of any support page.
+ *              The buffer is managed with subtype related to log only.
+ *
+ * @param[in]   p_ptCtx          - Log Core context
+ * @param[in]   p_uIdx           - Index of the log page we want to write
+ *
+ * @return      e_eFSS_BLOBC_RES_BADPOINTER        - In case of bad pointer passed to the function
+ *		        e_eFSS_BLOBC_RES_BADPARAM          - In case of an invalid parameter passed to the function
+ *		        e_eFSS_BLOBC_RES_CORRUPTCTX        - Context is corrupted
+ *		        e_eFSS_BLOBC_RES_NOINITLIB         - Need to init lib before calling function
+ *              e_eFSS_BLOBC_RES_CLBCKCRCERR       - The crc callback reported an error
+ *		        e_eFSS_BLOBC_RES_CLBCKERASEERR     - The erase callback reported an error
+ *		        e_eFSS_BLOBC_RES_CLBCKWRITEERR     - The write callback reported an error
+ *		        e_eFSS_BLOBC_RES_CLBCKREADERR      - The read callback reported an error
+ *		        e_eFSS_BLOBC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
+ *              e_eFSS_BLOBC_RES_OK                - Operation ended correctly
+ */
+e_eFSS_BLOBC_RES eFSS_LOGC_LoadBufferFromBkupPage(t_eFSS_BLOBC_Ctx* p_ptCtx, uint32_t p_uIdx);
+
+/**
+ * @brief       Flush the buffer in a page at p_uIdx position. Do not pass to this function NULL value
+ *              or invalid index value. This function will take care of any support page.
+ *              The buffer is managed with subtype related to log only.
+ *
+ * @param[in]   p_ptCtx          - Log Core context
+ * @param[in]   p_uIdx           - Index of the log page we want to write
+ *
+ * @return      e_eFSS_BLOBC_RES_BADPOINTER        - In case of bad pointer passed to the function
+ *		        e_eFSS_BLOBC_RES_BADPARAM          - In case of an invalid parameter passed to the function
+ *		        e_eFSS_BLOBC_RES_CORRUPTCTX        - Context is corrupted
+ *		        e_eFSS_BLOBC_RES_NOINITLIB         - Need to init lib before calling function
+ *              e_eFSS_BLOBC_RES_CLBCKCRCERR       - The crc callback reported an error
+ *		        e_eFSS_BLOBC_RES_CLBCKERASEERR     - The erase callback reported an error
+ *		        e_eFSS_BLOBC_RES_CLBCKWRITEERR     - The write callback reported an error
+ *		        e_eFSS_BLOBC_RES_CLBCKREADERR      - The read callback reported an error
+ *		        e_eFSS_BLOBC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
+ *              e_eFSS_BLOBC_RES_OK                - Operation ended correctly
+ */
+e_eFSS_BLOBC_RES eFSS_LOGC_GetCrcFromTheBuffer(t_eFSS_BLOBC_Ctx* p_ptCtx, uint32_t p_uIdx);
+
+/**
+ * @brief       Flush the buffer in a page at p_uIdx position. Do not pass to this function NULL value
+ *              or invalid index value. This function will take care of any support page.
+ *              The buffer is managed with subtype related to log only.
+ *
+ * @param[in]   p_ptCtx          - Log Core context
+ * @param[in]   p_uIdx           - Index of the log page we want to write
+ *
+ * @return      e_eFSS_BLOBC_RES_BADPOINTER        - In case of bad pointer passed to the function
+ *		        e_eFSS_BLOBC_RES_BADPARAM          - In case of an invalid parameter passed to the function
+ *		        e_eFSS_BLOBC_RES_CORRUPTCTX        - Context is corrupted
+ *		        e_eFSS_BLOBC_RES_NOINITLIB         - Need to init lib before calling function
+ *              e_eFSS_BLOBC_RES_CLBCKCRCERR       - The crc callback reported an error
+ *		        e_eFSS_BLOBC_RES_CLBCKERASEERR     - The erase callback reported an error
+ *		        e_eFSS_BLOBC_RES_CLBCKWRITEERR     - The write callback reported an error
+ *		        e_eFSS_BLOBC_RES_CLBCKREADERR      - The read callback reported an error
+ *		        e_eFSS_BLOBC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
+ *              e_eFSS_BLOBC_RES_OK                - Operation ended correctly
+ */
+e_eFSS_BLOBC_RES eFSS_LOGC_GenerateBkup(t_eFSS_BLOBC_Ctx* p_ptCtx, uint32_t p_uIdx);
+
+/**
+ * @brief       Flush the buffer in a page at p_uIdx position. Do not pass to this function NULL value
+ *              or invalid index value. This function will take care of any support page.
+ *              The buffer is managed with subtype related to log only.
+ *
+ * @param[in]   p_ptCtx          - Log Core context
+ * @param[in]   p_uIdx           - Index of the log page we want to write
+ *
+ * @return      e_eFSS_BLOBC_RES_BADPOINTER        - In case of bad pointer passed to the function
+ *		        e_eFSS_BLOBC_RES_BADPARAM          - In case of an invalid parameter passed to the function
+ *		        e_eFSS_BLOBC_RES_CORRUPTCTX        - Context is corrupted
+ *		        e_eFSS_BLOBC_RES_NOINITLIB         - Need to init lib before calling function
+ *              e_eFSS_BLOBC_RES_CLBCKCRCERR       - The crc callback reported an error
+ *		        e_eFSS_BLOBC_RES_CLBCKERASEERR     - The erase callback reported an error
+ *		        e_eFSS_BLOBC_RES_CLBCKWRITEERR     - The write callback reported an error
+ *		        e_eFSS_BLOBC_RES_CLBCKREADERR      - The read callback reported an error
+ *		        e_eFSS_BLOBC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
+ *              e_eFSS_BLOBC_RES_OK                - Operation ended correctly
+ */
+e_eFSS_BLOBC_RES eFSS_LOGC_RipristinateOriginal(t_eFSS_BLOBC_Ctx* p_ptCtx, uint32_t p_uIdx);
 
 #ifdef __cplusplus
 } /* extern "C" */
