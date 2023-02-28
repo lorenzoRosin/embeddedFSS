@@ -8,17 +8,30 @@
  **********************************************************************************************************************/
 
 /* In this module the page field has the following meaning:
- * - uPageUseSpecific1 -> (Valid only on the last page) Size of the stored blob
- * - uPageUseSpecific2 -> (Valid only on the last page) Crc of the stored blob
- * - uPageUseSpecific3 -> Total page given during formatting
- * - uPageUseSpecific4 -> Sequential number of the page
- *
- * In this module the original pages are written before the backup pages
+ * --------------------------------------------------------------------------------------------- User data
+ * - [uint8_t] -                    -> N byte of user data                                      |
+ * --------------------------------------------------------------------------------------------- Metadata  (17 byte)
+ * - uint32_t  - uPageUseSpec1      -> (Valid only on the last page) Size of the stored blob    |
+ * - uint32_t  - uPageUseSpec2      -> (Valid only on the last page) Crc of the stored blob     |
+ * - uint32_t  - uPageUseSpec3      -> Total page given during formatting                       |
+ * - uint32_t  - uPageUseSpec4      -> Sequential number of the page                            |
+ * - uint8_t   - uPageSubType       -> Page subtype                                             |
+ * ---------------------------------------------------------------------------------------------+
  *
  * In this module the storage is organizated as follow :
- * - [ 0                 -    ( uTotPages / 2 ) - 1 ]  -> Original pages
- * - [ ( uTotPages / 2 ) -    uTotPages - 1 ]          -> Backup pages
+ *
+ *   bFullBckup = true, bFlashCache = true
+ * - [ 0                            -    ( uTotPages / 2 ) - 1 ]  -> Original pages
+ * - [ ( uTotPages / 2 )            -    uTotPages - 1         ]  -> Backup pages
+ *
+ * First write original pages and after the backup pages
+ * Only the backup pages have a valid size and and valid crc (because the crc and size calculation is updated at the
+ * end).
+ * The process of backup is done only when all the original pages are valid, so during a long file copy we can always
+ * retrive a valid image.
  */
+
+
 
 /***********************************************************************************************************************
  *      INCLUDES
