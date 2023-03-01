@@ -96,12 +96,12 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_IsInit(t_eFSS_BLOBC_Ctx* const p_ptCtx, bool_t* p_pb
 e_eFSS_BLOBC_RES eFSS_BLOBC_GetBuff(t_eFSS_BLOBC_Ctx* p_ptCtx, t_eFSS_TYPE_StorBuf* p_ptBuff);
 
 /**
- * @brief       Flush the buffer in a page at p_uIdx position. Do not pass to this function NULL value
- *              or invalid index value. This function will take care of any support page.
- *              The buffer is managed with subtype related to log only.
+ * @brief       Retrive the stored value of blob crc and blob length. If the blob is invalid the returned value
+ *              is not valid.
  *
  * @param[in]   p_ptCtx          - Log Core context
- * @param[in]   p_uIdx           - Index of the log page we want to write
+ * @param[in]   p_puBlobLen      - Pointer where the readed size of blob will be stored
+ * @param[in]   p_puBlobCrc      - Pointer where the readed CRC of blob will be stored
  *
  * @return      e_eFSS_BLOBC_RES_BADPOINTER        - In case of bad pointer passed to the function
  *		        e_eFSS_BLOBC_RES_BADPARAM          - In case of an invalid parameter passed to the function
@@ -114,8 +114,49 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_GetBuff(t_eFSS_BLOBC_Ctx* p_ptCtx, t_eFSS_TYPE_StorB
  *		        e_eFSS_BLOBC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
  *              e_eFSS_BLOBC_RES_OK                - Operation ended correctly
  */
-e_eFSS_BLOBC_RES eFSS_LOGC_GetOriginalPageMeta(t_eFSS_BLOBC_Ctx* p_ptCtx, uint32_t p_uIdx);
+e_eFSS_BLOBC_RES eFSS_LOGC_GetOriginalPageMeta(t_eFSS_BLOBC_Ctx* p_ptCtx, uint32_t* p_puBlobLen, uint32_t* p_puBlobCrc);
 
+/**
+ * @brief       Save the value of blob crc and blob length. This function only work on page that are already valid and
+ *              dosent modify any value already present on the page itself.
+ *
+ * @param[in]   p_ptCtx          - Log Core context
+ * @param[in]   p_uBlobLen       - Pointer where the readed size of blob will be stored
+ * @param[in]   p_uBlobCrc       - Pointer where the readed CRC of blob will be stored
+ *
+ * @return      e_eFSS_BLOBC_RES_BADPOINTER        - In case of bad pointer passed to the function
+ *		        e_eFSS_BLOBC_RES_BADPARAM          - In case of an invalid parameter passed to the function
+ *		        e_eFSS_BLOBC_RES_CORRUPTCTX        - Context is corrupted
+ *		        e_eFSS_BLOBC_RES_NOINITLIB         - Need to init lib before calling function
+ *              e_eFSS_BLOBC_RES_CLBCKCRCERR       - The crc callback reported an error
+ *		        e_eFSS_BLOBC_RES_CLBCKERASEERR     - The erase callback reported an error
+ *		        e_eFSS_BLOBC_RES_CLBCKWRITEERR     - The write callback reported an error
+ *		        e_eFSS_BLOBC_RES_CLBCKREADERR      - The read callback reported an error
+ *		        e_eFSS_BLOBC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
+ *              e_eFSS_BLOBC_RES_OK                - Operation ended correctly
+ */
+e_eFSS_BLOBC_RES eFSS_LOGC_SetOriginalPageMeta(t_eFSS_BLOBC_Ctx* p_ptCtx, uint32_t p_uBlobLen, uint32_t p_uBlobCrc);
+
+/**
+ * @brief       Retrive the stored value of blob crc and blob length. If the blob is invalid the returned value
+ *              is not valid.
+ *
+ * @param[in]   p_ptCtx          - Log Core context
+ * @param[in]   p_puBlobLen      - Pointer where the readed size of blob will be stored
+ * @param[in]   p_puBlobCrc      - Pointer where the readed CRC of blob will be stored
+ *
+ * @return      e_eFSS_BLOBC_RES_BADPOINTER        - In case of bad pointer passed to the function
+ *		        e_eFSS_BLOBC_RES_BADPARAM          - In case of an invalid parameter passed to the function
+ *		        e_eFSS_BLOBC_RES_CORRUPTCTX        - Context is corrupted
+ *		        e_eFSS_BLOBC_RES_NOINITLIB         - Need to init lib before calling function
+ *              e_eFSS_BLOBC_RES_CLBCKCRCERR       - The crc callback reported an error
+ *		        e_eFSS_BLOBC_RES_CLBCKERASEERR     - The erase callback reported an error
+ *		        e_eFSS_BLOBC_RES_CLBCKWRITEERR     - The write callback reported an error
+ *		        e_eFSS_BLOBC_RES_CLBCKREADERR      - The read callback reported an error
+ *		        e_eFSS_BLOBC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
+ *              e_eFSS_BLOBC_RES_OK                - Operation ended correctly
+ */
+e_eFSS_BLOBC_RES eFSS_LOGC_GetBckupPageMeta(t_eFSS_BLOBC_Ctx* p_ptCtx, uint32_t* p_puBlobLen, uint32_t* p_puBlobCrc);
 
 /**
  * @brief       Flush the buffer in a page at p_uIdx position. Do not pass to this function NULL value
@@ -136,7 +177,7 @@ e_eFSS_BLOBC_RES eFSS_LOGC_GetOriginalPageMeta(t_eFSS_BLOBC_Ctx* p_ptCtx, uint32
  *		        e_eFSS_BLOBC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
  *              e_eFSS_BLOBC_RES_OK                - Operation ended correctly
  */
-e_eFSS_BLOBC_RES eFSS_LOGC_GetBckupPageMeta(t_eFSS_BLOBC_Ctx* p_ptCtx, uint32_t p_uIdx);
+e_eFSS_BLOBC_RES eFSS_LOGC_FlushBufferInNewPage(t_eFSS_BLOBC_Ctx* p_ptCtx, uint32_t p_uSeqN, uint32_t p_uIdx);
 
 /**
  * @brief       Flush the buffer in a page at p_uIdx position. Do not pass to this function NULL value
@@ -157,7 +198,7 @@ e_eFSS_BLOBC_RES eFSS_LOGC_GetBckupPageMeta(t_eFSS_BLOBC_Ctx* p_ptCtx, uint32_t 
  *		        e_eFSS_BLOBC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
  *              e_eFSS_BLOBC_RES_OK                - Operation ended correctly
  */
-e_eFSS_BLOBC_RES eFSS_LOGC_FlushBufferInNewPage(t_eFSS_BLOBC_Ctx* p_ptCtx, uint32_t p_uIdx);
+e_eFSS_BLOBC_RES eFSS_LOGC_LoadBufferFromNewPage(t_eFSS_BLOBC_Ctx* p_ptCtx, uint32_t* p_puSeqN, uint32_t p_uIdx);
 
 /**
  * @brief       Flush the buffer in a page at p_uIdx position. Do not pass to this function NULL value
@@ -178,7 +219,7 @@ e_eFSS_BLOBC_RES eFSS_LOGC_FlushBufferInNewPage(t_eFSS_BLOBC_Ctx* p_ptCtx, uint3
  *		        e_eFSS_BLOBC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
  *              e_eFSS_BLOBC_RES_OK                - Operation ended correctly
  */
-e_eFSS_BLOBC_RES eFSS_LOGC_LoadBufferFromNewPage(t_eFSS_BLOBC_Ctx* p_ptCtx, uint32_t p_uIdx);
+e_eFSS_BLOBC_RES eFSS_LOGC_FlushBufferInBkupPage(t_eFSS_BLOBC_Ctx* p_ptCtx, uint32_t p_uSeqN, uint32_t p_uIdx);
 
 /**
  * @brief       Flush the buffer in a page at p_uIdx position. Do not pass to this function NULL value
@@ -199,7 +240,7 @@ e_eFSS_BLOBC_RES eFSS_LOGC_LoadBufferFromNewPage(t_eFSS_BLOBC_Ctx* p_ptCtx, uint
  *		        e_eFSS_BLOBC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
  *              e_eFSS_BLOBC_RES_OK                - Operation ended correctly
  */
-e_eFSS_BLOBC_RES eFSS_LOGC_FlushBufferInBkupPage(t_eFSS_BLOBC_Ctx* p_ptCtx, uint32_t p_uIdx);
+e_eFSS_BLOBC_RES eFSS_LOGC_LoadBufferFromBkupPage(t_eFSS_BLOBC_Ctx* p_ptCtx, uint32_t* p_puSeqN, uint32_t p_uIdx);
 
 /**
  * @brief       Flush the buffer in a page at p_uIdx position. Do not pass to this function NULL value
@@ -220,7 +261,7 @@ e_eFSS_BLOBC_RES eFSS_LOGC_FlushBufferInBkupPage(t_eFSS_BLOBC_Ctx* p_ptCtx, uint
  *		        e_eFSS_BLOBC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
  *              e_eFSS_BLOBC_RES_OK                - Operation ended correctly
  */
-e_eFSS_BLOBC_RES eFSS_LOGC_LoadBufferFromBkupPage(t_eFSS_BLOBC_Ctx* p_ptCtx, uint32_t p_uIdx);
+e_eFSS_BLOBC_RES eFSS_LOGC_GetCrcFromTheBuffer(t_eFSS_BLOBC_Ctx* p_ptCtx, uint32_t p_uSeed, uint32_t* p_puCrc);
 
 /**
  * @brief       Flush the buffer in a page at p_uIdx position. Do not pass to this function NULL value
@@ -241,7 +282,7 @@ e_eFSS_BLOBC_RES eFSS_LOGC_LoadBufferFromBkupPage(t_eFSS_BLOBC_Ctx* p_ptCtx, uin
  *		        e_eFSS_BLOBC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
  *              e_eFSS_BLOBC_RES_OK                - Operation ended correctly
  */
-e_eFSS_BLOBC_RES eFSS_LOGC_GetCrcFromTheBuffer(t_eFSS_BLOBC_Ctx* p_ptCtx, uint32_t p_uIdx);
+e_eFSS_BLOBC_RES eFSS_LOGC_GenerateBkup(t_eFSS_BLOBC_Ctx* p_ptCtx);
 
 /**
  * @brief       Flush the buffer in a page at p_uIdx position. Do not pass to this function NULL value
@@ -262,28 +303,7 @@ e_eFSS_BLOBC_RES eFSS_LOGC_GetCrcFromTheBuffer(t_eFSS_BLOBC_Ctx* p_ptCtx, uint32
  *		        e_eFSS_BLOBC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
  *              e_eFSS_BLOBC_RES_OK                - Operation ended correctly
  */
-e_eFSS_BLOBC_RES eFSS_LOGC_GenerateBkup(t_eFSS_BLOBC_Ctx* p_ptCtx, uint32_t p_uIdx);
-
-/**
- * @brief       Flush the buffer in a page at p_uIdx position. Do not pass to this function NULL value
- *              or invalid index value. This function will take care of any support page.
- *              The buffer is managed with subtype related to log only.
- *
- * @param[in]   p_ptCtx          - Log Core context
- * @param[in]   p_uIdx           - Index of the log page we want to write
- *
- * @return      e_eFSS_BLOBC_RES_BADPOINTER        - In case of bad pointer passed to the function
- *		        e_eFSS_BLOBC_RES_BADPARAM          - In case of an invalid parameter passed to the function
- *		        e_eFSS_BLOBC_RES_CORRUPTCTX        - Context is corrupted
- *		        e_eFSS_BLOBC_RES_NOINITLIB         - Need to init lib before calling function
- *              e_eFSS_BLOBC_RES_CLBCKCRCERR       - The crc callback reported an error
- *		        e_eFSS_BLOBC_RES_CLBCKERASEERR     - The erase callback reported an error
- *		        e_eFSS_BLOBC_RES_CLBCKWRITEERR     - The write callback reported an error
- *		        e_eFSS_BLOBC_RES_CLBCKREADERR      - The read callback reported an error
- *		        e_eFSS_BLOBC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
- *              e_eFSS_BLOBC_RES_OK                - Operation ended correctly
- */
-e_eFSS_BLOBC_RES eFSS_LOGC_RipristinateOriginal(t_eFSS_BLOBC_Ctx* p_ptCtx, uint32_t p_uIdx);
+e_eFSS_BLOBC_RES eFSS_LOGC_RipristinateOriginal(t_eFSS_BLOBC_Ctx* p_ptCtx);
 
 #ifdef __cplusplus
 } /* extern "C" */
