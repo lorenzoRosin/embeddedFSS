@@ -1088,9 +1088,6 @@
     </configuration>
     <group>
         <name>Blob</name>
-        <excluded>
-            <configuration>Library</configuration>
-        </excluded>
         <group>
             <name>Inc</name>
             <file>
