@@ -358,6 +358,8 @@
                     <state>$PROJ_DIR$\..\..\Src\Db\Src</state>
                     <state>$PROJ_DIR$\..\..\Src\Log\Inc</state>
                     <state>$PROJ_DIR$\..\..\Src\Log\Src</state>
+                    <state>$PROJ_DIR$\..\..\Src\Utils\Inc</state>
+                    <state>$PROJ_DIR$\..\..\Src\Utils\Src</state>
                 </option>
                 <option>
                     <name>CCStdIncCheck</name>
@@ -1194,6 +1196,21 @@
             <name>Src</name>
             <file>
                 <name>$PROJ_DIR$\..\..\Src\Log\Src\eFSS_LOG.c</name>
+            </file>
+        </group>
+    </group>
+    <group>
+        <name>Utils</name>
+        <group>
+            <name>Inc</name>
+            <file>
+                <name>$PROJ_DIR$\..\..\Src\Utils\Inc\eFSS_Utils.h</name>
+            </file>
+        </group>
+        <group>
+            <name>Src</name>
+            <file>
+                <name>$PROJ_DIR$\..\..\Src\Utils\Src\eFSS_Utils.c</name>
             </file>
         </group>
     </group>

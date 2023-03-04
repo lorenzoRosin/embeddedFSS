@@ -1522,6 +1522,21 @@
             </file>
         </group>
     </group>
+    <group>
+        <name>Utils</name>
+        <group>
+            <name>Inc</name>
+            <file>
+                <name>$PROJ_DIR$\..\..\Src\Utils\Inc\eFSS_Utils.h</name>
+            </file>
+        </group>
+        <group>
+            <name>Src</name>
+            <file>
+                <name>$PROJ_DIR$\..\..\Src\Utils\Src\eFSS_Utils.c</name>
+            </file>
+        </group>
+    </group>
     <file>
         <name>$PROJ_DIR$\..\..\Src\eFSS_STANDARDTYPE.h</name>
     </file>
