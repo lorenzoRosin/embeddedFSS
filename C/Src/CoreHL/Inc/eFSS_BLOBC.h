@@ -85,7 +85,7 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_IsInit(t_eFSS_BLOBC_Ctx* const p_ptCtx, bool_t* p_pb
 /**
  * @brief       Get the reference of buffer that we can use to read or write data from storage
  *
- * @param[in]   p_ptCtx       - Log Core context
+ * @param[in]   p_ptCtx       - Blob Core context
  * @param[out]  p_ptBuff      - Pointer to a struct that will be filled with info about buffer
  *
  * @return      e_eFSS_BLOBC_RES_BADPOINTER    - In case of bad pointer passed to the function
@@ -96,10 +96,23 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_IsInit(t_eFSS_BLOBC_Ctx* const p_ptCtx, bool_t* p_pb
 e_eFSS_BLOBC_RES eFSS_BLOBC_GetBuff(t_eFSS_BLOBC_Ctx* p_ptCtx, t_eFSS_TYPE_StorBuf* p_ptBuff);
 
 /**
+ * @brief       Get the value of usable page to save a blob.
+ *
+ * @param[in]   p_ptCtx          - Blob Core context
+ * @param[out]  p_puUsableP      - Pointer where the number of usable pages will be copied
+ *
+ * @return      e_eFSS_BLOBC_RES_BADPOINTER    - In case of bad pointer passed to the function
+ *		        e_eFSS_BLOBC_RES_CORRUPTCTX    - Context is corrupted
+ *		        e_eFSS_BLOBC_RES_NOINITLIB     - Need to init lib before calling function
+ *              e_eFSS_BLOBC_RES_OK            - Operation ended correctly
+ */
+e_eFSS_BLOBC_RES eFSS_BLOBC_GetUsablePage(t_eFSS_BLOBC_Ctx* p_ptCtx, uint32_t* p_puUsableP);
+
+/**
  * @brief       Retrive the stored value of blob crc and blob length. If the blob is invalid the returned value
  *              is not valid.
  *
- * @param[in]   p_ptCtx          - Log Core context
+ * @param[in]   p_ptCtx          - Blob Core context
  * @param[in]   p_puBlobLen      - Pointer where the readed size of blob will be stored
  * @param[in]   p_puBlobCrc      - Pointer where the readed CRC of blob will be stored
  *
@@ -120,7 +133,7 @@ e_eFSS_BLOBC_RES eFSS_LOGC_GetOriginalPageMeta(t_eFSS_BLOBC_Ctx* p_ptCtx, uint32
  * @brief       Save the value of blob crc and blob length. This function only work on page that are already valid and
  *              dosent modify any value already present on the page itself.
  *
- * @param[in]   p_ptCtx          - Log Core context
+ * @param[in]   p_ptCtx          - Blob Core context
  * @param[in]   p_uBlobLen       - Pointer where the readed size of blob will be stored
  * @param[in]   p_uBlobCrc       - Pointer where the readed CRC of blob will be stored
  *
@@ -141,7 +154,7 @@ e_eFSS_BLOBC_RES eFSS_LOGC_SetOriginalPageMeta(t_eFSS_BLOBC_Ctx* p_ptCtx, uint32
  * @brief       Retrive the stored value of blob crc and blob length. If the blob is invalid the returned value
  *              is not valid.
  *
- * @param[in]   p_ptCtx          - Log Core context
+ * @param[in]   p_ptCtx          - Blob Core context
  * @param[in]   p_puBlobLen      - Pointer where the readed size of blob will be stored
  * @param[in]   p_puBlobCrc      - Pointer where the readed CRC of blob will be stored
  *
@@ -163,7 +176,7 @@ e_eFSS_BLOBC_RES eFSS_LOGC_GetBckupPageMeta(t_eFSS_BLOBC_Ctx* p_ptCtx, uint32_t*
  *              or invalid index value. This function will take care of any support page.
  *              The buffer is managed with subtype related to log only.
  *
- * @param[in]   p_ptCtx          - Log Core context
+ * @param[in]   p_ptCtx          - Blob Core context
  * @param[in]   p_uIdx           - Index of the log page we want to write
  *
  * @return      e_eFSS_BLOBC_RES_BADPOINTER        - In case of bad pointer passed to the function
@@ -184,7 +197,7 @@ e_eFSS_BLOBC_RES eFSS_LOGC_FlushBufferInNewPage(t_eFSS_BLOBC_Ctx* p_ptCtx, uint3
  *              or invalid index value. This function will take care of any support page.
  *              The buffer is managed with subtype related to log only.
  *
- * @param[in]   p_ptCtx          - Log Core context
+ * @param[in]   p_ptCtx          - Blob Core context
  * @param[in]   p_uIdx           - Index of the log page we want to write
  *
  * @return      e_eFSS_BLOBC_RES_BADPOINTER        - In case of bad pointer passed to the function
@@ -205,7 +218,7 @@ e_eFSS_BLOBC_RES eFSS_LOGC_LoadBufferFromNewPage(t_eFSS_BLOBC_Ctx* p_ptCtx, uint
  *              or invalid index value. This function will take care of any support page.
  *              The buffer is managed with subtype related to log only.
  *
- * @param[in]   p_ptCtx          - Log Core context
+ * @param[in]   p_ptCtx          - Blob Core context
  * @param[in]   p_uIdx           - Index of the log page we want to write
  *
  * @return      e_eFSS_BLOBC_RES_BADPOINTER        - In case of bad pointer passed to the function
@@ -226,7 +239,7 @@ e_eFSS_BLOBC_RES eFSS_LOGC_FlushBufferInBkupPage(t_eFSS_BLOBC_Ctx* p_ptCtx, uint
  *              or invalid index value. This function will take care of any support page.
  *              The buffer is managed with subtype related to log only.
  *
- * @param[in]   p_ptCtx          - Log Core context
+ * @param[in]   p_ptCtx          - Blob Core context
  * @param[in]   p_uIdx           - Index of the log page we want to write
  *
  * @return      e_eFSS_BLOBC_RES_BADPOINTER        - In case of bad pointer passed to the function
@@ -247,7 +260,7 @@ e_eFSS_BLOBC_RES eFSS_LOGC_LoadBufferFromBkupPage(t_eFSS_BLOBC_Ctx* p_ptCtx, uin
  *              or invalid index value. This function will take care of any support page.
  *              The buffer is managed with subtype related to log only.
  *
- * @param[in]   p_ptCtx          - Log Core context
+ * @param[in]   p_ptCtx          - Blob Core context
  * @param[in]   p_uIdx           - Index of the log page we want to write
  *
  * @return      e_eFSS_BLOBC_RES_BADPOINTER        - In case of bad pointer passed to the function
@@ -268,7 +281,7 @@ e_eFSS_BLOBC_RES eFSS_LOGC_GetCrcFromTheBuffer(t_eFSS_BLOBC_Ctx* p_ptCtx, uint32
  *              or invalid index value. This function will take care of any support page.
  *              The buffer is managed with subtype related to log only.
  *
- * @param[in]   p_ptCtx          - Log Core context
+ * @param[in]   p_ptCtx          - Blob Core context
  * @param[in]   p_uIdx           - Index of the log page we want to write
  *
  * @return      e_eFSS_BLOBC_RES_BADPOINTER        - In case of bad pointer passed to the function
@@ -289,7 +302,7 @@ e_eFSS_BLOBC_RES eFSS_LOGC_GenerateBkup(t_eFSS_BLOBC_Ctx* p_ptCtx);
  *              or invalid index value. This function will take care of any support page.
  *              The buffer is managed with subtype related to log only.
  *
- * @param[in]   p_ptCtx          - Log Core context
+ * @param[in]   p_ptCtx          - Blob Core context
  * @param[in]   p_uIdx           - Index of the log page we want to write
  *
  * @return      e_eFSS_BLOBC_RES_BADPOINTER        - In case of bad pointer passed to the function

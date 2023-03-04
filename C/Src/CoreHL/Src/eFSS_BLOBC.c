@@ -153,6 +153,61 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_GetBuff(t_eFSS_BLOBC_Ctx* p_ptCtx, t_eFSS_TYPE_StorB
 	return l_eRes;
 }
 
+e_eFSS_BLOBC_RES eFSS_BLOBC_GetUsablePage(t_eFSS_BLOBC_Ctx* p_ptCtx, uint32_t* p_puUsableP)
+{
+	/* Local variable */
+	e_eFSS_BLOBC_RES l_eRes;
+    e_eFSS_COREHL_RES l_eResHL;
+
+    /* Local var used for calculation */
+    bool_t l_bIsInit;
+	uint32_t l_uNPageU;
+    t_eFSS_TYPE_StorSet l_tStorSet;
+
+	/* Check pointer validity */
+	if( ( NULL == p_ptCtx ) || ( NULL == p_puUsableP ) )
+	{
+		l_eRes = e_eFSS_BLOBC_RES_BADPOINTER;
+	}
+	else
+	{
+		/* Check Init */
+        l_eResHL = eFSS_COREHL_IsInit(&p_ptCtx->tCOREHLCtx, &l_bIsInit);
+        l_eRes = eFSS_LOGC_HLtoLOGCRes(l_eResHL);
+
+        if( e_eFSS_BLOBC_RES_OK == l_eRes )
+        {
+            if( false == l_bIsInit )
+            {
+                l_eRes = e_eFSS_BLOBC_RES_NOINITLIB;
+            }
+            else
+            {
+                /* Check internal status validity */
+                if( false == eFSS_LOGC_IsStatusStillCoherent(p_ptCtx) )
+                {
+                    l_eRes = e_eFSS_BLOBC_RES_CORRUPTCTX;
+                }
+                else
+                {
+                    l_eResHL = eFSS_COREHL_GetStorSett(&p_ptCtx->tCOREHLCtx, &l_tStorSet);
+                    l_eRes = eFSS_LOGC_HLtoLOGCRes(l_eResHL);
+
+                    if( e_eFSS_BLOBC_RES_OK == l_eRes )
+                    {
+                        /* Get the total numbers of page */
+                        l_uNPageU = l_tStorSet.uTotPages;
+
+                        l_uNPageU = (uint32_t)( l_uNPageU / 2u );
+                    }
+                }
+            }
+        }
+	}
+
+	return l_eRes;
+}
+
 e_eFSS_BLOBC_RES eFSS_LOGC_GetOriginalPageMeta(t_eFSS_BLOBC_Ctx* p_ptCtx, uint32_t* p_puBlobLen, uint32_t* p_puBlobCrc)
 {
 	/* Local variable */

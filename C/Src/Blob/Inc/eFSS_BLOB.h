@@ -43,11 +43,13 @@ typedef enum
     e_eFSS_BLOB_RES_CLBCKREADERR,
     e_eFSS_BLOB_RES_CLBCKCRCERR,
     e_eFSS_BLOB_RES_WRITENOMATCHREAD,
+    e_eFSS_BLOB_RES_WRITEONGOING,
 }e_eFSS_BLOB_RES;
 
 typedef struct
 {
     t_eFSS_BLOBC_Ctx tBLOBCCtx;
+    bool_t bIsWriteOngoing;
     uint32_t uDataWritten;
     uint32_t uCrcOfDataWritten;
     uint32_t uCurrentSeqN;
