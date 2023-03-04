@@ -28,10 +28,6 @@ extern "C" {
 /***********************************************************************************************************************
  *      DEFINES
  **********************************************************************************************************************/
-/* Pages Metadata values */
-#define EFSS_PAGEMETALLSIZE                                                                        ( ( uint32_t )  32u )
-#define EFSS_PAGEMAGICNUMBER                                                               ( ( uint32_t )  0xA5A5A5A5u )
-
 /* Pages type */
 #define EFSS_PAGETYPE_BLOB                                                                       ( ( uint32_t )  0x01u )
 #define EFSS_PAGETYPE_LOG                                                                        ( ( uint32_t )  0x02u )
@@ -141,11 +137,7 @@ typedef struct
     t_eFSS_TYPE_PageMeta* ptMeta;
 }t_eFSS_TYPE_StorBuf;
 
-typedef struct
-{
-    t_eFSS_TYPE_StorSet    tStorSet;
-    t_eFSS_TYPE_StorBuf    tStorBuff;
-}t_eFSS_TYPE_StorBufNSett;
+
 
 #ifdef __cplusplus
 } /* extern "C" */

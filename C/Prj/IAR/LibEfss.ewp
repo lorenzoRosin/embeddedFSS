@@ -1142,24 +1142,24 @@
             <name>Inc</name>
             <file>
                 <name>$PROJ_DIR$\..\..\Src\CoreLL\Inc\eFSS_COREHL.h</name>
+                <excluded>
+                    <configuration>Library</configuration>
+                </excluded>
             </file>
             <file>
                 <name>$PROJ_DIR$\..\..\Src\CoreLL\Inc\eFSS_CORELL.h</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\..\Src\CoreLL\Inc\eFSS_CORELLPRV.h</name>
             </file>
         </group>
         <group>
             <name>Src</name>
             <file>
                 <name>$PROJ_DIR$\..\..\Src\CoreLL\Src\eFSS_COREHL.c</name>
+                <excluded>
+                    <configuration>Library</configuration>
+                </excluded>
             </file>
             <file>
                 <name>$PROJ_DIR$\..\..\Src\CoreLL\Src\eFSS_CORELL.c</name>
-            </file>
-            <file>
-                <name>$PROJ_DIR$\..\..\Src\CoreLL\Src\eFSS_CORELLPRV.c</name>
             </file>
         </group>
     </group>

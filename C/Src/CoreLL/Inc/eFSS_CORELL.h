@@ -32,8 +32,13 @@ typedef struct
 {
     uint8_t*  puBuf;
     uint32_t  uBufL;
-    t_eFSS_TYPE_PageMeta tMeta;
 }t_eFSS_CORELL_StorBufPrv;
+
+typedef struct
+{
+    uint8_t*  puBuf;
+    uint32_t  uBufL;
+}t_eFSS_CORELL_StorBuf;
 
 typedef struct
 {
@@ -60,12 +65,13 @@ typedef enum
     e_eFSS_CORELL_RES_WRITENOMATCHREAD,
 }e_eFSS_CORELL_RES;
 
-
 typedef enum
 {
     e_eFSS_CORELL_BUFFTYPE_1 = 0,
     e_eFSS_CORELL_BUFFTYPE_2
 }e_eFSS_CORELL_BUFFTYPE;
+
+
 
 /***********************************************************************************************************************
  * GLOBAL PROTOTYPES
@@ -84,7 +90,8 @@ typedef enum
  *              e_eFSS_CORELL_RES_OK            - Operation ended correctly
  */
 e_eFSS_CORELL_RES eFSS_CORELL_InitCtx(t_eFSS_CORELL_Ctx* const p_ptCtx, t_eFSS_TYPE_CbStorCtx const p_tCtxCb,
-									  t_eFSS_TYPE_StorSet p_tStorSet, uint8_t* const p_puBuff, uint32_t p_uBuffL);
+									  const t_eFSS_TYPE_StorSet p_tStorSet, uint8_t* const p_puBuff,
+                                      const uint32_t p_uBuffL);
 
 /**
  * @brief       Check if the lib is initialized
@@ -95,7 +102,7 @@ e_eFSS_CORELL_RES eFSS_CORELL_InitCtx(t_eFSS_CORELL_Ctx* const p_ptCtx, t_eFSS_T
  * @return      e_eFSS_CORELL_RES_BADPOINTER    - In case of bad pointer passed to the function
  *              e_eFSS_CORELL_RES_OK            - Operation ended correctly
  */
-e_eFSS_CORELL_RES eFSS_CORELL_IsInit(t_eFSS_CORELL_Ctx* const p_ptCtx, bool_t* p_pbIsInit);
+e_eFSS_CORELL_RES eFSS_CORELL_IsInit(t_eFSS_CORELL_Ctx* const p_ptCtx, bool_t* const p_pbIsInit);
 
 /**
  * @brief       Get storage settings
@@ -108,10 +115,10 @@ e_eFSS_CORELL_RES eFSS_CORELL_IsInit(t_eFSS_CORELL_Ctx* const p_ptCtx, bool_t* p
  *		        e_eFSS_CORELL_RES_NOINITLIB     - Need to init lib before calling function
  *              e_eFSS_CORELL_RES_OK            - Operation ended correctly
  */
-e_eFSS_CORELL_RES eFSS_CORELL_GetStorSett(t_eFSS_CORELL_Ctx* const p_ptCtx, t_eFSS_TYPE_StorSet* p_ptStorSet);
+e_eFSS_CORELL_RES eFSS_CORELL_GetStorSett(t_eFSS_CORELL_Ctx* const p_ptCtx, t_eFSS_TYPE_StorSet* const p_ptStorSet);
 
 /**
- * @brief       Get reference of the two buffer used to read and write the storage area
+ * @brief       Get the reference of the two buffer used to read and write the storage area
  *
  * @param[in]   p_ptCtx       - Low Level Core context
  * @param[out]  p_ptBuff1     - Pointer to a pointer struct that will be filled with info about buffer 1
@@ -122,11 +129,11 @@ e_eFSS_CORELL_RES eFSS_CORELL_GetStorSett(t_eFSS_CORELL_Ctx* const p_ptCtx, t_eF
  *		        e_eFSS_CORELL_RES_NOINITLIB     - Need to init lib before calling function
  *              e_eFSS_CORELL_RES_OK            - Operation ended correctly
  */
-e_eFSS_CORELL_RES eFSS_CORELL_GetBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, t_eFSS_TYPE_StorBuf* p_ptBuff1,
-                                      t_eFSS_TYPE_StorBuf* p_ptBuff2);
+e_eFSS_CORELL_RES eFSS_CORELL_GetBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, t_eFSS_CORELL_StorBuf* const p_ptBuff1,
+                                      t_eFSS_CORELL_StorBuf* const p_ptBuff2);
 
 /**
- * @brief       Get reference of the two buffer used to read and write the storage area and get reference of storage
+ * @brief       Get the reference of the two buffer used to read and write the storage area and get reference of storage
  *              settings.
  *
  * @param[in]   p_ptCtx       - Low Level Core context
@@ -139,11 +146,12 @@ e_eFSS_CORELL_RES eFSS_CORELL_GetBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, t_eFSS_T
  *		        e_eFSS_CORELL_RES_NOINITLIB     - Need to init lib before calling function
  *              e_eFSS_CORELL_RES_OK            - Operation ended correctly
  */
-e_eFSS_CORELL_RES eFSS_CORELL_GetBuffNStor(t_eFSS_CORELL_Ctx* const p_ptCtx, t_eFSS_TYPE_StorBuf* p_ptBuff1,
-                                           t_eFSS_TYPE_StorBuf* p_ptBuff2, t_eFSS_TYPE_StorSet* p_ptStorSet);
+e_eFSS_CORELL_RES eFSS_CORELL_GetBuffNStor(t_eFSS_CORELL_Ctx* const p_ptCtx, t_eFSS_CORELL_StorBuf* const p_ptBuff1,
+                                           t_eFSS_CORELL_StorBuf* const p_ptBuff2,
+                                           t_eFSS_TYPE_StorSet* const p_ptStorSet);
 
 /**
- * @brief       Load a page from the storage area in one of he two internal buffer
+ * @brief       Load a page from the storage area in one of the two internal buffer
  *
  * @param[in]   p_ptCtx       - Low Level Core context
  * @param[in]   p_eBuffType   - Enum used to select wich buffer we want to select
@@ -203,7 +211,8 @@ e_eFSS_CORELL_RES eFSS_CORELL_FlushBuffInPage(t_eFSS_CORELL_Ctx* const p_ptCtx, 
  *              e_eFSS_CORELL_RES_OK               - Operation ended correctly
  */
 e_eFSS_CORELL_RES eFSS_CORELL_CalcCrcInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFFTYPE p_eBuffType,
-								            uint32_t p_uCrcSeed, uint32_t p_uLenCalc, uint32_t* p_puCrc);
+								            const uint32_t p_uCrcSeed, const uint32_t p_uLenCalc,
+                                            uint32_t* const p_puCrc);
 
 #ifdef __cplusplus
 } /* extern "C" */
