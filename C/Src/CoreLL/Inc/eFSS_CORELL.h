@@ -28,27 +28,6 @@ extern "C" {
 /***********************************************************************************************************************
  *      PUBLIC TYPEDEFS
  **********************************************************************************************************************/
-typedef struct
-{
-    uint8_t*  puBuf;
-    uint32_t  uBufL;
-}t_eFSS_CORELL_StorBufPrv;
-
-typedef struct
-{
-    uint8_t*  puBuf;
-    uint32_t  uBufL;
-}t_eFSS_CORELL_StorBuf;
-
-typedef struct
-{
-    bool_t   bIsInit;
-    t_eFSS_TYPE_CbStorCtx tCtxCb;
-    t_eFSS_TYPE_StorSet tStorSett;
-    t_eFSS_CORELL_StorBufPrv tBuff1;
-    t_eFSS_CORELL_StorBufPrv tBuff2;
-}t_eFSS_CORELL_Ctx;
-
 typedef enum
 {
     e_eFSS_CORELL_RES_OK = 0,
@@ -70,6 +49,27 @@ typedef enum
     e_eFSS_CORELL_BUFFTYPE_1 = 0,
     e_eFSS_CORELL_BUFFTYPE_2
 }e_eFSS_CORELL_BUFFTYPE;
+
+typedef struct
+{
+    uint8_t*  puBuf;
+    uint32_t  uBufL;
+}t_eFSS_CORELL_StorBufPrv;
+
+typedef struct
+{
+    uint8_t*  puBuf;
+    uint32_t  uBufL;
+}t_eFSS_CORELL_StorBuf;
+
+typedef struct
+{
+    bool_t   bIsInit;
+    t_eFSS_TYPE_CbStorCtx tCtxCb;
+    t_eFSS_TYPE_StorSet tStorSett;
+    t_eFSS_CORELL_StorBufPrv tBuff1;
+    t_eFSS_CORELL_StorBufPrv tBuff2;
+}t_eFSS_CORELL_Ctx;
 
 
 

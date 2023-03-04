@@ -7,6 +7,18 @@
  *
  **********************************************************************************************************************/
 
+/* The written page in storage will have this struct:
+ * ------------------------------------------------------------------ User data
+ * - [uint8_t] -                    -> N byte of user data           |
+ * ------------------------------------------------------------------ HL Metadata  (1 byte)
+ * - uint8_t   - uPageSubType       -> Page subtype                  |
+ * ------------------------------------------------------------------ Under we have LL metadata
+ * - LOW LEVEL METADATA                                              |
+ * ------------------------------------------------------------------ End of Page
+ */
+
+
+
 /***********************************************************************************************************************
  *      INCLUDES
  **********************************************************************************************************************/
@@ -25,7 +37,8 @@ static e_eFSS_COREHL_RES eFSS_COREHL_LLtoHLRes(const e_eFSS_CORELL_RES p_eLLRes)
  *   GLOBAL FUNCTIONS
  **********************************************************************************************************************/
 e_eFSS_COREHL_RES eFSS_COREHL_InitCtx(t_eFSS_COREHL_Ctx* const p_ptCtx, t_eFSS_TYPE_CbStorCtx const p_tCtxCb,
-									  t_eFSS_TYPE_StorSet p_tStorSet, uint8_t* const p_puBuff, uint32_t p_uBuffL)
+									  const t_eFSS_TYPE_StorSet p_tStorSet, uint8_t* const p_puBuff,
+                                      const uint32_t p_uBuffL)
 {
     /* Return local var */
     e_eFSS_COREHL_RES l_eRes;
@@ -39,12 +52,17 @@ e_eFSS_COREHL_RES eFSS_COREHL_InitCtx(t_eFSS_COREHL_Ctx* const p_ptCtx, t_eFSS_T
     {
         l_eResLL = eFSS_CORELL_InitCtx(&p_ptCtx->tCORELLCtx, p_tCtxCb, p_tStorSet, p_puBuff, p_uBuffL);
         l_eRes = eFSS_COREHL_LLtoHLRes(l_eResLL);
+
+        if( e_eFSS_COREHL_RES_OK == l_eRes )
+        {
+            p_ptCtx->uPageSubType = 0u;
+        }
     }
 
     return l_eRes;
 }
 
-e_eFSS_COREHL_RES eFSS_COREHL_IsInit(t_eFSS_COREHL_Ctx* const p_ptCtx, bool_t* p_pbIsInit)
+e_eFSS_COREHL_RES eFSS_COREHL_IsInit(t_eFSS_COREHL_Ctx* const p_ptCtx, bool_t* const p_pbIsInit)
 {
     /* Return local var */
     e_eFSS_COREHL_RES l_eRes;
@@ -63,7 +81,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_IsInit(t_eFSS_COREHL_Ctx* const p_ptCtx, bool_t* p
     return l_eRes;
 }
 
-e_eFSS_COREHL_RES eFSS_COREHL_GetStorSett(t_eFSS_COREHL_Ctx* p_ptCtx, t_eFSS_TYPE_StorSet* p_ptStorSet)
+e_eFSS_COREHL_RES eFSS_COREHL_GetStorSett(t_eFSS_COREHL_Ctx* const p_ptCtx, t_eFSS_TYPE_StorSet* const p_ptStorSet)
 {
     /* Return local var */
     e_eFSS_COREHL_RES l_eRes;
@@ -82,14 +100,15 @@ e_eFSS_COREHL_RES eFSS_COREHL_GetStorSett(t_eFSS_COREHL_Ctx* p_ptCtx, t_eFSS_TYP
     return l_eRes;
 }
 
-e_eFSS_COREHL_RES eFSS_COREHL_GetBuff(t_eFSS_COREHL_Ctx* p_ptCtx, t_eFSS_TYPE_StorBuf* p_ptBuff)
+e_eFSS_COREHL_RES eFSS_COREHL_GetBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, t_eFSS_COREHL_StorBuf* const p_ptBuff)
 {
     /* Return local var */
     e_eFSS_COREHL_RES l_eRes;
     e_eFSS_CORELL_RES l_eResLL;
 
     /* Calc local variable */
-    t_eFSS_TYPE_StorBuf l_tBuff2;
+    t_eFSS_CORELL_StorBuf l_tBuff1;
+    t_eFSS_CORELL_StorBuf l_tBuff2;
 
     if( NULL == p_ptCtx )
     {
@@ -97,22 +116,30 @@ e_eFSS_COREHL_RES eFSS_COREHL_GetBuff(t_eFSS_COREHL_Ctx* p_ptCtx, t_eFSS_TYPE_St
     }
     else
     {
-        l_eResLL = eFSS_CORELL_GetBuff(&p_ptCtx->tCORELLCtx, p_ptBuff, &l_tBuff2);
+        l_eResLL = eFSS_CORELL_GetBuff(&p_ptCtx->tCORELLCtx, &l_tBuff1, &l_tBuff2);
         l_eRes = eFSS_COREHL_LLtoHLRes(l_eResLL);
+
+        if( e_eFSS_COREHL_RES_OK == l_eRes )
+        {
+            p_ptBuff->puBuf = l_tBuff1.puBuf;
+            p_ptBuff->uBufL = l_tBuff1.uBufL - 1u;
+            p_ptBuff->puPageSubType = &p_ptCtx->uPageSubType;
+        }
     }
 
     return l_eRes;
 }
 
-e_eFSS_COREHL_RES eFSS_COREHL_GetBuffNStor(t_eFSS_COREHL_Ctx* p_ptCtx, t_eFSS_TYPE_StorBuf* p_ptBuff,
-                                           t_eFSS_TYPE_StorSet* p_ptStorSet)
+e_eFSS_COREHL_RES eFSS_COREHL_GetBuffNStor(t_eFSS_COREHL_Ctx* const p_ptCtx, t_eFSS_COREHL_StorBuf* const p_ptBuff,
+                                           t_eFSS_TYPE_StorSet* const  p_ptStorSet)
 {
     /* Return local var */
     e_eFSS_COREHL_RES l_eRes;
     e_eFSS_CORELL_RES l_eResLL;
 
     /* Calc local variable */
-    t_eFSS_TYPE_StorBuf l_tBuff2;
+    t_eFSS_CORELL_StorBuf l_tBuff1;
+    t_eFSS_CORELL_StorBuf l_tBuff2;
 
     if( NULL == p_ptCtx )
     {
@@ -120,8 +147,15 @@ e_eFSS_COREHL_RES eFSS_COREHL_GetBuffNStor(t_eFSS_COREHL_Ctx* p_ptCtx, t_eFSS_TY
     }
     else
     {
-        l_eResLL = eFSS_CORELL_GetBuffNStor(&p_ptCtx->tCORELLCtx, p_ptBuff, &l_tBuff2, p_ptStorSet);
+        l_eResLL = eFSS_CORELL_GetBuffNStor(&p_ptCtx->tCORELLCtx, &l_tBuff1, &l_tBuff2, p_ptStorSet);
         l_eRes = eFSS_COREHL_LLtoHLRes(l_eResLL);
+
+        if( e_eFSS_COREHL_RES_OK == l_eRes )
+        {
+            p_ptBuff->puBuf = l_tBuff1.puBuf;
+            p_ptBuff->uBufL = l_tBuff1.uBufL - 1u;
+            p_ptBuff->puPageSubType = &p_ptCtx->uPageSubType;
+        }
     }
 
     return l_eRes;

@@ -47,7 +47,15 @@ typedef enum
 
 typedef struct
 {
+    uint8_t*  puBuf;
+    uint32_t  uBufL;
+    uint8_t*  puPageSubType;
+}t_eFSS_COREHL_StorBuf;
+
+typedef struct
+{
     t_eFSS_CORELL_Ctx tCORELLCtx;
+    uint8_t   uPageSubType;
 }t_eFSS_COREHL_Ctx;
 
 
@@ -69,7 +77,8 @@ typedef struct
  *              e_eFSS_COREHL_RES_OK            - Operation ended correctly
  */
 e_eFSS_COREHL_RES eFSS_COREHL_InitCtx(t_eFSS_COREHL_Ctx* const p_ptCtx, t_eFSS_TYPE_CbStorCtx const p_tCtxCb,
-									  t_eFSS_TYPE_StorSet p_tStorSet, uint8_t* const p_puBuff, uint32_t p_uBuffL);
+									  const t_eFSS_TYPE_StorSet p_tStorSet, uint8_t* const p_puBuff,
+                                      const uint32_t p_uBuffL);
 
 /**
  * @brief       Check if the lib is initialized
@@ -80,7 +89,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_InitCtx(t_eFSS_COREHL_Ctx* const p_ptCtx, t_eFSS_T
  * @return      e_eFSS_COREHL_RES_BADPOINTER    - In case of bad pointer passed to the function
  *              e_eFSS_COREHL_RES_OK            - Operation ended correctly
  */
-e_eFSS_COREHL_RES eFSS_COREHL_IsInit(t_eFSS_COREHL_Ctx* const p_ptCtx, bool_t* p_pbIsInit);
+e_eFSS_COREHL_RES eFSS_COREHL_IsInit(t_eFSS_COREHL_Ctx* const p_ptCtx, bool_t* const p_pbIsInit);
 
 /**
  * @brief       Get storage settings
@@ -93,7 +102,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_IsInit(t_eFSS_COREHL_Ctx* const p_ptCtx, bool_t* p
  *		        e_eFSS_COREHL_RES_NOINITLIB     - Need to init lib before calling function
  *              e_eFSS_COREHL_RES_OK            - Operation ended correctly
  */
-e_eFSS_COREHL_RES eFSS_COREHL_GetStorSett(t_eFSS_COREHL_Ctx* p_ptCtx, t_eFSS_TYPE_StorSet* p_ptStorSet);
+e_eFSS_COREHL_RES eFSS_COREHL_GetStorSett(t_eFSS_COREHL_Ctx* const p_ptCtx, t_eFSS_TYPE_StorSet* const p_ptStorSet);
 
 /**
  * @brief       Get the reference of buffer that we can use to read or write data from storage
@@ -106,7 +115,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_GetStorSett(t_eFSS_COREHL_Ctx* p_ptCtx, t_eFSS_TYP
  *		        e_eFSS_COREHL_RES_NOINITLIB     - Need to init lib before calling function
  *              e_eFSS_COREHL_RES_OK            - Operation ended correctly
  */
-e_eFSS_COREHL_RES eFSS_COREHL_GetBuff(t_eFSS_COREHL_Ctx* p_ptCtx, t_eFSS_TYPE_StorBuf* p_ptBuff);
+e_eFSS_COREHL_RES eFSS_COREHL_GetBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, t_eFSS_COREHL_StorBuf* const p_ptBuff);
 
 /**
  * @brief       Get storage settings and buffer all in one
@@ -120,8 +129,8 @@ e_eFSS_COREHL_RES eFSS_COREHL_GetBuff(t_eFSS_COREHL_Ctx* p_ptCtx, t_eFSS_TYPE_St
  *		        e_eFSS_COREHL_RES_NOINITLIB     - Need to init lib before calling function
  *              e_eFSS_COREHL_RES_OK            - Operation ended correctly
  */
-e_eFSS_COREHL_RES eFSS_COREHL_GetBuffNStor(t_eFSS_COREHL_Ctx* p_ptCtx, t_eFSS_TYPE_StorBuf* p_ptBuff,
-                                           t_eFSS_TYPE_StorSet* p_ptStorSet);
+e_eFSS_COREHL_RES eFSS_COREHL_GetBuffNStor(t_eFSS_COREHL_Ctx* const p_ptCtx, t_eFSS_COREHL_StorBuf* const p_ptBuff,
+                                           t_eFSS_TYPE_StorSet* const  p_ptStorSet);
 
 /**
  * @brief       Load a page from the storage area in to the internal buffer
