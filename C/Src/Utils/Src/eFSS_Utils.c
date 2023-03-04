@@ -110,7 +110,7 @@ bool_t eFSS_Utils_InsertU8(uint8_t* const p_puBuf, const uint8_t p_uToInsert)
 	return l_bRes;
 }
 
-bool_t eFSS_Utils_RetriveU32(uint8_t* const p_puBuf, uint32_t* const p_puToRetrive)
+bool_t eFSS_Utils_RetriveU32(const uint8_t* p_puBuf, uint32_t* const p_puToRetrive)
 {
 	/* Local variable for the return value */
 	bool_t l_bRes;
@@ -152,7 +152,7 @@ bool_t eFSS_Utils_RetriveU32(uint8_t* const p_puBuf, uint32_t* const p_puToRetri
 	return l_bRes;
 }
 
-bool_t eFSS_Utils_RetriveU16(uint8_t* const p_puBuf, uint16_t* const p_puToRetrive)
+bool_t eFSS_Utils_RetriveU16(const uint8_t* p_puBuf, uint16_t* const p_puToRetrive)
 {
 	/* Local variable for the return value */
 	bool_t l_bRes;
@@ -186,7 +186,7 @@ bool_t eFSS_Utils_RetriveU16(uint8_t* const p_puBuf, uint16_t* const p_puToRetri
 	return l_bRes;
 }
 
-bool_t eFSS_Utils_RetriveU8(uint8_t* const p_puBuf, uint8_t* const p_puToRetrive)
+bool_t eFSS_Utils_RetriveU8(const uint8_t* p_puBuf, uint8_t* const p_puToRetrive)
 {
 	/* Local variable for the return value */
 	bool_t l_bRes;

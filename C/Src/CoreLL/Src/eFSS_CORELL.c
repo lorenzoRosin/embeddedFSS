@@ -351,7 +351,6 @@ e_eFSS_CORELL_RES eFSS_CORELL_LoadPageInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e
                         /* Init var */
                         l_eRes = e_eFSS_CORELL_RES_CLBCKREADERR;
                         l_uTryPerformed = 0u;
-                        l_bCbRes = false;
 
                         while( ( e_eFSS_CORELL_RES_OK != l_eRes ) &&
                                ( l_uTryPerformed < p_ptCtx->tStorSett.uRWERetry ) )

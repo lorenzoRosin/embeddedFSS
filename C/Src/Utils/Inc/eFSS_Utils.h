@@ -70,7 +70,7 @@ bool_t eFSS_Utils_InsertU8(uint8_t* const p_puBuf, const uint8_t p_uToInsert);
  *
  * @return      Return true if the buffer and the p_puToRetrive are not NULL, otherwise return false
  */
-bool_t eFSS_Utils_RetriveU32(uint8_t* const p_puBuf, uint32_t* const p_puToRetrive);
+bool_t eFSS_Utils_RetriveU32(const uint8_t* p_puBuf, uint32_t* const p_puToRetrive);
 
 /**
  * @brief       Retrive a value from the passed buffer. Keep in mind that the buffer must be atleast equals to the
@@ -81,7 +81,7 @@ bool_t eFSS_Utils_RetriveU32(uint8_t* const p_puBuf, uint32_t* const p_puToRetri
  *
  * @return      Return true if the buffer and the p_puToRetrive are not NULL, otherwise return false
  */
-bool_t eFSS_Utils_RetriveU16(uint8_t* const p_puBuf, uint16_t* const p_puToRetrive);
+bool_t eFSS_Utils_RetriveU16(const uint8_t* p_puBuf, uint16_t* const p_puToRetrive);
 
 /**
  * @brief       Retrive a value from the passed buffer. Keep in mind that the buffer must be atleast equals to the
@@ -92,7 +92,7 @@ bool_t eFSS_Utils_RetriveU16(uint8_t* const p_puBuf, uint16_t* const p_puToRetri
  *
  * @return      Return true if the buffer and the p_puToRetrive are not NULL, otherwise return false
  */
-bool_t eFSS_Utils_RetriveU8(uint8_t* const p_puBuf, uint8_t* const p_puToRetrive);
+bool_t eFSS_Utils_RetriveU8(const uint8_t* p_puBuf, uint8_t* const p_puToRetrive);
 
 
 
