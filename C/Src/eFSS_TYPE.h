@@ -40,19 +40,16 @@ extern "C" {
 /* Page LOG subtypes */
 #define EFSS_PAGESUBTYPE_LOGORI                                                                  ( ( uint32_t )  0x01u )
 #define EFSS_PAGESUBTYPE_LOGBKP                                                                  ( ( uint32_t )  0x02u )
-
 #define EFSS_PAGESUBTYPE_LOGNEWESTORI                                                            ( ( uint32_t )  0x03u )
 #define EFSS_PAGESUBTYPE_LOGNEWESTBKP                                                            ( ( uint32_t )  0x04u )
 #define EFSS_PAGESUBTYPE_LOGNEWESTBKPORI                                                         ( ( uint32_t )  0x05u )
 #define EFSS_PAGESUBTYPE_LOGNEWESTBKPBKP                                                         ( ( uint32_t )  0x06u )
-
-
 #define EFSS_PAGESUBTYPE_LOGCACHEORI                                                             ( ( uint32_t )  0x07u )
 #define EFSS_PAGESUBTYPE_LOGCACHEBKP                                                             ( ( uint32_t )  0x08u )
 
 /* Page DB subtypes */
 #define EFSS_PAGESUBTYPE_DBORI                                                                   ( ( uint32_t )  0x01u )
-#define EFSS_PAGESUBTYPE_DBBKP                                                                   ( ( uint32_t )  0x01u )
+#define EFSS_PAGESUBTYPE_DBBKP                                                                   ( ( uint32_t )  0x02u )
 
 
 
