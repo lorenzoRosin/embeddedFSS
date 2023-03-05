@@ -12,7 +12,36 @@
  **********************************************************************************************************************/
 #include "eFSS_LOG.h"
 
-
+/* In this module the page field has the following meaning:
+ * ------------------------------------------------------------------ User data
+ * - [uint8_t] -                    -> N byte of user data           |
+ * ------------------------------------------------------------------ Metadata  (4 byte)
+ * - uint32_t  - Byte in Page       -> Valorized byte in page        |
+ * - uint32_t  - Page Index         -> Page Index                    |
+ * ------------------------------------------------------------------ Under we have LL/HL metadata
+ * - LOW LEVEL / HIGH LEVEL METADATA                                 |
+ * ------------------------------------------------------------------ End of Page
+ *
+ * In this module the storage is organizated as follow :
+ *
+ *   bFullBckup = true, bFlashCache = true
+ * - [ 0                            -    ( ( uTotPages - 2 ) / 2 ) - 1 ]  -> Original pages
+ * - [ ( ( uTotPages - 2 ) / 2 )    -    uTotPages - 1 -2              ]  -> Backup pages
+ * - [ uTotPages - 1 -1             -    uTotPages - 1 -1              ]  -> Cache original
+ * - [ uTotPages - 1                -    uTotPages - 1                 ]  -> Cache backup
+ *
+ * First write original pages and after the backup pages
+ * An unused page is always left after newer page and backup index.
+ * Newest and oldest page index can be identical only when the log storage is empty. When the storage is full an empty
+ * page is always present between new and old log index.
+ * Es of full :
+ * LOG | NEWEST PAGE | NEWEST PAGE BLUP | FREE PAGE | OLDEST LOG | ...
+ *
+ * uPageUseSpec2 (Number of Filled index page, or p_ptCtx->uFullFilledP) is calculated without counting the newest page
+ * ES:
+ * LOG | NEWEST PAGE | NEWEST PAGE BLUP | FREE PAGE | OLDEST LOG | LOG
+ * uPageUseSpec2 = 3
+ */
 
 /***********************************************************************************************************************
  *  PRIVATE STATIC FUNCTION DECLARATION

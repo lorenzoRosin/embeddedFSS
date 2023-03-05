@@ -33,19 +33,6 @@ extern "C" {
 #define EFSS_PAGETYPE_LOG                                                                        ( ( uint32_t )  0x02u )
 #define EFSS_PAGETYPE_DB                                                                         ( ( uint32_t )  0x03u )
 
-/* Page LOG subtypes */
-#define EFSS_PAGESUBTYPE_LOGORI                                                                  ( ( uint32_t )  0x01u )
-#define EFSS_PAGESUBTYPE_LOGBKP                                                                  ( ( uint32_t )  0x02u )
-#define EFSS_PAGESUBTYPE_LOGNEWESTORI                                                            ( ( uint32_t )  0x03u )
-#define EFSS_PAGESUBTYPE_LOGNEWESTBKP                                                            ( ( uint32_t )  0x04u )
-#define EFSS_PAGESUBTYPE_LOGNEWESTBKPORI                                                         ( ( uint32_t )  0x05u )
-#define EFSS_PAGESUBTYPE_LOGNEWESTBKPBKP                                                         ( ( uint32_t )  0x06u )
-#define EFSS_PAGESUBTYPE_LOGCACHEORI                                                             ( ( uint32_t )  0x07u )
-#define EFSS_PAGESUBTYPE_LOGCACHEBKP                                                             ( ( uint32_t )  0x08u )
-
-
-
-
 
 
 /***********************************************************************************************************************
@@ -111,22 +98,6 @@ typedef struct
     uint8_t     uPageType;
     uint16_t    uPageVersion;
 }t_eFSS_TYPE_StorSet;
-
-typedef struct
-{
-    uint32_t    uPageUseSpec1;
-    uint32_t    uPageUseSpec2;
-    uint32_t    uPageUseSpec3;
-    uint32_t    uPageUseSpec4;
-    uint8_t     uPageSubType;
-}t_eFSS_TYPE_PageMeta;
-
-typedef struct
-{
-    uint8_t*  puBuf;
-    uint32_t  uBufL;
-    t_eFSS_TYPE_PageMeta* ptMeta;
-}t_eFSS_TYPE_StorBuf;
 
 
 
