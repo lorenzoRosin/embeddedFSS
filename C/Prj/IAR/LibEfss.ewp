@@ -1118,9 +1118,6 @@
             </file>
             <file>
                 <name>$PROJ_DIR$\..\..\Src\CoreHL\Inc\eFSS_LOGC.h</name>
-                <excluded>
-                    <configuration>Library</configuration>
-                </excluded>
             </file>
         </group>
         <group>
@@ -1133,9 +1130,6 @@
             </file>
             <file>
                 <name>$PROJ_DIR$\..\..\Src\CoreHL\Src\eFSS_LOGC.c</name>
-                <excluded>
-                    <configuration>Library</configuration>
-                </excluded>
             </file>
         </group>
     </group>
