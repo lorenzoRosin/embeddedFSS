@@ -49,13 +49,11 @@ typedef struct
 {
     uint8_t*  puBuf;
     uint32_t  uBufL;
-    uint8_t*  puPageSubType;
 }t_eFSS_COREHL_StorBuf;
 
 typedef struct
 {
     t_eFSS_CORELL_Ctx tCORELLCtx;
-    uint8_t   uPageSubType;
 }t_eFSS_COREHL_Ctx;
 
 
@@ -135,8 +133,9 @@ e_eFSS_COREHL_RES eFSS_COREHL_GetBuffNStor(t_eFSS_COREHL_Ctx* const p_ptCtx, t_e
 /**
  * @brief       Load a page from the storage area in to the internal buffer
  *
- * @param[in]   p_ptCtx       - High Level Core context
- * @param[in]   p_uPageIndx   - uint32_t index rappresenting the page that we want to load from storage
+ * @param[in]   p_ptCtx         - High Level Core context
+ * @param[in]   p_uPageIndx     - uint32_t index rappresenting the page that we want to load from storage
+ * @param[out]  p_puSubTypeRead - pointer to a uint8_t where we will store the subtype readed from the loaded page
  *
  * @return      e_eFSS_COREHL_RES_BADPOINTER      - In case of bad pointer passed to the function
  *		        e_eFSS_COREHL_RES_BADPARAM        - In case of an invalid parameter passed to the function
@@ -148,13 +147,15 @@ e_eFSS_COREHL_RES eFSS_COREHL_GetBuffNStor(t_eFSS_COREHL_Ctx* const p_ptCtx, t_e
  *              e_eFSS_COREHL_RES_NEWVERSIONFOUND - The readed page has a new version
  *              e_eFSS_COREHL_RES_OK              - Operation ended correctly
  */
-e_eFSS_COREHL_RES eFSS_COREHL_LoadPageInBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, const uint32_t p_uPageIndx);
+e_eFSS_COREHL_RES eFSS_COREHL_LoadPageInBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, const uint32_t p_uPageIndx,
+                                             uint8_t* const p_puSubTypeRead);
 
 /**
  * @brief       Flush the internal buffer in to the storage area.
  *
- * @param[in]   p_ptCtx       - High Level Core context
- * @param[in]   p_uPageIndx   - uint32_t index rappresenting the page that we want to flush in storage
+ * @param[in]   p_ptCtx           - High Level Core context
+ * @param[in]   p_uPageIndx       - uint32_t index rappresenting the page that we want to flush in storage
+ * @param[in]   p_uSubTypeToWrite - uint8_t value that will the written in the page as subtype
  *
  * @return      e_eFSS_COREHL_RES_BADPOINTER       - In case of bad pointer passed to the function
  *		        e_eFSS_COREHL_RES_BADPARAM         - In case of an invalid parameter passed to the function
@@ -167,11 +168,12 @@ e_eFSS_COREHL_RES eFSS_COREHL_LoadPageInBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, c
  *		        e_eFSS_COREHL_RES_WRITENOMATCHREAD - Writen data dosent match what requested
  *              e_eFSS_COREHL_RES_OK               - Operation ended correctly
  */
-e_eFSS_COREHL_RES eFSS_COREHL_FlushBuffInPage(t_eFSS_COREHL_Ctx* const p_ptCtx, const uint32_t p_uPageIndx);
+e_eFSS_COREHL_RES eFSS_COREHL_FlushBuffInPage(t_eFSS_COREHL_Ctx* const p_ptCtx, const uint32_t p_uPageIndx,
+                                              uint8_t const p_uSubTypeToWrite);
 
 /**
  * @brief       Calculate the Crc of the data present in the internal buffer. Can also select to calculate the crc of
- *              a given numbers of bytes.
+ *              a given numbers of bytes. The subtype of the page is not included in to the calculation
  *
  * @param[in]   p_ptCtx       - High Level Core context
  * @param[in]   p_uCrcSeed    - uint32_t rappresenting the seed we want to use in the calc
@@ -185,12 +187,11 @@ e_eFSS_COREHL_RES eFSS_COREHL_FlushBuffInPage(t_eFSS_COREHL_Ctx* const p_ptCtx, 
  *		        e_eFSS_COREHL_RES_CLBCKCRCERR      - The CRC callback reported an error
  *              e_eFSS_COREHL_RES_OK               - Operation ended correctly
  */
-e_eFSS_COREHL_RES eFSS_COREHL_CalcCrcInBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, uint32_t p_uCrcSeed, uint32_t p_uLenCalc,
-                                            uint32_t* p_puCrc);
+e_eFSS_COREHL_RES eFSS_COREHL_CalcCrcInBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, const uint32_t p_uCrcSeed,
+                                            const uint32_t p_uLenCalc, uint32_t* const p_puCrc);
 
 /**
- * @brief       Flush the internal buffer in to the storage area and generate a backup copy. The field uPageSubType
- *              will be automatically update to the needed value.
+ * @brief       Flush the internal buffer in to the storage area and generate a backup copy.
  *
  * @param[in]   p_ptCtx         - High Level Core context
  * @param[in]   p_uOrigIndx     - Page index of the original data
@@ -211,11 +212,11 @@ e_eFSS_COREHL_RES eFSS_COREHL_CalcCrcInBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, ui
  */
 e_eFSS_COREHL_RES eFSS_COREHL_FlushBuffInPageNBkp(t_eFSS_COREHL_Ctx* const p_ptCtx,
 								                  const uint32_t p_uOrigIndx, const uint32_t p_uBackupIndx,
-                                                  const uint32_t p_uOriSubType, const uint32_t p_uBckUpSubType);
+                                                  const uint8_t p_uOriSubType, const uint8_t p_uBckUpSubType);
 
 /**
  * @brief       Verify the validity of the page present in p_uOrigIndx and of it's backup present in p_uBackupIndx.
- *              If everithing goes well the original page is loaded in the internal buffer, and any error is fixd.
+ *              If everithing goes well the original page is loaded in the internal buffer, and any error is fixed.
  *              This function use this decision maps in order to load original page and verify it's backup:
  *              1 - If p_uOrigIndx and p_uBackupIndx are valid, verify if they are equals. If not copy p_uOrigIndx
  *                  in p_uBackupIndx
@@ -246,7 +247,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_FlushBuffInPageNBkp(t_eFSS_COREHL_Ctx* const p_ptC
  */
 e_eFSS_COREHL_RES eFSS_COREHL_LoadPageInBuffNRipBkp(t_eFSS_COREHL_Ctx* const p_ptCtx,
                                                     const uint32_t p_uOrigIndx, const uint32_t p_uBackupIndx,
-                                                    const uint32_t p_uOriSubType, const uint32_t p_uBckUpSubType);
+                                                    const uint8_t p_uOriSubType, const uint8_t p_uBckUpSubType);
 
 #ifdef __cplusplus
 } /* extern "C" */
