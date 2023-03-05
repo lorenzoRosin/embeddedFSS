@@ -123,7 +123,7 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_GetBuffNUsable(t_eFSS_BLOBC_Ctx* const p_ptCtx, t_eF
  *		        e_eFSS_BLOBC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
  *              e_eFSS_BLOBC_RES_OK                - Operation ended correctly
  */
-e_eFSS_BLOBC_RES eFSS_LOGC_LoadBufferFromPage(t_eFSS_BLOBC_Ctx* const p_ptCtx, const bool_t p_bInOrigin,
+e_eFSS_BLOBC_RES eFSS_BLOBC_LoadBufferFromPage(t_eFSS_BLOBC_Ctx* const p_ptCtx, const bool_t p_bInOrigin,
                                               const uint32_t p_uIdx, uint32_t* const p_puSeqN);
 
 /**
@@ -145,7 +145,7 @@ e_eFSS_BLOBC_RES eFSS_LOGC_LoadBufferFromPage(t_eFSS_BLOBC_Ctx* const p_ptCtx, c
  *		        e_eFSS_BLOBC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
  *              e_eFSS_BLOBC_RES_OK                - Operation ended correctly
  */
-e_eFSS_BLOBC_RES eFSS_LOGC_FlushBufferInPage(t_eFSS_BLOBC_Ctx* const p_ptCtx, const bool_t p_bInOrigin,
+e_eFSS_BLOBC_RES eFSS_BLOBC_FlushBufferInPage(t_eFSS_BLOBC_Ctx* const p_ptCtx, const bool_t p_bInOrigin,
                                              const uint32_t p_uIdx, const uint32_t p_uSeqN);
 
 /**
@@ -166,7 +166,7 @@ e_eFSS_BLOBC_RES eFSS_LOGC_FlushBufferInPage(t_eFSS_BLOBC_Ctx* const p_ptCtx, co
  *		        e_eFSS_BLOBC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
  *              e_eFSS_BLOBC_RES_OK                - Operation ended correctly
  */
-e_eFSS_BLOBC_RES eFSS_LOGC_GetCrcFromTheBuffer(t_eFSS_BLOBC_Ctx* const p_ptCtx, const uint32_t p_uSeed,
+e_eFSS_BLOBC_RES eFSS_BLOBC_GetCrcFromTheBuffer(t_eFSS_BLOBC_Ctx* const p_ptCtx, const uint32_t p_uSeed,
                                                uint32_t* const p_puCrc);
 
 /**
@@ -186,7 +186,7 @@ e_eFSS_BLOBC_RES eFSS_LOGC_GetCrcFromTheBuffer(t_eFSS_BLOBC_Ctx* const p_ptCtx, 
  *		        e_eFSS_BLOBC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
  *              e_eFSS_BLOBC_RES_OK                - Operation ended correctly
  */
-e_eFSS_BLOBC_RES eFSS_LOGC_GenerateBkup(t_eFSS_BLOBC_Ctx* const p_ptCtx, const bool_t p_bInOrigin);
+e_eFSS_BLOBC_RES eFSS_BLOBC_GenerateBkup(t_eFSS_BLOBC_Ctx* const p_ptCtx, const bool_t p_bInOrigin);
 
 
 

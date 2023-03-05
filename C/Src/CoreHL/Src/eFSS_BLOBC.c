@@ -181,7 +181,7 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_GetBuffNUsable(t_eFSS_BLOBC_Ctx* const p_ptCtx, t_eF
 	return l_eRes;
 }
 
-e_eFSS_BLOBC_RES eFSS_LOGC_LoadBufferFromPage(t_eFSS_BLOBC_Ctx* const p_ptCtx, const bool_t p_bInOrigin,
+e_eFSS_BLOBC_RES eFSS_BLOBC_LoadBufferFromPage(t_eFSS_BLOBC_Ctx* const p_ptCtx, const bool_t p_bInOrigin,
                                               const uint32_t p_uIdx, uint32_t* const p_puSeqN)
 {
 	/* Local variable */
@@ -298,7 +298,7 @@ e_eFSS_BLOBC_RES eFSS_LOGC_LoadBufferFromPage(t_eFSS_BLOBC_Ctx* const p_ptCtx, c
 	return l_eRes;
 }
 
-e_eFSS_BLOBC_RES eFSS_LOGC_FlushBufferInPage(t_eFSS_BLOBC_Ctx* const p_ptCtx, const bool_t p_bInOrigin,
+e_eFSS_BLOBC_RES eFSS_BLOBC_FlushBufferInPage(t_eFSS_BLOBC_Ctx* const p_ptCtx, const bool_t p_bInOrigin,
                                              const uint32_t p_uIdx, const uint32_t p_uSeqN)
 {
 	/* Local variable */
@@ -393,7 +393,7 @@ e_eFSS_BLOBC_RES eFSS_LOGC_FlushBufferInPage(t_eFSS_BLOBC_Ctx* const p_ptCtx, co
 	return l_eRes;
 }
 
-e_eFSS_BLOBC_RES eFSS_LOGC_GetCrcFromTheBuffer(t_eFSS_BLOBC_Ctx* const p_ptCtx, const uint32_t p_uSeed,
+e_eFSS_BLOBC_RES eFSS_BLOBC_GetCrcFromTheBuffer(t_eFSS_BLOBC_Ctx* const p_ptCtx, const uint32_t p_uSeed,
                                                uint32_t* const p_puCrc)
 {
 	/* Local variable */
@@ -445,7 +445,7 @@ e_eFSS_BLOBC_RES eFSS_LOGC_GetCrcFromTheBuffer(t_eFSS_BLOBC_Ctx* const p_ptCtx, 
 	return l_eRes;
 }
 
-e_eFSS_BLOBC_RES eFSS_LOGC_GenerateBkup(t_eFSS_BLOBC_Ctx* const p_ptCtx, const bool_t p_bInOrigin)
+e_eFSS_BLOBC_RES eFSS_BLOBC_GenerateBkup(t_eFSS_BLOBC_Ctx* const p_ptCtx, const bool_t p_bInOrigin)
 {
 	/* Local variable */
 	e_eFSS_BLOBC_RES l_eRes;
