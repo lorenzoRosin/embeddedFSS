@@ -170,7 +170,7 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
                 else
                 {
                     /* Get storage info */
-                    l_eDBCRes = eFSS_DBC_GetBuffNStor(&p_ptCtx->tDbCtx, &l_tBuff, &l_tStorSet);
+                    l_eDBCRes = eFSS_DBC_GetBuffNUsable(&p_ptCtx->tDbCtx, &l_tBuff, &l_tStorSet);
                     l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
 
                     if( e_eFSS_DB_RES_OK == l_eRes )
@@ -337,7 +337,7 @@ e_eFSS_DB_RES eFSS_DB_FormatToDefault(t_eFSS_DB_Ctx* const p_ptCtx)
                 else
                 {
                     /* Get storage info */
-                    l_eDBCRes = eFSS_DBC_GetBuffNStor(&p_ptCtx->tDbCtx, &l_tBuff, &l_tStorSet);
+                    l_eDBCRes = eFSS_DBC_GetBuffNUsable(&p_ptCtx->tDbCtx, &l_tBuff, &l_tStorSet);
                     l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
 
                     if( e_eFSS_DB_RES_OK == l_eRes )
@@ -455,7 +455,7 @@ e_eFSS_DB_RES eFSS_DB_SaveElemen(t_eFSS_DB_Ctx* const p_ptCtx, uint32_t p_uPos, 
                             if( ( e_eFSS_DB_RES_OK == l_eRes ) || ( e_eFSS_DB_RES_OK_BKP_RCVRD == l_eRes ) )
                             {
                                 /* Get storage info */
-                                l_eDBCRes = eFSS_DBC_GetBuffNStor(&p_ptCtx->tDbCtx, &l_tBuff, &l_tStorSet);
+                                l_eDBCRes = eFSS_DBC_GetBuffNUsable(&p_ptCtx->tDbCtx, &l_tBuff, &l_tStorSet);
                                 l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
 
                                 if( e_eFSS_DB_RES_OK == l_eRes )
@@ -566,7 +566,7 @@ e_eFSS_DB_RES eFSS_DB_GetElement(t_eFSS_DB_Ctx* const p_ptCtx, uint32_t p_uPos, 
                             if( ( e_eFSS_DB_RES_OK == l_eRes ) || ( e_eFSS_DB_RES_OK_BKP_RCVRD == l_eRes ) )
                             {
                                 /* Get storage info */
-                                l_eDBCRes = eFSS_DBC_GetBuffNStor(&p_ptCtx->tDbCtx, &l_tBuff, &l_tStorSet);
+                                l_eDBCRes = eFSS_DBC_GetBuffNUsable(&p_ptCtx->tDbCtx, &l_tBuff, &l_tStorSet);
                                 l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
 
                                 if( e_eFSS_DB_RES_OK == l_eRes )

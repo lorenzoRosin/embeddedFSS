@@ -90,19 +90,19 @@ e_eFSS_DBC_RES eFSS_DBC_InitCtx(t_eFSS_DBC_Ctx* const p_ptCtx, t_eFSS_TYPE_CbSto
 e_eFSS_DBC_RES eFSS_DBC_IsInit(t_eFSS_DBC_Ctx* const p_ptCtx, bool_t* const p_pbIsInit);
 
 /**
- * @brief       Get storage settings and buffer all in one
+ * @brief       Get the numbers of usable page and the buffer all in one
  *
  * @param[in]   p_ptCtx       - Database Core context
  * @param[out]  p_ptBuff      - Pointer to a storage collection struct that will be filled with info about internal buf
- * @param[out]  p_ptStorSet   - Pointer to a storage settings
+ * @param[out]  p_puUsePages  - Pointer to a storage settings
  *
  * @return      e_eFSS_DBC_RES_BADPOINTER    - In case of bad pointer passed to the function
  *		        e_eFSS_DBC_RES_CORRUPTCTX    - Context is corrupted
  *		        e_eFSS_DBC_RES_NOINITLIB     - Need to init lib before calling function
  *              e_eFSS_DBC_RES_OK            - Operation ended correctly
  */
-e_eFSS_DBC_RES eFSS_DBC_GetBuffNStor(t_eFSS_DBC_Ctx* const p_ptCtx, t_eFSS_DBC_StorBuf* const p_ptBuff,
-                                     t_eFSS_TYPE_StorSet* const p_ptStorSet);
+e_eFSS_DBC_RES eFSS_DBC_GetBuffNUsable(t_eFSS_DBC_Ctx* const p_ptCtx, t_eFSS_DBC_StorBuf* const p_ptBuff,
+                                       uint32_t* const p_puUsePages);
 
 /**
  * @brief       Load a page from the storage area in to the internal buffer

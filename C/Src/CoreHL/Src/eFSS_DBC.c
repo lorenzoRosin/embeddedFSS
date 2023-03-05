@@ -122,8 +122,8 @@ e_eFSS_DBC_RES eFSS_DBC_IsInit(t_eFSS_DBC_Ctx* const p_ptCtx, bool_t* const p_pb
 	return l_eRes;
 }
 
-e_eFSS_DBC_RES eFSS_DBC_GetBuffNStor(t_eFSS_DBC_Ctx* const p_ptCtx, t_eFSS_DBC_StorBuf* const p_ptBuff,
-                                     t_eFSS_TYPE_StorSet* const p_ptStorSet)
+e_eFSS_DBC_RES eFSS_DBC_GetBuffNUsable(t_eFSS_DBC_Ctx* const p_ptCtx, t_eFSS_DBC_StorBuf* const p_ptBuff,
+                                       uint32_t* const p_puUsePages)
 {
 	/* Local variable */
 	e_eFSS_DBC_RES l_eRes;
@@ -131,10 +131,11 @@ e_eFSS_DBC_RES eFSS_DBC_GetBuffNStor(t_eFSS_DBC_Ctx* const p_ptCtx, t_eFSS_DBC_S
 
     /* Local var used for calculation */
     t_eFSS_COREHL_StorBuf l_tBuff;
+    t_eFSS_TYPE_StorSet   l_tStorSet;
     bool_t l_bIsInit;
 
 	/* Check pointer validity */
-	if( ( NULL == p_ptCtx ) || ( NULL == p_ptBuff ) )
+	if( ( NULL == p_ptCtx ) || ( NULL == p_ptBuff ) || ( NULL == p_puUsePages ) )
 	{
 		l_eRes = e_eFSS_DBC_RES_BADPOINTER;
 	}
@@ -160,13 +161,14 @@ e_eFSS_DBC_RES eFSS_DBC_GetBuffNStor(t_eFSS_DBC_Ctx* const p_ptCtx, t_eFSS_DBC_S
                 }
                 else
                 {
-                    l_eResHL = eFSS_COREHL_GetBuffNStor(&p_ptCtx->tCOREHLCtx, &l_tBuff, p_ptStorSet);
+                    l_eResHL = eFSS_COREHL_GetBuffNStor(&p_ptCtx->tCOREHLCtx, &l_tBuff, &l_tStorSet);
                     l_eRes = eFSS_DB_HLtoDBCRes(l_eResHL);
 
                     if( e_eFSS_DBC_RES_OK == l_eRes )
                     {
                         p_ptBuff->puBuf = l_tBuff.puBuf;
                         p_ptBuff->uBufL = l_tBuff.uBufL - EFSS_DBC_PAGEMIN_L;
+                        *p_puUsePages = (uint32_t)( l_tStorSet.uTotPages / 2u );
                     }
                 }
             }

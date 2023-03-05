@@ -7,16 +7,29 @@
  *
  **********************************************************************************************************************/
 
-/* In this module the page field has the following meaning:
- * --------------------------------------------------------------------------------------------- User data
- * - [uint8_t] -                    -> N byte of user data                                      |
- * --------------------------------------------------------------------------------------------- Metadata  (17 byte)
- * - uint32_t  - uPageUseSpec1      -> (Valid only on the last page) Size of the stored blob    |
- * - uint32_t  - uPageUseSpec2      -> (Valid only on the last page) Crc of the stored blob     |
- * - uint32_t  - uPageUseSpec3      -> Sequential number of the page                            |
- * - uint32_t  - uPageUseSpec4      -> Page id                                                  |
- * - uint8_t   - uPageSubType       -> Page subtype                                             |
- * ---------------------------------------------------------------------------------------------+
+/* In this module the page field has the following meaning for normal pages:
+ * ------------------------------------------------------------------ User data
+ * - [uint8_t] -                    -> N byte of user data           |
+ * ------------------------------------------------------------------ Metadata  (4 byte)
+ * - uint32_t  - Zero               -> This filed must be zero       |
+ * - uint32_t  - Zero               -> This filed must be zero       |
+ * - uint32_t  - Page Index         -> Page Seq Number               |
+ * - uint32_t  - Page Index         -> Page Index                    |
+ * ------------------------------------------------------------------ Under we have LL/HL metadata
+ * - LOW LEVEL / HIGH LEVEL METADATA                                 |
+ * ------------------------------------------------------------------ End of Page
+ *
+ * And for the last pages:
+ * ------------------------------------------------------------------ User data
+ * - [uint8_t] -                    -> N byte of user data           |
+ * ------------------------------------------------------------------ Metadata  (4 byte)
+ * - uint32_t  - Blob L             -> Size of the stored blob       |
+ * - uint32_t  - Blob CRC           -> Crc of the stored blob        |
+ * - uint32_t  - Page Index         -> Page Seq Number               |
+ * - uint32_t  - Page Index         -> Page Index                    |
+ * ------------------------------------------------------------------ Under we have LL/HL metadata
+ * - LOW LEVEL / HIGH LEVEL METADATA                                 |
+ * ------------------------------------------------------------------ End of Page
  *
  * In this module the storage is organizated as follow :
  *
@@ -27,7 +40,7 @@
  * Only a valid blob last page has a valid size and and valid crc (because the crc and size calculation is updated at
  * the end).
  * The process of backup is done only when all the original pages are valid, so during a long file copy we can always
- * retrive a valid image.
+ * retrive a valid image if a power outage or a corruption happens.
  */
 
 
@@ -36,6 +49,18 @@
  *      INCLUDES
  **********************************************************************************************************************/
 #include "eFSS_BLOBC.h"
+#include "eFSS_Utils.h"
+
+
+
+/***********************************************************************************************************************
+ *      PRIVATE DEFINE
+ **********************************************************************************************************************/
+#define EFSS_BLOBC_PAGEMIN_L                                                                     ( ( uint32_t )    16u )
+#define EFSS_PAGESUBTYPE_BLOBORI                                                                 ( ( uint32_t )  0x01u )
+#define EFSS_PAGESUBTYPE_BLOBBKP                                                                 ( ( uint32_t )  0x02u )
+#define EFSS_PAGESUBTYPE_BLOBLASTORI                                                             ( ( uint32_t )  0x03u )
+#define EFSS_PAGESUBTYPE_BLOBLASTBKP                                                             ( ( uint32_t )  0x04u )
 
 
 

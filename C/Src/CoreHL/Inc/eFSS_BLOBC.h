@@ -47,6 +47,12 @@ typedef enum
 
 typedef struct
 {
+    uint8_t*  puBuf;
+    uint32_t  uBufL;
+}t_eFSS_BLOBC_StorBuf;
+
+typedef struct
+{
     t_eFSS_COREHL_Ctx tCOREHLCtx;
 }t_eFSS_BLOBC_Ctx;
 
@@ -61,7 +67,7 @@ typedef struct
  * @param[in]   p_ptCtx        - Blob Core context
  * @param[in]   p_tCtxCb       - All callback collection context
  * @param[in]   p_tStorSet     - Storage settings
- * @param[in]   p_puBuff       - Pointer to a buffer used by the modules to make calc, must ne pageSize * 2
+ * @param[in]   p_puBuff       - Pointer to a buffer used by the modules to make calc, must be pageSize * 2
  * @param[in]   p_uBuffL       - Size of p_puBuff
  *
  * @return      e_eFSS_BLOBC_RES_BADPOINTER    - In case of bad pointer passed to the function
@@ -69,7 +75,8 @@ typedef struct
  *              e_eFSS_BLOBC_RES_OK            - Operation ended correctly
  */
 e_eFSS_BLOBC_RES eFSS_BLOBC_InitCtx(t_eFSS_BLOBC_Ctx* const p_ptCtx, t_eFSS_TYPE_CbStorCtx const p_tCtxCb,
-                                    t_eFSS_TYPE_StorSet p_tStorSet, uint8_t* const p_puBuff, uint32_t p_uBuffL);
+                                    const t_eFSS_TYPE_StorSet p_tStorSet, uint8_t* const p_puBuff,
+                                    const uint32_t p_uBuffL);
 
 /**
  * @brief       Check if the lib is initialized
@@ -80,7 +87,7 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_InitCtx(t_eFSS_BLOBC_Ctx* const p_ptCtx, t_eFSS_TYPE
  * @return      e_eFSS_BLOBC_RES_BADPOINTER    - In case of bad pointer passed to the function
  *              e_eFSS_BLOBC_RES_OK            - Operation ended correctly
  */
-e_eFSS_BLOBC_RES eFSS_BLOBC_IsInit(t_eFSS_BLOBC_Ctx* const p_ptCtx, bool_t* p_pbIsInit);
+e_eFSS_BLOBC_RES eFSS_BLOBC_IsInit(t_eFSS_BLOBC_Ctx* const p_ptCtx, bool_t* const p_pbIsInit);
 
 /**
  * @brief       Get the reference of buffer that we can use to read or write data from storage
