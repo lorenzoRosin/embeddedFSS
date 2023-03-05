@@ -63,8 +63,8 @@ static e_eFSS_CORELL_RES eFSS_CORELLPRV_InsertData(t_eFSS_CORELL_StorBufPrv* con
  *   GLOBAL FUNCTIONS
  **********************************************************************************************************************/
 e_eFSS_CORELL_RES eFSS_CORELL_InitCtx(t_eFSS_CORELL_Ctx* const p_ptCtx, t_eFSS_TYPE_CbStorCtx const p_tCtxCb,
-									  const t_eFSS_TYPE_StorSet p_tStorSet, uint8_t* const p_puBuff,
-                                      const uint32_t p_uBuffL)
+									  const t_eFSS_TYPE_StorSet p_tStorSet, const uint8_t p_uStorType,
+                                      uint8_t* const p_puBuff, const uint32_t p_uBuffL)
 {
     /* Return local var */
     e_eFSS_CORELL_RES l_eRes;
@@ -118,6 +118,7 @@ e_eFSS_CORELL_RES eFSS_CORELL_InitCtx(t_eFSS_CORELL_Ctx* const p_ptCtx, t_eFSS_T
                             p_ptCtx->bIsInit 	= true;
                             p_ptCtx->tCtxCb 	= p_tCtxCb;
                             p_ptCtx->tStorSett 	= p_tStorSet;
+                            p_ptCtx->uStorType  = p_uStorType;
                             p_ptCtx->tBuff1.puBuf = p_puBuff;
                             p_ptCtx->tBuff1.uBufL = p_uBuffL / 2u;
                             p_ptCtx->tBuff2.puBuf = &p_puBuff[p_ptCtx->tBuff1.uBufL];
@@ -399,7 +400,7 @@ e_eFSS_CORELL_RES eFSS_CORELL_LoadPageInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e
                                     {
                                         if( ( EFSS_CORELL_PAGEMAGNUM          != l_tPrvMeta.uPageMagicNumber ) ||
                                             ( p_ptCtx->tStorSett.uTotPages    != l_tPrvMeta.uPageTot ) ||
-                                            ( p_ptCtx->tStorSett.uPageType    != l_tPrvMeta.uPageType ) )
+                                            ( p_ptCtx->uStorType              != l_tPrvMeta.uPageType ) )
                                         {
                                             l_eRes = e_eFSS_CORELL_RES_NOTVALIDPAGE;
                                         }
@@ -498,7 +499,7 @@ e_eFSS_CORELL_RES eFSS_CORELL_FlushBuffInPage(t_eFSS_CORELL_Ctx* const p_ptCtx, 
                     if( e_eFSS_CORELL_RES_OK == l_eRes )
                     {
                         /* Initialize internal status */
-                        l_tPrvMeta.uPageType = p_ptCtx->tStorSett.uPageType;
+                        l_tPrvMeta.uPageType = p_ptCtx->uStorType;
                         l_tPrvMeta.uPageVersion = p_ptCtx->tStorSett.uPageVersion;
                         l_tPrvMeta.uPageTot = p_ptCtx->tStorSett.uTotPages;
                         l_tPrvMeta.uPageMagicNumber = EFSS_CORELL_PAGEMAGNUM;

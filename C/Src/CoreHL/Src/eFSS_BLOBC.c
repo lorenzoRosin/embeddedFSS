@@ -83,7 +83,7 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_InitCtx(t_eFSS_BLOBC_Ctx* const p_ptCtx, t_eFSS_TYPE
         else
         {
             /* Can init low level context */
-            l_eResHL = eFSS_COREHL_InitCtx(&p_ptCtx->tCOREHLCtx, p_tCtxCb, p_tStorSet, p_puBuff, p_uBuffL);
+            l_eResHL = eFSS_COREHL_InitCtx(&p_ptCtx->tCOREHLCtx, p_tCtxCb, p_tStorSet, EFSS_PAGETYPE_BLOB, p_puBuff, p_uBuffL);
             l_eRes = eFSS_BLOBC_HLtoBLOBRes(l_eResHL);
 
             if( e_eFSS_BLOBC_RES_OK == l_eRes )

@@ -45,8 +45,8 @@ static bool_t eFSS_COREHL_IsStatusStillCoherent(t_eFSS_COREHL_Ctx* const p_ptCtx
  *   GLOBAL FUNCTIONS
  **********************************************************************************************************************/
 e_eFSS_COREHL_RES eFSS_COREHL_InitCtx(t_eFSS_COREHL_Ctx* const p_ptCtx, t_eFSS_TYPE_CbStorCtx const p_tCtxCb,
-									  const t_eFSS_TYPE_StorSet p_tStorSet, uint8_t* const p_puBuff,
-                                      const uint32_t p_uBuffL)
+									  const t_eFSS_TYPE_StorSet p_tStorSet, const uint8_t p_uStorType,
+                                      uint8_t* const p_puBuff, const uint32_t p_uBuffL)
 {
     /* Return local var */
     e_eFSS_COREHL_RES l_eRes;
@@ -62,7 +62,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_InitCtx(t_eFSS_COREHL_Ctx* const p_ptCtx, t_eFSS_T
     }
     else
     {
-        l_eResLL = eFSS_CORELL_InitCtx(&p_ptCtx->tCORELLCtx, p_tCtxCb, p_tStorSet, p_puBuff, p_uBuffL);
+        l_eResLL = eFSS_CORELL_InitCtx(&p_ptCtx->tCORELLCtx, p_tCtxCb, p_tStorSet, p_uStorType, p_puBuff, p_uBuffL);
         l_eRes = eFSS_COREHL_LLtoHLRes(l_eResLL);
 
         if( e_eFSS_COREHL_RES_OK == l_eRes )

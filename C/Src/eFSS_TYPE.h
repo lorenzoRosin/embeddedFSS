@@ -95,7 +95,6 @@ typedef struct
     uint32_t    uTotPages;
     uint32_t    uPagesLen;
     uint32_t    uRWERetry;
-    uint8_t     uPageType;
     uint16_t    uPageVersion;
 }t_eFSS_TYPE_StorSet;
 

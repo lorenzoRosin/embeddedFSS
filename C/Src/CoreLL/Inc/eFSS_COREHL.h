@@ -67,6 +67,7 @@ typedef struct
  * @param[in]   p_ptCtx          - High Level Core context
  * @param[in]   p_tCtxCb         - All callback collection context
  * @param[in]   p_tStorSet       - Storage settings
+ * @param[in]   p_uStorType      - Storage type
  * @param[in]   p_puBuff         - Pointer to a buffer used by the modules to make calc, must be pageSize * 2
  * @param[in]   p_uBuffL         - Size of p_puBuff
  *
@@ -75,8 +76,8 @@ typedef struct
  *              e_eFSS_COREHL_RES_OK            - Operation ended correctly
  */
 e_eFSS_COREHL_RES eFSS_COREHL_InitCtx(t_eFSS_COREHL_Ctx* const p_ptCtx, t_eFSS_TYPE_CbStorCtx const p_tCtxCb,
-									  const t_eFSS_TYPE_StorSet p_tStorSet, uint8_t* const p_puBuff,
-                                      const uint32_t p_uBuffL);
+									  const t_eFSS_TYPE_StorSet p_tStorSet, const uint8_t p_uStorType,
+                                      uint8_t* const p_puBuff, const uint32_t p_uBuffL);
 
 /**
  * @brief       Check if the lib is initialized
