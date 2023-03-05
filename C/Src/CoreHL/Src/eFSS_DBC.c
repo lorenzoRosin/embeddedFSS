@@ -36,8 +36,8 @@
  *      PRIVATE DEFINE
  **********************************************************************************************************************/
 #define EFSS_DBC_PAGEMIN_L                                                                       ( ( uint32_t )     4u )
-#define EFSS_PAGESUBTYPE_DBORI                                                                   ( ( uint32_t )  0x01u )
-#define EFSS_PAGESUBTYPE_DBBKP                                                                   ( ( uint32_t )  0x02u )
+#define EFSS_PAGESUBTYPE_DBORI                                                                   ( ( uint8_t )   0x01u )
+#define EFSS_PAGESUBTYPE_DBBKP                                                                   ( ( uint8_t )   0x02u )
 
 
 /***********************************************************************************************************************
@@ -141,6 +141,7 @@ e_eFSS_DBC_RES eFSS_DBC_GetBuffNStor(t_eFSS_DBC_Ctx* const p_ptCtx, t_eFSS_DBC_S
 	else
 	{
 		/* Check Init */
+        l_bIsInit = false;
         l_eResHL = eFSS_COREHL_IsInit(&p_ptCtx->tCOREHLCtx, &l_bIsInit);
         l_eRes = eFSS_DB_HLtoDBCRes(l_eResHL);
 
@@ -199,6 +200,7 @@ e_eFSS_DBC_RES eFSS_DBC_LoadPageInBuff(t_eFSS_DBC_Ctx* const p_ptCtx, const uint
 	else
 	{
 		/* Check Init */
+        l_bIsInit = false;
         l_eResHL = eFSS_COREHL_IsInit(&p_ptCtx->tCOREHLCtx, &l_bIsInit);
         l_eRes = eFSS_DB_HLtoDBCRes(l_eResHL);
 
@@ -284,6 +286,7 @@ e_eFSS_DBC_RES eFSS_DBC_FlushBuffInPage(t_eFSS_DBC_Ctx* const p_ptCtx, const uin
 	else
 	{
 		/* Check Init */
+        l_bIsInit = false;
         l_eResHL = eFSS_COREHL_IsInit(&p_ptCtx->tCOREHLCtx, &l_bIsInit);
         l_eRes = eFSS_DB_HLtoDBCRes(l_eResHL);
 
