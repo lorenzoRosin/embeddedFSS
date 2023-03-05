@@ -35,6 +35,7 @@
 /***********************************************************************************************************************
  *      PRIVATE DEFINE
  **********************************************************************************************************************/
+#define EFSS_PAGETYPE_DB                                                                         ( ( uint8_t )   0x03u )
 #define EFSS_DBC_PAGEMIN_L                                                                       ( ( uint32_t )     4u )
 #define EFSS_PAGESUBTYPE_DBORI                                                                   ( ( uint8_t )   0x01u )
 #define EFSS_PAGESUBTYPE_DBBKP                                                                   ( ( uint8_t )   0x02u )

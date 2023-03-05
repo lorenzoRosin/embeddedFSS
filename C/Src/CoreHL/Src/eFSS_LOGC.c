@@ -39,6 +39,7 @@
 /***********************************************************************************************************************
  *      PRIVATE DEFINE
  **********************************************************************************************************************/
+#define EFSS_PAGETYPE_LOG                                                                        ( ( uint8_t )   0x02u )
 #define EFSS_LOGC_PAGEMIN_L                                                                      ( ( uint32_t )     8u )
 #define EFSS_PAGESUBTYPE_LOGORI                                                                  ( ( uint8_t )   0x01u )
 #define EFSS_PAGESUBTYPE_LOGBKP                                                                  ( ( uint8_t )   0x02u )

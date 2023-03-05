@@ -37,6 +37,7 @@
 /***********************************************************************************************************************
  *      PRIVATE DEFINE
  **********************************************************************************************************************/
+#define EFSS_PAGETYPE_BLOB                                                                       ( ( uint8_t )   0x01u )
 #define EFSS_BLOBC_PAGEMIN_L                                                                     ( ( uint32_t )     8u )
 #define EFSS_PAGESUBTYPE_BLOBORI                                                                 ( ( uint8_t )   0x01u )
 #define EFSS_PAGESUBTYPE_BLOBBKP                                                                 ( ( uint8_t )   0x02u )
