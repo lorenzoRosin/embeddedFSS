@@ -45,6 +45,13 @@ typedef enum
     e_eFSS_LOGC_RES_OK_BKP_RCVRD,
 }e_eFSS_LOGC_RES;
 
+typedef enum
+{
+    e_eFSS_LOGC_PAGETYPE_LOG = 0,
+    e_eFSS_LOGC_PAGETYPE_NEWEST,
+    e_eFSS_LOGC_PAGETYPE_NEWEST_BKUP
+}e_eFSS_LOGC_PAGETYPE;
+
 typedef struct
 {
     uint8_t*  puBuf;
@@ -94,10 +101,11 @@ e_eFSS_LOGC_RES eFSS_LOGC_InitCtx(t_eFSS_LOGC_Ctx* const p_ptCtx, t_eFSS_TYPE_Cb
 e_eFSS_LOGC_RES eFSS_LOGC_IsInit(t_eFSS_LOGC_Ctx* const p_ptCtx, bool_t* const p_pbIsInit);
 
 /**
- * @brief       Check if the lib is initialized
+ * @brief       Check if the flash cache is used
  *
- * @param[in]   p_ptCtx       - Log Core context
- * @param[out]  p_pbIsInit    - Pointer to a bool_t variable that will be filled with true if the lib is initialized
+ * @param[in]   p_ptCtx               - Log Core context
+ * @param[out]  p_pbIsFlashCacheUsed  - Pointer to a bool_t variable that will be filled with true if the flash cache
+ *                                      is used
  *
  * @return      e_eFSS_LOGC_RES_BADPOINTER    - In case of bad pointer passed to the function
  *              e_eFSS_LOGC_RES_OK            - Operation ended correctly
@@ -108,49 +116,19 @@ e_eFSS_LOGC_RES eFSS_LOGC_IsFlashCacheUsed(t_eFSS_LOGC_Ctx* const p_ptCtx, bool_
  * @brief       Get the numbers of usable page and the buffer all in one
  *
  * @param[in]   p_ptCtx       - Log Core context
- * @param[out]  p_ptBuff      - Pointer to a storage collection struct that will be filled with info about internal buf
- * @param[out]  p_puUsePages  - Pointer to a storage settings
+ * @param[out]  p_ptBuff      - Pointer to a storage struct that will be filled with info about internal buf
+ * @param[out]  p_puUsePages  - Pointer to a uint32_t variable that will be filled with the numbers of usable pages
  *
  * @return      e_eFSS_LOGC_RES_BADPOINTER    - In case of bad pointer passed to the function
  *		        e_eFSS_LOGC_RES_CORRUPTCTX    - Context is corrupted
  *		        e_eFSS_LOGC_RES_NOINITLIB     - Need to init lib before calling function
  *              e_eFSS_LOGC_RES_OK            - Operation ended correctly
  */
-e_eFSS_LOGC_RES eFSS_DBC_GetBuffNUsable(t_eFSS_LOGC_Ctx* const p_ptCtx, t_eFSS_LOGC_StorBuf* const p_ptBuff,
-                                        uint32_t* const p_puUsePages);
-
-/**
- * @brief       Get the value of the next index given a passed one.
- *
- * @param[in]   p_ptCtx          - Log Core context
- * @param[in]   p_uIdx           - Index that we want to search for next. Usable value: from zero to the value returned
- *                                 by eFSS_DBC_GetBuffNUsable
- * @param[out]  p_puNextIdx      - Pointer where the value of the next index will be copied
- *
- * @return      e_eFSS_LOGC_RES_BADPOINTER    - In case of bad pointer passed to the function
- *		        e_eFSS_LOGC_RES_CORRUPTCTX    - Context is corrupted
- *		        e_eFSS_LOGC_RES_NOINITLIB     - Need to init lib before calling function
- *              e_eFSS_LOGC_RES_OK            - Operation ended correctly
- */
-e_eFSS_LOGC_RES eFSS_LOGC_GetNextIndex(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint32_t p_uIdx,
-                                       uint32_t* const p_puNextIdx);
-
-/**
- * @brief       Get the value of the previous index.
- *
- * @param[in]   p_ptCtx          - Log Core context
- * @param[in]   p_uIdx           - Index that we want to search for previous. Usable value: from zero to the value
- *                                 returned by eFSS_DBC_GetBuffNUsable
- * @param[out]  p_puPrevIdx      - Pointer where the value of the previous index will be copied
- *
- * @return      Return the previous index of p_uIdx
- */
-e_eFSS_LOGC_RES eFSS_LOGC_GetPrevIndex(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint32_t p_uIdx,
-                                       uint32_t* const p_puPrevIdx);
+e_eFSS_LOGC_RES eFSS_LOGC_GetBuffNUsable(t_eFSS_LOGC_Ctx* const p_ptCtx, t_eFSS_LOGC_StorBuf* const p_ptBuff,
+                                         uint32_t* const p_puUsePages);
 
 /**
  * @brief       Write in cache the value of the new index location and the numbers of filled pages.
- *              Use this function only if flash cache is enabled.
  *
  * @param[in]   p_ptCtx          - Log Core context
  * @param[in]   p_uIdxN          - Index of the new log page that we want to save in cache
@@ -195,10 +173,11 @@ e_eFSS_LOGC_RES eFSS_LOGC_WriteCache(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint3
 e_eFSS_LOGC_RES eFSS_LOGC_ReadCache(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t* const p_puIdxN, uint32_t* const p_puIFlP);
 
 /**
- * @brief       Flush the buffer in a page at p_uIdx position. This function will take care of any support page.
- *              The buffer is managed with subtype related to log only.
+ * @brief       Flush the buffer in a page at p_uIdx position using p_ePageType as subtype. This function will take
+ *              care of any support page when the fullbackup option is enabled.
  *
  * @param[in]   p_ptCtx          - Log Core context
+ * @param[in]   p_ePageType      - Type of the page we are flushing
  * @param[in]   p_uIdx           - Index of the log page we want to write
  * @param[in]   p_uFillInPage    - Number of filled byte in page
  *
@@ -213,15 +192,15 @@ e_eFSS_LOGC_RES eFSS_LOGC_ReadCache(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t* co
  *		        e_eFSS_LOGC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
  *              e_eFSS_LOGC_RES_OK                - Operation ended correctly
  */
-e_eFSS_LOGC_RES eFSS_LOGC_FlushBufferAsLog(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint32_t p_uIdx,
-                                           const uint32_t p_uFillInPage);
+e_eFSS_LOGC_RES eFSS_LOGC_FlushBufferAs(t_eFSS_LOGC_Ctx* const p_ptCtx, const e_eFSS_LOGC_PAGETYPE p_ePageType,
+                                        const uint32_t p_uIdx, const uint32_t p_uFillInPage);
 
 /**
- * @brief       Read a page of data at p_uIdx position. This function will take care of any support page.
- *              Do not use this function on Flash cache pages.
- *              The buffer is managed with subtype related to log only.
+ * @brief       Read a page of data at p_uIdx position with p_ePageType as subtype. This function will take
+ *              care of any support page when the fullbackup option is enabled and can recover corrupted pages.
  *
  * @param[in]   p_ptCtx          - Log Core context
+ * @param[in]   p_ePageType      - Subtype of the page we are reading
  * @param[in]   p_uIdx           - Index of the log page we want to read
  * @param[out]  p_puFillInPage   - Pointer to an uint32_t where the number of filled byte in page will be copied
  *
@@ -239,107 +218,10 @@ e_eFSS_LOGC_RES eFSS_LOGC_FlushBufferAsLog(t_eFSS_LOGC_Ctx* const p_ptCtx, const
  *                                                  page
  *              e_eFSS_LOGC_RES_OK                - Operation ended correctly
  */
-e_eFSS_LOGC_RES eFSS_LOGC_LoadBufferAsLog(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint32_t p_uIdx,
-                                          uint32_t* const p_puFillInPage);
+e_eFSS_LOGC_RES eFSS_LOGC_LoadBufferAs(t_eFSS_LOGC_Ctx* const p_ptCtx, const e_eFSS_LOGC_PAGETYPE p_ePageType,
+                                       const uint32_t p_uIdx, uint32_t* const p_puFillInPage);
 
-/**
- * @brief       Flush the buffer in a page at p_uIdx position as newest only.This function will take care of any support page.
- *              Make sure eFSS_LOGC_IsStatusStillCoherent is called before calling this function.
- *              Do not use this function on Flash cache pages.
- *              The buffer is managed with subtype related to newest page only.
- *
- * @param[in]   p_ptCtx          - Log Core context
- * @param[in]   p_uIdx           - Index of the newest page we want to write
- * @param[in]   p_uFillInPage    - Number of filled byte in page
- *
- * @return      e_eFSS_LOGC_RES_BADPOINTER        - In case of bad pointer passed to the function
- *		        e_eFSS_LOGC_RES_BADPARAM          - In case of an invalid parameter passed to the function
- *		        e_eFSS_LOGC_RES_CORRUPTCTX        - Context is corrupted
- *		        e_eFSS_LOGC_RES_NOINITLIB         - Need to init lib before calling function
- *              e_eFSS_LOGC_RES_CLBCKCRCERR       - The crc callback reported an error
- *		        e_eFSS_LOGC_RES_CLBCKERASEERR     - The erase callback reported an error
- *		        e_eFSS_LOGC_RES_CLBCKWRITEERR     - The write callback reported an error
- *		        e_eFSS_LOGC_RES_CLBCKREADERR      - The read callback reported an error
- *		        e_eFSS_LOGC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
- *              e_eFSS_LOGC_RES_OK                - Operation ended correctly
- */
-e_eFSS_LOGC_RES eFSS_LOGC_FlushBufferAsNewestOnly(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint32_t p_uIdx,
-                                                  const uint32_t p_uFillInPage);
 
-/**
- * @brief       Flush the buffer in a page at p_uIdx position as newest bkup only. Do not pass to this function NULL
- *              value or invalid index value. This function will take care of any support page.
- *              Make sure eFSS_LOGC_IsStatusStillCoherent is called before calling this function.
- *              Do not use this function on Flash cache pages.
- *              The buffer is managed with subtype related to newest page only.
- *
- * @param[in]   p_ptCtx          - Log Core context
- * @param[in]   p_uIdx           - Index of the newest page we want to write
- * @param[in]   p_uFillInPage    - Number of filled byte in page
- *
- * @return      e_eFSS_LOGC_RES_BADPOINTER        - In case of bad pointer passed to the function
- *		        e_eFSS_LOGC_RES_BADPARAM          - In case of an invalid parameter passed to the function
- *		        e_eFSS_LOGC_RES_CORRUPTCTX        - Context is corrupted
- *		        e_eFSS_LOGC_RES_NOINITLIB         - Need to init lib before calling function
- *              e_eFSS_LOGC_RES_CLBCKCRCERR       - The crc callback reported an error
- *		        e_eFSS_LOGC_RES_CLBCKERASEERR     - The erase callback reported an error
- *		        e_eFSS_LOGC_RES_CLBCKWRITEERR     - The write callback reported an error
- *		        e_eFSS_LOGC_RES_CLBCKREADERR      - The read callback reported an error
- *		        e_eFSS_LOGC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
- *              e_eFSS_LOGC_RES_OK                - Operation ended correctly
- */
-e_eFSS_LOGC_RES eFSS_LOGC_FlushBufferAsNewestBkupOnly(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint32_t p_uIdx,
-                                                      const uint32_t p_uFillInPage);
-
-/**
- * @brief       Write a page of data at p_uIdx position as newest and bkup. Do not pass to this function NULL value
- *              or invalid index value. This function will take care of any support page.
- *              Make sure eFSS_LOGC_IsStatusStillCoherent is called before calling this function.
- *              Do not use this function on Flash cache pages.
- *              The buffer is managed with subtype related to newest page only.
- *
- * @param[in]   p_ptCtx          - Log Core context
- * @param[in]   p_uIdx           - Index of the new newest log page that we want to write
- * @param[in]   p_uFillInPage    - Number of filled byte in page
- *
- * @return      e_eFSS_LOGC_RES_BADPOINTER        - In case of bad pointer passed to the function
- *		        e_eFSS_LOGC_RES_BADPARAM          - In case of an invalid parameter passed to the function
- *		        e_eFSS_LOGC_RES_CORRUPTCTX        - Context is corrupted
- *		        e_eFSS_LOGC_RES_NOINITLIB         - Need to init lib before calling function
- *              e_eFSS_LOGC_RES_CLBCKCRCERR       - The crc callback reported an error
- *		        e_eFSS_LOGC_RES_CLBCKERASEERR     - The erase callback reported an error
- *		        e_eFSS_LOGC_RES_CLBCKWRITEERR     - The write callback reported an error
- *		        e_eFSS_LOGC_RES_CLBCKREADERR      - The read callback reported an error
- *		        e_eFSS_LOGC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
- *              e_eFSS_LOGC_RES_OK                - Operation ended correctly
- */
-e_eFSS_LOGC_RES eFSS_LOGC_FlushBufferAsNewestNBkpPage(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint32_t p_uIdx,
-                                                      const uint32_t p_uFillInPage);
-
-/**
- * @brief       Read a page of data at p_uIdx position. Do not pass to this function NULL value
- *              or invalid index value. This function will take care of any support page.
- *              Make sure eFSS_LOGC_IsStatusStillCoherent is called before calling this function.
- *              Do not use this function on Flash cache pages.
- *              The buffer is managed with subtype related to newest page and newest backup only.
- *
- * @param[in]   p_ptCtx          - Log Core context
- * @param[in]   p_uIdx           - Index of the new log page that we want to read from cache
- * @param[out]  p_puFillInPage   - Pointer to an uint32_t where the number of filled byte in page will be copied
- *
- * @return      e_eFSS_LOGC_RES_BADPOINTER        - In case of bad pointer passed to the function
- *		        e_eFSS_LOGC_RES_BADPARAM          - In case of an invalid parameter passed to the function
- *		        e_eFSS_LOGC_RES_CORRUPTCTX        - Context is corrupted
- *		        e_eFSS_LOGC_RES_NOINITLIB         - Need to init lib before calling function
- *              e_eFSS_LOGC_RES_CLBCKCRCERR       - The crc callback reported an error
- *		        e_eFSS_LOGC_RES_CLBCKERASEERR     - The erase callback reported an error
- *		        e_eFSS_LOGC_RES_CLBCKWRITEERR     - The write callback reported an error
- *		        e_eFSS_LOGC_RES_CLBCKREADERR      - The read callback reported an error
- *		        e_eFSS_LOGC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
- *              e_eFSS_LOGC_RES_OK                - Operation ended correctly
- */
-e_eFSS_LOGC_RES eFSS_LOGC_LoadBufferAsNewestNBkpPage(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint32_t p_uIdx,
-                                                     uint32_t* const p_puFillInPage);
 
 #ifdef __cplusplus
 } /* extern "C" */
