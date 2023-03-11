@@ -290,7 +290,7 @@ e_eFSS_CORELL_RES eFSS_CORELL_LoadPageInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e
     bool_t l_bCbRes;
 
     /* Local var used for storage  */
-    t_eFSS_CORELL_StorBufPrv* l_ptStorBuff;
+    t_eFSS_CORELL_StorBufPrv* l_ptMainBuf;
     t_eFSS_CORELLPRV_PrvMeta l_tPrvMeta;
 
     /* Local var used for calculation */
@@ -330,21 +330,21 @@ e_eFSS_CORELL_RES eFSS_CORELL_LoadPageInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e
                     {
                         case e_eFSS_CORELL_BUFFTYPE_1:
                         {
-                            l_ptStorBuff = &p_ptCtx->tBuff1;
+                            l_ptMainBuf = &p_ptCtx->tBuff1;
                             l_eRes = e_eFSS_CORELL_RES_OK;
                             break;
                         }
 
                         case e_eFSS_CORELL_BUFFTYPE_2:
                         {
-                            l_ptStorBuff = &p_ptCtx->tBuff2;
+                            l_ptMainBuf = &p_ptCtx->tBuff2;
                             l_eRes = e_eFSS_CORELL_RES_OK;
                             break;
                         }
 
                         default:
                         {
-                            l_ptStorBuff = &p_ptCtx->tBuff2;
+                            l_ptMainBuf = &p_ptCtx->tBuff2;
                             l_eRes = e_eFSS_CORELL_RES_BADPARAM;
                             break;
                         }
@@ -362,7 +362,7 @@ e_eFSS_CORELL_RES eFSS_CORELL_LoadPageInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e
                                ( l_uTryPerformed < p_ptCtx->tStorSett.uRWERetry ) )
                         {
                             l_bCbRes = (*(p_ptCtx->tCtxCb.fRead))(p_ptCtx->tCtxCb.ptCtxRead, p_uPageIndx,
-                                                                  l_ptStorBuff->puBuf, l_ptStorBuff->uBufL);
+                                                                  l_ptMainBuf->puBuf, l_ptMainBuf->uBufL);
                             l_uTryPerformed++;
 
                             if( false == l_bCbRes )
@@ -378,7 +378,7 @@ e_eFSS_CORELL_RES eFSS_CORELL_LoadPageInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e
                         if( e_eFSS_CORELL_RES_OK == l_eRes )
                         {
                             /* Page readed, extract metadata and check validity */
-                            l_eRes = eFSS_CORELLPRV_ExtractData(l_ptStorBuff, &l_tPrvMeta);
+                            l_eRes = eFSS_CORELLPRV_ExtractData(l_ptMainBuf, &l_tPrvMeta);
 
                             if( e_eFSS_CORELL_RES_OK == l_eRes )
                             {
@@ -386,11 +386,11 @@ e_eFSS_CORELL_RES eFSS_CORELL_LoadPageInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e
                                 /* Init var */
                                 l_uPageCrcCalc = 0u;
 
-                                if( l_ptStorBuff->uBufL > EFSS_CORELL_PAGEMIN_L )
+                                if( l_ptMainBuf->uBufL > EFSS_CORELL_PAGEMIN_L )
                                 {
-                                    l_uBuffCrcLen = ( l_ptStorBuff->uBufL - 4u );
+                                    l_uBuffCrcLen = ( l_ptMainBuf->uBufL - 4u );
                                     l_bCbRes = (*(p_ptCtx->tCtxCb.fCrc32))(p_ptCtx->tCtxCb.ptCtxCrc32, MAX_UINT32VAL,
-                                                                          l_ptStorBuff->puBuf, l_uBuffCrcLen,
+                                                                          l_ptMainBuf->puBuf, l_uBuffCrcLen,
                                                                           &l_uPageCrcCalc );
 
                                     if( true != l_bCbRes )
@@ -447,8 +447,8 @@ e_eFSS_CORELL_RES eFSS_CORELL_FlushBuffInPage(t_eFSS_CORELL_Ctx* const p_ptCtx, 
     bool_t l_bCbRes;
 
     /* Local var used for storage  */
-    t_eFSS_CORELL_StorBufPrv* l_ptStorBuff;
-    const t_eFSS_CORELL_StorBufPrv* l_ptSupBuff;
+    t_eFSS_CORELL_StorBufPrv* l_ptMainBuf;
+    const t_eFSS_CORELL_StorBufPrv* l_ptBkpBuf;
     t_eFSS_CORELLPRV_PrvMeta l_tPrvMeta;
 
     /* Local var used for calculation */
@@ -488,24 +488,24 @@ e_eFSS_CORELL_RES eFSS_CORELL_FlushBuffInPage(t_eFSS_CORELL_Ctx* const p_ptCtx, 
                     {
                         case e_eFSS_CORELL_BUFFTYPE_1:
                         {
-                            l_ptStorBuff = &p_ptCtx->tBuff1;
-                            l_ptSupBuff  = &p_ptCtx->tBuff2;
+                            l_ptMainBuf = &p_ptCtx->tBuff1;
+                            l_ptBkpBuf  = &p_ptCtx->tBuff2;
                             l_eRes = e_eFSS_CORELL_RES_OK;
                             break;
                         }
 
                         case e_eFSS_CORELL_BUFFTYPE_2:
                         {
-                            l_ptStorBuff = &p_ptCtx->tBuff2;
-                            l_ptSupBuff  = &p_ptCtx->tBuff1;
+                            l_ptMainBuf = &p_ptCtx->tBuff2;
+                            l_ptBkpBuf  = &p_ptCtx->tBuff1;
                             l_eRes = e_eFSS_CORELL_RES_OK;
                             break;
                         }
 
                         default:
                         {
-                            l_ptStorBuff = &p_ptCtx->tBuff2;
-                            l_ptSupBuff  = &p_ptCtx->tBuff1;
+                            l_ptMainBuf = &p_ptCtx->tBuff2;
+                            l_ptBkpBuf  = &p_ptCtx->tBuff1;
                             l_eRes = e_eFSS_CORELL_RES_BADPARAM;
                             break;
                         }
@@ -523,7 +523,7 @@ e_eFSS_CORELL_RES eFSS_CORELL_FlushBuffInPage(t_eFSS_CORELL_Ctx* const p_ptCtx, 
                         l_tPrvMeta.uPageCrc = 0u;
 
                         /* Insert requested data */
-                        l_eRes = eFSS_CORELLPRV_InsertData(l_ptStorBuff, &l_tPrvMeta);
+                        l_eRes = eFSS_CORELLPRV_InsertData(l_ptMainBuf, &l_tPrvMeta);
 
                         if( e_eFSS_CORELL_RES_OK == l_eRes )
                         {
@@ -531,11 +531,11 @@ e_eFSS_CORELL_RES eFSS_CORELL_FlushBuffInPage(t_eFSS_CORELL_Ctx* const p_ptCtx, 
                             l_uPageCrcCalc = 0u;
 
                             /* Calculate CRC */
-                            if( l_ptStorBuff->uBufL > EFSS_CORELL_PAGEMIN_L )
+                            if( l_ptMainBuf->uBufL > EFSS_CORELL_PAGEMIN_L )
                             {
-                                l_uBuffCrcLen = ( l_ptStorBuff->uBufL - 4u );
+                                l_uBuffCrcLen = ( l_ptMainBuf->uBufL - 4u );
                                 l_bCbRes = (*(p_ptCtx->tCtxCb.fCrc32))(p_ptCtx->tCtxCb.ptCtxCrc32, MAX_UINT32VAL,
-                                                                       l_ptStorBuff->puBuf, l_uBuffCrcLen,
+                                                                       l_ptMainBuf->puBuf, l_uBuffCrcLen,
                                                                        &l_uPageCrcCalc );
 
                                 if( true != l_bCbRes )
@@ -553,7 +553,7 @@ e_eFSS_CORELL_RES eFSS_CORELL_FlushBuffInPage(t_eFSS_CORELL_Ctx* const p_ptCtx, 
                             {
                                 /* Insert Crc data */
                                 l_tPrvMeta.uPageCrc = l_uPageCrcCalc;
-                                l_eRes = eFSS_CORELLPRV_InsertData(l_ptStorBuff, &l_tPrvMeta);
+                                l_eRes = eFSS_CORELLPRV_InsertData(l_ptMainBuf, &l_tPrvMeta);
 
                                 if( e_eFSS_CORELL_RES_OK == l_eRes )
                                 {
@@ -571,7 +571,7 @@ e_eFSS_CORELL_RES eFSS_CORELL_FlushBuffInPage(t_eFSS_CORELL_Ctx* const p_ptCtx, 
                                         {
                                             /* Write */
                                             l_bCbRes = (*(p_ptCtx->tCtxCb.fWrite))(p_ptCtx->tCtxCb.ptCtxWrite, p_uPageIndx,
-                                                                                   l_ptStorBuff->puBuf, l_ptStorBuff->uBufL);
+                                                                                   l_ptMainBuf->puBuf, l_ptMainBuf->uBufL);
 
                                             if( false == l_bCbRes )
                                             {
@@ -588,7 +588,7 @@ e_eFSS_CORELL_RES eFSS_CORELL_FlushBuffInPage(t_eFSS_CORELL_Ctx* const p_ptCtx, 
                                         {
                                             /* Read */
                                             l_bCbRes = (*(p_ptCtx->tCtxCb.fRead))(p_ptCtx->tCtxCb.ptCtxRead, p_uPageIndx,
-                                                                                  l_ptSupBuff->puBuf, l_ptSupBuff->uBufL);
+                                                                                  l_ptBkpBuf->puBuf, l_ptBkpBuf->uBufL);
 
                                             if( false == l_bCbRes )
                                             {
@@ -600,7 +600,7 @@ e_eFSS_CORELL_RES eFSS_CORELL_FlushBuffInPage(t_eFSS_CORELL_Ctx* const p_ptCtx, 
                                         if( true == l_bCbRes )
                                         {
                                             /* Compare buffer to write with the readed one */
-                                            if( 0 == memcmp(l_ptStorBuff->puBuf, l_ptSupBuff->puBuf, l_ptStorBuff->uBufL) )
+                                            if( 0 == memcmp(l_ptMainBuf->puBuf, l_ptBkpBuf->puBuf, l_ptMainBuf->uBufL) )
                                             {
                                                 l_bCbRes = true;
                                             }
