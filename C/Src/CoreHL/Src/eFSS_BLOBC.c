@@ -12,7 +12,6 @@
  * - [uint8_t] -                    -> N byte of user data           |
  * ------------------------------------------------------------------ Metadata  (4 byte)
  * - uint32_t  - Page Index         -> Page Seq Number               |
- * - uint32_t  - Page Index         -> Page Index                    |
  * ------------------------------------------------------------------ Under we have LL/HL metadata
  * - LOW LEVEL / HIGH LEVEL METADATA                                 |
  * ------------------------------------------------------------------ End of Page
@@ -38,7 +37,7 @@
  *      PRIVATE DEFINE
  **********************************************************************************************************************/
 #define EFSS_PAGETYPE_BLOB                                                                       ( ( uint8_t )   0x01u )
-#define EFSS_BLOBC_PAGEMIN_L                                                                     ( ( uint32_t )     8u )
+#define EFSS_BLOBC_PAGEMIN_L                                                                     ( ( uint32_t )     4u )
 #define EFSS_PAGESUBTYPE_BLOBORI                                                                 ( ( uint8_t )   0x01u )
 #define EFSS_PAGESUBTYPE_BLOBBKP                                                                 ( ( uint8_t )   0x02u )
 
@@ -199,7 +198,6 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_LoadBufferFromPage(t_eFSS_BLOBC_Ctx* const p_ptCtx, 
     uint32_t l_uCurrPageConv;
     uint8_t l_uSubTypeToCheck;
     uint8_t l_uSubTypeReaded;
-    uint32_t l_uReadIndx;
 
 	/* Check pointer validity */
 	if( ( NULL == p_ptCtx ) || ( NULL == p_puSeqN ) )
@@ -266,26 +264,10 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_LoadBufferFromPage(t_eFSS_BLOBC_Ctx* const p_ptCtx, 
                                 }
                                 else
                                 {
-                                    /* check if the index is well formed */
-                                    l_uReadIndx = 0u;
-                                    if( true != eFSS_Utils_RetriveU32(&l_tBuff.puBuf[l_tBuff.uBufL - 4u], &l_uReadIndx) )
+                                    /* Retrive Seq Number */
+                                    if( true != eFSS_Utils_RetriveU32(&l_tBuff.puBuf[l_tBuff.uBufL - EFSS_BLOBC_PAGEMIN_L], p_puSeqN) )
                                     {
                                         l_eRes = e_eFSS_BLOBC_RES_CORRUPTCTX;
-                                    }
-                                    else
-                                    {
-                                        if( p_uIdx != l_uReadIndx )
-                                        {
-                                            /* The page of index p_uPageIndx is not marked with the same index */
-                                            l_eRes = e_eFSS_BLOBC_RES_NOTVALIDBLOB;
-                                        }
-                                        else
-                                        {
-                                            if( true != eFSS_Utils_RetriveU32(&l_tBuff.puBuf[l_tBuff.uBufL - EFSS_BLOBC_PAGEMIN_L], p_puSeqN) )
-                                            {
-                                                l_eRes = e_eFSS_BLOBC_RES_CORRUPTCTX;
-                                            }
-                                        }
                                     }
                                 }
                             }
@@ -368,21 +350,14 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_FlushBufferInPage(t_eFSS_BLOBC_Ctx* const p_ptCtx, c
                                 l_uCurrPageConv = p_uIdx + l_uLastPageIdx;
                             }
 
-                            if( true == eFSS_Utils_InsertU32(&l_tBuff.puBuf[l_tBuff.uBufL - 4u], p_uIdx) )
+                            if( true != eFSS_Utils_InsertU32(&l_tBuff.puBuf[l_tBuff.uBufL - EFSS_BLOBC_PAGEMIN_L], p_uSeqN) )
                             {
-                                if( true == eFSS_Utils_InsertU32(&l_tBuff.puBuf[l_tBuff.uBufL - EFSS_BLOBC_PAGEMIN_L], p_uSeqN) )
-                                {
-                                    l_eResHL =  eFSS_COREHL_FlushBuffInPage(&p_ptCtx->tCOREHLCtx, l_uCurrPageConv, l_uSubTypeWrite);
-                                    l_eRes = eFSS_BLOBC_HLtoBLOBRes(l_eResHL);
-                                }
-                                else
-                                {
-                                    l_eRes = e_eFSS_BLOBC_RES_CORRUPTCTX;
-                                }
+                                l_eRes = e_eFSS_BLOBC_RES_CORRUPTCTX;
                             }
                             else
                             {
-                                l_eRes = e_eFSS_BLOBC_RES_CORRUPTCTX;
+                                l_eResHL =  eFSS_COREHL_FlushBuffInPage(&p_ptCtx->tCOREHLCtx, l_uCurrPageConv, l_uSubTypeWrite);
+                                l_eRes = eFSS_BLOBC_HLtoBLOBRes(l_eResHL);
                             }
                         }
                     }

@@ -10,8 +10,7 @@
 /* In this module the page field has the following meaning:
  * ------------------------------------------------------------------ User data
  * - [uint8_t] -                    -> N byte of user data           |
- * ------------------------------------------------------------------ Metadata  (4 byte)
- * - uint32_t  - Page Index         -> Page Index                    |
+ * ------------------------------------------------------------------ Metadata  (0 byte)
  * ------------------------------------------------------------------ Under we have LL/HL metadata
  * - LOW LEVEL / HIGH LEVEL METADATA                                 |
  * ------------------------------------------------------------------ End of Page
@@ -36,7 +35,7 @@
  *      PRIVATE DEFINE
  **********************************************************************************************************************/
 #define EFSS_PAGETYPE_DB                                                                         ( ( uint8_t )   0x03u )
-#define EFSS_DBC_PAGEMIN_L                                                                       ( ( uint32_t )     4u )
+#define EFSS_DBC_PAGEMIN_L                                                                       ( ( uint32_t )     0u )
 #define EFSS_PAGESUBTYPE_DBORI                                                                   ( ( uint8_t )   0x01u )
 #define EFSS_PAGESUBTYPE_DBBKP                                                                   ( ( uint8_t )   0x02u )
 
@@ -193,7 +192,6 @@ e_eFSS_DBC_RES eFSS_DBC_LoadPageInBuff(t_eFSS_DBC_Ctx* const p_ptCtx, const uint
     bool_t l_bIsInit;
     uint32_t l_uTotPages;
     uint32_t l_uBkpIndex;
-    uint32_t l_uReadIndx;
 
 	/* Check pointer validity */
 	if( NULL == p_ptCtx )
@@ -238,24 +236,6 @@ e_eFSS_DBC_RES eFSS_DBC_LoadPageInBuff(t_eFSS_DBC_Ctx* const p_ptCtx, const uint
                             l_eResHL = eFSS_COREHL_LoadPageInBuffNRipBkp(&p_ptCtx->tCOREHLCtx, p_uPageIndx, l_uBkpIndex,
                                                                          EFSS_PAGESUBTYPE_DBORI, EFSS_PAGESUBTYPE_DBBKP);
                             l_eRes = eFSS_DB_HLtoDBCRes(l_eResHL);
-
-                            if( ( e_eFSS_DBC_RES_OK == l_eRes ) || ( e_eFSS_DBC_RES_OK_BKP_RCVRD == l_eRes ) )
-                            {
-                                /* check if the index is well formed */
-                                l_uReadIndx = 0u;
-                                if( true == eFSS_Utils_RetriveU32(&l_tBuff.puBuf[l_tBuff.uBufL - EFSS_DBC_PAGEMIN_L], &l_uReadIndx) )
-                                {
-                                    if( p_uPageIndx != l_uReadIndx )
-                                    {
-                                        /* The page of index p_uPageIndx is not marked with the same index */
-                                        l_eRes = e_eFSS_DBC_RES_NOTVALIDDB;
-                                    }
-                                }
-                                else
-                                {
-                                    l_eRes = e_eFSS_DBC_RES_CORRUPTCTX;
-                                }
-                            }
                         }
                     }
                 }
@@ -322,16 +302,9 @@ e_eFSS_DBC_RES eFSS_DBC_FlushBuffInPage(t_eFSS_DBC_Ctx* const p_ptCtx, const uin
                         {
                             l_uBkpIndex = p_uPageIndx + ( l_uTotPages / 2u );
 
-                            if( true == eFSS_Utils_InsertU32(&l_tBuff.puBuf[l_tBuff.uBufL - EFSS_DBC_PAGEMIN_L], p_uPageIndx) )
-                            {
-                                l_eResHL = eFSS_COREHL_FlushBuffInPageNBkp(&p_ptCtx->tCOREHLCtx, p_uPageIndx, l_uBkpIndex,
-                                                                        EFSS_PAGESUBTYPE_DBORI, EFSS_PAGESUBTYPE_DBBKP);
-                                l_eRes = eFSS_DB_HLtoDBCRes(l_eResHL);
-                            }
-                            else
-                            {
-                                l_eRes = e_eFSS_DBC_RES_CORRUPTCTX;
-                            }
+                            l_eResHL = eFSS_COREHL_FlushBuffInPageNBkp(&p_ptCtx->tCOREHLCtx, p_uPageIndx, l_uBkpIndex,
+                                                                       EFSS_PAGESUBTYPE_DBORI, EFSS_PAGESUBTYPE_DBBKP);
+                            l_eRes = eFSS_DB_HLtoDBCRes(l_eResHL);
                         }
                     }
                 }
