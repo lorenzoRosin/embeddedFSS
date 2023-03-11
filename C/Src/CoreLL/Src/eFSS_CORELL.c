@@ -561,64 +561,71 @@ e_eFSS_CORELL_RES eFSS_CORELL_FlushBuffInPage(t_eFSS_CORELL_Ctx* const p_ptCtx, 
                                        storage area indicated by the index */
                                     /* Init var */
                                     l_eRes = e_eFSS_CORELL_RES_CLBCKERASEERR;
-                                    l_bCbRes = false;
                                     l_uTryPerformed = 0u;
 
-                                    while( ( false == l_bCbRes ) && ( l_uTryPerformed < p_ptCtx->tStorSett.uRWERetry ) )
+                                    while( ( e_eFSS_CORELL_RES_OK != l_eRes ) &&
+                                           ( l_uTryPerformed < p_ptCtx->tStorSett.uRWERetry ) )
                                     {
                                         /* Erase */
                                         l_bCbRes = (*(p_ptCtx->tCtxCb.fErase))(p_ptCtx->tCtxCb.ptCtxErase, p_uPageIndx);
 
                                         if( true == l_bCbRes )
                                         {
-                                            /* Write */
-                                            l_bCbRes = (*(p_ptCtx->tCtxCb.fWrite))(p_ptCtx->tCtxCb.ptCtxWrite, p_uPageIndx,
-                                                                                   l_ptMainBuf->puBuf, l_ptMainBuf->uBufL);
-
-                                            if( false == l_bCbRes )
-                                            {
-                                                /* Write error  */
-                                                l_eRes = e_eFSS_CORELL_RES_CLBCKWRITEERR;
-                                            }
+                                            l_eRes = e_eFSS_CORELL_RES_OK;
                                         }
                                         else
                                         {
                                             l_eRes = e_eFSS_CORELL_RES_CLBCKERASEERR;
                                         }
 
-                                        if( true == l_bCbRes )
+                                        if( e_eFSS_CORELL_RES_OK == l_eRes )
+                                        {
+                                            /* Write */
+                                            l_bCbRes = (*(p_ptCtx->tCtxCb.fWrite))(p_ptCtx->tCtxCb.ptCtxWrite,
+                                                                                   p_uPageIndx, l_ptMainBuf->puBuf,
+                                                                                   l_ptMainBuf->uBufL);
+
+                                            if( true == l_bCbRes )
+                                            {
+                                                l_eRes = e_eFSS_CORELL_RES_OK;
+                                            }
+                                            else
+                                            {
+                                                l_eRes = e_eFSS_CORELL_RES_CLBCKWRITEERR;
+                                            }
+                                        }
+
+                                        if( e_eFSS_CORELL_RES_OK == l_eRes )
                                         {
                                             /* Read */
-                                            l_bCbRes = (*(p_ptCtx->tCtxCb.fRead))(p_ptCtx->tCtxCb.ptCtxRead, p_uPageIndx,
-                                                                                  l_ptBkpBuf->puBuf, l_ptBkpBuf->uBufL);
+                                            l_bCbRes = (*(p_ptCtx->tCtxCb.fRead))(p_ptCtx->tCtxCb.ptCtxRead,
+                                                                                  p_uPageIndx, l_ptBkpBuf->puBuf,
+                                                                                  l_ptBkpBuf->uBufL);
 
-                                            if( false == l_bCbRes )
+                                            if( true == l_bCbRes )
                                             {
-                                                /* Write error  */
+                                                l_eRes = e_eFSS_CORELL_RES_OK;
+                                            }
+                                            else
+                                            {
                                                 l_eRes = e_eFSS_CORELL_RES_CLBCKREADERR;
                                             }
                                         }
 
-                                        if( true == l_bCbRes )
+                                        if( e_eFSS_CORELL_RES_OK == l_eRes )
                                         {
                                             /* Compare buffer to write with the readed one */
                                             if( 0 == memcmp(l_ptMainBuf->puBuf, l_ptBkpBuf->puBuf, l_ptMainBuf->uBufL) )
                                             {
-                                                l_bCbRes = true;
+                                                l_eRes = e_eFSS_CORELL_RES_OK;
                                             }
                                             else
                                             {
-                                                l_bCbRes = false;
                                                 l_eRes = e_eFSS_CORELL_RES_WRITENOMATCHREAD;
                                             }
                                         }
 
                                         l_uTryPerformed++;
-                                    }
-
-                                    if( true == l_bCbRes )
-                                    {
-                                        l_eRes = e_eFSS_CORELL_RES_OK;
                                     }
                                 }
                             }
