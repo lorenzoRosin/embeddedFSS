@@ -357,10 +357,10 @@ e_eFSS_CORELL_RES eFSS_CORELL_LoadPageInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e
                         l_eRes = e_eFSS_CORELL_RES_CLBCKREADERR;
                         l_uTryPerformed = 0u;
 
+                        /* Read at least uRWERetry times, after that surrend */
                         while( ( e_eFSS_CORELL_RES_OK != l_eRes ) &&
                                ( l_uTryPerformed < p_ptCtx->tStorSett.uRWERetry ) )
                         {
-                            /* Read */
                             l_bCbRes = (*(p_ptCtx->tCtxCb.fRead))(p_ptCtx->tCtxCb.ptCtxRead, p_uPageIndx,
                                                                   l_ptStorBuff->puBuf, l_ptStorBuff->uBufL);
                             l_uTryPerformed++;
@@ -377,16 +377,15 @@ e_eFSS_CORELL_RES eFSS_CORELL_LoadPageInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e
 
                         if( e_eFSS_CORELL_RES_OK == l_eRes )
                         {
-                            /* Extract data */
+                            /* Page readed, extract metadata and check validity */
                             l_eRes = eFSS_CORELLPRV_ExtractData(l_ptStorBuff, &l_tPrvMeta);
 
                             if( e_eFSS_CORELL_RES_OK == l_eRes )
                             {
-                                /* Calculate and check CRC and others parameter */
+                                /* First, calculate and verify CRC value */
                                 /* Init var */
                                 l_uPageCrcCalc = 0u;
 
-                                /* Calculate CRC */
                                 if( l_ptStorBuff->uBufL > EFSS_CORELL_PAGEMIN_L )
                                 {
                                     l_uBuffCrcLen = ( l_ptStorBuff->uBufL - 4u );

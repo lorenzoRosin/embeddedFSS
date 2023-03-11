@@ -120,7 +120,8 @@ e_eFSS_CORELL_RES eFSS_CORELL_IsInit(t_eFSS_CORELL_Ctx* const p_ptCtx, bool_t* c
 e_eFSS_CORELL_RES eFSS_CORELL_GetStorSett(t_eFSS_CORELL_Ctx* const p_ptCtx, t_eFSS_TYPE_StorSet* const p_ptStorSet);
 
 /**
- * @brief       Get the reference of the two buffer used to read and write the storage area
+ * @brief       Get the reference of the two buffer used to read and write the storage area. Returned buffer lenght
+ *              refer only to the user avaiable data, private metadata is removed from the buffer length.
  *
  * @param[in]   p_ptCtx       - Low Level Core context
  * @param[out]  p_ptBuff1     - Pointer to a pointer struct that will be filled with info about buffer 1
