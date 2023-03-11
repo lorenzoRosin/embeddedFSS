@@ -296,6 +296,7 @@ e_eFSS_CORELL_RES eFSS_CORELL_LoadPageInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e
     /* Local var used for calculation */
     uint32_t l_uTryPerformed;
     uint32_t l_uPageCrcCalc;
+    uint32_t l_uBuffCrcLen;
 
 	/* Check pointer validity */
 	if( NULL == p_ptCtx )
@@ -382,14 +383,26 @@ e_eFSS_CORELL_RES eFSS_CORELL_LoadPageInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e
                             if( e_eFSS_CORELL_RES_OK == l_eRes )
                             {
                                 /* Calculate and check CRC and others parameter */
-                                /* Calculate CRC */
-                                l_bCbRes = (*(p_ptCtx->tCtxCb.fCrc32))(p_ptCtx->tCtxCb.ptCtxCrc32, MAX_UINT32VAL,
-                                                                      l_ptStorBuff->puBuf,( l_ptStorBuff->uBufL - 4u ),
-                                                                      &l_uPageCrcCalc );
+                                /* Init var */
+                                l_uPageCrcCalc = 0u;
 
-                                if( true != l_bCbRes )
+                                /* Calculate CRC */
+                                if( l_ptStorBuff->uBufL > EFSS_CORELL_PAGEMIN_L )
                                 {
-                                    l_eRes = e_eFSS_CORELL_RES_CLBCKCRCERR;
+                                    l_uBuffCrcLen = ( l_ptStorBuff->uBufL - 4u );
+                                    l_bCbRes = (*(p_ptCtx->tCtxCb.fCrc32))(p_ptCtx->tCtxCb.ptCtxCrc32, MAX_UINT32VAL,
+                                                                          l_ptStorBuff->puBuf, l_uBuffCrcLen,
+                                                                          &l_uPageCrcCalc );
+
+                                    if( true != l_bCbRes )
+                                    {
+                                        l_eRes = e_eFSS_CORELL_RES_CLBCKCRCERR;
+                                    }
+                                }
+                                else
+                                {
+                                    /* Just to delete a c stat warning even if is not needed */
+                                    l_eRes = e_eFSS_CORELL_RES_CORRUPTCTX;
                                 }
 
                                 if( e_eFSS_CORELL_RES_OK == l_eRes )
@@ -402,7 +415,7 @@ e_eFSS_CORELL_RES eFSS_CORELL_LoadPageInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e
                                     {
                                         if( ( EFSS_CORELL_PAGEMAGNUM          != l_tPrvMeta.uPageMagicNumber ) ||
                                             ( p_ptCtx->tStorSett.uTotPages    != l_tPrvMeta.uPageTot ) ||
-                                            ( p_ptCtx->uStorType              != l_tPrvMeta.uPageType ) || 
+                                            ( p_ptCtx->uStorType              != l_tPrvMeta.uPageType ) ||
                                             ( p_uPageIndx                     != l_tPrvMeta.uPageIndx ) )
                                         {
                                             l_eRes = e_eFSS_CORELL_RES_NOTVALIDPAGE;
@@ -442,6 +455,7 @@ e_eFSS_CORELL_RES eFSS_CORELL_FlushBuffInPage(t_eFSS_CORELL_Ctx* const p_ptCtx, 
     /* Local var used for calculation */
     uint32_t l_uTryPerformed;
     uint32_t l_uPageCrcCalc;
+    uint32_t l_uBuffCrcLen;
 
 	/* Check pointer validity */
 	if( NULL == p_ptCtx )
@@ -511,16 +525,29 @@ e_eFSS_CORELL_RES eFSS_CORELL_FlushBuffInPage(t_eFSS_CORELL_Ctx* const p_ptCtx, 
 
                         /* Insert requested data */
                         l_eRes = eFSS_CORELLPRV_InsertData(l_ptStorBuff, &l_tPrvMeta);
+
                         if( e_eFSS_CORELL_RES_OK == l_eRes )
                         {
-                            /* Calculate CRC */
-                            l_bCbRes = (*(p_ptCtx->tCtxCb.fCrc32))(p_ptCtx->tCtxCb.ptCtxCrc32, MAX_UINT32VAL,
-                                                                   l_ptStorBuff->puBuf, ( l_ptStorBuff->uBufL - 4u ),
-                                                                   &l_uPageCrcCalc );
+                            /* Init var */
+                            l_uPageCrcCalc = 0u;
 
-                            if( true != l_bCbRes )
+                            /* Calculate CRC */
+                            if( l_ptStorBuff->uBufL > EFSS_CORELL_PAGEMIN_L )
                             {
-                                l_eRes = e_eFSS_CORELL_RES_CLBCKCRCERR;
+                                l_uBuffCrcLen = ( l_ptStorBuff->uBufL - 4u );
+                                l_bCbRes = (*(p_ptCtx->tCtxCb.fCrc32))(p_ptCtx->tCtxCb.ptCtxCrc32, MAX_UINT32VAL,
+                                                                       l_ptStorBuff->puBuf, l_uBuffCrcLen,
+                                                                       &l_uPageCrcCalc );
+
+                                if( true != l_bCbRes )
+                                {
+                                    l_eRes = e_eFSS_CORELL_RES_CLBCKCRCERR;
+                                }
+                            }
+                            else
+                            {
+                                /* Just to delete a c stat warning even if is not needed */
+                                l_eRes = e_eFSS_CORELL_RES_CORRUPTCTX;
                             }
 
                             if( e_eFSS_CORELL_RES_OK == l_eRes )
