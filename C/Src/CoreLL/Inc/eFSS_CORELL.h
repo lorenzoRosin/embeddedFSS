@@ -52,19 +52,19 @@ typedef enum
 
 typedef struct
 {
-    uint8_t*  puBuf;
-    uint32_t  uBufL;
+    uint8_t* puBuf;
+    uint32_t uBufL;
 }t_eFSS_CORELL_StorBufPrv;
 
 typedef struct
 {
-    uint8_t*  puBuf;
-    uint32_t  uBufL;
+    uint8_t* puBuf;
+    uint32_t uBufL;
 }t_eFSS_CORELL_StorBuf;
 
 typedef struct
 {
-    bool_t   bIsInit;
+    bool_t  bIsInit;
     t_eFSS_TYPE_CbStorCtx tCtxCb;
     t_eFSS_TYPE_StorSet tStorSett;
     uint8_t uStorType;

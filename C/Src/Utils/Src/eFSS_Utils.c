@@ -136,15 +136,15 @@ bool_t eFSS_Utils_RetriveU32(const uint8_t* p_puBuf, uint32_t* const p_puToRetri
 		*p_puToRetrive |= ( l_uTemp & 0x000000FFu );
 		l_uIndx++;
 
-		l_uTemp =  (uint32_t) ( ( (uint32_t) p_puBuf[l_uIndx] ) << 8u  );
+		l_uTemp = (uint32_t) ( ( (uint32_t) p_puBuf[l_uIndx] ) << 8u );
 		*p_puToRetrive |= ( l_uTemp & 0x0000FF00u );
 		l_uIndx++;
 
-		l_uTemp =  (uint32_t) ( ( (uint32_t) p_puBuf[l_uIndx] ) << 16u  );
+		l_uTemp = (uint32_t) ( ( (uint32_t) p_puBuf[l_uIndx] ) << 16u );
 		*p_puToRetrive |= ( l_uTemp & 0x00FF0000u );
 		l_uIndx++;
 
-		l_uTemp =  (uint32_t) ( ( (uint32_t) p_puBuf[l_uIndx] ) << 24u  );
+		l_uTemp = (uint32_t) ( ( (uint32_t) p_puBuf[l_uIndx] ) << 24u );
 		*p_puToRetrive |= ( l_uTemp & 0xFF000000u );
 		l_uIndx++;
 	}
@@ -178,7 +178,7 @@ bool_t eFSS_Utils_RetriveU16(const uint8_t* p_puBuf, uint16_t* const p_puToRetri
 		*p_puToRetrive |= ( l_uTemp & 0x00FFu );
 		l_uIndx++;
 
-		l_uTemp =  (uint16_t) ( ( (uint16_t) p_puBuf[l_uIndx] ) << 8u  );
+		l_uTemp = (uint16_t) ( ( (uint16_t) p_puBuf[l_uIndx] ) << 8u );
 		*p_puToRetrive |= ( l_uTemp & 0xFF00u );
 		l_uIndx++;
 	}

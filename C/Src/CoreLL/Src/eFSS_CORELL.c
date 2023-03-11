@@ -289,7 +289,7 @@ e_eFSS_CORELL_RES eFSS_CORELL_LoadPageInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e
 	e_eFSS_CORELL_RES l_eRes;
     bool_t l_bCbRes;
 
-    /* Local var used for storage  */
+    /* Local var used for storage */
     t_eFSS_CORELL_StorBufPrv* l_ptMainBuf;
     t_eFSS_CORELLPRV_PrvMeta l_tPrvMeta;
 
@@ -446,7 +446,7 @@ e_eFSS_CORELL_RES eFSS_CORELL_FlushBuffInPage(t_eFSS_CORELL_Ctx* const p_ptCtx, 
 	e_eFSS_CORELL_RES l_eRes;
     bool_t l_bCbRes;
 
-    /* Local var used for storage  */
+    /* Local var used for storage */
     t_eFSS_CORELL_StorBufPrv* l_ptMainBuf;
     const t_eFSS_CORELL_StorBufPrv* l_ptBkpBuf;
     t_eFSS_CORELLPRV_PrvMeta l_tPrvMeta;
@@ -672,7 +672,7 @@ e_eFSS_CORELL_RES eFSS_CORELL_CalcCrcInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e_
             else
             {
                 /* Check param validity */
-                if( ( p_uLenCalc <= 0u ) || ( p_uLenCalc > ( p_ptCtx->tStorSett.uPagesLen - EFSS_CORELL_PAGEMIN_L  ) ) )
+                if( ( p_uLenCalc <= 0u ) || ( p_uLenCalc > ( p_ptCtx->tStorSett.uPagesLen - EFSS_CORELL_PAGEMIN_L ) ) )
                 {
                     l_eRes = e_eFSS_CORELL_RES_BADPARAM;
                 }
