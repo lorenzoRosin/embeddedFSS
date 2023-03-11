@@ -627,6 +627,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_LoadPageInBuffNRipBkp(t_eFSS_COREHL_Ctx* const p_p
 
                                             /* Ripristinate original one */
                                             l_tBuff1.puBuf[ l_tBuff1.uBufL - EFSS_COREHL_PAGEMIN_L ] = p_uOriSubT;
+                                            (void)l_tBuff1.uBufL;
 
                                             /* If recovered return it */
                                             if( e_eFSS_COREHL_RES_OK == l_eRes )
@@ -653,6 +654,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_LoadPageInBuffNRipBkp(t_eFSS_COREHL_Ctx* const p_p
                                             /* Buffer 1 must contains the original page */
                                             (void)memcpy(l_tBuff1.puBuf, l_tBuff2.puBuf, l_tBuff2.uBufL);
                                             l_tBuff1.puBuf[ l_tBuff1.uBufL - EFSS_COREHL_PAGEMIN_L ] = p_uOriSubT;
+                                            (void)l_tBuff1.uBufL;
 
                                             l_eRes = e_eFSS_COREHL_RES_OK_BKP_RCVRD;
                                         }
@@ -668,6 +670,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_LoadPageInBuffNRipBkp(t_eFSS_COREHL_Ctx* const p_p
 
                                         /* Ripristinate original one */
                                         l_tBuff1.puBuf[ l_tBuff1.uBufL - EFSS_COREHL_PAGEMIN_L ] = p_uOriSubT;
+                                        (void)l_tBuff1.uBufL;
 
                                         /* If recovered return it */
                                         if( e_eFSS_COREHL_RES_OK == l_eRes )
