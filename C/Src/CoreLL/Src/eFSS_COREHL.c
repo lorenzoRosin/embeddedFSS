@@ -198,7 +198,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_GetBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, t_eFSS_C
     return l_eRes;
 }
 e_eFSS_COREHL_RES eFSS_COREHL_GetBuffNStor(t_eFSS_COREHL_Ctx* const p_ptCtx, t_eFSS_COREHL_StorBuf* const p_ptBuff,
-                                           t_eFSS_TYPE_StorSet* const  p_ptStorSet)
+                                           t_eFSS_TYPE_StorSet* const p_ptStorSet)
 {
     /* Return local var */
     e_eFSS_COREHL_RES l_eRes;
@@ -252,7 +252,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_GetBuffNStor(t_eFSS_COREHL_Ctx* const p_ptCtx, t_e
     return l_eRes;
 }
 
-e_eFSS_COREHL_RES eFSS_COREHL_LoadPageInBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, const uint32_t p_uPageIndx,
+e_eFSS_COREHL_RES eFSS_COREHL_LoadPageInBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, const uint32_t p_uPIdx,
                                              uint8_t* const p_puSubTypeRead)
 {
     /* Return local var */
@@ -295,7 +295,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_LoadPageInBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, c
 
                     if( e_eFSS_COREHL_RES_OK == l_eRes )
                     {
-                        l_eResLL = eFSS_CORELL_LoadPageInBuff(&p_ptCtx->tCORELLCtx, e_eFSS_CORELL_BUFFTYPE_1, p_uPageIndx);
+                        l_eResLL = eFSS_CORELL_LoadPageInBuff(&p_ptCtx->tCORELLCtx, e_eFSS_CORELL_BUFFTYPE_1, p_uPIdx);
                         l_eRes = eFSS_COREHL_LLtoHLRes(l_eResLL);
 
                         if( e_eFSS_COREHL_RES_OK == l_eRes )
@@ -311,7 +311,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_LoadPageInBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, c
     return l_eRes;
 }
 
-e_eFSS_COREHL_RES eFSS_COREHL_FlushBuffInPage(t_eFSS_COREHL_Ctx* const p_ptCtx, const uint32_t p_uPageIndx,
+e_eFSS_COREHL_RES eFSS_COREHL_FlushBuffInPage(t_eFSS_COREHL_Ctx* const p_ptCtx, const uint32_t p_uPIdx,
                                               uint8_t const p_uSubTypeToWrite)
 {
     /* Return local var */
@@ -356,9 +356,10 @@ e_eFSS_COREHL_RES eFSS_COREHL_FlushBuffInPage(t_eFSS_COREHL_Ctx* const p_ptCtx, 
                     {
                         /* Setup sub page type */
                         l_tBuff1.puBuf[ l_tBuff1.uBufL - EFSS_COREHL_PAGEMIN_L ] = p_uSubTypeToWrite;
+                        (void)l_tBuff1.uBufL;
 
                         /* Flush */
-                        l_eResLL = eFSS_CORELL_FlushBuffInPage(&p_ptCtx->tCORELLCtx, e_eFSS_CORELL_BUFFTYPE_1, p_uPageIndx);
+                        l_eResLL = eFSS_CORELL_FlushBuffInPage(&p_ptCtx->tCORELLCtx, e_eFSS_CORELL_BUFFTYPE_1, p_uPIdx);
                         l_eRes = eFSS_COREHL_LLtoHLRes(l_eResLL);
                     }
                 }
@@ -418,8 +419,8 @@ e_eFSS_COREHL_RES eFSS_COREHL_CalcCrcInBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, ui
                         }
                         else
                         {
-                            l_eResLL = eFSS_CORELL_CalcCrcInBuff(&p_ptCtx->tCORELLCtx, e_eFSS_CORELL_BUFFTYPE_1, p_uCrcSeed,
-                                                                 p_uLenCalc, p_puCrc);
+                            l_eResLL = eFSS_CORELL_CalcCrcInBuff(&p_ptCtx->tCORELLCtx, e_eFSS_CORELL_BUFFTYPE_1,
+                                                                 p_uCrcSeed, p_uLenCalc, p_puCrc);
                             l_eRes = eFSS_COREHL_LLtoHLRes(l_eResLL);
                         }
                     }
@@ -432,8 +433,8 @@ e_eFSS_COREHL_RES eFSS_COREHL_CalcCrcInBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, ui
 }
 
 e_eFSS_COREHL_RES eFSS_COREHL_FlushBuffInPageNBkp(t_eFSS_COREHL_Ctx* const p_ptCtx,
-								                  const uint32_t p_uOrigIndx, const uint32_t p_uBackupIndx,
-                                                  const uint8_t p_uOriSubType, const uint8_t p_uBckUpSubType)
+								                  const uint32_t p_uOriIdx, const uint32_t p_uBkpIdx,
+                                                  const uint8_t p_uOriSubT, const uint8_t p_uBkpSubT)
 {
     /* Return local var */
     e_eFSS_COREHL_RES l_eRes;
@@ -470,7 +471,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_FlushBuffInPageNBkp(t_eFSS_COREHL_Ctx* const p_ptC
                 }
                 else
                 {
-                    if( p_uBackupIndx == p_uOrigIndx )
+                    if( p_uBkpIdx == p_uOriIdx )
                     {
                         l_eRes = e_eFSS_COREHL_RES_BADPARAM;
                     }
@@ -483,26 +484,27 @@ e_eFSS_COREHL_RES eFSS_COREHL_FlushBuffInPageNBkp(t_eFSS_COREHL_Ctx* const p_ptC
                         if( e_eFSS_COREHL_RES_OK == l_eRes)
                         {
                             /* Update subtype */
-                            l_tBuff1.puBuf[ l_tBuff1.uBufL - EFSS_COREHL_PAGEMIN_L ] = p_uOriSubType;
+                            l_tBuff1.puBuf[ l_tBuff1.uBufL - EFSS_COREHL_PAGEMIN_L ] = p_uOriSubT;
 
                             /* Flush */
-                            l_eResLL = eFSS_CORELL_FlushBuffInPage(&p_ptCtx->tCORELLCtx, e_eFSS_CORELL_BUFFTYPE_1, p_uOrigIndx);
+                            l_eResLL = eFSS_CORELL_FlushBuffInPage(&p_ptCtx->tCORELLCtx, e_eFSS_CORELL_BUFFTYPE_1, p_uOriIdx);
                             l_eRes = eFSS_COREHL_LLtoHLRes(l_eResLL);
 
                             if( e_eFSS_COREHL_RES_OK == l_eRes)
                             {
                                 /* Update subtype of the backup page */
-                                l_tBuff1.puBuf[ l_tBuff1.uBufL - EFSS_COREHL_PAGEMIN_L ] = p_uBckUpSubType;
+                                l_tBuff1.puBuf[ l_tBuff1.uBufL - EFSS_COREHL_PAGEMIN_L ] = p_uBkpSubT;
 
                                 /* Flush backup page */
                                 l_eResLL = eFSS_CORELL_FlushBuffInPage(&p_ptCtx->tCORELLCtx, e_eFSS_CORELL_BUFFTYPE_1,
-                                                                       p_uBackupIndx);
+                                                                       p_uBkpIdx);
                                 l_eRes = eFSS_COREHL_LLtoHLRes(l_eResLL);
 
                                 if( e_eFSS_COREHL_RES_OK == l_eRes)
                                 {
                                     /* Ripristinate original page */
-                                    l_tBuff1.puBuf[ l_tBuff1.uBufL - EFSS_COREHL_PAGEMIN_L ] = p_uOriSubType;
+                                    l_tBuff1.puBuf[ l_tBuff1.uBufL - EFSS_COREHL_PAGEMIN_L ] = p_uOriSubT;
+                                    (void)l_tBuff1.uBufL;
                                 }
                             }
                         }
@@ -516,8 +518,8 @@ e_eFSS_COREHL_RES eFSS_COREHL_FlushBuffInPageNBkp(t_eFSS_COREHL_Ctx* const p_ptC
 }
 
 e_eFSS_COREHL_RES eFSS_COREHL_LoadPageInBuffNRipBkp(t_eFSS_COREHL_Ctx* const p_ptCtx,
-                                                    const uint32_t p_uOrigIndx, const uint32_t p_uBackupIndx,
-                                                    const uint8_t p_uOriSubType, const uint8_t p_uBckUpSubType)
+                                                    const uint32_t p_uOriIdx, const uint32_t p_uBkpIdx,
+                                                    const uint8_t p_uOriSubT, const uint8_t p_uBkpSubT)
 {
     /* Return local var */
     e_eFSS_COREHL_RES l_eRes;
@@ -529,8 +531,8 @@ e_eFSS_COREHL_RES eFSS_COREHL_LoadPageInBuffNRipBkp(t_eFSS_COREHL_Ctx* const p_p
     t_eFSS_CORELL_StorBuf l_tBuff2;
 
     /* Local var used for calculation */
-    bool_t l_bIsOrigValid;
-    bool_t l_bIsBkupValid;
+    bool_t l_bIsOriVal;
+    bool_t l_bIsBkpVal;
 
     if( NULL == p_ptCtx )
     {
@@ -558,7 +560,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_LoadPageInBuffNRipBkp(t_eFSS_COREHL_Ctx* const p_p
                 }
                 else
                 {
-                    if( p_uBackupIndx == p_uOrigIndx )
+                    if( p_uBkpIdx == p_uOriIdx )
                     {
                         l_eRes = e_eFSS_COREHL_RES_BADPARAM;
                     }
@@ -571,7 +573,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_LoadPageInBuffNRipBkp(t_eFSS_COREHL_Ctx* const p_p
                         if( e_eFSS_COREHL_RES_OK == l_eRes)
                         {
                             /* Load original page in internal buffer */
-                            l_eResLL = eFSS_CORELL_LoadPageInBuff(&p_ptCtx->tCORELLCtx, e_eFSS_CORELL_BUFFTYPE_1, p_uOrigIndx);
+                            l_eResLL = eFSS_CORELL_LoadPageInBuff(&p_ptCtx->tCORELLCtx, e_eFSS_CORELL_BUFFTYPE_1, p_uOriIdx);
                             l_eRes = eFSS_COREHL_LLtoHLRes(l_eResLL);
 
                             if( ( e_eFSS_COREHL_RES_OK == l_eRes ) || ( e_eFSS_COREHL_RES_NOTVALIDPAGE == l_eRes ) ||
@@ -579,17 +581,17 @@ e_eFSS_COREHL_RES eFSS_COREHL_LoadPageInBuffNRipBkp(t_eFSS_COREHL_Ctx* const p_p
                             {
                                 /* Page readed, is valid? */
                                 if( ( e_eFSS_COREHL_RES_OK == l_eRes ) &&
-                                    ( p_uOriSubType == l_tBuff1.puBuf[ l_tBuff1.uBufL - EFSS_COREHL_PAGEMIN_L ] ) )
+                                    ( p_uOriSubT == l_tBuff1.puBuf[ l_tBuff1.uBufL - EFSS_COREHL_PAGEMIN_L ] ) )
                                 {
-                                    l_bIsOrigValid = true;
+                                    l_bIsOriVal = true;
                                 }
                                 else
                                 {
-                                    l_bIsOrigValid = false;
+                                    l_bIsOriVal = false;
                                 }
 
                                 /* Load backup page in internal buffer */
-                                l_eResLL = eFSS_CORELL_LoadPageInBuff(&p_ptCtx->tCORELLCtx, e_eFSS_CORELL_BUFFTYPE_2, p_uBackupIndx);
+                                l_eResLL = eFSS_CORELL_LoadPageInBuff(&p_ptCtx->tCORELLCtx, e_eFSS_CORELL_BUFFTYPE_2, p_uBkpIdx);
                                 l_eRes = eFSS_COREHL_LLtoHLRes(l_eResLL);
 
                                 if( ( e_eFSS_COREHL_RES_OK == l_eRes ) || ( e_eFSS_COREHL_RES_NOTVALIDPAGE == l_eRes ) ||
@@ -597,17 +599,17 @@ e_eFSS_COREHL_RES eFSS_COREHL_LoadPageInBuffNRipBkp(t_eFSS_COREHL_Ctx* const p_p
                                 {
                                     /* Page readed, is valid? */
                                     if( ( e_eFSS_COREHL_RES_OK == l_eRes ) &&
-                                        ( p_uBckUpSubType == l_tBuff2.puBuf[ l_tBuff2.uBufL - EFSS_COREHL_PAGEMIN_L ] ) )
+                                        ( p_uBkpSubT == l_tBuff2.puBuf[ l_tBuff2.uBufL - EFSS_COREHL_PAGEMIN_L ] ) )
                                     {
-                                        l_bIsBkupValid = true;
+                                        l_bIsBkpVal = true;
                                     }
                                     else
                                     {
-                                        l_bIsBkupValid = false;
+                                        l_bIsBkpVal = false;
                                     }
 
                                     /* We have all the data needed to make a decision */
-                                    if( ( true == l_bIsOrigValid ) && ( true == l_bIsBkupValid ) )
+                                    if( ( true == l_bIsOriVal ) && ( true == l_bIsBkpVal ) )
                                     {
                                         /* Both page are valid, are they identical (except the subtype of course )? */
                                         if( 0 == memcmp(l_tBuff1.puBuf, l_tBuff2.puBuf, ( l_tBuff2.uBufL - EFSS_COREHL_PAGEMIN_L ) ) )
@@ -618,14 +620,13 @@ e_eFSS_COREHL_RES eFSS_COREHL_LoadPageInBuffNRipBkp(t_eFSS_COREHL_Ctx* const p_p
                                         else
                                         {
                                             /* Page are not equals, copy origin in backup */
-                                            l_tBuff1.puBuf[ l_tBuff1.uBufL - EFSS_COREHL_PAGEMIN_L ] = p_uBckUpSubType;
-
+                                            l_tBuff1.puBuf[ l_tBuff1.uBufL - EFSS_COREHL_PAGEMIN_L ] = p_uBkpSubT;
                                             l_eResLL = eFSS_CORELL_FlushBuffInPage(&p_ptCtx->tCORELLCtx, e_eFSS_CORELL_BUFFTYPE_1,
-                                                                                   p_uBackupIndx);
+                                                                                   p_uBkpIdx);
                                             l_eRes = eFSS_COREHL_LLtoHLRes(l_eResLL);
 
                                             /* Ripristinate original one */
-                                            l_tBuff1.puBuf[ l_tBuff1.uBufL - EFSS_COREHL_PAGEMIN_L ] = p_uOriSubType;
+                                            l_tBuff1.puBuf[ l_tBuff1.uBufL - EFSS_COREHL_PAGEMIN_L ] = p_uOriSubT;
 
                                             /* If recovered return it */
                                             if( e_eFSS_COREHL_RES_OK == l_eRes )
@@ -634,39 +635,39 @@ e_eFSS_COREHL_RES eFSS_COREHL_LoadPageInBuffNRipBkp(t_eFSS_COREHL_Ctx* const p_p
                                             }
                                         }
                                     }
-                                    else if( ( false == l_bIsOrigValid ) && ( true == l_bIsBkupValid ) )
+                                    else if( ( false == l_bIsOriVal ) && ( true == l_bIsBkpVal ) )
                                     {
                                         /* Original page is not valid, ripristinate it from the backup one */
-                                        l_tBuff2.puBuf[ l_tBuff2.uBufL - EFSS_COREHL_PAGEMIN_L ] = p_uOriSubType;
+                                        l_tBuff2.puBuf[ l_tBuff2.uBufL - EFSS_COREHL_PAGEMIN_L ] = p_uOriSubT;
 
                                         l_eResLL = eFSS_CORELL_FlushBuffInPage(&p_ptCtx->tCORELLCtx, e_eFSS_CORELL_BUFFTYPE_2,
-                                                                               p_uOrigIndx);
+                                                                               p_uOriIdx);
                                         l_eRes = eFSS_COREHL_LLtoHLRes(l_eResLL);
 
                                         /* Ripristinate backup one */
-                                        l_tBuff2.puBuf[ l_tBuff2.uBufL - EFSS_COREHL_PAGEMIN_L ] = p_uBckUpSubType;
+                                        l_tBuff2.puBuf[ l_tBuff2.uBufL - EFSS_COREHL_PAGEMIN_L ] = p_uBkpSubT;
 
                                         /* If recovered return it */
                                         if( e_eFSS_COREHL_RES_OK == l_eRes )
                                         {
                                             /* Buffer 1 must contains the original page */
                                             (void)memcpy(l_tBuff1.puBuf, l_tBuff2.puBuf, l_tBuff2.uBufL);
-                                            l_tBuff1.puBuf[ l_tBuff1.uBufL - EFSS_COREHL_PAGEMIN_L ] = p_uOriSubType;
+                                            l_tBuff1.puBuf[ l_tBuff1.uBufL - EFSS_COREHL_PAGEMIN_L ] = p_uOriSubT;
 
                                             l_eRes = e_eFSS_COREHL_RES_OK_BKP_RCVRD;
                                         }
                                     }
-                                    else if( ( true == l_bIsOrigValid ) && ( false == l_bIsBkupValid ) )
+                                    else if( ( true == l_bIsOriVal ) && ( false == l_bIsBkpVal ) )
                                     {
                                         /* Backup is not valid, ripristinate it from the origin one */
-                                        l_tBuff1.puBuf[ l_tBuff1.uBufL - EFSS_COREHL_PAGEMIN_L ] = p_uBckUpSubType;
+                                        l_tBuff1.puBuf[ l_tBuff1.uBufL - EFSS_COREHL_PAGEMIN_L ] = p_uBkpSubT;
 
                                         l_eResLL = eFSS_CORELL_FlushBuffInPage(&p_ptCtx->tCORELLCtx, e_eFSS_CORELL_BUFFTYPE_1,
-                                                                               p_uBackupIndx);
+                                                                               p_uBkpIdx);
                                         l_eRes = eFSS_COREHL_LLtoHLRes(l_eResLL);
 
                                         /* Ripristinate original one */
-                                        l_tBuff1.puBuf[ l_tBuff1.uBufL - EFSS_COREHL_PAGEMIN_L ] = p_uOriSubType;
+                                        l_tBuff1.puBuf[ l_tBuff1.uBufL - EFSS_COREHL_PAGEMIN_L ] = p_uOriSubT;
 
                                         /* If recovered return it */
                                         if( e_eFSS_COREHL_RES_OK == l_eRes )
