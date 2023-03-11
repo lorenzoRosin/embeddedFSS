@@ -64,7 +64,7 @@ static e_eFSS_CORELL_RES eFSS_CORELLPRV_InsertData(t_eFSS_CORELL_StorBufPrv* con
 /***********************************************************************************************************************
  *   GLOBAL FUNCTIONS
  **********************************************************************************************************************/
-e_eFSS_CORELL_RES eFSS_CORELL_InitCtx(t_eFSS_CORELL_Ctx* const p_ptCtx, t_eFSS_TYPE_CbStorCtx const p_tCtxCb,
+e_eFSS_CORELL_RES eFSS_CORELL_InitCtx(t_eFSS_CORELL_Ctx* const p_ptCtx, const t_eFSS_TYPE_CbStorCtx p_tCtxCb,
 									  const t_eFSS_TYPE_StorSet p_tStorSet, const uint8_t p_uStorType,
                                       uint8_t* const p_puBuff, const uint32_t p_uBuffL)
 {

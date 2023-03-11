@@ -83,7 +83,7 @@ typedef struct
  * @param[in]   p_ptCtx          - Low Level Core context
  * @param[in]   p_tCtxCb         - All callback collection context
  * @param[in]   p_tStorSet       - Storage settings
- * @param[in]   p_uStorType      - Storage type
+ * @param[in]   p_uStorType      - Storage type (Used only to mark pages)
  * @param[in]   p_puBuff         - Pointer to a buffer used by the modules to make calc, must be pageSize * 2
  * @param[in]   p_uBuffL         - Size of p_puBuff
  *
@@ -91,7 +91,7 @@ typedef struct
  *		        e_eFSS_CORELL_RES_BADPARAM      - In case of an invalid parameter passed to the function
  *              e_eFSS_CORELL_RES_OK            - Operation ended correctly
  */
-e_eFSS_CORELL_RES eFSS_CORELL_InitCtx(t_eFSS_CORELL_Ctx* const p_ptCtx, t_eFSS_TYPE_CbStorCtx const p_tCtxCb,
+e_eFSS_CORELL_RES eFSS_CORELL_InitCtx(t_eFSS_CORELL_Ctx* const p_ptCtx, const t_eFSS_TYPE_CbStorCtx p_tCtxCb,
 									  const t_eFSS_TYPE_StorSet p_tStorSet, const uint8_t p_uStorType,
                                       uint8_t* const p_puBuff, const uint32_t p_uBuffL);
 
@@ -107,7 +107,7 @@ e_eFSS_CORELL_RES eFSS_CORELL_InitCtx(t_eFSS_CORELL_Ctx* const p_ptCtx, t_eFSS_T
 e_eFSS_CORELL_RES eFSS_CORELL_IsInit(t_eFSS_CORELL_Ctx* const p_ptCtx, bool_t* const p_pbIsInit);
 
 /**
- * @brief       Get storage settings
+ * @brief       Get storage settings used during init
  *
  * @param[in]   p_ptCtx       - Low Level Core context
  * @param[out]  p_ptStorSet   - Pointer to a storage settings that will be filled with data used during init
@@ -153,7 +153,8 @@ e_eFSS_CORELL_RES eFSS_CORELL_GetBuffNStor(t_eFSS_CORELL_Ctx* const p_ptCtx, t_e
                                            t_eFSS_TYPE_StorSet* const p_ptStorSet);
 
 /**
- * @brief       Load a page from the storage area in one of the two internal buffer
+ * @brief       Load a page from the storage area in one of the two internal buffer. The other buffer value will not
+ *              be modified
  *
  * @param[in]   p_ptCtx       - Low Level Core context
  * @param[in]   p_eBuffType   - Enum used to select wich buffer we want to select
@@ -174,7 +175,7 @@ e_eFSS_CORELL_RES eFSS_CORELL_LoadPageInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e
 
 /**
  * @brief       Flush one of the two buffer in the storage area. Keep in mind that the other buffer will be used
- *              to check if the data was flushed corretly, and so after this operation it will contains different value
+ *              to check if the data was flushed correctly, and so after this operation it will contains different value
  *              from the one stored before. Only the buffer of the flushed area will be valid after this operation.
  *
  * @param[in]   p_ptCtx       - Low Level Core context
@@ -196,13 +197,14 @@ e_eFSS_CORELL_RES eFSS_CORELL_FlushBuffInPage(t_eFSS_CORELL_Ctx* const p_ptCtx, 
 								              const uint32_t p_uPageIndx);
 
 /**
- * @brief       Calculate the Crc of the data present in the choosen buffer. We can also choose to calculate the crc of
- *              a given numbers of bytes.
+ * @brief       Calculate the Crc of the data present in the choosen buffer. It's not necessary to calculate the CRC
+ *              value of the whole pages, we can choose to calculate the CRC of a portion of the page.
  *
  * @param[in]   p_ptCtx       - Low Level Core context
- * @param[in]   p_eBuffType   - Enum used to select wich buffer we want to select
+ * @param[in]   p_eBuffType   - Enum used to select wich buffer we want to select for the calculation
  * @param[in]   p_uCrcSeed    - uint32_t rappresenting the seed we want to use in the calc
- * @param[in]   p_uLenCalc    - uint32_t rappresenting the lenght we want to calc
+ * @param[in]   p_uLenCalc    - uint32_t rappresenting the lenght we want to calc. This value cannot be bigger that the
+ *                              page size
  * @param[out]  p_puCrc       - Pointer to a uint32_t variable where the CRC calculated will be placed
  *
  * @return      e_eFSS_CORELL_RES_BADPOINTER       - In case of bad pointer passed to the function
@@ -215,6 +217,8 @@ e_eFSS_CORELL_RES eFSS_CORELL_FlushBuffInPage(t_eFSS_CORELL_Ctx* const p_ptCtx, 
 e_eFSS_CORELL_RES eFSS_CORELL_CalcCrcInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFFTYPE p_eBuffType,
 								            const uint32_t p_uCrcSeed, const uint32_t p_uLenCalc,
                                             uint32_t* const p_puCrc);
+
+
 
 #ifdef __cplusplus
 } /* extern "C" */
