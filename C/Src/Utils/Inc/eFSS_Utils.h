@@ -66,7 +66,7 @@ bool_t eFSS_Utils_InsertU8(uint8_t* const p_puBuf, const uint8_t p_uToInsert);
  *				size of the data that we are retriving
  *
  * @param[in]   p_puBuf       - Pointer to a buffer where retrive an uint32_t
- * @param[out]  p_puToRetrive - Pointer to a uint32_t value that we need to retrive from the p_puBuf
+ * @param[out]  p_puToRetrive - Pointer to a uint32_t value that will be filled with data taken from the p_puBuf
  *
  * @return      Return true if the buffer and the p_puToRetrive are not NULL, otherwise return false
  */
@@ -77,7 +77,7 @@ bool_t eFSS_Utils_RetriveU32(const uint8_t* p_puBuf, uint32_t* const p_puToRetri
  *				size of the data that we are retriving
  *
  * @param[in]   p_puBuf       - Pointer to a buffer where retrive an uint16_t
- * @param[out]  p_puToRetrive - Pointer to a uint16_t value that we need to retrive from the p_puBuf
+ * @param[out]  p_puToRetrive - Pointer to a uint16_t value that will be filled with data taken from the p_puBuf
  *
  * @return      Return true if the buffer and the p_puToRetrive are not NULL, otherwise return false
  */
@@ -88,7 +88,7 @@ bool_t eFSS_Utils_RetriveU16(const uint8_t* p_puBuf, uint16_t* const p_puToRetri
  *				size of the data that we are retriving
  *
  * @param[in]   p_puBuf       - Pointer to a buffer where retrive an uint8_t
- * @param[out]  p_puToRetrive - Pointer to a uint8_t value that we need to retrive from the p_puBuf
+ * @param[out]  p_puToRetrive - Pointer to a uint16_t value that will be filled with data taken from the p_puBuf
  *
  * @return      Return true if the buffer and the p_puToRetrive are not NULL, otherwise return false
  */
