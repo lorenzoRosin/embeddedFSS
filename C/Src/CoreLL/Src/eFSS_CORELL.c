@@ -557,10 +557,12 @@ e_eFSS_CORELL_RES eFSS_CORELL_FlushBuffInPage(t_eFSS_CORELL_Ctx* const p_ptCtx, 
 
                                 if( e_eFSS_CORELL_RES_OK == l_eRes )
                                 {
+                                    /* Now that we have the buffer ready we need to: erase write and check the
+                                       storage area indicated by the index */
                                     /* Init var */
                                     l_eRes = e_eFSS_CORELL_RES_CLBCKERASEERR;
-                                    l_uTryPerformed = 0u;
                                     l_bCbRes = false;
+                                    l_uTryPerformed = 0u;
 
                                     while( ( false == l_bCbRes ) && ( l_uTryPerformed < p_ptCtx->tStorSett.uRWERetry ) )
                                     {
