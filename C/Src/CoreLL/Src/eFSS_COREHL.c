@@ -75,7 +75,15 @@ e_eFSS_COREHL_RES eFSS_COREHL_InitCtx(t_eFSS_COREHL_Ctx* const p_ptCtx, const t_
                 if( l_tBuff1.uBufL <= EFSS_COREHL_PAGEMIN_L )
                 {
                     l_eRes = e_eFSS_COREHL_RES_BADPARAM;
+
+                    /* De init LL */
+                    (void)memset(&p_ptCtx->tCORELLCtx, 0u, sizeof(t_eFSS_CORELL_Ctx));
                 }
+            }
+            else
+            {
+                /* De init LL */
+                (void)memset(&p_ptCtx->tCORELLCtx, 0u, sizeof(t_eFSS_CORELL_Ctx));
             }
         }
     }
@@ -187,6 +195,8 @@ e_eFSS_COREHL_RES eFSS_COREHL_GetBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, t_eFSS_C
 
                     if( e_eFSS_COREHL_RES_OK == l_eRes )
                     {
+                        /* The upper layer will use only the buffer 1 as main buffer, buffer 2 is reserved as support
+                           buffer */
                         p_ptBuff->puBuf = l_tBuff1.puBuf;
                         p_ptBuff->uBufL = l_tBuff1.uBufL - EFSS_COREHL_PAGEMIN_L;
                     }
@@ -197,6 +207,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_GetBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, t_eFSS_C
 
     return l_eRes;
 }
+
 e_eFSS_COREHL_RES eFSS_COREHL_GetBuffNStor(t_eFSS_COREHL_Ctx* const p_ptCtx, t_eFSS_COREHL_StorBuf* const p_ptBuff,
                                            t_eFSS_TYPE_StorSet* const p_ptStorSet)
 {
@@ -370,8 +381,8 @@ e_eFSS_COREHL_RES eFSS_COREHL_FlushBuffInPage(t_eFSS_COREHL_Ctx* const p_ptCtx, 
     return l_eRes;
 }
 
-e_eFSS_COREHL_RES eFSS_COREHL_CalcCrcInBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, uint32_t p_uCrcSeed, uint32_t p_uLenCalc,
-                                            uint32_t* p_puCrc)
+e_eFSS_COREHL_RES eFSS_COREHL_CalcCrcInBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, const uint32_t p_uCrcSeed,
+                                            const uint32_t p_uLenCalc, uint32_t* const p_puCrc)
 {
     /* Return local var */
     e_eFSS_COREHL_RES l_eRes;
@@ -408,6 +419,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_CalcCrcInBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, ui
                 }
                 else
                 {
+                    /* Before calculating CRC check if p_uLenCalc is plausible */
                     l_eResLL = eFSS_CORELL_GetBuff(&p_ptCtx->tCORELLCtx, &l_tBuff1, &l_tBuff2);
                     l_eRes = eFSS_COREHL_LLtoHLRes(l_eResLL);
 
@@ -471,6 +483,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_FlushBuffInPageNBkp(t_eFSS_COREHL_Ctx* const p_ptC
                 }
                 else
                 {
+                    /* Check param validity */
                     if( p_uBkpIdx == p_uOriIdx )
                     {
                         l_eRes = e_eFSS_COREHL_RES_BADPARAM;
@@ -487,7 +500,8 @@ e_eFSS_COREHL_RES eFSS_COREHL_FlushBuffInPageNBkp(t_eFSS_COREHL_Ctx* const p_ptC
                             l_tBuff1.puBuf[ l_tBuff1.uBufL - EFSS_COREHL_PAGEMIN_L ] = p_uOriSubT;
 
                             /* Flush */
-                            l_eResLL = eFSS_CORELL_FlushBuffInPage(&p_ptCtx->tCORELLCtx, e_eFSS_CORELL_BUFFTYPE_1, p_uOriIdx);
+                            l_eResLL = eFSS_CORELL_FlushBuffInPage(&p_ptCtx->tCORELLCtx, e_eFSS_CORELL_BUFFTYPE_1,
+                                                                   p_uOriIdx);
                             l_eRes = eFSS_COREHL_LLtoHLRes(l_eResLL);
 
                             if( e_eFSS_COREHL_RES_OK == l_eRes)
