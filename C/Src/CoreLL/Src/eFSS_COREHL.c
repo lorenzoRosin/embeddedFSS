@@ -44,7 +44,7 @@ static bool_t eFSS_COREHL_IsStatusStillCoherent(t_eFSS_COREHL_Ctx* const p_ptCtx
 /***********************************************************************************************************************
  *   GLOBAL FUNCTIONS
  **********************************************************************************************************************/
-e_eFSS_COREHL_RES eFSS_COREHL_InitCtx(t_eFSS_COREHL_Ctx* const p_ptCtx, t_eFSS_TYPE_CbStorCtx const p_tCtxCb,
+e_eFSS_COREHL_RES eFSS_COREHL_InitCtx(t_eFSS_COREHL_Ctx* const p_ptCtx, const t_eFSS_TYPE_CbStorCtx p_tCtxCb,
 									  const t_eFSS_TYPE_StorSet p_tStorSet, const uint8_t p_uStorType,
                                       uint8_t* const p_puBuff, const uint32_t p_uBuffL)
 {
@@ -312,7 +312,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_LoadPageInBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, c
 }
 
 e_eFSS_COREHL_RES eFSS_COREHL_FlushBuffInPage(t_eFSS_COREHL_Ctx* const p_ptCtx, const uint32_t p_uPIdx,
-                                              uint8_t const p_uSubTypeToWrite)
+                                              const uint8_t p_uSubTypeToWrite)
 {
     /* Return local var */
     e_eFSS_COREHL_RES l_eRes;

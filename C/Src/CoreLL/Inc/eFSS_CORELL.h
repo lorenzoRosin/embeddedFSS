@@ -204,8 +204,8 @@ e_eFSS_CORELL_RES eFSS_CORELL_FlushBuffInPage(t_eFSS_CORELL_Ctx* const p_ptCtx, 
  * @param[in]   p_ptCtx       - Low Level Core context
  * @param[in]   p_eBuffType   - Enum used to select wich buffer we want to select for the calculation
  * @param[in]   p_uCrcSeed    - uint32_t rappresenting the seed we want to use in the calc
- * @param[in]   p_uLenCalc    - uint32_t rappresenting the lenght we want to calc. This value cannot be bigger that the
- *                              page size
+ * @param[in]   p_uLenCalc    - uint32_t rappresenting the lenght we want to calc. This value cannot be bigger than the
+ *                              internal buffer page size
  * @param[out]  p_puCrc       - Pointer to a uint32_t variable where the CRC calculated will be placed
  *
  * @return      e_eFSS_CORELL_RES_BADPOINTER       - In case of bad pointer passed to the function

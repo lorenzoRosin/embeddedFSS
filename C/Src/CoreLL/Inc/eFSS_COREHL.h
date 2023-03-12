@@ -67,7 +67,7 @@ typedef struct
  * @param[in]   p_ptCtx          - High Level Core context
  * @param[in]   p_tCtxCb         - All callback collection context
  * @param[in]   p_tStorSet       - Storage settings
- * @param[in]   p_uStorType      - Storage type
+ * @param[in]   p_uStorType      - Storage type (Used only to mark pages)
  * @param[in]   p_puBuff         - Pointer to a buffer used by the modules to make calc, must be pageSize * 2
  * @param[in]   p_uBuffL         - Size of p_puBuff
  *
@@ -75,7 +75,7 @@ typedef struct
  *		        e_eFSS_COREHL_RES_BADPARAM      - In case of an invalid parameter passed to the function
  *              e_eFSS_COREHL_RES_OK            - Operation ended correctly
  */
-e_eFSS_COREHL_RES eFSS_COREHL_InitCtx(t_eFSS_COREHL_Ctx* const p_ptCtx, t_eFSS_TYPE_CbStorCtx const p_tCtxCb,
+e_eFSS_COREHL_RES eFSS_COREHL_InitCtx(t_eFSS_COREHL_Ctx* const p_ptCtx, const t_eFSS_TYPE_CbStorCtx p_tCtxCb,
 									  const t_eFSS_TYPE_StorSet p_tStorSet, const uint8_t p_uStorType,
                                       uint8_t* const p_puBuff, const uint32_t p_uBuffL);
 
@@ -91,7 +91,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_InitCtx(t_eFSS_COREHL_Ctx* const p_ptCtx, t_eFSS_T
 e_eFSS_COREHL_RES eFSS_COREHL_IsInit(t_eFSS_COREHL_Ctx* const p_ptCtx, bool_t* const p_pbIsInit);
 
 /**
- * @brief       Get storage settings
+ * @brief       Get storage settings used during init
  *
  * @param[in]   p_ptCtx       - High Level Core context
  * @param[out]  p_ptStorSet   - Pointer to a storage settings that will be filled with data used during init
@@ -104,10 +104,11 @@ e_eFSS_COREHL_RES eFSS_COREHL_IsInit(t_eFSS_COREHL_Ctx* const p_ptCtx, bool_t* c
 e_eFSS_COREHL_RES eFSS_COREHL_GetStorSett(t_eFSS_COREHL_Ctx* const p_ptCtx, t_eFSS_TYPE_StorSet* const p_ptStorSet);
 
 /**
- * @brief       Get the reference of buffer that we can use to read or write data from storage
+ * @brief       Get the reference of buffer that we can use to read or write data from storage. Returned buffer lenght
+ *              refer only to the user avaiable data, private metadata is removed from the buffer length.
  *
  * @param[in]   p_ptCtx       - High Level Core context
- * @param[out]  p_ptBuff      - Pointer to a struct that will be filled with info about buffer
+ * @param[out]  p_ptBuff      - Pointer to a struct that will be filled with info about internal buffer
  *
  * @return      e_eFSS_COREHL_RES_BADPOINTER    - In case of bad pointer passed to the function
  *		        e_eFSS_COREHL_RES_CORRUPTCTX    - Context is corrupted
@@ -120,7 +121,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_GetBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, t_eFSS_C
  * @brief       Get storage settings and buffer all in one
  *
  * @param[in]   p_ptCtx       - High Level Core context
- * @param[out]  p_ptBuff      - Pointer to a storage collection struct that will be filled with info about internal buf
+ * @param[out]  p_ptBuff      - Pointer to a struct that will be filled with info about internal buffer
  * @param[out]  p_ptStorSet   - Pointer to a storage settings
  *
  * @return      e_eFSS_COREHL_RES_BADPOINTER    - In case of bad pointer passed to the function
@@ -170,15 +171,18 @@ e_eFSS_COREHL_RES eFSS_COREHL_LoadPageInBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, c
  *              e_eFSS_COREHL_RES_OK               - Operation ended correctly
  */
 e_eFSS_COREHL_RES eFSS_COREHL_FlushBuffInPage(t_eFSS_COREHL_Ctx* const p_ptCtx, const uint32_t p_uPIdx,
-                                              uint8_t const p_uSubTypeToWrite);
+                                              const uint8_t p_uSubTypeToWrite);
 
 /**
- * @brief       Calculate the Crc of the data present in the internal buffer. Can also select to calculate the crc of
- *              a given numbers of bytes. The subtype of the page is not included in to the calculation
+ * @brief       Calculate the Crc of the data present in the internal buffer. It's not necessary to calculate the CRC
+ *              value of the whole pages, we can choose to calculate the CRC of a portion of the page. The page subtype
+ *              and other private metadata are excluded from this calculation, infact the mex size of the calc can be
+ *              as big as internal buffer len.
  *
  * @param[in]   p_ptCtx       - High Level Core context
  * @param[in]   p_uCrcSeed    - uint32_t rappresenting the seed we want to use in the calc
- * @param[in]   p_uLenCalc    - uint32_t rappresenting the lenght we want to calc
+ * @param[in]   p_uLenCalc    - uint32_t rappresenting the lenght we want to calc. This value cannot be bigger than the
+ *                              internal buffer page size
  * @param[out]  p_puCrc       - Pointer to a uint32_t variable where the CRC calculated will be placed
  *
  * @return      e_eFSS_COREHL_RES_BADPOINTER       - In case of bad pointer passed to the function
@@ -192,7 +196,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_CalcCrcInBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, co
                                             const uint32_t p_uLenCalc, uint32_t* const p_puCrc);
 
 /**
- * @brief       Flush the internal buffer in to the storage area and generate a backup copy.
+ * @brief       Flush the internal buffer in to the storage area and generate a backup copy in another page.
  *
  * @param[in]   p_ptCtx    - High Level Core context
  * @param[in]   p_uOriIdx  - Page index of the original data
@@ -217,7 +221,8 @@ e_eFSS_COREHL_RES eFSS_COREHL_FlushBuffInPageNBkp(t_eFSS_COREHL_Ctx* const p_ptC
 
 /**
  * @brief       Verify the validity of the page present in p_uOriIdx and of it's backup present in p_uBkpIdx.
- *              If everithing goes well the original page is loaded in the internal buffer, and any error is fixed.
+ *              If everithing goes well the original page is loaded in to the internal buffer, and any corruption is
+ *              fixed.
  *              This function use this decision maps in order to load original page and verify it's backup:
  *              1 - If p_uOriIdx and p_uBkpIdx are valid, verify if they are equals. If not copy p_uOriIdx
  *                  in p_uBkpIdx
@@ -239,6 +244,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_FlushBuffInPageNBkp(t_eFSS_COREHL_Ctx* const p_ptC
  *		        e_eFSS_COREHL_RES_CLBCKREADERR      - The read callback reported an error
  *              e_eFSS_COREHL_RES_CLBCKCRCERR       - The crc callback reported an error
  *              e_eFSS_COREHL_RES_NOTVALIDPAGE      - both origin and backup pages are corrupted
+ *              e_eFSS_CORELL_RES_NEWVERSIONFOUND   - The readed page has a new version
  *              e_eFSS_COREHL_RES_CLBCKERASEERR     - Error reported from the callback
  *              e_eFSS_COREHL_RES_CLBCKWRITEERR     - Error reported from the callback
  *              e_eFSS_COREHL_RES_WRITENOMATCHREAD  - For some unknow reason data write dosent match data readed
@@ -249,6 +255,8 @@ e_eFSS_COREHL_RES eFSS_COREHL_FlushBuffInPageNBkp(t_eFSS_COREHL_Ctx* const p_ptC
 e_eFSS_COREHL_RES eFSS_COREHL_LoadPageInBuffNRipBkp(t_eFSS_COREHL_Ctx* const p_ptCtx,
                                                     const uint32_t p_uOriIdx, const uint32_t p_uBkpIdx,
                                                     const uint8_t p_uOriSubT, const uint8_t p_uBkpSubT);
+
+
 
 #ifdef __cplusplus
 } /* extern "C" */
