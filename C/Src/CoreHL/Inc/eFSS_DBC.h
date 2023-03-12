@@ -47,8 +47,8 @@ typedef enum
 
 typedef struct
 {
-    uint8_t*  puBuf;
-    uint32_t  uBufL;
+    uint8_t* puBuf;
+    uint32_t uBufL;
 }t_eFSS_DBC_StorBuf;
 
 typedef struct
@@ -74,14 +74,14 @@ typedef struct
  *		        e_eFSS_DBC_RES_BADPARAM      - In case of an invalid parameter passed to the function
  *              e_eFSS_DBC_RES_OK            - Operation ended correctly
  */
-e_eFSS_DBC_RES eFSS_DBC_InitCtx(t_eFSS_DBC_Ctx* const p_ptCtx, t_eFSS_TYPE_CbStorCtx const p_tCtxCb,
+e_eFSS_DBC_RES eFSS_DBC_InitCtx(t_eFSS_DBC_Ctx* const p_ptCtx, const t_eFSS_TYPE_CbStorCtx p_tCtxCb,
 								const t_eFSS_TYPE_StorSet p_tStorSet, uint8_t* const p_puBuff,
                                 const uint32_t p_uBuffL);
 
 /**
  * @brief       Check if the lib is initialized
  *
- * @param[in]   p_ptCtx          - Database Core context
+ * @param[in]   p_ptCtx       - Database Core context
  * @param[out]  p_pbIsInit    - Pointer to a bool_t variable that will be filled with true if the lib is initialized
  *
  * @return      e_eFSS_DBC_RES_BADPOINTER    - In case of bad pointer passed to the function
@@ -90,11 +90,11 @@ e_eFSS_DBC_RES eFSS_DBC_InitCtx(t_eFSS_DBC_Ctx* const p_ptCtx, t_eFSS_TYPE_CbSto
 e_eFSS_DBC_RES eFSS_DBC_IsInit(t_eFSS_DBC_Ctx* const p_ptCtx, bool_t* const p_pbIsInit);
 
 /**
- * @brief       Get the numbers of usable page and the buffer all in one
+ * @brief       Get the numbers of usable page and the storage buffer
  *
  * @param[in]   p_ptCtx       - Database Core context
- * @param[out]  p_ptBuff      - Pointer to a storage collection struct that will be filled with info about internal buf
- * @param[out]  p_puUsePages  - Pointer to a storage settings
+ * @param[out]  p_ptBuff      - Pointer to a struct that will be filled with info about internal buffer
+ * @param[out]  p_puUsePages  - Pointer to an uint32_t that will be filled with the numbers of usable pages
  *
  * @return      e_eFSS_DBC_RES_BADPOINTER    - In case of bad pointer passed to the function
  *		        e_eFSS_DBC_RES_CORRUPTCTX    - Context is corrupted
@@ -108,18 +108,22 @@ e_eFSS_DBC_RES eFSS_DBC_GetBuffNUsable(t_eFSS_DBC_Ctx* const p_ptCtx, t_eFSS_DBC
  * @brief       Load a page from the storage area in to the internal buffer
  *
  * @param[in]   p_ptCtx         - Database Core context
- * @param[in]   p_uPageIndx     - uint32_t index rappresenting the page that we want to load from storage
+ * @param[in]   p_uPageIndx     - uint32_t index rappresenting the page that we want to load from storage. Must be a
+ *                                a value that can vary from 0 to p_puUsePages.
  *
- * @return      e_eFSS_DBC_RES_BADPOINTER      - In case of bad pointer passed to the function
- *		        e_eFSS_DBC_RES_BADPARAM        - In case of an invalid parameter passed to the function
- *		        e_eFSS_DBC_RES_CORRUPTCTX      - Context is corrupted
- *		        e_eFSS_DBC_RES_NOINITLIB       - Need to init lib before calling function
- *		        e_eFSS_DBC_RES_CLBCKREADERR    - The read callback reported an error
- *              e_eFSS_DBC_RES_CLBCKCRCERR     - The crc callback reported an error
- *              e_eFSS_DBC_RES_NOTVALIDPAGE    - The readed page is invalid
- *              e_eFSS_DBC_RES_NEWVERSIONFOUND - The readed page has a new version
- *              e_eFSS_DBC_RES_OK_BKP_RCVRD    - operation ended successfully recovering a backup or an origin page
- *              e_eFSS_DBC_RES_OK              - Operation ended correctly
+ * @return      e_eFSS_DBC_RES_BADPOINTER       - In case of bad pointer passed to the function
+ *		        e_eFSS_DBC_RES_BADPARAM         - In case of an invalid parameter passed to the function
+ *		        e_eFSS_DBC_RES_CORRUPTCTX       - Context is corrupted
+ *		        e_eFSS_DBC_RES_NOINITLIB        - Need to init lib before calling function
+ *		        e_eFSS_DBC_RES_CLBCKREADERR     - The read callback reported an error
+ *              e_eFSS_DBC_RES_CLBCKCRCERR      - The crc callback reported an error
+ *              e_eFSS_DBC_RES_NOTVALIDDB       - The readed page is invalid
+ *              e_eFSS_DBC_RES_NEWVERSIONDB     - The readed page has a new version
+ *              e_eFSS_DBC_RES_CLBCKERASEERR    - Error reported from the callback
+ *              e_eFSS_DBC_RES_CLBCKWRITEERR    - Error reported from the callback
+ *              e_eFSS_DBC_RES_WRITENOMATCHREAD - For some unknow reason data write dosent match data readed
+ *              e_eFSS_DBC_RES_OK_BKP_RCVRD     - operation ended successfully recovering a backup or an origin page
+ *              e_eFSS_DBC_RES_OK               - Operation ended correctly
  */
 e_eFSS_DBC_RES eFSS_DBC_LoadPageInBuff(t_eFSS_DBC_Ctx* const p_ptCtx, const uint32_t p_uPageIndx);
 
@@ -127,7 +131,8 @@ e_eFSS_DBC_RES eFSS_DBC_LoadPageInBuff(t_eFSS_DBC_Ctx* const p_ptCtx, const uint
  * @brief       Flush the internal buffer in to the storage area.
  *
  * @param[in]   p_ptCtx             - Database Core context
- * @param[in]   p_uPageIndx         - uint32_t index rappresenting the page that we want to flush in storage
+ * @param[in]   p_uPageIndx         - uint32_t index rappresenting the page that we want to flush in storage. Must be a
+ *                                    a value that can vary from 0 to p_puUsePages.
  *
  * @return      e_eFSS_DBC_RES_BADPOINTER       - In case of bad pointer passed to the function
  *		        e_eFSS_DBC_RES_BADPARAM         - In case of an invalid parameter passed to the function

@@ -122,7 +122,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_GetBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, t_eFSS_C
  *
  * @param[in]   p_ptCtx       - High Level Core context
  * @param[out]  p_ptBuff      - Pointer to a struct that will be filled with info about internal buffer
- * @param[out]  p_ptStorSet   - Pointer to a storage settings
+ * @param[out]  p_ptStorSet   - Pointer to a storage settings that will be filled with data used during init
  *
  * @return      e_eFSS_COREHL_RES_BADPOINTER    - In case of bad pointer passed to the function
  *		        e_eFSS_COREHL_RES_CORRUPTCTX    - Context is corrupted

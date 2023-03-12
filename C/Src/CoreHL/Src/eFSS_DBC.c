@@ -35,7 +35,6 @@
  *      PRIVATE DEFINE
  **********************************************************************************************************************/
 #define EFSS_PAGETYPE_DB                                                                         ( ( uint8_t )   0x03u )
-#define EFSS_DBC_PAGEMIN_L                                                                       ( ( uint32_t )     0u )
 #define EFSS_PAGESUBTYPE_DBORI                                                                   ( ( uint8_t )   0x01u )
 #define EFSS_PAGESUBTYPE_DBBKP                                                                   ( ( uint8_t )   0x02u )
 
@@ -43,7 +42,7 @@
 /***********************************************************************************************************************
  *  PRIVATE STATIC FUNCTION DECLARATION
  **********************************************************************************************************************/
-static bool_t eFSS_DBC_IsStatusStillCoherent(t_eFSS_DBC_Ctx* p_ptCtx);
+static bool_t eFSS_DBC_IsStatusStillCoherent(t_eFSS_DBC_Ctx* const p_ptCtx);
 static e_eFSS_DBC_RES eFSS_DB_HLtoDBCRes(const e_eFSS_COREHL_RES p_eHLRes);
 
 
@@ -51,7 +50,7 @@ static e_eFSS_DBC_RES eFSS_DB_HLtoDBCRes(const e_eFSS_COREHL_RES p_eHLRes);
 /***********************************************************************************************************************
  *   GLOBAL FUNCTIONS
  **********************************************************************************************************************/
-e_eFSS_DBC_RES eFSS_DBC_InitCtx(t_eFSS_DBC_Ctx* const p_ptCtx, t_eFSS_TYPE_CbStorCtx const p_tCtxCb,
+e_eFSS_DBC_RES eFSS_DBC_InitCtx(t_eFSS_DBC_Ctx* const p_ptCtx, const t_eFSS_TYPE_CbStorCtx p_tCtxCb,
 								const t_eFSS_TYPE_StorSet p_tStorSet, uint8_t* const p_puBuff,
                                 const uint32_t p_uBuffL)
 {
@@ -61,7 +60,6 @@ e_eFSS_DBC_RES eFSS_DBC_InitCtx(t_eFSS_DBC_Ctx* const p_ptCtx, t_eFSS_TYPE_CbSto
 
     /* Local var used for calculation */
     uint32_t l_uNPage;
-    t_eFSS_COREHL_StorBuf l_tBuff;
 
 	/* Check pointer validity */
 	if( NULL == p_ptCtx )
@@ -70,32 +68,20 @@ e_eFSS_DBC_RES eFSS_DBC_InitCtx(t_eFSS_DBC_Ctx* const p_ptCtx, t_eFSS_TYPE_CbSto
 	}
 	else
 	{
+        /* The database needs at least 2 pages, one for original and one for backup */
         l_uNPage = p_tStorSet.uTotPages;
 
         /* Check numbers of page validity */
-        if( ( l_uNPage < 2u ) && ( 0u != ( l_uNPage % 2u ) ) )
+        if( ( l_uNPage < 2u ) || ( 0u != ( l_uNPage % 2u ) ) )
         {
             l_eRes = e_eFSS_DBC_RES_BADPARAM;
         }
         else
         {
             /* Can init low level context */
-            l_eResHL = eFSS_COREHL_InitCtx(&p_ptCtx->tCOREHLCtx, p_tCtxCb, p_tStorSet, EFSS_PAGETYPE_DB, p_puBuff, p_uBuffL);
+            l_eResHL = eFSS_COREHL_InitCtx(&p_ptCtx->tCOREHLCtx, p_tCtxCb, p_tStorSet, EFSS_PAGETYPE_DB, p_puBuff,
+                                           p_uBuffL);
             l_eRes = eFSS_DB_HLtoDBCRes(l_eResHL);
-
-            if( e_eFSS_DBC_RES_OK == l_eRes )
-            {
-                /* Check if we have enogh space for the page */
-                l_eResHL = eFSS_COREHL_GetBuff(&p_ptCtx->tCOREHLCtx, &l_tBuff);
-                l_eRes = eFSS_DB_HLtoDBCRes(l_eResHL);
-                if( e_eFSS_DBC_RES_OK == l_eRes )
-                {
-                    if( l_tBuff.uBufL <= EFSS_DBC_PAGEMIN_L)
-                    {
-                        l_eRes = e_eFSS_DBC_RES_BADPARAM;
-                    }
-                }
-            }
         }
     }
 
@@ -109,7 +95,7 @@ e_eFSS_DBC_RES eFSS_DBC_IsInit(t_eFSS_DBC_Ctx* const p_ptCtx, bool_t* const p_pb
     e_eFSS_COREHL_RES l_eResHL;
 
 	/* Check pointer validity */
-	if( ( NULL == p_ptCtx ) || ( NULL == p_pbIsInit ) )
+	if( NULL == p_ptCtx )
 	{
 		l_eRes = e_eFSS_DBC_RES_BADPOINTER;
 	}
@@ -167,7 +153,7 @@ e_eFSS_DBC_RES eFSS_DBC_GetBuffNUsable(t_eFSS_DBC_Ctx* const p_ptCtx, t_eFSS_DBC
                     if( e_eFSS_DBC_RES_OK == l_eRes )
                     {
                         p_ptBuff->puBuf = l_tBuff.puBuf;
-                        p_ptBuff->uBufL = l_tBuff.uBufL - EFSS_DBC_PAGEMIN_L;
+                        p_ptBuff->uBufL = l_tBuff.uBufL;
                         *p_puUsePages = (uint32_t)( l_tStorSet.uTotPages / 2u );
                     }
                 }
@@ -186,12 +172,11 @@ e_eFSS_DBC_RES eFSS_DBC_LoadPageInBuff(t_eFSS_DBC_Ctx* const p_ptCtx, const uint
 
     /* Local var used for storage */
     t_eFSS_TYPE_StorSet l_tStorSet;
-    t_eFSS_COREHL_StorBuf l_tBuff;
 
     /* Local var used for calculation */
     bool_t l_bIsInit;
     uint32_t l_uTotPages;
-    uint32_t l_uBkpIndex;
+    uint32_t l_uBkpIdx;
 
 	/* Check pointer validity */
 	if( NULL == p_ptCtx )
@@ -220,7 +205,8 @@ e_eFSS_DBC_RES eFSS_DBC_LoadPageInBuff(t_eFSS_DBC_Ctx* const p_ptCtx, const uint
                 }
                 else
                 {
-                    l_eResHL = eFSS_COREHL_GetBuffNStor(&p_ptCtx->tCOREHLCtx, &l_tBuff, &l_tStorSet);
+                    /* Need to check page index validity, get the HL stor settings and verify */
+                    l_eResHL = eFSS_COREHL_GetStorSett(&p_ptCtx->tCOREHLCtx, &l_tStorSet);
                     l_eRes = eFSS_DB_HLtoDBCRes(l_eResHL);
 
                     if( e_eFSS_DBC_RES_OK == l_eRes )
@@ -232,9 +218,10 @@ e_eFSS_DBC_RES eFSS_DBC_LoadPageInBuff(t_eFSS_DBC_Ctx* const p_ptCtx, const uint
                         }
                         else
                         {
-                            l_uBkpIndex = p_uPageIndx + ( l_uTotPages / 2u );
-                            l_eResHL = eFSS_COREHL_LoadPageInBuffNRipBkp(&p_ptCtx->tCOREHLCtx, p_uPageIndx, l_uBkpIndex,
-                                                                         EFSS_PAGESUBTYPE_DBORI, EFSS_PAGESUBTYPE_DBBKP);
+                            l_uBkpIdx = p_uPageIndx + ( l_uTotPages / 2u );
+                            l_eResHL = eFSS_COREHL_LoadPageInBuffNRipBkp(&p_ptCtx->tCOREHLCtx, p_uPageIndx, l_uBkpIdx,
+                                                                         EFSS_PAGESUBTYPE_DBORI,
+                                                                         EFSS_PAGESUBTYPE_DBBKP);
                             l_eRes = eFSS_DB_HLtoDBCRes(l_eResHL);
                         }
                     }
@@ -254,7 +241,6 @@ e_eFSS_DBC_RES eFSS_DBC_FlushBuffInPage(t_eFSS_DBC_Ctx* const p_ptCtx, const uin
 
     /* Local var used for storage */
     t_eFSS_TYPE_StorSet l_tStorSet;
-    t_eFSS_COREHL_StorBuf l_tBuff;
 
     /* Local var used for calculation */
     bool_t l_bIsInit;
@@ -288,7 +274,8 @@ e_eFSS_DBC_RES eFSS_DBC_FlushBuffInPage(t_eFSS_DBC_Ctx* const p_ptCtx, const uin
                 }
                 else
                 {
-                    l_eResHL = eFSS_COREHL_GetBuffNStor(&p_ptCtx->tCOREHLCtx, &l_tBuff, &l_tStorSet);
+                    /* Need to check page index validity, get the HL stor settings and verify */
+                    l_eResHL = eFSS_COREHL_GetStorSett(&p_ptCtx->tCOREHLCtx, &l_tStorSet);
                     l_eRes = eFSS_DB_HLtoDBCRes(l_eResHL);
 
                     if( e_eFSS_DBC_RES_OK == l_eRes )
@@ -320,7 +307,7 @@ e_eFSS_DBC_RES eFSS_DBC_FlushBuffInPage(t_eFSS_DBC_Ctx* const p_ptCtx, const uin
 /***********************************************************************************************************************
  *  PRIVATE FUNCTION
  **********************************************************************************************************************/
-static bool_t eFSS_DBC_IsStatusStillCoherent(t_eFSS_DBC_Ctx* p_ptCtx)
+static bool_t eFSS_DBC_IsStatusStillCoherent(t_eFSS_DBC_Ctx* const p_ptCtx)
 {
     /* Return local var */
     bool_t l_bRes;
@@ -328,10 +315,9 @@ static bool_t eFSS_DBC_IsStatusStillCoherent(t_eFSS_DBC_Ctx* p_ptCtx)
 
     /* Local var used for calculation */
     t_eFSS_TYPE_StorSet l_tStorSet;
-    t_eFSS_COREHL_StorBuf l_tBuff;
     uint32_t l_uNPage;
 
-    l_eResHL = eFSS_COREHL_GetBuffNStor(&p_ptCtx->tCOREHLCtx, &l_tBuff, &l_tStorSet);
+    l_eResHL = eFSS_COREHL_GetStorSett(&p_ptCtx->tCOREHLCtx, &l_tStorSet);
     if( e_eFSS_COREHL_RES_OK != l_eResHL )
     {
         l_bRes = false;
@@ -341,20 +327,13 @@ static bool_t eFSS_DBC_IsStatusStillCoherent(t_eFSS_DBC_Ctx* p_ptCtx)
         l_uNPage = l_tStorSet.uTotPages;
 
         /* Check numbers of page validity */
-        if( ( l_uNPage < 2u ) && ( 0u != ( l_uNPage % 2u ) ) )
+        if( ( l_uNPage < 2u ) || ( 0u != ( l_uNPage % 2u ) ) )
         {
             l_bRes = false;
         }
         else
         {
-            if( l_tBuff.uBufL <= EFSS_DBC_PAGEMIN_L )
-            {
-                l_bRes = false;
-            }
-            else
-            {
-                l_bRes = true;
-            }
+            l_bRes = true;
         }
     }
 
