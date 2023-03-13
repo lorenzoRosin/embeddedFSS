@@ -742,6 +742,75 @@ e_eFSS_COREHL_RES eFSS_COREHL_LoadPageInBuffNRipBkp(t_eFSS_COREHL_Ctx* const p_p
     return l_eRes;
 }
 
+e_eFSS_COREHL_RES eFSS_COREHL_IsBuffEqualToPage(t_eFSS_COREHL_Ctx* const p_ptCtx, const uint32_t p_uPIdx,
+                                                bool_t* const p_pbIsEquals)
+{
+    /* Return local var */
+    e_eFSS_COREHL_RES l_eRes;
+    e_eFSS_CORELL_RES l_eResLL;
+    bool_t l_bIsInit;
+
+    /* Calc local variable */
+    t_eFSS_CORELL_StorBuf l_tBuff1;
+    t_eFSS_CORELL_StorBuf l_tBuff2;
+
+    if( ( NULL == p_ptCtx ) || ( NULL == p_pbIsEquals ) )
+    {
+        l_eRes = e_eFSS_COREHL_RES_BADPOINTER;
+    }
+    else
+    {
+		/* Check Init */
+        l_bIsInit = false;
+        l_eResLL = eFSS_CORELL_IsInit(&p_ptCtx->tCORELLCtx, &l_bIsInit);
+        l_eRes = eFSS_COREHL_LLtoHLRes(l_eResLL);
+
+        if( e_eFSS_COREHL_RES_OK == l_eRes )
+        {
+            if( false == l_bIsInit )
+            {
+                l_eRes = e_eFSS_COREHL_RES_NOINITLIB;
+            }
+            else
+            {
+                /* Check internal status validity */
+                if( false == eFSS_COREHL_IsStatusStillCoherent(p_ptCtx) )
+                {
+                    l_eRes = e_eFSS_COREHL_RES_CORRUPTCTX;
+                }
+                else
+                {
+                    l_eResLL = eFSS_CORELL_GetBuff(&p_ptCtx->tCORELLCtx, &l_tBuff1, &l_tBuff2);
+                    l_eRes = eFSS_COREHL_LLtoHLRes(l_eResLL);
+
+                    if( e_eFSS_COREHL_RES_OK == l_eRes )
+                    {
+                        /* Load the pointer page in the support buffer */
+                        l_eResLL = eFSS_CORELL_LoadPageInBuff(&p_ptCtx->tCORELLCtx, e_eFSS_CORELL_BUFFTYPE_2, p_uPIdx);
+                        l_eRes = eFSS_COREHL_LLtoHLRes(l_eResLL);
+
+                        if( e_eFSS_COREHL_RES_OK == l_eRes )
+                        {
+                            if( 0 == memcmp(l_tBuff1.puBuf, l_tBuff2.puBuf,
+                                            ( l_tBuff2.uBufL - EFSS_COREHL_PAGEMIN_L ) ) )
+                            {
+                                /* Page are equals */
+                                *p_pbIsEquals = true;;
+                            }
+                            else
+                            {
+                                *p_pbIsEquals = false;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return l_eRes;
+}
+
 
 
 /***********************************************************************************************************************

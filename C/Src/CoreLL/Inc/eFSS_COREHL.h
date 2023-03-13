@@ -256,6 +256,28 @@ e_eFSS_COREHL_RES eFSS_COREHL_LoadPageInBuffNRipBkp(t_eFSS_COREHL_Ctx* const p_p
                                                     const uint32_t p_uOriIdx, const uint32_t p_uBkpIdx,
                                                     const uint8_t p_uOriSubT, const uint8_t p_uBkpSubT);
 
+/**
+ * @brief       Check if the data present in to the internal buffer is equals to an another page. Keep in mind that
+ *              subtype are not compared, the comparsion is only done using raw data.
+ *
+ * @param[in]   p_ptCtx         - High Level Core context
+ * @param[in]   p_uPIdx         - uint32_t index rappresenting the page that we want to compare
+ * @param[out]  p_pbIsEquals    - pointer to a bool_t that will be filled with true if the intenral buffer is equals to
+ *                                the data presnet in the page p_uPIdx
+ *
+ * @return      e_eFSS_COREHL_RES_BADPOINTER      - In case of bad pointer passed to the function
+ *		        e_eFSS_COREHL_RES_BADPARAM        - In case of an invalid parameter passed to the function
+ *		        e_eFSS_COREHL_RES_CORRUPTCTX      - Context is corrupted
+ *		        e_eFSS_COREHL_RES_NOINITLIB       - Need to init lib before calling function
+ *		        e_eFSS_COREHL_RES_CLBCKREADERR    - The read callback reported an error
+ *              e_eFSS_COREHL_RES_CLBCKCRCERR     - The crc callback reported an error
+ *              e_eFSS_COREHL_RES_NOTVALIDPAGE    - The readed page is invalid
+ *              e_eFSS_COREHL_RES_NEWVERSIONFOUND - The readed page has a new version
+ *              e_eFSS_COREHL_RES_OK              - Operation ended correctly
+ */
+e_eFSS_COREHL_RES eFSS_COREHL_IsBuffEqualToPage(t_eFSS_COREHL_Ctx* const p_ptCtx, const uint32_t p_uPIdx,
+                                                bool_t* const p_pbIsEquals);
+
 
 
 #ifdef __cplusplus
