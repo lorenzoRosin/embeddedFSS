@@ -54,8 +54,8 @@ typedef enum
 
 typedef struct
 {
-    uint8_t*  puBuf;
-    uint32_t  uBufL;
+    uint8_t* puBuf;
+    uint32_t uBufL;
 }t_eFSS_LOGC_StorBuf;
 
 typedef struct
@@ -85,7 +85,7 @@ typedef struct
  *		        e_eFSS_LOGC_RES_BADPARAM      - In case of an invalid parameter passed to the function
  *              e_eFSS_LOGC_RES_OK            - Operation ended correctly
  */
-e_eFSS_LOGC_RES eFSS_LOGC_InitCtx(t_eFSS_LOGC_Ctx* const p_ptCtx, t_eFSS_TYPE_CbStorCtx const p_tCtxCb,
+e_eFSS_LOGC_RES eFSS_LOGC_InitCtx(t_eFSS_LOGC_Ctx* const p_ptCtx, const t_eFSS_TYPE_CbStorCtx p_tCtxCb,
                                   const t_eFSS_TYPE_StorSet p_tStorSet, uint8_t* const p_puBuff,
                                   const uint32_t p_uBuffL, const bool_t p_bFlashCache, const bool_t p_bFullBckup);
 

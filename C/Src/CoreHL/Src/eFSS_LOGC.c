@@ -20,8 +20,8 @@
  *
  *   bFullBckup = true, bFlashCache = true
  * - [ 0                            -    ( ( uTotPages - 2 ) / 2 ) - 1 ]  -> Original pages
- * - [ ( ( uTotPages - 2 ) / 2 )    -    uTotPages - 1 -2              ]  -> Backup pages
- * - [ uTotPages - 1 -1             -    uTotPages - 1 -1              ]  -> Cache original
+ * - [ ( ( uTotPages - 2 ) / 2 )    -    uTotPages - 1 - 2             ]  -> Backup pages
+ * - [ uTotPages - 1 - 1            -    uTotPages - 1 - 1             ]  -> Cache original
  * - [ uTotPages - 1                -    uTotPages - 1                 ]  -> Cache backup
  *
  * First write original pages and after the backup pages
@@ -54,7 +54,7 @@
 /***********************************************************************************************************************
  *  PRIVATE STATIC FUNCTION DECLARATION
  **********************************************************************************************************************/
-static bool_t eFSS_LOGC_IsStatusStillCoherent(t_eFSS_LOGC_Ctx* p_ptCtx);
+static bool_t eFSS_LOGC_IsStatusStillCoherent(t_eFSS_LOGC_Ctx* const p_ptCtx);
 static e_eFSS_LOGC_RES eFSS_LOGC_HLtoLOGCRes(const e_eFSS_COREHL_RES p_eHLRes);
 
 
@@ -77,7 +77,7 @@ static uint32_t eFSS_LOGC_GetMaxPage(const bool_t p_bIsFullBkup, const bool_t p_
 /***********************************************************************************************************************
  *   GLOBAL FUNCTIONS
  **********************************************************************************************************************/
-e_eFSS_LOGC_RES eFSS_LOGC_InitCtx(t_eFSS_LOGC_Ctx* const p_ptCtx, t_eFSS_TYPE_CbStorCtx const p_tCtxCb,
+e_eFSS_LOGC_RES eFSS_LOGC_InitCtx(t_eFSS_LOGC_Ctx* const p_ptCtx, const t_eFSS_TYPE_CbStorCtx p_tCtxCb,
                                   const t_eFSS_TYPE_StorSet p_tStorSet, uint8_t* const p_puBuff,
                                   const uint32_t p_uBuffL, const bool_t p_bFlashCache, const bool_t p_bFullBckup)
 {
@@ -110,7 +110,7 @@ e_eFSS_LOGC_RES eFSS_LOGC_InitCtx(t_eFSS_LOGC_Ctx* const p_ptCtx, t_eFSS_TYPE_Cb
         else
         {
             /* Can init low level context */
-            l_eResHL = eFSS_COREHL_InitCtx(&p_ptCtx->tCOREHLCtx, p_tCtxCb, p_tStorSet, EFSS_PAGETYPE_LOG, 
+            l_eResHL = eFSS_COREHL_InitCtx(&p_ptCtx->tCOREHLCtx, p_tCtxCb, p_tStorSet, EFSS_PAGETYPE_LOG,
                                            p_puBuff, p_uBuffL);
             l_eRes = eFSS_LOGC_HLtoLOGCRes(l_eResHL);
 
@@ -302,7 +302,7 @@ e_eFSS_LOGC_RES eFSS_LOGC_WriteCache(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint3
                 else
                 {
                     /* Get pages and storage settings */
-                    l_eResHL =  eFSS_COREHL_GetBuffNStor(&p_ptCtx->tCOREHLCtx, &l_tBuff, &l_tStorSet);
+                    l_eResHL = eFSS_COREHL_GetBuffNStor(&p_ptCtx->tCOREHLCtx, &l_tBuff, &l_tStorSet);
                     l_eRes = eFSS_LOGC_HLtoLOGCRes(l_eResHL);
 
                     if( e_eFSS_LOGC_RES_OK == l_eRes )
@@ -393,7 +393,7 @@ e_eFSS_LOGC_RES eFSS_LOGC_ReadCache(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t* co
                 }
                 else
                 {
-                    l_eResHL =  eFSS_COREHL_GetBuffNStor(&p_ptCtx->tCOREHLCtx, &l_tBuff, &l_tStorSet);
+                    l_eResHL = eFSS_COREHL_GetBuffNStor(&p_ptCtx->tCOREHLCtx, &l_tBuff, &l_tStorSet);
                     l_eRes = eFSS_LOGC_HLtoLOGCRes(l_eResHL);
 
                     if( e_eFSS_LOGC_RES_OK == l_eRes )
@@ -631,7 +631,7 @@ e_eFSS_LOGC_RES eFSS_LOGC_LoadBufferAs(t_eFSS_LOGC_Ctx* const p_ptCtx, const e_e
                                 }
                             }
 
-                            l_eRes =  eFSS_LOGC_LoadBuff(p_ptCtx, p_ptCtx->bFullBckup, p_puFillInPage, p_uIdx,
+                            l_eRes = eFSS_LOGC_LoadBuff(p_ptCtx, p_ptCtx->bFullBckup, p_puFillInPage, p_uIdx,
                                                          l_uNPageU + p_uIdx, l_uPagSubTOri, l_uPagSubTBkp);
 
                             if( ( e_eFSS_LOGC_RES_OK == l_eRes ) || ( e_eFSS_LOGC_RES_OK_BKP_RCVRD == l_eRes ) )
@@ -657,7 +657,7 @@ e_eFSS_LOGC_RES eFSS_LOGC_LoadBufferAs(t_eFSS_LOGC_Ctx* const p_ptCtx, const e_e
 /***********************************************************************************************************************
  *  PRIVATE FUNCTION
  **********************************************************************************************************************/
-static bool_t eFSS_LOGC_IsStatusStillCoherent(t_eFSS_LOGC_Ctx* p_ptCtx)
+static bool_t eFSS_LOGC_IsStatusStillCoherent(t_eFSS_LOGC_Ctx* const p_ptCtx)
 {
     /* Return local var */
     bool_t l_bRes;
@@ -804,7 +804,7 @@ static e_eFSS_LOGC_RES eFSS_LOGC_FlushBuff(t_eFSS_LOGC_Ctx* const p_ptCtx, bool_
     /* Local var used for storage */
     t_eFSS_COREHL_StorBuf l_tBuff;
 
-    l_eResHL =  eFSS_COREHL_GetBuff(&p_ptCtx->tCOREHLCtx, &l_tBuff);
+    l_eResHL = eFSS_COREHL_GetBuff(&p_ptCtx->tCOREHLCtx, &l_tBuff);
     l_eRes = eFSS_LOGC_HLtoLOGCRes(l_eResHL);
 
     if( e_eFSS_LOGC_RES_OK == l_eRes )
@@ -849,7 +849,7 @@ static e_eFSS_LOGC_RES eFSS_LOGC_LoadBuff(t_eFSS_LOGC_Ctx* const p_ptCtx, bool_t
     uint8_t l_uPageSubTypeRed;
 
     /* Get storage settings */
-    l_eResHL =  eFSS_COREHL_GetBuff(&p_ptCtx->tCOREHLCtx, &l_tBuff);
+    l_eResHL = eFSS_COREHL_GetBuff(&p_ptCtx->tCOREHLCtx, &l_tBuff);
     l_eRes = eFSS_LOGC_HLtoLOGCRes(l_eResHL);
 
     if( e_eFSS_LOGC_RES_OK == l_eRes )
@@ -863,7 +863,7 @@ static e_eFSS_LOGC_RES eFSS_LOGC_LoadBuff(t_eFSS_LOGC_Ctx* const p_ptCtx, bool_t
         }
         else
         {
-            l_eResHL =  eFSS_COREHL_LoadPageInBuff(&p_ptCtx->tCOREHLCtx, p_uOrigIndx, &l_uPageSubTypeRed);
+            l_eResHL = eFSS_COREHL_LoadPageInBuff(&p_ptCtx->tCOREHLCtx, p_uOrigIndx, &l_uPageSubTypeRed);
             l_eRes = eFSS_LOGC_HLtoLOGCRes(l_eResHL);
 
             if( e_eFSS_LOGC_RES_OK == l_eRes )
