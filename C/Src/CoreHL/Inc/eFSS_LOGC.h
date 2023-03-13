@@ -113,7 +113,7 @@ e_eFSS_LOGC_RES eFSS_LOGC_IsInit(t_eFSS_LOGC_Ctx* const p_ptCtx, bool_t* const p
 e_eFSS_LOGC_RES eFSS_LOGC_IsFlashCacheUsed(t_eFSS_LOGC_Ctx* const p_ptCtx, bool_t* const p_pbIsFlashCacheUsed);
 
 /**
- * @brief       Get the numbers of usable page and the buffer all in one
+ * @brief       Get the numbers of usable page and the internal buffer
  *
  * @param[in]   p_ptCtx       - Log Core context
  * @param[out]  p_ptBuff      - Pointer to a storage struct that will be filled with info about internal buf
