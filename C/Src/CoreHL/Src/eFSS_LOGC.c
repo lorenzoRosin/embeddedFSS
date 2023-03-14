@@ -62,13 +62,13 @@ static e_eFSS_LOGC_RES eFSS_LOGC_HLtoLOGCRes(const e_eFSS_COREHL_RES p_eHLRes);
 /***********************************************************************************************************************
  *  PRIVATE STATIC UTILS FUNCTION DECLARATION
  **********************************************************************************************************************/
-static e_eFSS_LOGC_RES eFSS_LOGC_FlushBuff(t_eFSS_LOGC_Ctx* const p_ptCtx, bool_t p_bIsBkpP, const uint32_t p_uByteUsed,
-								           const uint32_t p_uOrigIndx, const uint32_t p_uBackupIndx,
-                                           const uint32_t p_uOriSubType, const uint32_t p_uBckUpSubType);
+static e_eFSS_LOGC_RES eFSS_LOGC_FlushBuff(t_eFSS_LOGC_Ctx* const p_ptCtx, bool_t p_bIsBkpP, const uint32_t p_uByteUse,
+								           const uint32_t p_uOrigIdx, const uint32_t p_uBackupIdx,
+                                           const uint32_t p_uOriSubT, const uint32_t p_uBckUpSubT);
 
-static e_eFSS_LOGC_RES eFSS_LOGC_LoadBuff(t_eFSS_LOGC_Ctx* const p_ptCtx, bool_t p_bIsBkpP, uint32_t* const p_puByteUsed,
-                                          const uint32_t p_uOrigIndx, const uint32_t p_uBackupIndx,
-                                          const uint32_t p_uOriSubType, const uint32_t p_uBckUpSubType);
+static e_eFSS_LOGC_RES eFSS_LOGC_LoadBuff(t_eFSS_LOGC_Ctx* const p_ptCtx, bool_t p_bIsBkpP, uint32_t* const p_puByteUse,
+                                          const uint32_t p_uOrigIdx, const uint32_t p_uBackupIdx,
+                                          const uint32_t p_uOriSubT, const uint32_t p_uBckUpSubT);
 
 static uint32_t eFSS_LOGC_GetMaxPage(const bool_t p_bIsFullBkup, const bool_t p_bIsFCache, const uint32_t p_uTotPages);
 
@@ -494,7 +494,8 @@ e_eFSS_LOGC_RES eFSS_LOGC_FlushBufferAs(t_eFSS_LOGC_Ctx* const p_ptCtx, const e_
                     if( e_eFSS_LOGC_RES_OK == l_eRes )
                     {
                         /* Calculate n page */
-                        l_uNPageU = eFSS_LOGC_GetMaxPage(p_ptCtx->bFullBckup, p_ptCtx->bFlashCache, l_tStorSet.uTotPages);
+                        l_uNPageU = eFSS_LOGC_GetMaxPage(p_ptCtx->bFullBckup, p_ptCtx->bFlashCache,
+                                                         l_tStorSet.uTotPages);
 
                         if( ( p_uIdx >= l_uNPageU ) || ( p_uFillInPage >= ( l_tBuff.uBufL - EFSS_LOGC_PAGEMIN_L ) ) )
                         {
@@ -592,7 +593,8 @@ e_eFSS_LOGC_RES eFSS_LOGC_LoadBufferAs(t_eFSS_LOGC_Ctx* const p_ptCtx, const e_e
                     if( e_eFSS_LOGC_RES_OK == l_eRes )
                     {
                         /* Calculate n page */
-                        l_uNPageU = eFSS_LOGC_GetMaxPage(p_ptCtx->bFullBckup, p_ptCtx->bFlashCache, l_tStorSet.uTotPages);
+                        l_uNPageU = eFSS_LOGC_GetMaxPage(p_ptCtx->bFullBckup, p_ptCtx->bFlashCache,
+                                                         l_tStorSet.uTotPages);
 
                         if( p_uIdx >= l_uNPageU )
                         {
@@ -799,9 +801,9 @@ static e_eFSS_LOGC_RES eFSS_LOGC_HLtoLOGCRes(const e_eFSS_COREHL_RES p_eHLRes)
 /***********************************************************************************************************************
  *  PRIVATE STATIC UTILS FUNCTION DECLARATION
  **********************************************************************************************************************/
-static e_eFSS_LOGC_RES eFSS_LOGC_FlushBuff(t_eFSS_LOGC_Ctx* const p_ptCtx, bool_t p_bIsBkpP, const uint32_t p_uByteUsed,
-								           const uint32_t p_uOrigIndx, const uint32_t p_uBackupIndx,
-                                           const uint32_t p_uOriSubType, const uint32_t p_uBckUpSubType)
+static e_eFSS_LOGC_RES eFSS_LOGC_FlushBuff(t_eFSS_LOGC_Ctx* const p_ptCtx, bool_t p_bIsBkpP, const uint32_t p_uByteUse,
+								           const uint32_t p_uOrigIdx, const uint32_t p_uBackupIdx,
+                                           const uint32_t p_uOriSubT, const uint32_t p_uBckUpSubT)
 {
 	/* Local return variable */
 	e_eFSS_LOGC_RES l_eRes;
@@ -816,7 +818,7 @@ static e_eFSS_LOGC_RES eFSS_LOGC_FlushBuff(t_eFSS_LOGC_Ctx* const p_ptCtx, bool_
     if( e_eFSS_LOGC_RES_OK == l_eRes )
     {
         /* Insert Meta */
-        if( true != eFSS_Utils_InsertU32(&l_tBuff.puBuf[l_tBuff.uBufL - EFSS_LOGC_PAGEMIN_L], p_uByteUsed) )
+        if( true != eFSS_Utils_InsertU32(&l_tBuff.puBuf[l_tBuff.uBufL - EFSS_LOGC_PAGEMIN_L], p_uByteUse) )
         {
             l_eRes = e_eFSS_LOGC_RES_CORRUPTCTX;
         }
@@ -825,15 +827,15 @@ static e_eFSS_LOGC_RES eFSS_LOGC_FlushBuff(t_eFSS_LOGC_Ctx* const p_ptCtx, bool_
             if( true == p_bIsBkpP )
             {
                 /* Flush */
-                l_eResHL = eFSS_COREHL_FlushBuffInPageNBkp(&p_ptCtx->tCOREHLCtx, p_uOrigIndx, p_uBackupIndx,
-                                                           p_uOriSubType, p_uBckUpSubType);
+                l_eResHL = eFSS_COREHL_FlushBuffInPageNBkp(&p_ptCtx->tCOREHLCtx, p_uOrigIdx, p_uBackupIdx,
+                                                           p_uOriSubT, p_uBckUpSubT);
 
                 l_eRes = eFSS_LOGC_HLtoLOGCRes(l_eResHL);
             }
             else
             {
                 /* Flush */
-                l_eResHL = eFSS_COREHL_FlushBuffInPage(&p_ptCtx->tCOREHLCtx, p_uOrigIndx, p_uOriSubType);
+                l_eResHL = eFSS_COREHL_FlushBuffInPage(&p_ptCtx->tCOREHLCtx, p_uOrigIdx, p_uOriSubT);
                 l_eRes = eFSS_LOGC_HLtoLOGCRes(l_eResHL);
             }
         }
@@ -842,9 +844,9 @@ static e_eFSS_LOGC_RES eFSS_LOGC_FlushBuff(t_eFSS_LOGC_Ctx* const p_ptCtx, bool_
     return l_eRes;
 }
 
-static e_eFSS_LOGC_RES eFSS_LOGC_LoadBuff(t_eFSS_LOGC_Ctx* const p_ptCtx, bool_t p_bIsBkpP, uint32_t* const p_puByteUsed,
-                                          const uint32_t p_uOrigIndx, const uint32_t p_uBackupIndx,
-                                          const uint32_t p_uOriSubType, const uint32_t p_uBckUpSubType)
+static e_eFSS_LOGC_RES eFSS_LOGC_LoadBuff(t_eFSS_LOGC_Ctx* const p_ptCtx, bool_t p_bIsBkpP, uint32_t* const p_puByteUse,
+                                          const uint32_t p_uOrigIdx, const uint32_t p_uBackupIdx,
+                                          const uint32_t p_uOriSubT, const uint32_t p_uBckUpSubT)
 {
 	/* Local return variable */
 	e_eFSS_LOGC_RES l_eRes;
@@ -863,19 +865,19 @@ static e_eFSS_LOGC_RES eFSS_LOGC_LoadBuff(t_eFSS_LOGC_Ctx* const p_ptCtx, bool_t
         if( true == p_bIsBkpP )
         {
             /* Before reading fix any error in original and backup pages */
-            l_eResHL = eFSS_COREHL_LoadPageInBuffNRipBkp(&p_ptCtx->tCOREHLCtx, p_uOrigIndx, p_uBackupIndx,
-                                                         p_uOriSubType, p_uBckUpSubType );
+            l_eResHL = eFSS_COREHL_LoadPageInBuffNRipBkp(&p_ptCtx->tCOREHLCtx, p_uOrigIdx, p_uBackupIdx,
+                                                         p_uOriSubT, p_uBckUpSubT );
             l_eRes = eFSS_LOGC_HLtoLOGCRes(l_eResHL);
         }
         else
         {
-            l_eResHL = eFSS_COREHL_LoadPageInBuff(&p_ptCtx->tCOREHLCtx, p_uOrigIndx, &l_uPageSubTypeRed);
+            l_eResHL = eFSS_COREHL_LoadPageInBuff(&p_ptCtx->tCOREHLCtx, p_uOrigIdx, &l_uPageSubTypeRed);
             l_eRes = eFSS_LOGC_HLtoLOGCRes(l_eResHL);
 
             if( e_eFSS_LOGC_RES_OK == l_eRes )
             {
                 /* Check subtype */
-                if( p_uOriSubType != l_uPageSubTypeRed )
+                if( p_uOriSubT != l_uPageSubTypeRed )
                 {
                     l_eRes = e_eFSS_LOGC_RES_NOTVALIDLOG;
                 }

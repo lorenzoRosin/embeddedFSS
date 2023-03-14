@@ -1156,6 +1156,9 @@
     </group>
     <group>
         <name>Db</name>
+        <excluded>
+            <configuration>Library</configuration>
+        </excluded>
         <group>
             <name>Inc</name>
             <file>
