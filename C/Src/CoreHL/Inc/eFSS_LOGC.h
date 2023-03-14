@@ -129,6 +129,9 @@ e_eFSS_LOGC_RES eFSS_LOGC_GetBuffNUsable(t_eFSS_LOGC_Ctx* const p_ptCtx, t_eFSS_
 
 /**
  * @brief       Write in cache the value of the new index location and the numbers of filled pages.
+ *              The new index location refers to the current index that we are using to store data, the number of
+ *              filled pages indicate the number of completly filled page (from this calculation the newest index is
+ *              excluded)
  *
  * @param[in]   p_ptCtx          - Log Core context
  * @param[in]   p_uIdxN          - Index of the new log page that we want to save in cache
@@ -221,7 +224,32 @@ e_eFSS_LOGC_RES eFSS_LOGC_FlushBufferAs(t_eFSS_LOGC_Ctx* const p_ptCtx, const e_
 e_eFSS_LOGC_RES eFSS_LOGC_LoadBufferAs(t_eFSS_LOGC_Ctx* const p_ptCtx, const e_eFSS_LOGC_PAGETYPE p_ePageType,
                                        const uint32_t p_uIdx, uint32_t* const p_puFillInPage);
 
-
+/**
+ * @brief       Read a page of data at p_uIdx and return e_eFSS_LOGC_RES_OK if the page type is
+ *              e_eFSS_LOGC_PAGETYPE_NEWEST or e_eFSS_LOGC_PAGETYPE_NEWEST_BKUP.
+ *              If the page is of type e_eFSS_LOGC_PAGETYPE_NEWEST valorize the bool_t with true
+ * @param[in]   p_ptCtx          - Log Core context
+ * @param[in]   p_uIdx           - Index of the log page we want to read
+ * @param[out]  p_pbIsNewest     - When e_eFSS_LOGC_RES_OK is returned this boolean is valorize with true if the
+ *                                 page type is e_eFSS_LOGC_PAGETYPE_NEWEST, and with false if the page type is
+ *                                 e_eFSS_LOGC_PAGETYPE_NEWEST_BKUP.
+ *
+ * @return      e_eFSS_LOGC_RES_BADPOINTER        - In case of bad pointer passed to the function
+ *		        e_eFSS_LOGC_RES_BADPARAM          - In case of an invalid parameter passed to the function
+ *		        e_eFSS_LOGC_RES_CORRUPTCTX        - Context is corrupted
+ *		        e_eFSS_LOGC_RES_NOINITLIB         - Need to init lib before calling function
+ *              e_eFSS_LOGC_RES_CLBCKCRCERR       - The crc callback reported an error
+ *		        e_eFSS_LOGC_RES_CLBCKERASEERR     - The erase callback reported an error
+ *		        e_eFSS_LOGC_RES_CLBCKWRITEERR     - The write callback reported an error
+ *		        e_eFSS_LOGC_RES_CLBCKREADERR      - The read callback reported an error
+ *		        e_eFSS_LOGC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
+ *              e_eFSS_LOGC_RES_NOTVALIDPAGE      - both origin and backup pages are corrupted
+ *              e_eFSS_LOGC_RES_OK_BKP_RCVRD      - operation ended successfully recovering a backup or an origin
+ *                                                  page
+ *              e_eFSS_LOGC_RES_OK                - Operation ended correctly
+ */
+e_eFSS_LOGC_RES eFSS_LOGC_IsBufferNewOrBkup(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint32_t p_uIdx,
+                                            bool_t* const p_pbIsNewest);
 
 #ifdef __cplusplus
 } /* extern "C" */

@@ -652,6 +652,12 @@ e_eFSS_LOGC_RES eFSS_LOGC_LoadBufferAs(t_eFSS_LOGC_Ctx* const p_ptCtx, const e_e
 	return l_eRes;
 }
 
+e_eFSS_LOGC_RES eFSS_LOGC_IsBufferNewOrBkup(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint32_t p_uIdx,
+                                            bool_t* const p_pbIsNewest)
+{
+
+}
+
 
 
 /***********************************************************************************************************************
