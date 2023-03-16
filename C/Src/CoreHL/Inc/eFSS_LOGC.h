@@ -108,6 +108,8 @@ e_eFSS_LOGC_RES eFSS_LOGC_IsInit(t_eFSS_LOGC_Ctx* const p_ptCtx, bool_t* const p
  *                                      is used
  *
  * @return      e_eFSS_LOGC_RES_BADPOINTER    - In case of bad pointer passed to the function
+ *		        e_eFSS_LOGC_RES_CORRUPTCTX    - Context is corrupted
+ *		        e_eFSS_LOGC_RES_NOINITLIB     - Need to init lib before calling function
  *              e_eFSS_LOGC_RES_OK            - Operation ended correctly
  */
 e_eFSS_LOGC_RES eFSS_LOGC_IsFlashCacheUsed(t_eFSS_LOGC_Ctx* const p_ptCtx, bool_t* const p_pbIsFlashCacheUsed);
@@ -248,8 +250,8 @@ e_eFSS_LOGC_RES eFSS_LOGC_LoadBufferAs(t_eFSS_LOGC_Ctx* const p_ptCtx, const e_e
  *                                                  page
  *              e_eFSS_LOGC_RES_OK                - Operation ended correctly
  */
-e_eFSS_LOGC_RES eFSS_LOGC_IsBufferNewOrBkup(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint32_t p_uIdx,
-                                            bool_t* const p_pbIsNewest);
+e_eFSS_LOGC_RES eFSS_LOGC_IsPageNewOrBkup(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint32_t p_uIdx,
+                                          bool_t* const p_pbIsNewest);
 
 #ifdef __cplusplus
 } /* extern "C" */

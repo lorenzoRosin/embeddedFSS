@@ -121,8 +121,11 @@ e_eFSS_LOGC_RES eFSS_LOGC_InitCtx(t_eFSS_LOGC_Ctx* const p_ptCtx, const t_eFSS_T
                 l_eRes = eFSS_LOGC_HLtoLOGCRes(l_eResHL);
                 if( e_eFSS_LOGC_RES_OK == l_eRes )
                 {
-                    if( l_tBuff.uBufL <= EFSS_LOGC_PAGEMIN_L)
+                    if( l_tBuff.uBufL <= EFSS_LOGC_PAGEMIN_L )
                     {
+                        /* De init HL */
+                        (void)memset(&p_ptCtx->tCOREHLCtx, 0, sizeof(t_eFSS_COREHL_Ctx));
+
                         l_eRes = e_eFSS_LOGC_RES_BADPARAM;
                     }
                     else
@@ -131,6 +134,11 @@ e_eFSS_LOGC_RES eFSS_LOGC_InitCtx(t_eFSS_LOGC_Ctx* const p_ptCtx, const t_eFSS_T
                         p_ptCtx->bFlashCache = p_bFlashCache;
                         p_ptCtx->bFullBckup = p_bFullBckup;
                     }
+                }
+                else
+                {
+                    /* De init HL */
+                    (void)memset(&p_ptCtx->tCOREHLCtx, 0, sizeof(t_eFSS_COREHL_Ctx));
                 }
             }
         }
@@ -199,6 +207,7 @@ e_eFSS_LOGC_RES eFSS_LOGC_IsFlashCacheUsed(t_eFSS_LOGC_Ctx* const p_ptCtx, bool_
                 }
             }
         }
+
 	}
 
 	return l_eRes;
@@ -301,46 +310,53 @@ e_eFSS_LOGC_RES eFSS_LOGC_WriteCache(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint3
                 }
                 else
                 {
-                    /* Get pages and storage settings */
-                    l_eResHL = eFSS_COREHL_GetBuffNStor(&p_ptCtx->tCOREHLCtx, &l_tBuff, &l_tStorSet);
-                    l_eRes = eFSS_LOGC_HLtoLOGCRes(l_eResHL);
-
-                    if( e_eFSS_LOGC_RES_OK == l_eRes )
+                    if( false == p_ptCtx->bFlashCache )
                     {
-                        l_uUsableP = eFSS_LOGC_GetMaxPage(p_ptCtx->bFullBckup, p_ptCtx->bFlashCache,
-                                                          l_tStorSet.uTotPages);
+                        l_eRes = e_eFSS_LOGC_RES_BADPARAM;
+                    }
+                    else
+                    {
+                        /* Get pages and storage settings */
+                        l_eResHL = eFSS_COREHL_GetBuffNStor(&p_ptCtx->tCOREHLCtx, &l_tBuff, &l_tStorSet);
+                        l_eRes = eFSS_LOGC_HLtoLOGCRes(l_eResHL);
 
-                        /* Verify parameter */
-                        if( ( p_uIdxN >= l_uUsableP ) || ( ( p_uIFlP + 2u ) >= l_uUsableP ) )
+                        if( e_eFSS_LOGC_RES_OK == l_eRes )
                         {
-                            l_eRes = e_eFSS_LOGC_RES_BADPARAM;
-                        }
-                        else
-                        {
-                            /* Clear data */
-                            memset(l_tBuff.puBuf, 0u, l_tBuff.uBufL);
+                            /* Need to Verify passed page index and filled size */
+                            l_uUsableP = eFSS_LOGC_GetMaxPage(p_ptCtx->bFullBckup, p_ptCtx->bFlashCache,
+                                                            l_tStorSet.uTotPages);
 
-                            /* Insert data */
-                            if( true != eFSS_Utils_InsertU32(&l_tBuff.puBuf[0u], p_uIdxN) )
+                            if( ( p_uIdxN >= l_uUsableP ) || ( ( p_uIFlP + 3u ) > l_uUsableP ) )
                             {
-                                l_eRes = e_eFSS_LOGC_RES_CORRUPTCTX;
+                                l_eRes = e_eFSS_LOGC_RES_BADPARAM;
                             }
                             else
                             {
+                                /* Clear data */
+                                memset(l_tBuff.puBuf, 0u, l_tBuff.uBufL);
+
                                 /* Insert data */
-                                if( true != eFSS_Utils_InsertU32(&l_tBuff.puBuf[4u], p_uIFlP) )
+                                if( true != eFSS_Utils_InsertU32(&l_tBuff.puBuf[0u], p_uIdxN) )
                                 {
                                     l_eRes = e_eFSS_LOGC_RES_CORRUPTCTX;
                                 }
                                 else
                                 {
-                                    /* Setup index */
-                                    l_uCacheIdx = l_tStorSet.uTotPages - 2u;
+                                    /* Insert data */
+                                    if( true != eFSS_Utils_InsertU32(&l_tBuff.puBuf[4u], p_uIFlP) )
+                                    {
+                                        l_eRes = e_eFSS_LOGC_RES_CORRUPTCTX;
+                                    }
+                                    else
+                                    {
+                                        /* Setup index */
+                                        l_uCacheIdx = l_tStorSet.uTotPages - 2u;
 
-                                    /* Flush */
-                                    l_eRes = eFSS_LOGC_FlushBuff(p_ptCtx, true, 8u, l_uCacheIdx, (l_uCacheIdx + 1u),
-                                                                 EFSS_PAGESUBTYPE_LOGCACHEORI,
-                                                                 EFSS_PAGESUBTYPE_LOGCACHEBKP);
+                                        /* Flush */
+                                        l_eRes = eFSS_LOGC_FlushBuff(p_ptCtx, true, 8u, l_uCacheIdx, (l_uCacheIdx + 1u),
+                                                                    EFSS_PAGESUBTYPE_LOGCACHEORI,
+                                                                    EFSS_PAGESUBTYPE_LOGCACHEBKP);
+                                    }
                                 }
                             }
                         }
@@ -654,8 +670,8 @@ e_eFSS_LOGC_RES eFSS_LOGC_LoadBufferAs(t_eFSS_LOGC_Ctx* const p_ptCtx, const e_e
 	return l_eRes;
 }
 
-e_eFSS_LOGC_RES eFSS_LOGC_IsBufferNewOrBkup(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint32_t p_uIdx,
-                                            bool_t* const p_pbIsNewest)
+e_eFSS_LOGC_RES eFSS_LOGC_IsPageNewOrBkup(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint32_t p_uIdx,
+                                          bool_t* const p_pbIsNewest)
 {
 
 }
