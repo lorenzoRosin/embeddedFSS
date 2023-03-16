@@ -324,7 +324,7 @@ e_eFSS_LOGC_RES eFSS_LOGC_WriteCache(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint3
                         {
                             /* Need to Verify passed page index and filled size */
                             l_uUsableP = eFSS_LOGC_GetMaxPage(p_ptCtx->bFullBckup, p_ptCtx->bFlashCache,
-                                                            l_tStorSet.uTotPages);
+                                                              l_tStorSet.uTotPages);
 
                             if( ( p_uIdxN >= l_uUsableP ) || ( ( p_uIFlP + 3u ) > l_uUsableP ) )
                             {
@@ -333,7 +333,7 @@ e_eFSS_LOGC_RES eFSS_LOGC_WriteCache(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint3
                             else
                             {
                                 /* Clear data */
-                                memset(l_tBuff.puBuf, 0u, l_tBuff.uBufL);
+                                (void)memset(l_tBuff.puBuf, 0, l_tBuff.uBufL);
 
                                 /* Insert data */
                                 if( true != eFSS_Utils_InsertU32(&l_tBuff.puBuf[0u], p_uIdxN) )
@@ -409,46 +409,55 @@ e_eFSS_LOGC_RES eFSS_LOGC_ReadCache(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t* co
                 }
                 else
                 {
-                    l_eResHL = eFSS_COREHL_GetBuffNStor(&p_ptCtx->tCOREHLCtx, &l_tBuff, &l_tStorSet);
-                    l_eRes = eFSS_LOGC_HLtoLOGCRes(l_eResHL);
-
-                    if( e_eFSS_LOGC_RES_OK == l_eRes )
+                    if( false == p_ptCtx->bFlashCache )
                     {
-                        /* Setup index */
-                        l_uCacheIdx = l_tStorSet.uTotPages - 2u;
+                        l_eRes = e_eFSS_LOGC_RES_BADPARAM;
+                    }
+                    else
+                    {
+                        l_eResHL = eFSS_COREHL_GetBuffNStor(&p_ptCtx->tCOREHLCtx, &l_tBuff, &l_tStorSet);
+                        l_eRes = eFSS_LOGC_HLtoLOGCRes(l_eResHL);
 
-                        /* Before reading fix any error in original and backup pages */
-                        l_eRes = eFSS_LOGC_LoadBuff(p_ptCtx, true, &l_uByteInP, l_uCacheIdx, (l_uCacheIdx + 1u),
-                                                    EFSS_PAGESUBTYPE_LOGCACHEORI, EFSS_PAGESUBTYPE_LOGCACHEBKP);
-
-                        if( ( e_eFSS_LOGC_RES_OK == l_eRes ) || ( e_eFSS_LOGC_RES_OK_BKP_RCVRD == l_eRes ) )
+                        if( e_eFSS_LOGC_RES_OK == l_eRes )
                         {
-                            /* Retrive parameter */
-                            if( true != eFSS_Utils_RetriveU32(&l_tBuff.puBuf[0u], p_puIdxN) )
+                            /* Setup index */
+                            l_uCacheIdx = l_tStorSet.uTotPages - 2u;
+
+                            /* Before reading fix any error in original and backup pages */
+                            l_eRes = eFSS_LOGC_LoadBuff(p_ptCtx, true, &l_uByteInP, l_uCacheIdx, (l_uCacheIdx + 1u),
+                                                        EFSS_PAGESUBTYPE_LOGCACHEORI, EFSS_PAGESUBTYPE_LOGCACHEBKP);
+
+                            if( ( e_eFSS_LOGC_RES_OK == l_eRes ) || ( e_eFSS_LOGC_RES_OK_BKP_RCVRD == l_eRes ) )
                             {
-                                l_eRes = e_eFSS_LOGC_RES_CORRUPTCTX;
-                            }
-                            else
-                            {
-                                if( true != eFSS_Utils_RetriveU32(&l_tBuff.puBuf[4u], p_puIFlP) )
+                                /* Retrive parameter */
+                                if( true != eFSS_Utils_RetriveU32(&l_tBuff.puBuf[0u], p_puIdxN) )
                                 {
                                     l_eRes = e_eFSS_LOGC_RES_CORRUPTCTX;
                                 }
                                 else
                                 {
-                                    /* Need to verify parameter before confirmg the validity of the page */
-                                    if( 8u != l_uByteInP )
+                                    /* Retrive parameter */
+                                    if( true != eFSS_Utils_RetriveU32(&l_tBuff.puBuf[4u], p_puIFlP) )
                                     {
-                                        l_eRes = e_eFSS_LOGC_RES_NOTVALIDLOG;
+                                        l_eRes = e_eFSS_LOGC_RES_CORRUPTCTX;
                                     }
                                     else
                                     {
-                                        l_uUsableP = eFSS_LOGC_GetMaxPage(p_ptCtx->bFullBckup, p_ptCtx->bFlashCache,
-                                                                          l_tStorSet.uTotPages);
-                                        /* Verify parameter */
-                                        if( ( *p_puIdxN >= l_uUsableP ) || ( ( *p_puIFlP + 2u ) >= l_uUsableP ) )
+                                        /* Need to verify parameter before confirmg the validity of the page */
+                                        if( 8u != l_uByteInP )
                                         {
                                             l_eRes = e_eFSS_LOGC_RES_NOTVALIDLOG;
+                                        }
+                                        else
+                                        {
+                                            /* Verify also parameter coherence */
+                                            l_uUsableP = eFSS_LOGC_GetMaxPage(p_ptCtx->bFullBckup, p_ptCtx->bFlashCache,
+                                                                              l_tStorSet.uTotPages);
+                                            /* Verify parameter */
+                                            if( ( *p_puIdxN >= l_uUsableP ) || ( ( *p_puIFlP + 3u ) > l_uUsableP ) )
+                                            {
+                                                l_eRes = e_eFSS_LOGC_RES_NOTVALIDLOG;
+                                            }
                                         }
                                     }
                                 }
