@@ -513,6 +513,7 @@ e_eFSS_LOGC_RES eFSS_LOGC_FlushBufferAs(t_eFSS_LOGC_Ctx* const p_ptCtx, const e_
                 }
                 else
                 {
+                    /* Get the needed data from HL level */
                     l_eResHL = eFSS_COREHL_GetBuffNStor(&p_ptCtx->tCOREHLCtx, &l_tBuff, &l_tStorSet);
                     l_eRes = eFSS_LOGC_HLtoLOGCRes(l_eResHL);
 
@@ -555,12 +556,16 @@ e_eFSS_LOGC_RES eFSS_LOGC_FlushBufferAs(t_eFSS_LOGC_Ctx* const p_ptCtx, const e_
                                 {
                                     l_uPagSubTOri = 0u;
                                     l_uPagSubTBkp = 0u;
+                                    l_eRes = e_eFSS_LOGC_RES_BADPARAM;
                                     break;
                                 }
                             }
 
-                            l_eRes = eFSS_LOGC_FlushBuff(p_ptCtx, p_ptCtx->bFullBckup, p_uFillInPage, p_uIdx,
-                                                         (l_uNPageU + p_uIdx), l_uPagSubTOri, l_uPagSubTBkp);
+                            if( e_eFSS_LOGC_RES_OK == l_eRes )
+                            {
+                                l_eRes = eFSS_LOGC_FlushBuff(p_ptCtx, p_ptCtx->bFullBckup, p_uFillInPage, p_uIdx,
+                                                             (l_uNPageU + p_uIdx), l_uPagSubTOri, l_uPagSubTBkp);
+                            }
                         }
                     }
                 }
@@ -654,19 +659,23 @@ e_eFSS_LOGC_RES eFSS_LOGC_LoadBufferAs(t_eFSS_LOGC_Ctx* const p_ptCtx, const e_e
                                 {
                                     l_uPagSubTOri = 0u;
                                     l_uPagSubTBkp = 0u;
+                                    l_eRes = e_eFSS_LOGC_RES_BADPARAM;
                                     break;
                                 }
                             }
 
-                            l_eRes = eFSS_LOGC_LoadBuff(p_ptCtx, p_ptCtx->bFullBckup, p_puFillInPage, p_uIdx,
-                                                         l_uNPageU + p_uIdx, l_uPagSubTOri, l_uPagSubTBkp);
-
-                            if( ( e_eFSS_LOGC_RES_OK == l_eRes ) || ( e_eFSS_LOGC_RES_OK_BKP_RCVRD == l_eRes ) )
+                            if( e_eFSS_LOGC_RES_OK == l_eRes )
                             {
-                                /* Need to verify parameter before confirm the validity of the page */
-                                if( *p_puFillInPage >= ( l_tBuff.uBufL - EFSS_LOGC_PAGEMIN_L ) )
+                                l_eRes = eFSS_LOGC_LoadBuff(p_ptCtx, p_ptCtx->bFullBckup, p_puFillInPage, p_uIdx,
+                                                            l_uNPageU + p_uIdx, l_uPagSubTOri, l_uPagSubTBkp);
+
+                                if( ( e_eFSS_LOGC_RES_OK == l_eRes ) || ( e_eFSS_LOGC_RES_OK_BKP_RCVRD == l_eRes ) )
                                 {
-                                    l_eRes = e_eFSS_LOGC_RES_NOTVALIDLOG;
+                                    /* Need to verify parameter before confirm the validity of the page */
+                                    if( *p_puFillInPage >= ( l_tBuff.uBufL - EFSS_LOGC_PAGEMIN_L ) )
+                                    {
+                                        l_eRes = e_eFSS_LOGC_RES_NOTVALIDLOG;
+                                    }
                                 }
                             }
                         }
