@@ -17,7 +17,6 @@
  *
  * In this module the storage is organizated as follow :
  *
- *   bFullBckup = true, bFlashCache = true
  * - [ 0                            -    ( uTotPages / 2 ) - 1    ]  -> Original pages
  * - [ ( uTotPages / 2 )            -    uTotPages - 1            ]  -> Backup pages
  *

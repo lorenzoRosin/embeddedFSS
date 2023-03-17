@@ -208,7 +208,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_CalcCrcInBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, co
  *		        e_eFSS_COREHL_RES_BADPARAM         - In case of an invalid parameter passed to the function
  *		        e_eFSS_COREHL_RES_CORRUPTCTX       - Context is corrupted
  *		        e_eFSS_COREHL_RES_NOINITLIB        - Need to init lib before calling function
- *		        e_eFSS_COREHL_RES_CLBCKREADERR     - The read callback reported an error
+ *		        e_eFSS_COREHL_RES_CLBCKCRCERR      - The crc callback reported an error
  *		        e_eFSS_COREHL_RES_CLBCKERASEERR    - The erase callback reported an error
  *		        e_eFSS_COREHL_RES_CLBCKWRITEERR    - The write callback reported an error
  *		        e_eFSS_COREHL_RES_CLBCKREADERR     - The read callback reported an error
@@ -225,7 +225,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_FlushBuffInPageNBkp(t_eFSS_COREHL_Ctx* const p_ptC
  *              fixed.
  *              This function use this decision maps in order to load original page and verify it's backup:
  *              1 - If p_uOriIdx and p_uBkpIdx are valid, verify if they are equals. If not copy p_uOriIdx
- *                  in p_uBkpIdx
+ *                  in p_uBkpIdx (except for the page subtype offcourse)
  *              2 - If p_uOriIdx is not valid copy p_uBkpIdx in p_uOriIdx
  *              3 - If p_uBkpIdx is not valid copy p_uOriIdx in p_uBkpIdx
  *              4 - If p_uOriIdx and p_uBkpIdx are not valid we cann not do nothing
@@ -258,7 +258,8 @@ e_eFSS_COREHL_RES eFSS_COREHL_LoadPageInBuffNRipBkp(t_eFSS_COREHL_Ctx* const p_p
 
 /**
  * @brief       Check if the data present in to the internal buffer is equals to an another page. Keep in mind that
- *              subtype are not compared, the comparsion is only done using raw data.
+ *              subtype are not compared, the comparsion is only done using raw data. Th previusly present buffer
+ *              is not modified after this call.
  *
  * @param[in]   p_ptCtx         - High Level Core context
  * @param[in]   p_uPIdx         - uint32_t index rappresenting the page that we want to compare

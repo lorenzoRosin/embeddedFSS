@@ -113,16 +113,15 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_GetBuffNUsable(t_eFSS_BLOBC_Ctx* const p_ptCtx, t_eF
  * @param[in]   p_uIdx        - Index of the page we want to read from
  * @param[out]  p_puSeqN      - An uint32_t value that will be filled with the sequence number from the page
  *
- * @return      e_eFSS_BLOBC_RES_BADPOINTER        - In case of bad pointer passed to the function
- *		        e_eFSS_BLOBC_RES_BADPARAM          - In case of an invalid parameter passed to the function
- *		        e_eFSS_BLOBC_RES_CORRUPTCTX        - Context is corrupted
- *		        e_eFSS_BLOBC_RES_NOINITLIB         - Need to init lib before calling function
- *              e_eFSS_BLOBC_RES_CLBCKCRCERR       - The crc callback reported an error
- *		        e_eFSS_BLOBC_RES_CLBCKERASEERR     - The erase callback reported an error
- *		        e_eFSS_BLOBC_RES_CLBCKWRITEERR     - The write callback reported an error
- *		        e_eFSS_BLOBC_RES_CLBCKREADERR      - The read callback reported an error
- *		        e_eFSS_BLOBC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
- *              e_eFSS_BLOBC_RES_OK                - Operation ended correctly
+ * @return      e_eFSS_BLOBC_RES_BADPOINTER      - In case of bad pointer passed to the function
+ *		        e_eFSS_BLOBC_RES_BADPARAM        - In case of an invalid parameter passed to the function
+ *		        e_eFSS_BLOBC_RES_CORRUPTCTX      - Context is corrupted
+ *		        e_eFSS_BLOBC_RES_NOINITLIB       - Need to init lib before calling function
+ *		        e_eFSS_BLOBC_RES_CLBCKREADERR    - The read callback reported an error
+ *              e_eFSS_BLOBC_RES_CLBCKCRCERR     - The crc callback reported an error
+ *              e_eFSS_BLOBC_RES_NOTVALIDBLOB    - The readed page is invalid
+ *              e_eFSS_BLOBC_RES_NEWVERSIONBLOB  - The readed page has a new version
+ *              e_eFSS_BLOBC_RES_OK              - Operation ended correctly
  */
 e_eFSS_BLOBC_RES eFSS_BLOBC_LoadBufferFromPage(t_eFSS_BLOBC_Ctx* const p_ptCtx, const bool_t p_bInOrigin,
                                                const uint32_t p_uIdx, uint32_t* const p_puSeqN);
@@ -164,10 +163,6 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_FlushBufferInPage(t_eFSS_BLOBC_Ctx* const p_ptCtx, c
  *		        e_eFSS_BLOBC_RES_CORRUPTCTX        - Context is corrupted
  *		        e_eFSS_BLOBC_RES_NOINITLIB         - Need to init lib before calling function
  *              e_eFSS_BLOBC_RES_CLBCKCRCERR       - The crc callback reported an error
- *		        e_eFSS_BLOBC_RES_CLBCKERASEERR     - The erase callback reported an error
- *		        e_eFSS_BLOBC_RES_CLBCKWRITEERR     - The write callback reported an error
- *		        e_eFSS_BLOBC_RES_CLBCKREADERR      - The read callback reported an error
- *		        e_eFSS_BLOBC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
  *              e_eFSS_BLOBC_RES_OK                - Operation ended correctly
  */
 e_eFSS_BLOBC_RES eFSS_BLOBC_GetCrcFromTheBuffer(t_eFSS_BLOBC_Ctx* const p_ptCtx, const uint32_t p_uSeed,
@@ -175,7 +170,7 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_GetCrcFromTheBuffer(t_eFSS_BLOBC_Ctx* const p_ptCtx,
 
 /**
  * @brief       If the original page is not equals to the backup pages, copy the original page in to the backup area.
- *              If they are equals do nothing
+ *              If they are equals do nothing. In this case the comparsion comprend the sequential number
  *
  * @param[in]   p_ptCtx      - Blob Core context
  * @param[in]   p_uIdx       - Index of the original and backup pages where to do this check.
@@ -187,8 +182,10 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_GetCrcFromTheBuffer(t_eFSS_BLOBC_Ctx* const p_ptCtx,
  *              e_eFSS_BLOBC_RES_CLBCKCRCERR       - The crc callback reported an error
  *		        e_eFSS_BLOBC_RES_CLBCKERASEERR     - The erase callback reported an error
  *		        e_eFSS_BLOBC_RES_CLBCKWRITEERR     - The write callback reported an error
- *		        e_eFSS_BLOBC_RES_CLBCKREADERR      - The read callback reported an errorp_uIdx
+ *		        e_eFSS_BLOBC_RES_CLBCKREADERR      - The read callback reported an error
  *		        e_eFSS_BLOBC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
+ *              e_eFSS_BLOBC_RES_NOTVALIDBLOB      - The readed page is invalid
+ *              e_eFSS_BLOBC_RES_NEWVERSIONBLOB    - The readed page has a new version
  *              e_eFSS_BLOBC_RES_OK                - Operation ended correctly
  */
 e_eFSS_BLOBC_RES eFSS_BLOBC_CopyOriInBkpIfNotEquals(t_eFSS_BLOBC_Ctx* const p_ptCtx, const uint32_t p_uIdx);

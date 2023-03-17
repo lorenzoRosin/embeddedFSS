@@ -785,7 +785,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_IsBuffEqualToPage(t_eFSS_COREHL_Ctx* const p_ptCtx
 
                     if( e_eFSS_COREHL_RES_OK == l_eRes )
                     {
-                        /* Load the pointer page in the support buffer */
+                        /* Load the pointed page in the support buffer */
                         l_eResLL = eFSS_CORELL_LoadPageInBuff(&p_ptCtx->tCORELLCtx, e_eFSS_CORELL_BUFFTYPE_2, p_uPIdx);
                         l_eRes = eFSS_COREHL_LLtoHLRes(l_eResLL);
 
@@ -795,7 +795,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_IsBuffEqualToPage(t_eFSS_COREHL_Ctx* const p_ptCtx
                                             ( l_tBuff2.uBufL - EFSS_COREHL_PAGEMIN_L ) ) )
                             {
                                 /* Page are equals */
-                                *p_pbIsEquals = true;;
+                                *p_pbIsEquals = true;
                             }
                             else
                             {

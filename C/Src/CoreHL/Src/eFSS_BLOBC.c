@@ -11,7 +11,7 @@
  * ------------------------------------------------------------------ User data
  * - [uint8_t] -                    -> N byte of user data           |
  * ------------------------------------------------------------------ Metadata  (4 byte)
- * - uint32_t  - Page Index         -> Page Seq Number               |
+ * - uint32_t  - Seq Number         -> Page Seq Number               |
  * ------------------------------------------------------------------ Under we have LL/HL metadata
  * - LOW LEVEL / HIGH LEVEL METADATA                                 |
  * ------------------------------------------------------------------ End of Page
@@ -264,7 +264,7 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_LoadBufferFromPage(t_eFSS_BLOBC_Ctx* const p_ptCtx, 
                             }
 
                             /* Load the page in to the internal buffer */
-                            l_uSubTypeReaded = EFSS_PAGESUBTYPE_BLOBORI;
+                            l_uSubTypeReaded = 0xFFu;
                             l_eResHL = eFSS_COREHL_LoadPageInBuff(&p_ptCtx->tCOREHLCtx, l_uCurrPageConv,
                                                                   &l_uSubTypeReaded);
                             l_eRes = eFSS_BLOBC_HLtoBLOBCRes(l_eResHL);
