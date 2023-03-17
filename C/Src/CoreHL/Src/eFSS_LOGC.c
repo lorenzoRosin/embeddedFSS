@@ -1030,7 +1030,7 @@ static e_eFSS_LOGC_RES eFSS_LOGC_FlushBuff(t_eFSS_LOGC_Ctx* const p_ptCtx, bool_
                 {
                     /* Flush */
                     l_eResHL = eFSS_COREHL_FlushBuffInPageNBkp(&p_ptCtx->tCOREHLCtx, p_uOrigIdx, p_uBackupIdx,
-                                                            p_uOriSubT, p_uBckUpSubT);
+                                                               p_uOriSubT, p_uBckUpSubT);
 
                     l_eRes = eFSS_LOGC_HLtoLOGCRes(l_eResHL);
                 }
@@ -1074,7 +1074,7 @@ static e_eFSS_LOGC_RES eFSS_LOGC_LoadBuff(t_eFSS_LOGC_Ctx* const p_ptCtx, bool_t
             if( true == p_bIsBkpP )
             {
                 l_eResHL = eFSS_COREHL_LoadPageInBuffNRipBkp(&p_ptCtx->tCOREHLCtx, p_uOrigIdx, p_uBackupIdx,
-                                                            p_uOriSubT, p_uBckUpSubT);
+                                                             p_uOriSubT, p_uBckUpSubT);
                 l_eRes = eFSS_LOGC_HLtoLOGCRes(l_eResHL);
             }
             else
