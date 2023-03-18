@@ -358,8 +358,8 @@ e_eFSS_LOGC_RES eFSS_LOGC_WriteCache(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint3
 
                                         /* Flush */
                                         l_eRes = eFSS_LOGC_FlushBuff(p_ptCtx, true, 8u, l_uCacheIdx, l_uCacheIdxBkp,
-                                                                    EFSS_PAGESUBTYPE_LOGCACHEORI,
-                                                                    EFSS_PAGESUBTYPE_LOGCACHEBKP);
+                                                                     EFSS_PAGESUBTYPE_LOGCACHEORI,
+                                                                     EFSS_PAGESUBTYPE_LOGCACHEBKP);
                                     }
                                 }
                             }
@@ -791,7 +791,9 @@ e_eFSS_LOGC_RES eFSS_LOGC_IsPageNewOrBkup(t_eFSS_LOGC_Ctx* const p_ptCtx, const 
                             }
 
                             /* Not valid? search on the packup pages */
-                            if( ( e_eFSS_LOGC_RES_NOTVALIDLOG == l_eRes ) && ( true == p_ptCtx->bFullBckup ) )
+                            if( ( ( e_eFSS_LOGC_RES_NOTVALIDLOG == l_eRes ) ||
+                                  ( e_eFSS_LOGC_RES_NEWVERSIONLOG == l_eRes ) ) &&
+                                ( true == p_ptCtx->bFullBckup ) )
                             {
                                 l_uPageSubTypeRed = 0xFFu;
                                 l_eResHL = eFSS_COREHL_LoadPageInBuff(&p_ptCtx->tCOREHLCtx, ( l_uNPageU + p_uIdx ),
@@ -801,8 +803,8 @@ e_eFSS_LOGC_RES eFSS_LOGC_IsPageNewOrBkup(t_eFSS_LOGC_Ctx* const p_ptCtx, const 
                                 if( e_eFSS_LOGC_RES_OK == l_eRes )
                                 {
                                     /* Check subtype */
-                                    if( ( EFSS_PAGESUBTYPE_LOGNEWESTORI    != l_uPageSubTypeRed ) &&
-                                        ( EFSS_PAGESUBTYPE_LOGNEWESTBKPORI != l_uPageSubTypeRed ) )
+                                    if( ( EFSS_PAGESUBTYPE_LOGNEWESTBKP    != l_uPageSubTypeRed ) &&
+                                        ( EFSS_PAGESUBTYPE_LOGNEWESTBKPBKP != l_uPageSubTypeRed ) )
                                     {
                                         /* Not what we are searching */
                                         l_eRes = e_eFSS_LOGC_RES_NOTVALIDLOG;
@@ -824,7 +826,7 @@ e_eFSS_LOGC_RES eFSS_LOGC_IsPageNewOrBkup(t_eFSS_LOGC_Ctx* const p_ptCtx, const 
                                             }
                                             else
                                             {
-                                                if( EFSS_PAGESUBTYPE_LOGNEWESTORI == l_uPageSubTypeRed )
+                                                if( EFSS_PAGESUBTYPE_LOGNEWESTBKP == l_uPageSubTypeRed )
                                                 {
                                                     *p_pbIsNewest = true;
                                                 }

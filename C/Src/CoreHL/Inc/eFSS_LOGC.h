@@ -165,12 +165,13 @@ e_eFSS_LOGC_RES eFSS_LOGC_WriteCache(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint3
  *		        e_eFSS_LOGC_RES_BADPARAM          - In case of an invalid parameter passed to the function
  *		        e_eFSS_LOGC_RES_CORRUPTCTX        - Context is corrupted
  *		        e_eFSS_LOGC_RES_NOINITLIB         - Need to init lib before calling function
+ *		        e_eFSS_LOGC_RES_CLBCKREADERR      - The read callback reported an error
  *              e_eFSS_LOGC_RES_CLBCKCRCERR       - The crc callback reported an error
+ *              e_eFSS_LOGC_RES_NOTVALIDLOG       - both origin and backup pages are corrupted
+ *              e_eFSS_LOGC_RES_NEWVERSIONLOG     - The readed page has a new version
  *		        e_eFSS_LOGC_RES_CLBCKERASEERR     - The erase callback reported an error
  *		        e_eFSS_LOGC_RES_CLBCKWRITEERR     - The write callback reported an error
- *		        e_eFSS_LOGC_RES_CLBCKREADERR      - The read callback reported an error
  *		        e_eFSS_LOGC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
- *              e_eFSS_LOGC_RES_NOTVALIDPAGE      - both origin and backup pages are corrupted
  *              e_eFSS_LOGC_RES_OK_BKP_RCVRD      - operation ended successfully recovering a backup or an origin
  *                                                  page
  *              e_eFSS_LOGC_RES_OK                - Operation ended correctly
@@ -213,12 +214,13 @@ e_eFSS_LOGC_RES eFSS_LOGC_FlushBufferAs(t_eFSS_LOGC_Ctx* const p_ptCtx, const e_
  *		        e_eFSS_LOGC_RES_BADPARAM          - In case of an invalid parameter passed to the function
  *		        e_eFSS_LOGC_RES_CORRUPTCTX        - Context is corrupted
  *		        e_eFSS_LOGC_RES_NOINITLIB         - Need to init lib before calling function
+ *		        e_eFSS_LOGC_RES_CLBCKREADERR      - The read callback reported an error
  *              e_eFSS_LOGC_RES_CLBCKCRCERR       - The crc callback reported an error
+ *              e_eFSS_LOGC_RES_NOTVALIDLOG       - both origin and backup pages are corrupted
+ *              e_eFSS_LOGC_RES_NEWVERSIONLOG     - The readed page has a new version
  *		        e_eFSS_LOGC_RES_CLBCKERASEERR     - The erase callback reported an error
  *		        e_eFSS_LOGC_RES_CLBCKWRITEERR     - The write callback reported an error
- *		        e_eFSS_LOGC_RES_CLBCKREADERR      - The read callback reported an error
  *		        e_eFSS_LOGC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
- *              e_eFSS_LOGC_RES_NOTVALIDPAGE      - both origin and backup pages are corrupted
  *              e_eFSS_LOGC_RES_OK_BKP_RCVRD      - operation ended successfully recovering a backup or an origin
  *                                                  page
  *              e_eFSS_LOGC_RES_OK                - Operation ended correctly
@@ -240,14 +242,10 @@ e_eFSS_LOGC_RES eFSS_LOGC_LoadBufferAs(t_eFSS_LOGC_Ctx* const p_ptCtx, const e_e
  *		        e_eFSS_LOGC_RES_BADPARAM          - In case of an invalid parameter passed to the function
  *		        e_eFSS_LOGC_RES_CORRUPTCTX        - Context is corrupted
  *		        e_eFSS_LOGC_RES_NOINITLIB         - Need to init lib before calling function
- *              e_eFSS_LOGC_RES_CLBCKCRCERR       - The crc callback reported an error
- *		        e_eFSS_LOGC_RES_CLBCKERASEERR     - The erase callback reported an error
- *		        e_eFSS_LOGC_RES_CLBCKWRITEERR     - The write callback reported an error
  *		        e_eFSS_LOGC_RES_CLBCKREADERR      - The read callback reported an error
- *		        e_eFSS_LOGC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
- *              e_eFSS_LOGC_RES_NOTVALIDPAGE      - both origin and backup pages are corrupted
- *              e_eFSS_LOGC_RES_OK_BKP_RCVRD      - operation ended successfully recovering a backup or an origin
- *                                                  page
+ *              e_eFSS_LOGC_RES_CLBCKCRCERR       - The crc callback reported an error
+ *              e_eFSS_LOGC_RES_NOTVALIDLOG       - both origin and backup pages are corrupted
+ *              e_eFSS_LOGC_RES_NEWVERSIONLOG     - The readed page has a new version
  *              e_eFSS_LOGC_RES_OK                - Operation ended correctly
  */
 e_eFSS_LOGC_RES eFSS_LOGC_IsPageNewOrBkup(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint32_t p_uIdx,
