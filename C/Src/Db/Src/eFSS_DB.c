@@ -18,21 +18,23 @@
  **********************************************************************************************************************/
 static bool_t eFSS_DB_IsStatusStillCoherent(const t_eFSS_DB_Ctx* p_ptCtx);
 static e_eFSS_DB_RES eFSS_DB_DBCtoDBRes(const e_eFSS_DBC_RES p_eDBCRes);
-static bool_t eFSS_DB_IsDbDefStructValid(t_eFSS_DB_DbStruct p_tDefaultDb);
-static bool_t eFSS_DB_IsDbDefStructUsable(t_eFSS_DB_DbStruct p_tDefaultDb, uint32_t p_uNPage, uint32_t p_uPageL);
-static void eFSS_DB_GetEleRawInBuffer(t_eFSS_DB_DbElement* p_gettedElem, uint8_t* p_puBuff);
-static void eFSS_DB_SetEleRawInBuffer(t_eFSS_DB_DbElement p_gettedElem, uint8_t* p_puBuff);
-static void eFSS_DB_GetPageAndPagePosition(const uint32_t p_uPageL, t_eFSS_DB_DbStruct p_tDbStruct,
-                                           const uint32_t p_uIndex, uint32_t* p_puPageIdx, uint32_t* p_puLogPos);
+static bool_t eFSS_DB_IsDbDefStructValid(const t_eFSS_DB_DbStruct p_tDefaultDb);
+static bool_t eFSS_DB_IsDbDefStructUsable(const t_eFSS_DB_DbStruct p_tDefaultDb, const uint32_t p_uNPage,
+                                          const uint32_t p_uPageL);
+static void eFSS_DB_GetEleRawInBuffer(t_eFSS_DB_DbElement* const p_gettedElem, uint8_t* const p_puBuff);
+static void eFSS_DB_SetEleRawInBuffer(const t_eFSS_DB_DbElement p_gettedElem, uint8_t* const p_puBuff);
+static void eFSS_DB_GetPageAndPagePosition(const uint32_t p_uPageL, const t_eFSS_DB_DbStruct p_tDbStruct,
+                                           const uint32_t p_uIndex, uint32_t* const p_puPageIdx,
+                                           uint32_t* const p_puLogPos);
 
 
 
 /***********************************************************************************************************************
  *   GLOBAL FUNCTIONS
  **********************************************************************************************************************/
-e_eFSS_DB_RES eFSS_DB_InitCtx(t_eFSS_DB_Ctx* const p_ptCtx, t_eFSS_TYPE_CbStorCtx const p_tCtxCb,
-                              t_eFSS_TYPE_StorSet p_tStorSet, uint8_t* const p_puBuff, uint32_t p_uBuffL,
-                              t_eFSS_DB_DbStruct p_tDbStruct)
+e_eFSS_DB_RES eFSS_DB_InitCtx(t_eFSS_DB_Ctx* const p_ptCtx, const t_eFSS_TYPE_CbStorCtx p_tCtxCb,
+                              const t_eFSS_TYPE_StorSet p_tStorSet, uint8_t* const p_puBuff, const uint32_t p_uBuffL,
+                              const t_eFSS_DB_DbStruct p_tDbStruct)
 {
     /* Local return variable */
     e_eFSS_DB_RES l_eRes;
@@ -104,7 +106,7 @@ e_eFSS_DB_RES eFSS_DB_InitCtx(t_eFSS_DB_Ctx* const p_ptCtx, t_eFSS_TYPE_CbStorCt
     return l_eRes;
 }
 
-e_eFSS_DB_RES eFSS_DB_IsInit(t_eFSS_DB_Ctx* const p_ptCtx, bool_t* p_pbIsInit)
+e_eFSS_DB_RES eFSS_DB_IsInit(t_eFSS_DB_Ctx* const p_ptCtx, bool_t* const p_pbIsInit)
 {
 	/* Local variable */
     e_eFSS_DB_RES l_eRes;
@@ -389,8 +391,8 @@ e_eFSS_DB_RES eFSS_DB_FormatToDefault(t_eFSS_DB_Ctx* const p_ptCtx)
 	return l_eRes;
 }
 
-e_eFSS_DB_RES eFSS_DB_SaveElemen(t_eFSS_DB_Ctx* const p_ptCtx, uint32_t p_uPos, uint16_t p_uElemL,
-                                 uint8_t* p_puRawVal)
+e_eFSS_DB_RES eFSS_DB_SaveElemen(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_uPos, const uint16_t p_uElemL,
+                                 uint8_t* const p_puRawVal)
 {
 	/* Local return variable */
     e_eFSS_DB_RES l_eRes;
@@ -500,8 +502,8 @@ e_eFSS_DB_RES eFSS_DB_SaveElemen(t_eFSS_DB_Ctx* const p_ptCtx, uint32_t p_uPos, 
 	return l_eRes;
 }
 
-e_eFSS_DB_RES eFSS_DB_GetElement(t_eFSS_DB_Ctx* const p_ptCtx, uint32_t p_uPos, uint16_t p_uElemL,
-                                 uint8_t* p_puRawVal)
+e_eFSS_DB_RES eFSS_DB_GetElement(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_uPos, const uint16_t p_uElemL,
+                                 uint8_t* const p_puRawVal)
 {
 	/* Local return variable */
     e_eFSS_DB_RES l_eRes;
@@ -656,19 +658,20 @@ static e_eFSS_DB_RES eFSS_DB_DBCtoDBRes(const e_eFSS_DBC_RES p_eDBCRes)
     return l_eRes;
 }
 
-static bool_t eFSS_DB_IsDbDefStructValid(t_eFSS_DB_DbStruct p_tDefaultDb)
+static bool_t eFSS_DB_IsDbDefStructValid(const t_eFSS_DB_DbStruct p_tDefaultDb)
 {
     /* Check db validity, each element need to be different from zero and ver must not be equals to zero  */
     return true;
 }
 
-static bool_t eFSS_DB_IsDbDefStructUsable(t_eFSS_DB_DbStruct p_tDefaultDb, uint32_t p_uNPage, uint32_t p_uPageL)
+static bool_t eFSS_DB_IsDbDefStructUsable(const t_eFSS_DB_DbStruct p_tDefaultDb, const uint32_t p_uNPage,
+                                          const uint32_t p_uPageL)
 {
     /* Do we have enough space to salve the whole DB in flash? */
     return true;
 }
 
-static void eFSS_DB_GetEleRawInBuffer(t_eFSS_DB_DbElement* p_gettedElem, uint8_t* p_puBuff)
+static void eFSS_DB_GetEleRawInBuffer(t_eFSS_DB_DbElement* const p_gettedElem, uint8_t* const p_puBuff)
 {
     /* Local variable */
     // uint32_t l_uElemPos;
@@ -693,7 +696,7 @@ static void eFSS_DB_GetEleRawInBuffer(t_eFSS_DB_DbElement* p_gettedElem, uint8_t
     // *p_ppuEleRaw = &p_puBuffer[l_uElemPos+l_uCurroffset];
 }
 
-static void eFSS_DB_SetEleRawInBuffer(t_eFSS_DB_DbElement p_gettedElem, uint8_t* p_puBuff)
+static void eFSS_DB_SetEleRawInBuffer(const t_eFSS_DB_DbElement p_gettedElem, uint8_t* const p_puBuff)
 {
     /* Local variable */
      // uint32_t l_uElemPos;
@@ -714,8 +717,9 @@ static void eFSS_DB_SetEleRawInBuffer(t_eFSS_DB_DbElement p_gettedElem, uint8_t*
     // (*p_fSerial)(l_uElemPos, p_uEleL, p_tElem->ptDefVal, &p_puBuffer[l_uElemPos+l_uCurroffset]);
 }
 
-static void eFSS_DB_GetPageAndPagePosition(const uint32_t p_uPageL, t_eFSS_DB_DbStruct p_tDbStruct,
-                                           const uint32_t p_uIndex, uint32_t* p_puPageIdx, uint32_t* p_puLogPos)
+static void eFSS_DB_GetPageAndPagePosition(const uint32_t p_uPageL, const t_eFSS_DB_DbStruct p_tDbStruct,
+                                           const uint32_t p_uIndex, uint32_t* const p_puPageIdx,
+                                           uint32_t* const p_puLogPos);
 {
     // /* Local variable */
     // uint32_t l_uLogPerPage;

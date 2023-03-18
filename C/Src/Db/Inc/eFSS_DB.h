@@ -28,6 +28,11 @@ extern "C" {
 /***********************************************************************************************************************
  *      DATABASE TYPEDEFS
  **********************************************************************************************************************/
+/* Every element in the database has this struct. Keep in mind that a stored element cannot change it's size in
+ * it's life but instead, can change it's version. When the version of an entry is changed the first time that the
+ * database is checked will delete the previously stored value and will save it's default value instead.
+ * During the live of the database it's not possible to remove an entry or change an entry size. It's possible
+ * to add new entry instead. */
 typedef struct
 {
 	uint16_t uEleV;
@@ -89,9 +94,9 @@ typedef struct
  *		        e_eFSS_DB_RES_BADPARAM      - In case of an invalid parameter passed to the function
  *              e_eFSS_DB_RES_OK            - Operation ended correctly
  */
-e_eFSS_DB_RES eFSS_DB_InitCtx(t_eFSS_DB_Ctx* const p_ptCtx, t_eFSS_TYPE_CbStorCtx const p_tCtxCb,
-                              t_eFSS_TYPE_StorSet p_tStorSet, uint8_t* const p_puBuff, uint32_t p_uBuffL,
-                              t_eFSS_DB_DbStruct p_tDbStruct);
+e_eFSS_DB_RES eFSS_DB_InitCtx(t_eFSS_DB_Ctx* const p_ptCtx, const t_eFSS_TYPE_CbStorCtx p_tCtxCb,
+                              const t_eFSS_TYPE_StorSet p_tStorSet, uint8_t* const p_puBuff, const uint32_t p_uBuffL,
+                              const t_eFSS_DB_DbStruct p_tDbStruct);
 
 /**
  * @brief       Check if the lib is initialized
@@ -102,11 +107,12 @@ e_eFSS_DB_RES eFSS_DB_InitCtx(t_eFSS_DB_Ctx* const p_ptCtx, t_eFSS_TYPE_CbStorCt
  * @return      e_eFSS_DB_RES_BADPOINTER    - In case of bad pointer passed to the function
  *              e_eFSS_DB_RES_OK            - Operation ended correctly
  */
-e_eFSS_DB_RES eFSS_DB_IsInit(t_eFSS_DB_Ctx* const p_ptCtx, bool_t* p_pbIsInit);
+e_eFSS_DB_RES eFSS_DB_IsInit(t_eFSS_DB_Ctx* const p_ptCtx, bool_t* const p_pbIsInit);
 
 /**
  * @brief       Check the whole database status. This function should be called before doing anything else with the
  *              the database. In anycase this function is called automatically on the firt action against the db.
+ *              This function is reading all the entry in to the database, so i can takes some times to execute.
  *
  * @param[in]   p_ptCtx          - Database context
  *
@@ -140,8 +146,8 @@ e_eFSS_DB_RES eFSS_DB_FormatToDefault(t_eFSS_DB_Ctx* const p_ptCtx);
  *		        e_eFSS_DB_RES_BADPARAM      - In case of an invalid parameter passed to the function
  *              e_eFSS_DB_RES_OK            - Operation ended correctly
  */
-e_eFSS_DB_RES eFSS_DB_SaveElemen(t_eFSS_DB_Ctx* const p_ptCtx, uint32_t p_uPos, uint16_t p_uElemL,
-                                 uint8_t* p_puRawVal);
+e_eFSS_DB_RES eFSS_DB_SaveElemen(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_uPos, const uint16_t p_uElemL,
+                                 uint8_t* const p_puRawVal);
 
 /**
  * @brief       Get an element stored from the database
@@ -155,8 +161,8 @@ e_eFSS_DB_RES eFSS_DB_SaveElemen(t_eFSS_DB_Ctx* const p_ptCtx, uint32_t p_uPos, 
  *		        e_eFSS_DB_RES_BADPARAM      - In case of an invalid parameter passed to the function
  *              e_eFSS_DB_RES_OK            - Operation ended correctly
  */
-e_eFSS_DB_RES eFSS_DB_GetElement(t_eFSS_DB_Ctx* const p_ptCtx, uint32_t p_uPos, uint16_t p_uElemL,
-                                 uint8_t* p_puRawVal);
+e_eFSS_DB_RES eFSS_DB_GetElement(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_uPos, const uint16_t p_uElemL,
+                                 uint8_t* const p_puRawVal);
 
 #ifdef __cplusplus
 } /* extern "C" */
