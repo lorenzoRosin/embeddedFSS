@@ -30,15 +30,15 @@ extern "C" {
  **********************************************************************************************************************/
 typedef struct
 {
-	uint16_t uElemVer;
-    uint16_t uElemL;
-    uint8_t* puRawVal;
+	uint16_t uEleV;
+    uint16_t uEleL;
+    uint8_t* puEleRaw;
 }t_eFSS_DB_DbElement;
 
 typedef struct
 {
-    uint32_t uNOfElem;
-    t_eFSS_DB_DbElement* ptDefValElemList;
+    uint32_t uNEle;
+    t_eFSS_DB_DbElement* ptDefEle;
 }t_eFSS_DB_DbStruct;
 
 
@@ -65,9 +65,9 @@ typedef enum
 
 typedef struct
 {
-    t_eFSS_DBC_Ctx           tDbCtx;
-    t_eFSS_DB_DbStruct       tDBS;
-    bool_t                   bIsDbStatusChecked;
+    t_eFSS_DBC_Ctx           tDbcCtx;
+    t_eFSS_DB_DbStruct       tDB;
+    bool_t                   bIsDbCheked;
 }t_eFSS_DB_Ctx;
 
 
