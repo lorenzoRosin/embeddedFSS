@@ -1,12 +1,12 @@
-#include "eCU_CRCTST.h"
-#include "eCU_CRCDTST.h"
-#include "eCU_CIRQTST.h"
-#include "eCU_DPKTST.h"
-#include "eCU_DUNPKTST.h"
-#include "eCU_DPKDUNPKTST.h"
-#include "eCU_BSTFTST.h"
-#include "eCU_BUSTFTST.h"
-#include "eCU_BSTFBUNSTFTST.h"
+#include "eFSS_BLOBTST.h"
+#include "eFSS_BLOBCTST.h"
+#include "eFSS_DBCTST.h"
+#include "eFSS_LOGCTST.h"
+#include "eFSS_COREHLTST.h"
+#include "eFSS_CORELLTST.h"
+#include "eFSS_DBTST.h"
+#include "eFSS_LOGTST.h"
+#include "eFSS_UtilsTST.h"
 
 int main(void);
 
@@ -14,15 +14,15 @@ int main(void);
 int main(void)
 {
     /* Start testing */
-    eCU_CRCTST_ExeTest();
-    eCU_CRCDTST_ExeTest();
-    eCU_CIRQTST_ExeTest();
-    eCU_DPKTST_ExeTest();
-    eCU_DUNPKTST_ExeTest();
-	eCU_DPKDUNPKTST_ExeTest();
-    eCU_BSTFTST_ExeTest();
-    eCU_BUSTFTST_ExeTest();
-    eCU_BSTFBUNSTFTST_ExeTest();
+    eFSS_BLOBTST_ExeTest();
+    eFSS_BLOBCTST_ExeTest();
+    eFSS_DBCTST_ExeTest();
+    eFSS_LOGCTST_ExeTest();
+    eFSS_COREHLTST_ExeTest();
+    eFSS_CORELLTST_ExeTest();
+    eFSS_DBTST_ExeTest();
+    eFSS_LOGTST_ExeTest();
+    eFSS_UtilsTST_ExeTest();
 
     return 0;
 }
