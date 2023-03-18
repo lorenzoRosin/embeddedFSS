@@ -411,7 +411,7 @@ e_eFSS_DB_RES eFSS_DB_FormatToDefault(t_eFSS_DB_Ctx* const p_ptCtx)
 
     /* Local variable for storage */
     t_eFSS_DBC_StorBuf l_tBuff;
-    t_eFSS_TYPE_StorSet l_tStorSet;
+    uint32_t l_uUsePages;
 
     /* Local variable for calculation */
     uint32_t l_uCurrPage;
@@ -446,7 +446,7 @@ e_eFSS_DB_RES eFSS_DB_FormatToDefault(t_eFSS_DB_Ctx* const p_ptCtx)
                 else
                 {
                     /* Get storage info */
-                    l_eDBCRes = eFSS_DBC_GetBuffNUsable(&p_ptCtx->tDbcCtx, &l_tBuff, &l_tStorSet);
+                    l_eDBCRes = eFSS_DBC_GetBuffNUsable(&p_ptCtx->tDbcCtx, &l_tBuff, &l_uUsePages);
                     l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
 
                     if( e_eFSS_DB_RES_OK == l_eRes )
@@ -508,7 +508,7 @@ e_eFSS_DB_RES eFSS_DB_SaveElemen(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_
 
     /* Local variable for storage */
     t_eFSS_DBC_StorBuf l_tBuff;
-    t_eFSS_TYPE_StorSet l_tStorSet;
+    uint32_t l_uUsePages;
 
     /* Local variable for calculation */
     uint32_t p_puPageIdx;
@@ -564,7 +564,7 @@ e_eFSS_DB_RES eFSS_DB_SaveElemen(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_
                             if( ( e_eFSS_DB_RES_OK == l_eRes ) || ( e_eFSS_DB_RES_OK_BKP_RCVRD == l_eRes ) )
                             {
                                 /* Get storage info */
-                                l_eDBCRes = eFSS_DBC_GetBuffNUsable(&p_ptCtx->tDbcCtx, &l_tBuff, &l_tStorSet);
+                                l_eDBCRes = eFSS_DBC_GetBuffNUsable(&p_ptCtx->tDbcCtx, &l_tBuff, &l_uUsePages);
                                 l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
 
                                 if( e_eFSS_DB_RES_OK == l_eRes )
@@ -619,7 +619,7 @@ e_eFSS_DB_RES eFSS_DB_GetElement(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_
 
     /* Local variable for storage */
     t_eFSS_DBC_StorBuf l_tBuff;
-    t_eFSS_TYPE_StorSet l_tStorSet;
+    uint32_t l_uUsePages;
 
     /* Local variable for calculation */
     uint32_t p_puPageIdx;
@@ -675,7 +675,7 @@ e_eFSS_DB_RES eFSS_DB_GetElement(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_
                             if( ( e_eFSS_DB_RES_OK == l_eRes ) || ( e_eFSS_DB_RES_OK_BKP_RCVRD == l_eRes ) )
                             {
                                 /* Get storage info */
-                                l_eDBCRes = eFSS_DBC_GetBuffNUsable(&p_ptCtx->tDbcCtx, &l_tBuff, &l_tStorSet);
+                                l_eDBCRes = eFSS_DBC_GetBuffNUsable(&p_ptCtx->tDbcCtx, &l_tBuff, &l_uUsePages);
                                 l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
 
                                 if( e_eFSS_DB_RES_OK == l_eRes )
