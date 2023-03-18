@@ -18,9 +18,14 @@
  **********************************************************************************************************************/
 static bool_t eFSS_DB_IsStatusStillCoherent(const t_eFSS_DB_Ctx* p_ptCtx);
 static e_eFSS_DB_RES eFSS_DB_DBCtoDBRes(const e_eFSS_DBC_RES p_eDBCRes);
-static bool_t eFSS_DB_IsDbDefStructValid(const t_eFSS_DB_DbStruct p_tDefaultDb);
-static bool_t eFSS_DB_IsDbDefStructUsable(const t_eFSS_DB_DbStruct p_tDefaultDb, const uint32_t p_uNPage,
-                                          const uint32_t p_uPageL);
+
+
+
+/***********************************************************************************************************************
+ *  PRIVATE UTILS STATIC FUNCTION DECLARATION
+ **********************************************************************************************************************/
+static bool_t eFSS_DB_IsDbDefStructValid(const t_eFSS_DB_DbStruct p_tDefaultDb, const uint32_t p_uNPage,
+                                         const uint32_t p_uPageL);
 static void eFSS_DB_GetEleRawInBuffer(t_eFSS_DB_DbElement* const p_gettedElem, uint8_t* const p_puBuff);
 static void eFSS_DB_SetEleRawInBuffer(const t_eFSS_DB_DbElement p_gettedElem, uint8_t* const p_puBuff);
 static void eFSS_DB_GetPageAndPagePosition(const uint32_t p_uPageL, const t_eFSS_DB_DbStruct p_tDbStruct,
@@ -41,8 +46,12 @@ e_eFSS_DB_RES eFSS_DB_InitCtx(t_eFSS_DB_Ctx* const p_ptCtx, const t_eFSS_TYPE_Cb
     e_eFSS_DBC_RES  l_eDBCRes;
     bool_t l_bIsDbStructValid;
 
+    /* Local storage variable */
+    t_eFSS_DBC_StorBuf l_tBuff;
+    uint32_t l_uUsePages;
+
 	/* Check pointer validity */
-	if( ( NULL == p_ptCtx ) || ( NULL == p_puBuff ) )
+	if( NULL == p_ptCtx )
 	{
 		l_eRes = e_eFSS_DB_RES_BADPOINTER;
 	}
@@ -62,41 +71,39 @@ e_eFSS_DB_RES eFSS_DB_InitCtx(t_eFSS_DB_Ctx* const p_ptCtx, const t_eFSS_TYPE_Cb
             }
             else
             {
-                if( p_tStorSet.uPagesLen < (100u) )
-                {
-                    l_eRes = e_eFSS_DB_RES_BADPARAM;
-                }
-                else
-                {
-                    /* Check validity of the passed db struct */
-                    l_bIsDbStructValid = eFSS_DB_IsDbDefStructValid(p_tDbStruct);
+                /* Can init low level context, and after get the used space and check database validity  */
+                l_eDBCRes = eFSS_DBC_InitCtx(&p_ptCtx->tDbcCtx, p_tCtxCb, p_tStorSet, p_puBuff, p_uBuffL);
+                l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
 
-                    if( false == l_bIsDbStructValid )
-                    {
-                        l_eRes = e_eFSS_DB_RES_BADPARAM;
-                    }
-                    else
+                if( e_eFSS_DB_RES_OK == l_eRes )
+                {
+                    /* Get usable pages and buffer length so we can check database default value validity */
+                    l_eDBCRes = eFSS_DBC_GetBuffNUsable(&p_ptCtx->tDbcCtx, &l_tBuff, &l_uUsePages);
+                    l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
+
+                    if( e_eFSS_DB_RES_OK == l_eRes )
                     {
                         /* Check validity of the passed db struct */
-                        l_bIsDbStructValid = eFSS_DB_IsDbDefStructUsable(p_tDbStruct, 10u, 10u);
+                        l_bIsDbStructValid = eFSS_DB_IsDbDefStructValid(p_tDbStruct, l_uUsePages, l_tBuff.uBufL);
 
                         if( false == l_bIsDbStructValid )
                         {
+                            /* De init DBC */
+                            (void)memset(&p_ptCtx->tDbcCtx, 0, sizeof(t_eFSS_DBC_Ctx));
+
                             l_eRes = e_eFSS_DB_RES_BADPARAM;
                         }
                         else
                         {
-                            /* Can init low level context */
-                            l_eDBCRes = eFSS_DBC_InitCtx(&p_ptCtx->tDbcCtx, p_tCtxCb, p_tStorSet, p_puBuff, p_uBuffL);
-                            l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
-
-                            if( e_eFSS_DB_RES_OK == l_eRes )
-                            {
-                                /* Fill context */
-                                p_ptCtx->tDB = p_tDbStruct;
-                                p_ptCtx->bIsDbCheked = false;
-                            }
+                            /* Fill context */
+                            p_ptCtx->tDB = p_tDbStruct;
+                            p_ptCtx->bIsDbCheked = false;
                         }
+                    }
+                    else
+                    {
+                        /* De init DBC */
+                        (void)memset(&p_ptCtx->tDbcCtx, 0, sizeof(t_eFSS_DBC_Ctx));
                     }
                 }
             }
@@ -113,7 +120,7 @@ e_eFSS_DB_RES eFSS_DB_IsInit(t_eFSS_DB_Ctx* const p_ptCtx, bool_t* const p_pbIsI
     e_eFSS_DBC_RES  l_eDBCRes;
 
 	/* Check pointer validity */
-	if( ( NULL == p_ptCtx ) || ( NULL == p_pbIsInit ) )
+	if( NULL == p_ptCtx )
 	{
 		l_eRes = e_eFSS_DB_RES_BADPOINTER;
 	}
@@ -134,12 +141,11 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
     bool_t l_bIsInit;
 
     /* Local variable for storage */
-    t_eFSS_TYPE_StorBuf l_tBuff;
-    t_eFSS_TYPE_StorSet l_tStorSet;
+    t_eFSS_DBC_StorBuf l_tBuff;
+    uint32_t l_uUsePages;
 
     /* Local variable for calculation */
     uint32_t l_uCurrPage;
-    uint32_t l_uMaxPage;
     uint32_t l_uCheckedElem;
     uint32_t l_uByteInPageDone;
     bool_t l_bIsPageMod;
@@ -153,6 +159,7 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
 	else
 	{
 		/* Check Init */
+        l_bIsInit = false;
         l_eDBCRes = eFSS_DBC_IsInit(&p_ptCtx->tDbcCtx, &l_bIsInit);
         l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
 
@@ -172,20 +179,35 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
                 else
                 {
                     /* Get storage info */
-                    l_eDBCRes = eFSS_DBC_GetBuffNUsable(&p_ptCtx->tDbcCtx, &l_tBuff, &l_tStorSet);
+                    l_eDBCRes = eFSS_DBC_GetBuffNUsable(&p_ptCtx->tDbcCtx, &l_tBuff, &l_uUsePages);
                     l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
 
                     if( e_eFSS_DB_RES_OK == l_eRes )
                     {
-                        /* Read every page, get parameter of every page and compare the parameter against the default
-                         * DB struct. If some parameter has different version update them and if they differ signal
-                         * to the user that the database is invalid */
+                        /* Now that we have every needed data and that the default database struct seems correct
+                           we need to check that the database actualy stored in storage is correct. Keep in mind
+                           that unused storage area must be set to zero, in this way if anothers entry is added
+                           to the default struct we can set the default value of the entry that are actualy stored
+                           with length of zero byte.
+                           So:
+                           1 - If we need to check some parameter from def database read a storage page.
+                           2 - For every readed storage page check that every entry has the same length of the default
+                               database. After that check the parameter version, and if they differ update parameter
+                               default value and version.
+                           3 - If some parameter is updated with a new default value flush the page in to the storage.
+                           4 - When checking entry length keep in mind that if the stored entry has length zero it
+                               could be possible that a new entry was added to the default database. In that case
+                               add the new parameter and continue. If the next stored parameter has a length different
+                               from zero the database was corrupted.
+                            Keep in mind that the pourpose of this function is to: update new parameter version,
+                            update newly added parameter and check if parameter are correct. If the database is
+                            corrupted, we can ripristinate it only calling eFSS_DB_FormatToDefault */
                         l_uCurrPage = 0u;
-                        l_uMaxPage = (uint32_t)( l_tStorSet.uTotPages / 2u );
+                        l_uUsePages = (uint32_t)( l_tStorSet.uTotPages / 2u );
                         l_uCheckedElem = 0u;
 
                         while( ( e_eFSS_DB_RES_OK == l_eRes ) || ( e_eFSS_DB_RES_OK_BKP_RCVRD == l_eRes ) ||
-                               ( l_uCurrPage < l_uMaxPage ) )
+                               ( l_uCurrPage < l_uUsePages ) )
                         {
                             /* Load the current page */
                             l_bIsPageMod = false;
@@ -658,16 +680,15 @@ static e_eFSS_DB_RES eFSS_DB_DBCtoDBRes(const e_eFSS_DBC_RES p_eDBCRes)
     return l_eRes;
 }
 
-static bool_t eFSS_DB_IsDbDefStructValid(const t_eFSS_DB_DbStruct p_tDefaultDb)
+
+
+/***********************************************************************************************************************
+ *  PRIVATE UTILS STATIC FUNCTION DECLARATION
+ **********************************************************************************************************************/
+static bool_t eFSS_DB_IsDbDefStructValid(const t_eFSS_DB_DbStruct p_tDefaultDb, const uint32_t p_uNPage,
+                                         const uint32_t p_uPageL)
 {
     /* Check db validity, each element need to be different from zero and ver must not be equals to zero  */
-    return true;
-}
-
-static bool_t eFSS_DB_IsDbDefStructUsable(const t_eFSS_DB_DbStruct p_tDefaultDb, const uint32_t p_uNPage,
-                                          const uint32_t p_uPageL)
-{
-    /* Do we have enough space to salve the whole DB in flash? */
     return true;
 }
 
@@ -719,7 +740,7 @@ static void eFSS_DB_SetEleRawInBuffer(const t_eFSS_DB_DbElement p_gettedElem, ui
 
 static void eFSS_DB_GetPageAndPagePosition(const uint32_t p_uPageL, const t_eFSS_DB_DbStruct p_tDbStruct,
                                            const uint32_t p_uIndex, uint32_t* const p_puPageIdx,
-                                           uint32_t* const p_puLogPos);
+                                           uint32_t* const p_puLogPos)
 {
     // /* Local variable */
     // uint32_t l_uLogPerPage;
