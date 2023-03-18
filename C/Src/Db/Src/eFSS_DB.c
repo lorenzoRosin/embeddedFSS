@@ -202,10 +202,12 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
                             Keep in mind that the pourpose of this function is to: update new parameter version,
                             update newly added parameter and check if parameter are correct. If the database is
                             corrupted, we can ripristinate it only calling eFSS_DB_FormatToDefault */
+
+                        /* Init variable */
                         l_uCurrPage = 0u;
-                        l_uUsePages = (uint32_t)( l_tStorSet.uTotPages / 2u );
                         l_uCheckedElem = 0u;
 
+                        /* Read and check every page of the storage area */
                         while( ( e_eFSS_DB_RES_OK == l_eRes ) || ( e_eFSS_DB_RES_OK_BKP_RCVRD == l_eRes ) ||
                                ( l_uCurrPage < l_uUsePages ) )
                         {

@@ -65,7 +65,8 @@ typedef enum
     e_eFSS_DB_RES_NOTVALIDDB,
     e_eFSS_DB_RES_NEWVERSIONDB,
     e_eFSS_DB_RES_WRITENOMATCHREAD,
-    e_eFSS_DB_RES_OK_BKP_RCVRD
+    e_eFSS_DB_RES_OK_BKP_RCVRD,
+    e_eFSS_DB_RES_PARAM_DEF_RESET
 }e_eFSS_DB_RES;
 
 typedef struct
