@@ -1156,25 +1156,16 @@
     </group>
     <group>
         <name>Db</name>
-        <excluded>
-            <configuration>Library</configuration>
-        </excluded>
         <group>
             <name>Inc</name>
             <file>
                 <name>$PROJ_DIR$\..\..\Src\Db\Inc\eFSS_DB.h</name>
-                <excluded>
-                    <configuration>Library</configuration>
-                </excluded>
             </file>
         </group>
         <group>
             <name>Src</name>
             <file>
                 <name>$PROJ_DIR$\..\..\Src\Db\Src\eFSS_DB.c</name>
-                <excluded>
-                    <configuration>Library</configuration>
-                </excluded>
             </file>
         </group>
     </group>
