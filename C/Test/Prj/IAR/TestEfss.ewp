@@ -349,14 +349,23 @@
                     <name>CCIncludePath2</name>
                     <state>$PROJ_DIR$\..\..\..\Src</state>
                     <state>$PROJ_DIR$\..\..\..\Src\Blob\Inc</state>
-                    <state>$PROJ_DIR$\..\..\..\Src\Core\Inc</state>
+                    <state>$PROJ_DIR$\..\..\..\Src\Blob\Src</state>
+                    <state>$PROJ_DIR$\..\..\..\Src\CoreHL\Inc</state>
+                    <state>$PROJ_DIR$\..\..\..\Src\CoreHL\Src</state>
+                    <state>$PROJ_DIR$\..\..\..\Src\CoreLL\Inc</state>
+                    <state>$PROJ_DIR$\..\..\..\Src\CoreLL\Src</state>
                     <state>$PROJ_DIR$\..\..\..\Src\Db\Inc</state>
+                    <state>$PROJ_DIR$\..\..\..\Src\Db\Src</state>
                     <state>$PROJ_DIR$\..\..\..\Src\Log\Inc</state>
+                    <state>$PROJ_DIR$\..\..\..\Src\Log\Src</state>
                     <state>$PROJ_DIR$\..\..\..\Src\Utils\Inc</state>
+                    <state>$PROJ_DIR$\..\..\..\Src\Utils\Src</state>
                     <state>$PROJ_DIR$\..\..\Src\Blob\Inc</state>
                     <state>$PROJ_DIR$\..\..\Src\Blob\Src</state>
-                    <state>$PROJ_DIR$\..\..\Src\Core\Inc</state>
-                    <state>$PROJ_DIR$\..\..\Src\Core\Src</state>
+                    <state>$PROJ_DIR$\..\..\Src\CoreHL\Inc</state>
+                    <state>$PROJ_DIR$\..\..\Src\CoreHL\Src</state>
+                    <state>$PROJ_DIR$\..\..\Src\CoreLL\Inc</state>
+                    <state>$PROJ_DIR$\..\..\Src\CoreLL\Src</state>
                     <state>$PROJ_DIR$\..\..\Src\Db\Inc</state>
                     <state>$PROJ_DIR$\..\..\Src\Db\Src</state>
                     <state>$PROJ_DIR$\..\..\Src\Log\Inc</state>
