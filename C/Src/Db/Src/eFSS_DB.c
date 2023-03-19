@@ -97,21 +97,30 @@ e_eFSS_DB_RES eFSS_DB_InitCtx(t_eFSS_DB_Ctx* const p_ptCtx, const t_eFSS_TYPE_Cb
 
                     if( e_eFSS_DB_RES_OK == l_eRes )
                     {
-                        /* Check validity of the passed db struct */
-                        l_bIsDbStructValid = eFSS_DB_IsDbDefStructValid(p_tDbStruct, l_uUsePages, l_tBuff.uBufL);
-
-                        if( false == l_bIsDbStructValid )
+                        /* Check if page length is OK */
+                        if( l_tBuff.uBufL < EFSS_DB_MINPAGESIZE )
                         {
-                            /* De init DBC */
-                            (void)memset(&p_ptCtx->tDbcCtx, 0, sizeof(t_eFSS_DBC_Ctx));
-
+                            /* We need more space for the DB */
                             l_eRes = e_eFSS_DB_RES_BADPARAM;
                         }
                         else
                         {
-                            /* Fill context */
-                            p_ptCtx->tDB = p_tDbStruct;
-                            p_ptCtx->bIsDbCheked = false;
+                            /* Check validity of the passed db struct */
+                            l_bIsDbStructValid = eFSS_DB_IsDbDefStructValid(p_tDbStruct, l_uUsePages, l_tBuff.uBufL);
+
+                            if( false == l_bIsDbStructValid )
+                            {
+                                /* De init DBC, we need a valid DB */
+                                (void)memset(&p_ptCtx->tDbcCtx, 0, sizeof(t_eFSS_DBC_Ctx));
+
+                                l_eRes = e_eFSS_DB_RES_BADPARAM;
+                            }
+                            else
+                            {
+                                /* All ok, fill context */
+                                p_ptCtx->tDB = p_tDbStruct;
+                                p_ptCtx->bIsDbCheked = false;
+                            }
                         }
                     }
                     else
@@ -469,7 +478,7 @@ e_eFSS_DB_RES eFSS_DB_FormatToDefault(t_eFSS_DB_Ctx* const p_ptCtx)
                     {
                         /* In order to format to default the DB we can just set to zero the buffer to flush
                            and copy inside it only the needed parameter. If no parameter are needed, we can
-                           just flush an zero filled buffer */
+                           just flush a zero filled buffer */
                         l_uCurrPage = 0u;
                         l_uCheckedElem = 0u;
 
@@ -481,36 +490,36 @@ e_eFSS_DB_RES eFSS_DB_FormatToDefault(t_eFSS_DB_Ctx* const p_ptCtx)
 
                             /* Set to zero the numbers of byte used */
                             l_uByteInPageDone = 0u;
+                            l_uUsedByte = 0u;
 
                             /* Continue till the page is full, parameter are avaiable, or an error occours */
                             while( ( e_eFSS_DB_RES_OK == l_eRes ) ||
                                    ( l_uCheckedElem < p_ptCtx->tDB.uNEle ) ||
                                    ( l_uByteInPageDone < l_tBuff.uBufL ) )
                             {
-                                /* Try to set the element */
-                                l_uUsedByte = 0u;
-                                l_eRes = eFSS_DB_SetEleRawInBuffer(&l_tBuff.puBuf[l_uByteInPageDone],
-                                                                      (l_tBuff.uBufL - l_uByteInPageDone),
-                                                                      p_ptCtx->tDB.ptDefEle[l_uCheckedElem],
-                                                                      &l_uUsedByte);
-
-                                if( e_eFSS_DB_RES_OK == l_eRes )
+                                /* We have some element to set, can be placed here? */
+                                if( ( p_ptCtx->tDB.ptDefEle[l_uCheckedElem].uEleL + EFSS_DB_RAWOFF ) >
+                                    ( l_tBuff.uBufL - l_uByteInPageDone ) )
                                 {
-                                    /* Check if there was enough space to insert element */
-                                    if( 0u != l_uUsedByte )
+                                    /* No space, next page will be the one */
+                                    l_uByteInPageDone = l_tBuff.uBufL;
+                                }
+                                else
+                                {
+                                    /* Can be placed here */
+                                    l_eRes = eFSS_DB_SetEleRawInBuffer(&l_tBuff.puBuf[l_uByteInPageDone],
+                                                                       (l_tBuff.uBufL - l_uByteInPageDone),
+                                                                       p_ptCtx->tDB.ptDefEle[l_uCheckedElem],
+                                                                       &l_uUsedByte);
+                                    if( e_eFSS_DB_RES_OK == l_eRes )
                                     {
-                                        /* Element added */
                                         l_uByteInPageDone += l_uUsedByte;
                                         l_uCheckedElem++;
-                                    }
-                                    else
-                                    {
-                                        /* No space to insert the element, flush the page */
-                                        l_uByteInPageDone = l_tBuff.uBufL;
                                     }
                                 }
                             }
 
+                            /* Page is completed, probably we can push */
                             if( e_eFSS_DB_RES_OK == l_eRes )
                             {
                                 l_eDBCRes = eFSS_DBC_FlushBuffInPage(&p_ptCtx->tDbcCtx, l_uCurrPage);
@@ -523,7 +532,11 @@ e_eFSS_DB_RES eFSS_DB_FormatToDefault(t_eFSS_DB_Ctx* const p_ptCtx)
                             }
                         }
 
-                        p_ptCtx->bIsDbCheked = true;
+                        if( e_eFSS_DB_RES_OK == l_eRes )
+                        {
+                            /* Just formated the page, no need to check the stored DB */
+                            p_ptCtx->bIsDbCheked = true;
+                        }
                     }
                 }
             }
@@ -1106,14 +1119,11 @@ static e_eFSS_DB_RES eFSS_DB_SetEleRawInBuffer(uint8_t* const p_puBuff, const ui
         }
         else
         {
-            /* Init local variable */
-            l_eRes = e_eFSS_DB_RES_OK;
-
             /* First, check if we have space for this parameter */
             if( ( p_tEleToSet.uEleL + EFSS_DB_RAWOFF ) > p_uMaxL )
             {
                 /* Cannot be placed */
-                *p_puUsedL = 0u;
+                l_eRes = e_eFSS_DB_RES_BADPARAM;
             }
             else
             {
@@ -1135,6 +1145,9 @@ static e_eFSS_DB_RES eFSS_DB_SetEleRawInBuffer(uint8_t* const p_puBuff, const ui
 
                         /* Update used byte */
                         *p_puUsedL = ( p_tEleToSet.uEleL + EFSS_DB_RAWOFF );
+
+                        /* All OK */
+                        l_eRes = e_eFSS_DB_RES_OK;
                     }
                 }
             }
