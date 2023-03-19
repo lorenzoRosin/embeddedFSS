@@ -665,13 +665,14 @@ e_eFSS_DB_RES eFSS_DB_GetElement(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_
     uint32_t l_uUsedByte;
 
 	/* Check pointer validity */
-	if( NULL == p_ptCtx )
+	if( ( NULL == p_ptCtx ) || ( NULL == p_puRawVal ) )
 	{
 		l_eRes = e_eFSS_DB_RES_BADPOINTER;
 	}
 	else
 	{
 		/* Check Init */
+        l_bIsInit = false;
         l_eDBCRes = eFSS_DBC_IsInit(&p_ptCtx->tDbcCtx, &l_bIsInit);
         l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
 
@@ -704,13 +705,16 @@ e_eFSS_DB_RES eFSS_DB_GetElement(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_
                         }
                         else
                         {
+                            /* First time calling a function we need to check for the whole stored integrity */
                             if( false == p_ptCtx->bIsDbCheked )
                             {
                                 /* Check status */
                                 l_eRes = eFSS_DB_GetDBStatus(p_ptCtx);
                             }
 
-                            if( ( e_eFSS_DB_RES_OK == l_eRes ) || ( e_eFSS_DB_RES_OK_BKP_RCVRD == l_eRes ) )
+                            /* If internal stored database seems ok continue */
+                            if( ( e_eFSS_DB_RES_OK == l_eRes ) || ( e_eFSS_DB_RES_OK_BKP_RCVRD == l_eRes ) ||
+                                ( e_eFSS_DB_RES_PARAM_DEF_RESET == l_eRes ) )
                             {
                                 /* Get storage info */
                                 l_eDBCRes = eFSS_DBC_GetBuffNUsable(&p_ptCtx->tDbcCtx, &l_tBuff, &l_uUsePages);
@@ -719,30 +723,38 @@ e_eFSS_DB_RES eFSS_DB_GetElement(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_
                                 if( e_eFSS_DB_RES_OK == l_eRes )
                                 {
                                     /* Find the page and page index where to save the data */
-                                    eFSS_DB_FindElePageAndPos(l_tBuff.uBufL, p_ptCtx->tDB, p_uPos, &p_puPageIdx, &p_puPagePos);
+                                    l_eRes = eFSS_DB_FindElePageAndPos(l_tBuff.uBufL, p_ptCtx->tDB, p_uPos,
+                                                                       &p_puPageIdx, &p_puPagePos);
 
-                                    /* Load the page where we can find the needed element */
-                                    l_eDBCRes = eFSS_DBC_LoadPageInBuff(&p_ptCtx->tDbcCtx, p_puPageIdx);
-                                    l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
-
-                                    if( ( e_eFSS_DB_RES_OK == l_eRes ) || ( e_eFSS_DB_RES_OK_BKP_RCVRD == l_eRes ) )
+                                    if( e_eFSS_DB_RES_OK == l_eRes )
                                     {
-                                        /* Verify if the old element is already correct */
-                                        eFSS_DB_GetEleRawInBuffer(&l_tBuff.puBuf[p_puPagePos],
-                                                                  ( l_tBuff.uBufL - p_puPagePos ) ,
-                                                                  l_tBuff.uBufL,
-                                                                  &l_tCurEle, &l_uUsedByte);
+                                        /* Load the page where we can find the needed element */
+                                        l_eDBCRes = eFSS_DBC_LoadPageInBuff(&p_ptCtx->tDbcCtx, p_puPageIdx);
+                                        l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
 
-                                        if( ( l_tCurEle.uEleV != p_ptCtx->tDB.ptDefEle[p_uPos].uEleV ) ||
-                                            ( l_tCurEle.uEleL != p_ptCtx->tDB.ptDefEle[p_uPos].uEleL ) )
+                                        if( ( e_eFSS_DB_RES_OK == l_eRes ) || ( e_eFSS_DB_RES_OK_BKP_RCVRD == l_eRes ) )
                                         {
-                                            /* The database is incoherent */
-                                            l_eRes = e_eFSS_DB_RES_NOTVALIDDB;
-                                        }
-                                        else
-                                        {
-                                            /* Can copy the element */
-                                            memcpy(p_puRawVal, l_tCurEle.puEleRaw, p_uElemL);
+                                            /* Verify if the already stroed element is correct  */
+                                            l_eRes = eFSS_DB_GetEleRawInBuffer(&l_tBuff.puBuf[p_puPagePos],
+                                                                               ( l_tBuff.uBufL - p_puPagePos ) ,
+                                                                               l_tBuff.uBufL,
+                                                                               &l_tCurEle, &l_uUsedByte);
+
+                                            if( e_eFSS_DB_RES_OK == l_eRes )
+                                            {
+                                                /* Check if previous param has correct version and length */
+                                                if( ( l_tCurEle.uEleV != p_ptCtx->tDB.ptDefEle[p_uPos].uEleV ) ||
+                                                    ( l_tCurEle.uEleL != p_ptCtx->tDB.ptDefEle[p_uPos].uEleL ) )
+                                                {
+                                                    /* The database is incoherent */
+                                                    l_eRes = e_eFSS_DB_RES_NOTVALIDDB;
+                                                }
+                                                else
+                                                {
+                                                    /* Can copy the element */
+                                                    (void)memcpy(p_puRawVal, l_tCurEle.puEleRaw, p_uElemL);
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -1052,7 +1064,7 @@ static e_eFSS_DB_RES eFSS_DB_GetEleRawInBuffer(uint8_t* const p_puBuff, const ui
                             else
                             {
                                 /* Can be retrived, copy the raw data */
-                                memcpy(p_ptElemToGet->puEleRaw, &p_puBuff[EFSS_DB_RAWOFF], p_ptElemToGet->uEleL);
+                                (void)memcpy(p_ptElemToGet->puEleRaw, &p_puBuff[EFSS_DB_RAWOFF], p_ptElemToGet->uEleL);
 
                                 /* Update used byte */
                                 *p_puUsedL = ( p_ptElemToGet->uEleL + EFSS_DB_RAWOFF );
@@ -1115,7 +1127,7 @@ static e_eFSS_DB_RES eFSS_DB_SetEleRawInBuffer(uint8_t* const p_puBuff, const ui
                     else
                     {
                         /* Copy the raw data */
-                        memcpy(&p_puBuff[EFSS_DB_RAWOFF], p_tEleToSet.puEleRaw, p_tEleToSet.uEleL);
+                        (void)memcpy(&p_puBuff[EFSS_DB_RAWOFF], p_tEleToSet.puEleRaw, p_tEleToSet.uEleL);
 
                         /* Update used byte */
                         *p_puUsedL = ( p_tEleToSet.uEleL + EFSS_DB_RAWOFF );
