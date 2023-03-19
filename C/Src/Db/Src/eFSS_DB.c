@@ -16,7 +16,7 @@
 /***********************************************************************************************************************
  *  PRIVATE STATIC FUNCTION DECLARATION
  **********************************************************************************************************************/
-static bool_t eFSS_DB_IsStatusStillCoherent(const t_eFSS_DB_Ctx* p_ptCtx);
+static bool_t eFSS_DB_IsStatusStillCoherent(t_eFSS_DB_Ctx* const p_ptCtx);
 static e_eFSS_DB_RES eFSS_DB_DBCtoDBRes(const e_eFSS_DBC_RES p_eDBCRes);
 
 
@@ -153,6 +153,7 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
     bool_t l_bIsPageMod;
     bool_t l_bNewParAdd;
     t_eFSS_DB_DbElement l_tCurEle;
+    uint32_t l_uUsedByte;
 
 	/* Check pointer validity */
 	if( NULL == p_ptCtx )
@@ -261,7 +262,7 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
                                             /* Get current element, if any */
                                             if( true == eFSS_DB_GetEleRawInBuffer( &l_tBuff.puBuf[l_uByteInPageDone],
                                                                                    (l_tBuff.uBufL - l_uByteInPageDone),
-                                                                                   &l_tCurEle ) )
+                                                                                   &l_tCurEle, &l_uUsedByte ) )
                                             {
                                                 /* We have getted a valid element, check it! */
                                                 if( l_tCurEle.uEleL != p_ptCtx->tDB.ptDefEle[l_uCheckedElem].uEleL )
@@ -276,7 +277,7 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
                                                         /* Try to add it to the page */
                                                         if( true == eFSS_DB_SetEleRawInBuffer( &l_tBuff.puBuf[l_uByteInPageDone],
                                                                                             (l_tBuff.uBufL - l_uByteInPageDone),
-                                                                                            p_ptCtx->tDB.ptDefEle[l_uCheckedElem] ) )
+                                                                                            p_ptCtx->tDB.ptDefEle[l_uCheckedElem], &l_uUsedByte ) )
                                                         {
                                                             /* Setted */
                                                             l_uByteInPageDone += ( 2u + 2u + l_tCurEle.uEleL );
@@ -313,7 +314,8 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
                                                     /* Valid element but need to update version, ripristinate default */
                                                     if( true == eFSS_DB_SetEleRawInBuffer( &l_tBuff.puBuf[l_uByteInPageDone],
                                                                                            (l_tBuff.uBufL - l_uByteInPageDone),
-                                                                                           p_ptCtx->tDB.ptDefEle[l_uCheckedElem] ) )
+                                                                                           p_ptCtx->tDB.ptDefEle[l_uCheckedElem],
+                                                                                           &l_uUsedByte ) )
                                                     {
                                                         /* Setted */
                                                         l_uByteInPageDone += ( 2u + 2u + l_tCurEle.uEleL );
@@ -417,6 +419,7 @@ e_eFSS_DB_RES eFSS_DB_FormatToDefault(t_eFSS_DB_Ctx* const p_ptCtx)
     uint32_t l_uCurrPage;
     uint32_t l_uCheckedElem;
     uint32_t l_uByteInPageDone;
+    uint32_t l_uUsedByte;
 
 	/* Check pointer validity */
 	if( NULL == p_ptCtx )
@@ -466,29 +469,46 @@ e_eFSS_DB_RES eFSS_DB_FormatToDefault(t_eFSS_DB_Ctx* const p_ptCtx)
                             /* Set to zero the numbers of byte used */
                             l_uByteInPageDone = 0u;
 
-                            /* Continue till the page is full or an error occours */
+                            /* Continue till the page is full, parameter are avaiable, or an error occours */
                             while( ( e_eFSS_DB_RES_OK == l_eRes ) ||
                                    ( l_uCheckedElem < p_ptCtx->tDB.uNEle ) ||
                                    ( l_uByteInPageDone < l_tBuff.uBufL ) )
                             {
-                                if( ( l_uByteInPageDone + 2u + 2u + p_ptCtx->tDB.ptDefEle[l_uCheckedElem].uEleL ) <= l_tBuff.uBufL )
+                                /* Try to set the element */
+                                l_uUsedByte = 0u;
+                                l_eDBCRes = eFSS_DB_SetEleRawInBuffer(&l_tBuff.puBuf[l_uByteInPageDone],
+                                                                      (l_tBuff.uBufL - l_uByteInPageDone),
+                                                                      p_ptCtx->tDB.ptDefEle[l_uCheckedElem],
+                                                                      &l_uUsedByte);
+                                l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
+
+                                if( e_eFSS_DB_RES_OK == l_eRes )
                                 {
-                                    eFSS_DB_SetEleRawInBuffer(p_ptCtx->tDB.ptDefEle[l_uCheckedElem],
-                                                              &l_tBuff.puBuf[l_uByteInPageDone]);
-                                    l_uByteInPageDone += 2u + 2u + p_ptCtx->tDB.ptDefEle[l_uCheckedElem].uEleL;
-                                    l_uCheckedElem++;
-                                }
-                                else
-                                {
-                                    /* No more space in this page */
-                                    l_uByteInPageDone = l_tBuff.uBufL;
+                                    /* Check if there was enough space to insert element */
+                                    if( 0u != l_uUsedByte )
+                                    {
+                                        /* Element added */
+                                        l_uByteInPageDone += l_uUsedByte;
+                                        l_uCheckedElem++;
+                                    }
+                                    else
+                                    {
+                                        /* No space to insert the element, flush the page */
+                                        l_uByteInPageDone = l_tBuff.uBufL;
+                                    }
                                 }
                             }
 
-                            l_eDBCRes = eFSS_DBC_FlushBuffInPage(&p_ptCtx->tDbcCtx, l_uCurrPage);
-                            l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
+                            if( e_eFSS_DB_RES_OK == l_eRes )
+                            {
+                                l_eDBCRes = eFSS_DBC_FlushBuffInPage(&p_ptCtx->tDbcCtx, l_uCurrPage);
+                                l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
 
-                            l_uCurrPage++;
+                                if( e_eFSS_DB_RES_OK == l_eRes )
+                                {
+                                    l_uCurrPage++;
+                                }
+                            }
                         }
 
                         p_ptCtx->bIsDbCheked = true;
@@ -517,15 +537,17 @@ e_eFSS_DB_RES eFSS_DB_SaveElemen(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_
     uint32_t p_puPageIdx;
     uint32_t p_puPagePos;
     t_eFSS_DB_DbElement l_tCurEle;
+    uint32_t l_uUsedByte;
 
 	/* Check pointer validity */
-	if( NULL == p_ptCtx )
+	if( ( NULL == p_ptCtx ) || ( NULL == p_puRawVal ) )
 	{
 		l_eRes = e_eFSS_DB_RES_BADPOINTER;
 	}
 	else
 	{
 		/* Check Init */
+        l_bIsInit = false;
         l_eDBCRes = eFSS_DBC_IsInit(&p_ptCtx->tDbcCtx, &l_bIsInit);
         l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
 
@@ -545,60 +567,60 @@ e_eFSS_DB_RES eFSS_DB_SaveElemen(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_
                 else
                 {
                     /* Verify if parameter is ok checked against the DB */
-                    if( p_uPos > p_ptCtx->tDB.uNEle )
+                    if( (p_uPos > p_ptCtx->tDB.uNEle ) || ( p_uElemL != p_ptCtx->tDB.ptDefEle[p_uPos].uEleL ) )
                     {
                         l_eRes = e_eFSS_DB_RES_BADPARAM;
                     }
                     else
                     {
-                        /* Verify if parameter is ok checked against the DB */
-                        if( p_uElemL != p_ptCtx->tDB.ptDefEle[p_uPos].uEleL )
+                        /* If not done till now check the stored database validity */
+                        if( false == p_ptCtx->bIsDbCheked )
                         {
-                            l_eRes = e_eFSS_DB_RES_BADPARAM;
+                            /* Check status */
+                            l_eRes = eFSS_DB_GetDBStatus(p_ptCtx);
                         }
-                        else
-                        {
-                            if( false == p_ptCtx->bIsDbCheked )
-                            {
-                                /* Check status */
-                                l_eRes = eFSS_DB_GetDBStatus(p_ptCtx);
-                            }
 
-                            if( ( e_eFSS_DB_RES_OK == l_eRes ) || ( e_eFSS_DB_RES_OK_BKP_RCVRD == l_eRes ) )
+                        if( ( e_eFSS_DB_RES_OK == l_eRes ) || ( e_eFSS_DB_RES_OK_BKP_RCVRD == l_eRes ) ||
+                            ( e_eFSS_DB_RES_PARAM_DEF_RESET == l_eRes ) )
+                        {
+                            /* Get storage info */
+                            l_eDBCRes = eFSS_DBC_GetBuffNUsable(&p_ptCtx->tDbcCtx, &l_tBuff, &l_uUsePages);
+                            l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
+
+                            if( e_eFSS_DB_RES_OK == l_eRes )
                             {
-                                /* Get storage info */
-                                l_eDBCRes = eFSS_DBC_GetBuffNUsable(&p_ptCtx->tDbcCtx, &l_tBuff, &l_uUsePages);
+                                /* Find the page and page index where to save the data */
+                                eFSS_DB_GetPageAndPagePosition(l_tBuff.uBufL, p_ptCtx->tDB, p_uPos, &p_puPageIdx,
+                                                               &p_puPagePos);
+
+                                /* Load the page where we can find the needed element */
+                                l_eDBCRes = eFSS_DBC_LoadPageInBuff(&p_ptCtx->tDbcCtx, p_puPageIdx);
                                 l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
 
-                                if( e_eFSS_DB_RES_OK == l_eRes )
+                                if( ( e_eFSS_DB_RES_OK == l_eRes ) || ( e_eFSS_DB_RES_OK_BKP_RCVRD == l_eRes ) )
                                 {
-                                    /* Find the page and page index where to save the data */
-                                    eFSS_DB_GetPageAndPagePosition(l_tBuff.uBufL, p_ptCtx->tDB, p_uPos, &p_puPageIdx, &p_puPagePos);
+                                    /* Verify if the already old stored element is correct */
+                                    eFSS_DB_GetEleRawInBuffer(&l_tBuff.puBuf[p_puPagePos],
+                                                              ( l_tBuff.uBufL - p_puPagePos ) ,
+                                                              &l_tCurEle, &l_uUsedByte);
 
-                                    /* Load the page where we can find the needed element */
-                                    l_eDBCRes = eFSS_DBC_LoadPageInBuff(&p_ptCtx->tDbcCtx, p_puPageIdx);
-                                    l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
-
-                                    if( ( e_eFSS_DB_RES_OK == l_eRes ) || ( e_eFSS_DB_RES_OK_BKP_RCVRD == l_eRes ) )
+                                    if( ( l_tCurEle.uEleV != p_ptCtx->tDB.ptDefEle[p_uPos].uEleV ) ||
+                                        ( l_tCurEle.uEleL != p_ptCtx->tDB.ptDefEle[p_uPos].uEleL ) )
                                     {
-                                        /* Verify if the old element is already correct */
-                                        eFSS_DB_GetEleRawInBuffer(&l_tCurEle, &l_tBuff.puBuf[p_puPagePos]);
+                                        /* The database is incoherent */
+                                        l_eRes = e_eFSS_DB_RES_NOTVALIDDB;
+                                    }
+                                    else
+                                    {
+                                        /* Set element in the buffer */
+                                        l_eDBCRes = eFSS_DB_SetEleRawInBuffer(&l_tBuff.puBuf[p_puPagePos],
+                                                                             (l_tBuff.uBufL - p_puPagePos),
+                                                                              l_tCurEle, &l_uUsedByte);
+                                        l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
 
-                                        if( ( l_tCurEle.uEleV != p_ptCtx->tDB.ptDefEle[p_uPos].uEleV ) ||
-                                            ( l_tCurEle.uEleL != p_ptCtx->tDB.ptDefEle[p_uPos].uEleL ) )
-                                        {
-                                            /* The database is incoherent */
-                                            l_eRes = e_eFSS_DB_RES_NOTVALIDDB;
-                                        }
-                                        else
-                                        {
-                                            /* Set element in the buffer */
-                                            eFSS_DB_SetEleRawInBuffer(l_tCurEle, &l_tBuff.puBuf[p_puPagePos]);
-
-                                            /* Flush the page */
-                                            l_eDBCRes = eFSS_DBC_FlushBuffInPage(&p_ptCtx->tDbcCtx, p_puPagePos);
-                                            l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
-                                        }
+                                        /* Flush the page */
+                                        l_eDBCRes = eFSS_DBC_FlushBuffInPage(&p_ptCtx->tDbcCtx, p_puPagePos);
+                                        l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
                                     }
                                 }
                             }
@@ -628,6 +650,7 @@ e_eFSS_DB_RES eFSS_DB_GetElement(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_
     uint32_t p_puPageIdx;
     uint32_t p_puPagePos;
     t_eFSS_DB_DbElement l_tCurEle;
+    uint32_t l_uUsedByte;
 
 	/* Check pointer validity */
 	if( NULL == p_ptCtx )
@@ -693,7 +716,9 @@ e_eFSS_DB_RES eFSS_DB_GetElement(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_
                                     if( ( e_eFSS_DB_RES_OK == l_eRes ) || ( e_eFSS_DB_RES_OK_BKP_RCVRD == l_eRes ) )
                                     {
                                         /* Verify if the old element is already correct */
-                                        eFSS_DB_GetEleRawInBuffer(&l_tCurEle, &l_tBuff.puBuf[p_puPagePos]);
+                                        eFSS_DB_GetEleRawInBuffer(&l_tBuff.puBuf[p_puPagePos],
+                                                                  ( l_tBuff.uBufL - p_puPagePos ) ,
+                                                                  &l_tCurEle, &l_uUsedByte);
 
                                         if( ( l_tCurEle.uEleV != p_ptCtx->tDB.ptDefEle[p_uPos].uEleV ) ||
                                             ( l_tCurEle.uEleL != p_ptCtx->tDB.ptDefEle[p_uPos].uEleL ) )
@@ -723,7 +748,7 @@ e_eFSS_DB_RES eFSS_DB_GetElement(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_
 /***********************************************************************************************************************
  *  PRIVATE FUNCTION
  **********************************************************************************************************************/
-static bool_t eFSS_DB_IsStatusStillCoherent(const t_eFSS_DB_Ctx* p_ptCtx)
+static bool_t eFSS_DB_IsStatusStillCoherent(t_eFSS_DB_Ctx* const p_ptCtx)
 {
     /* Local return variable */
     bool_t l_eRes;
