@@ -233,7 +233,7 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
                         l_uCheckedElem = 0u;
                         l_bNewParAdd = false;
 
-                        /* Read and check every page of the storage area */
+                        /* Read and check every page of the storage area, stop if an error occours */
                         while( ( ( e_eFSS_DB_RES_OK == l_eRes ) ||
                                  ( e_eFSS_DB_RES_OK_BKP_RCVRD == l_eRes ) ||
                                  ( e_eFSS_DB_RES_PARAM_DEF_RESET == l_eRes ) ) &&
@@ -248,7 +248,7 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
 
                             if( ( e_eFSS_DB_RES_OK == l_eRes ) || ( e_eFSS_DB_RES_OK_BKP_RCVRD == l_eRes ) )
                             {
-                                /* Whole page just read, check the page against the default value if any, or check
+                                /* Whole page just readed, check the page against the default value if any, or check
                                    if the unused data is actualy zero */
 
                                 /* Init variable that keep count of the checked numbers of byte */
