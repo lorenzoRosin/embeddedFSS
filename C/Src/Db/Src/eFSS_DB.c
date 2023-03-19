@@ -778,7 +778,7 @@ static bool_t eFSS_DB_IsStatusStillCoherent(t_eFSS_DB_Ctx* const p_ptCtx)
 	}
 	else
 	{
-        /* Check pointer validity */
+        /* Check data validity */
         if( p_ptCtx->tDB.uNEle <= 0u )
         {
             l_eRes = false;
@@ -795,8 +795,16 @@ static bool_t eFSS_DB_IsStatusStillCoherent(t_eFSS_DB_Ctx* const p_ptCtx)
             }
             else
             {
-                /* Check validity of the passed db struct */
-                l_eRes = eFSS_DB_IsDbDefStructValid(p_ptCtx->tDB, l_uUsePages, l_tBuff.uBufL);
+                /* Check data validity */
+                if( ( l_uUsePages <= 0u ) || ( l_tBuff.uBufL < EFSS_DB_MINPAGESIZE ) )
+                {
+                    l_eRes = false;
+                }
+                else
+                {
+                    /* Check validity of the passed db struct */
+                    l_eRes = eFSS_DB_IsDbDefStructValid(p_ptCtx->tDB, l_uUsePages, l_tBuff.uBufL);
+                }
             }
         }
 	}
@@ -907,7 +915,7 @@ static bool_t eFSS_DB_IsDbDefStructValid(const t_eFSS_DB_DbStruct p_tDefaultDb, 
                                          const uint32_t p_uPageL)
 {
     /* Check db validity:
-       1- each element version and len need to be different from zero
+       1- Each element version and len need to be different from zero
        2- Element raw data must be different from NULL
        3- An element length cannot be greater than page length
        4- All element must be able to be stored in database
@@ -950,7 +958,7 @@ static bool_t eFSS_DB_IsDbDefStructValid(const t_eFSS_DB_DbStruct p_tDefaultDb, 
 
                 /* Element check */
                 if( ( 0u == l_tCurEle.uEleV ) || ( 0u == l_tCurEle.uEleL ) || ( NULL == l_tCurEle.puEleRaw ) ||
-                    ( l_tCurEle.uEleL > p_uPageL ) )
+                    ( ( l_tCurEle.uEleL + EFSS_DB_RAWOFF ) > p_uPageL ) )
                 {
                     /* Cannot be */
                     l_bRes = false;
@@ -958,16 +966,16 @@ static bool_t eFSS_DB_IsDbDefStructValid(const t_eFSS_DB_DbStruct p_tDefaultDb, 
                 else
                 {
                     /* Check if can be placed in the current "page" */
-                    if( ( l_tCurEle.uEleL + 2u + 2u ) > ( p_uPageL - l_uCurPageUsed ) )
+                    if( ( l_tCurEle.uEleL + EFSS_DB_RAWOFF ) > ( p_uPageL - l_uCurPageUsed ) )
                     {
                         /* Cannot be placed in this page */
                         l_uCurPage++;
-                        l_uCurPageUsed = ( l_tCurEle.uEleL + 2u + 2u );
+                        l_uCurPageUsed = ( l_tCurEle.uEleL + EFSS_DB_RAWOFF );
                     }
                     else
                     {
                         /* can be placed in this "page " */
-                        l_uCurPageUsed += ( l_tCurEle.uEleL + 2u + 2u );
+                        l_uCurPageUsed += ( l_tCurEle.uEleL + EFSS_DB_RAWOFF );
                     }
 
                     /* Check if all ok */
