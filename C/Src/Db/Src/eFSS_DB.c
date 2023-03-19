@@ -415,7 +415,6 @@ e_eFSS_DB_RES eFSS_DB_FormatToDefault(t_eFSS_DB_Ctx* const p_ptCtx)
 
     /* Local variable for calculation */
     uint32_t l_uCurrPage;
-    uint32_t l_uMaxPage;
     uint32_t l_uCheckedElem;
     uint32_t l_uByteInPageDone;
 
@@ -427,6 +426,7 @@ e_eFSS_DB_RES eFSS_DB_FormatToDefault(t_eFSS_DB_Ctx* const p_ptCtx)
 	else
 	{
 		/* Check Init */
+        l_bIsInit = false;
         l_eDBCRes = eFSS_DBC_IsInit(&p_ptCtx->tDbcCtx, &l_bIsInit);
         l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
 
@@ -451,21 +451,24 @@ e_eFSS_DB_RES eFSS_DB_FormatToDefault(t_eFSS_DB_Ctx* const p_ptCtx)
 
                     if( e_eFSS_DB_RES_OK == l_eRes )
                     {
-                        /* Set to zero the buffer of every page, copy default paramete and flush */
+                        /* In order to format to default the DB we can just set to zero the buffer to flush
+                           and copy inside it only the needed parameter. If no parameter are needed, we can
+                           just flush an zero filled buffer */
                         l_uCurrPage = 0u;
-                        l_uMaxPage = (uint32_t)( l_tStorSet.uTotPages / 2u );
                         l_uCheckedElem = 0u;
 
-                        while( ( e_eFSS_DB_RES_OK == l_eRes ) || ( l_uCurrPage < l_uMaxPage ) )
+                        /* Continue till we have setted all pages or an error occours */
+                        while( ( e_eFSS_DB_RES_OK == l_eRes ) || ( l_uCurrPage < l_uUsePages ) )
                         {
                             /* Memset the current page */
-                            memset(&l_tBuff.ptMeta, 0u, sizeof(l_tBuff.ptMeta) );
-                            memset(&l_tBuff.puBuf,  0u, l_tBuff.uBufL          );
+                            memset(&l_tBuff.puBuf,  0u, l_tBuff.uBufL);
 
-                            /* Check against DB default */
+                            /* Set to zero the numbers of byte used */
                             l_uByteInPageDone = 0u;
 
-                            while( ( e_eFSS_DB_RES_OK == l_eRes ) || ( l_uCheckedElem < p_ptCtx->tDB.uNEle ) ||
+                            /* Continue till the page is full or an error occours */
+                            while( ( e_eFSS_DB_RES_OK == l_eRes ) ||
+                                   ( l_uCheckedElem < p_ptCtx->tDB.uNEle ) ||
                                    ( l_uByteInPageDone < l_tBuff.uBufL ) )
                             {
                                 if( ( l_uByteInPageDone + 2u + 2u + p_ptCtx->tDB.ptDefEle[l_uCheckedElem].uEleL ) <= l_tBuff.uBufL )
