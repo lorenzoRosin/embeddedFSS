@@ -175,6 +175,7 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
     bool_t l_bNewParAdd;
     t_eFSS_DB_DbElement l_tCurEle;
     uint32_t l_uUsedByte;
+    uint32_t l_uZeroEleIdx;
 
 	/* Check pointer validity */
 	if( NULL == p_ptCtx )
@@ -254,133 +255,110 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
                                 /* Init variable that keep count of the checked numbers of byte */
                                 l_uByteInPageDone = 0u;
 
-                                while( ( ( e_eFSS_DB_RES_OK == l_eRes ) ||
-                                         ( e_eFSS_DB_RES_OK_BKP_RCVRD == l_eRes ) ||
-                                         ( e_eFSS_DB_RES_PARAM_DEF_RESET == l_eRes ) ) &&
-                                       ( l_uByteInPageDone < l_tBuff.uBufL ) )
+                                if( l_uCheckedElem < p_ptCtx->tDB.uNEle )
                                 {
-                                    /* Two cases: 1) we have some element to check
-                                     *            2) we need to check that unused elements are set to zero */
-                                    if( l_uCheckedElem < p_ptCtx->tDB.uNEle )
+                                    if( false == l_bNewParAdd )
                                     {
-                                        /* Wee need to check elements value  */
-                                        /* Do we have space in this page for another element? */
-                                        if( ( l_uByteInPageDone + 2u + 2u + 1u ) > l_tBuff.uBufL )
+                                        /* Check parameter */
+                                        /* Is the ckeked parameter present in this page? */
+                                        if( ( l_uByteInPageDone + p_ptCtx->tDB.ptDefEle[l_uCheckedElem].uEleL + EFSS_DB_RAWOFF ) <= l_tBuff.uBufL )
                                         {
-                                            /* cannot get other parameter, just check that data is zero */
-                                            if( 0u == l_tBuff.puBuf[l_uByteInPageDone] )
+                                            /* Can retrive the element */
+                                            l_eRes = eFSS_DB_GetEleRawInBuffer( &l_tBuff.puBuf[l_uByteInPageDone],
+                                                                                (l_tBuff.uBufL - l_uByteInPageDone),
+                                                                                l_tBuff.uBufL,
+                                                                                &l_tCurEle, &l_uUsedByte );
+                                            if( e_eFSS_DB_RES_OK == l_eRes )
                                             {
-                                                l_uByteInPageDone++;
-                                            }
-                                            else
-                                            {
-                                                l_eRes = e_eFSS_DB_RES_NOTVALIDDB;
-                                            }
-                                        }
-                                        else
-                                        {
-                                            /* Could be possible to have other parameter in page */
-                                            /* Get current element, if any */
-                                            if( true == eFSS_DB_GetEleRawInBuffer( &l_tBuff.puBuf[l_uByteInPageDone],
-                                                                                   (l_tBuff.uBufL - l_uByteInPageDone),
-                                                                                   l_tBuff.uBufL,
-                                                                                   &l_tCurEle, &l_uUsedByte ) )
-                                            {
-                                                /* We have getted a valid element, check it! */
+                                                /* Check parameter */
                                                 if( l_tCurEle.uEleL != p_ptCtx->tDB.ptDefEle[l_uCheckedElem].uEleL )
                                                 {
-                                                    /* Oks, this could lead to an invalid database. First check if,
-                                                       maybe, this is a new added element */
-                                                    if( 0u == l_tCurEle.uEleL )
-                                                    {
-                                                        /* New parameter found! */
-                                                        l_bNewParAdd = true;
-
-                                                        /* Try to add it to the page */
-                                                        if( true == eFSS_DB_SetEleRawInBuffer( &l_tBuff.puBuf[l_uByteInPageDone],
-                                                                                            (l_tBuff.uBufL - l_uByteInPageDone),
-                                                                                            p_ptCtx->tDB.ptDefEle[l_uCheckedElem], &l_uUsedByte ) )
-                                                        {
-                                                            /* Setted */
-                                                            l_uByteInPageDone += ( 2u + 2u + l_tCurEle.uEleL );
-                                                            l_uCheckedElem++;
-                                                            l_bIsPageMod = true;
-                                                        }
-                                                        else
-                                                        {
-                                                            /* No space, check zero data */
-                                                            if( 0u == l_tBuff.puBuf[l_uByteInPageDone] )
-                                                            {
-                                                                l_uByteInPageDone++;
-                                                            }
-                                                            else
-                                                            {
-                                                                l_eRes = e_eFSS_DB_RES_NOTVALIDDB;
-                                                            }
-                                                        }
-                                                    }
-                                                    else
-                                                    {
-                                                        /* Invalid database */
-                                                        l_eRes = e_eFSS_DB_RES_NOTVALIDDB;
-                                                    }
-                                                }
-                                                else if( true == l_bNewParAdd )
-                                                {
-                                                    /* We have already added a new param, cannot stand that we have
-                                                       another parameter stored with a valid length */
+                                                    /* Bad param */
                                                     l_eRes = e_eFSS_DB_RES_NOTVALIDDB;
                                                 }
                                                 else if( l_tCurEle.uEleV != p_ptCtx->tDB.ptDefEle[l_uCheckedElem].uEleV )
                                                 {
-                                                    /* Valid element but need to update version, ripristinate default */
-                                                    if( true == eFSS_DB_SetEleRawInBuffer( &l_tBuff.puBuf[l_uByteInPageDone],
-                                                                                           (l_tBuff.uBufL - l_uByteInPageDone),
-                                                                                           p_ptCtx->tDB.ptDefEle[l_uCheckedElem],
-                                                                                           &l_uUsedByte ) )
+                                                    /* Need to update this entry */
+                                                    l_eRes = eFSS_DB_SetEleRawInBuffer( &l_tBuff.puBuf[l_uByteInPageDone],
+                                                                                        (l_tBuff.uBufL - l_uByteInPageDone),
+                                                                                        p_ptCtx->tDB.ptDefEle[l_uCheckedElem],
+                                                                                        &l_uUsedByte );
+                                                    if( e_eFSS_DB_RES_OK == l_eRes )
                                                     {
-                                                        /* Setted */
-                                                        l_uByteInPageDone += ( 2u + 2u + l_tCurEle.uEleL );
+                                                        /* Updated */
+                                                        l_uByteInPageDone += ( l_tCurEle.uEleL + EFSS_DB_RAWOFF );
                                                         l_uCheckedElem++;
                                                         l_bIsPageMod = true;
                                                     }
                                                     else
                                                     {
-                                                        /* No space, check zero data */
-                                                        if( 0u == l_tBuff.puBuf[l_uByteInPageDone] )
-                                                        {
-                                                            l_uByteInPageDone++;
-                                                        }
-                                                        else
-                                                        {
-                                                            l_eRes = e_eFSS_DB_RES_NOTVALIDDB;
-                                                        }
+                                                        /* Bad param */
+                                                        l_eRes = e_eFSS_DB_RES_NOTVALIDDB;
                                                     }
                                                 }
                                                 else
                                                 {
-                                                    /* Element is already OK */
-                                                    l_uByteInPageDone += ( 2u + 2u + l_tCurEle.uEleL );
-                                                    l_uCheckedElem++;
+                                                    /* DB entry is ok, nothing to do */
+                                                }
+                                            }
+                                            else if( e_eFSS_DB_RES_NOTVALIDDB == l_eRes )
+                                            {
+                                                /* This could be the case where we are having an entry setted to zero.
+                                                   So check that data is not valid because is zero */
+                                                l_uZeroEleIdx = 0u;
+                                                while( l_uZeroEleIdx < p_ptCtx->tDB.ptDefEle[l_uCheckedElem].uEleL + EFSS_DB_RAWOFF  )
+                                                {
+                                                    if( 0u == l_tBuff.puBuf[l_uByteInPageDone+l_uZeroEleIdx] )
+                                                    {
+                                                        l_uZeroEleIdx++;
+                                                    }
+                                                    else
+                                                    {
+                                                        /* unused memory must be set to zero */
+                                                        l_eRes = e_eFSS_DB_RES_NOTVALIDDB;
+                                                    }
+                                                }
+
+                                                if(true)
+                                                {
+                                                    /* So it's a freslhy added parameter */
+                                                    /* Need to update this entry */
+                                                    l_eRes = eFSS_DB_SetEleRawInBuffer( &l_tBuff.puBuf[l_uByteInPageDone],
+                                                                                        (l_tBuff.uBufL - l_uByteInPageDone),
+                                                                                        p_ptCtx->tDB.ptDefEle[l_uCheckedElem],
+                                                                                        &l_uUsedByte );
+                                                    if( e_eFSS_DB_RES_OK == l_eRes )
+                                                    {
+                                                        /* Updated */
+                                                        l_uByteInPageDone += ( l_tCurEle.uEleL + EFSS_DB_RAWOFF );
+                                                        l_uCheckedElem++;
+                                                        l_bIsPageMod = true;
+                                                    }
+                                                    else
+                                                    {
+                                                        /* Bad param */
+                                                        l_eRes = e_eFSS_DB_RES_NOTVALIDDB;
+                                                    }
                                                 }
                                             }
                                             else
                                             {
-                                                /* No element found, check zero data */
-                                                if( 0u == l_tBuff.puBuf[l_uByteInPageDone] )
-                                                {
-                                                    l_uByteInPageDone++;
-                                                }
-                                                else
-                                                {
-                                                    l_eRes = e_eFSS_DB_RES_NOTVALIDDB;
-                                                }
+                                                /* Some other kind of error */
                                             }
                                         }
                                     }
                                     else
                                     {
-                                        /* No more element to check, check that unused data is set to zero */
+                                        /* Check parameter but remeber, they must not be present on the storage */
+                                    }
+                                }
+
+                                /* If all ok and if some free space is left, check if unused data is zero */
+                                if( ( e_eFSS_DB_RES_OK == l_eRes ) || ( e_eFSS_DB_RES_OK_BKP_RCVRD == l_eRes ) ||
+                                    ( e_eFSS_DB_RES_PARAM_DEF_RESET == l_eRes ) )
+                                {
+                                    while( l_uByteInPageDone < l_tBuff.uBufL )
+                                    {
                                         if( 0u == l_tBuff.puBuf[l_uByteInPageDone] )
                                         {
                                             l_uByteInPageDone++;
@@ -393,14 +371,19 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
                                     }
                                 }
 
-                                /* If page is modified we need to store the new value */
-                                if( true == l_bIsPageMod )
+                                /* Need to flush the page? */
+                                if( ( e_eFSS_DB_RES_OK == l_eRes ) || ( e_eFSS_DB_RES_OK_BKP_RCVRD == l_eRes ) ||
+                                    ( e_eFSS_DB_RES_PARAM_DEF_RESET == l_eRes ) )
                                 {
-                                    l_eDBCRes = eFSS_DBC_FlushBuffInPage(&p_ptCtx->tDbcCtx, l_uCurrPage);
-                                    l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
-                                }
+                                    /* If page is modified we need to store the new value */
+                                    if( true == l_bIsPageMod )
+                                    {
+                                        l_eDBCRes = eFSS_DBC_FlushBuffInPage(&p_ptCtx->tDbcCtx, l_uCurrPage);
+                                        l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
+                                    }
 
-                                l_uCurrPage++;
+                                    l_uCurrPage++;
+                                }
                             }
                         }
 
