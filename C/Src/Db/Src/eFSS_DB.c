@@ -16,6 +16,16 @@
 
 
 /***********************************************************************************************************************
+ *      PRIVATE DEFINE
+ **********************************************************************************************************************/
+#define EFSS_DB_MINPAGESIZE                                                                      ( ( uint32_t )  0x05u )
+#define EFSS_DB_VEROFF                                                                           ( ( uint32_t )  0x00u )
+#define EFSS_DB_LENOFF                                                                           ( ( uint32_t )  0x02u )
+#define EFSS_DB_RAWOFF                                                                           ( ( uint32_t )  0x04u )
+
+
+
+/***********************************************************************************************************************
  *  PRIVATE STATIC FUNCTION DECLARATION
  **********************************************************************************************************************/
 static bool_t eFSS_DB_IsStatusStillCoherent(t_eFSS_DB_Ctx* const p_ptCtx);
@@ -32,9 +42,9 @@ static e_eFSS_DB_RES eFSS_DB_GetEleRawInBuffer(uint8_t* const p_puBuff, const ui
                                                t_eFSS_DB_DbElement* const p_ptElemToGet, uint32_t* const p_puUsedL);
 static e_eFSS_DB_RES eFSS_DB_SetEleRawInBuffer(uint8_t* const p_puBuff, const uint32_t p_uMaxL,
                                                const t_eFSS_DB_DbElement p_tEleToSet, uint32_t* const p_puUsedL);
-static e_eFSS_DB_RES eFSS_DB_GetPageAndPagePosition(const uint32_t p_uPageL, const t_eFSS_DB_DbStruct p_tDbStruct,
-                                                    const uint32_t p_uIndex, uint32_t* const p_puPageIdx,
-                                                    uint32_t* const p_puLogPos);
+static e_eFSS_DB_RES eFSS_DB_FindElePageAndPos(const uint32_t p_uPageL, const t_eFSS_DB_DbStruct p_tDbStruct,
+                                               const uint32_t p_uEleIdx, uint32_t* const p_puPFound,
+                                               uint32_t* const p_puOffSetFound);
 
 
 
@@ -592,7 +602,7 @@ e_eFSS_DB_RES eFSS_DB_SaveElemen(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_
                             if( e_eFSS_DB_RES_OK == l_eRes )
                             {
                                 /* Find the page and page index where to save the data */
-                                eFSS_DB_GetPageAndPagePosition(l_tBuff.uBufL, p_ptCtx->tDB, p_uPos, &p_puPageIdx,
+                                eFSS_DB_FindElePageAndPos(l_tBuff.uBufL, p_ptCtx->tDB, p_uPos, &p_puPageIdx,
                                                                &p_puPagePos);
 
                                 /* Load the page where we can find the needed element */
@@ -709,7 +719,7 @@ e_eFSS_DB_RES eFSS_DB_GetElement(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_
                                 if( e_eFSS_DB_RES_OK == l_eRes )
                                 {
                                     /* Find the page and page index where to save the data */
-                                    eFSS_DB_GetPageAndPagePosition(l_tBuff.uBufL, p_ptCtx->tDB, p_uPos, &p_puPageIdx, &p_puPagePos);
+                                    eFSS_DB_FindElePageAndPos(l_tBuff.uBufL, p_ptCtx->tDB, p_uPos, &p_puPageIdx, &p_puPagePos);
 
                                     /* Load the page where we can find the needed element */
                                     l_eDBCRes = eFSS_DBC_LoadPageInBuff(&p_ptCtx->tDbcCtx, p_puPageIdx);
@@ -992,50 +1002,56 @@ static e_eFSS_DB_RES eFSS_DB_GetEleRawInBuffer(uint8_t* const p_puBuff, const ui
     }
     else
     {
-        /* Init local variable */
-        l_eRes = e_eFSS_DB_RES_OK;
-
-        /* First, check if we have space for this parameter */
-        if( ( 2u + 2u ) >= p_uMaxL )
+        /* Check parameter */
+        if( ( p_uMaxL <= EFSS_DB_RAWOFF ) || ( p_uPageL < EFSS_DB_MINPAGESIZE ) )
         {
-            /* Cannot be retrived */
-            *p_puUsedL = 0u;
+            l_eRes = e_eFSS_DB_RES_BADPARAM;
         }
         else
         {
             /* can be retrived, for now */
-            if( true != eFSS_Utils_RetriveU16(p_puBuff, &p_ptElemToGet->uEleV) )
+            if( true != eFSS_Utils_RetriveU16(&p_puBuff[EFSS_DB_VEROFF], &p_ptElemToGet->uEleV) )
             {
                 l_eRes = e_eFSS_DB_RES_CORRUPTCTX;
             }
             else
             {
-                if( true != eFSS_Utils_RetriveU16(&p_puBuff[2u], &p_ptElemToGet->uEleL) )
+                if( true != eFSS_Utils_RetriveU16(&p_puBuff[EFSS_DB_LENOFF], &p_ptElemToGet->uEleL) )
                 {
                     l_eRes = e_eFSS_DB_RES_CORRUPTCTX;
                 }
                 else
                 {
-                    /* Check if element length seems valid */
-                    if( (p_ptElemToGet->uEleL + 2u + 2u ) > p_uPageL )
+                    /* Check that the element has valid element */
+                    if( ( 0u == p_ptElemToGet->uEleV ) || ( 0u == p_ptElemToGet->uEleL ) )
                     {
                         l_eRes = e_eFSS_DB_RES_NOTVALIDDB;
                     }
                     else
                     {
-                        /* Now that we have all the needed data check if can be retrived */
-                        if( ( p_ptElemToGet->uEleL + 2u + 2u ) > p_uMaxL )
+                        /* Check if element length seems valid */
+                        if( ( p_ptElemToGet->uEleL + EFSS_DB_RAWOFF ) > p_uPageL )
                         {
-                            /* Cannot be retrived */
-                            *p_puUsedL = 0u;
+                            l_eRes = e_eFSS_DB_RES_NOTVALIDDB;
                         }
                         else
                         {
-                            /* Can be retrived, copy the raw data */
-                            memcpy(p_ptElemToGet->puEleRaw, &p_puBuff[4u], p_ptElemToGet->uEleL);
+                            /* Now that we have all the needed data check if it can be retrived */
+                            if( ( p_ptElemToGet->uEleL + EFSS_DB_RAWOFF ) > p_uMaxL )
+                            {
+                                l_eRes = e_eFSS_DB_RES_NOTVALIDDB;
+                            }
+                            else
+                            {
+                                /* Can be retrived, copy the raw data */
+                                memcpy(p_ptElemToGet->puEleRaw, &p_puBuff[EFSS_DB_RAWOFF], p_ptElemToGet->uEleL);
 
-                            /* Update used byte */
-                            *p_puUsedL = ( p_ptElemToGet->uEleL + 2u + 2u );
+                                /* Update used byte */
+                                *p_puUsedL = ( p_ptElemToGet->uEleL + EFSS_DB_RAWOFF );
+
+                                /* All ok */
+                                l_eRes = e_eFSS_DB_RES_OK;
+                            }
                         }
                     }
                 }
@@ -1053,53 +1069,60 @@ static e_eFSS_DB_RES eFSS_DB_SetEleRawInBuffer(uint8_t* const p_puBuff, const ui
     e_eFSS_DB_RES l_eRes;
 
     /* Check null pointer */
-    if( ( NULL == p_puBuff ) || ( NULL == p_puUsedL ) )
+    if( ( NULL == p_puBuff ) || ( NULL == p_puUsedL ) || ( NULL == p_tEleToSet.puEleRaw ) )
     {
         l_eRes = e_eFSS_DB_RES_BADPOINTER;
     }
     else
     {
-        /* Init local variable */
-        l_eRes = e_eFSS_DB_RES_OK;
-
-        /* First, check if we have space for this parameter */
-        if( ( p_tEleToSet.uEleL + 2u + 2u ) > p_uMaxL )
+        /* Check parameter */
+        if( ( 0 == p_uMaxL ) || ( 0u == p_tEleToSet.uEleV ) || ( 0u == p_tEleToSet.uEleL ) )
         {
-            /* Cannot be placed */
-            *p_puUsedL = 0u;
+            l_eRes = e_eFSS_DB_RES_BADPARAM;
         }
         else
         {
-            /* can be placed, place */
-            if( true != eFSS_Utils_InsertU16(p_puBuff, p_tEleToSet.uEleV) )
+            /* Init local variable */
+            l_eRes = e_eFSS_DB_RES_OK;
+
+            /* First, check if we have space for this parameter */
+            if( ( p_tEleToSet.uEleL + EFSS_DB_RAWOFF ) > p_uMaxL )
             {
-                l_eRes = e_eFSS_DB_RES_CORRUPTCTX;
+                /* Cannot be placed */
+                *p_puUsedL = 0u;
             }
             else
             {
-                if( true != eFSS_Utils_InsertU16(&p_puBuff[2u], p_tEleToSet.uEleL) )
+                /* can be placed, place */
+                if( true != eFSS_Utils_InsertU16(&p_puBuff[EFSS_DB_VEROFF], p_tEleToSet.uEleV) )
                 {
                     l_eRes = e_eFSS_DB_RES_CORRUPTCTX;
                 }
                 else
                 {
-                    /* Copy the raw data */
-                    memcpy(&p_puBuff[4u], p_tEleToSet.puEleRaw, p_tEleToSet.uEleL);
+                    if( true != eFSS_Utils_InsertU16(&p_puBuff[EFSS_DB_LENOFF], p_tEleToSet.uEleL) )
+                    {
+                        l_eRes = e_eFSS_DB_RES_CORRUPTCTX;
+                    }
+                    else
+                    {
+                        /* Copy the raw data */
+                        memcpy(&p_puBuff[EFSS_DB_RAWOFF], p_tEleToSet.puEleRaw, p_tEleToSet.uEleL);
 
-                    /* Update used byte */
-                    *p_puUsedL = ( p_tEleToSet.uEleL + 2u + 2u );
+                        /* Update used byte */
+                        *p_puUsedL = ( p_tEleToSet.uEleL + EFSS_DB_RAWOFF );
+                    }
                 }
             }
-
         }
     }
 
     return l_eRes;
 }
 
-static e_eFSS_DB_RES eFSS_DB_GetPageAndPagePosition(const uint32_t p_uPageL, const t_eFSS_DB_DbStruct p_tDbStruct,
-                                                    const uint32_t p_uIndex, uint32_t* const p_puPageIdx,
-                                                    uint32_t* const p_puLogPos)
+static e_eFSS_DB_RES eFSS_DB_FindElePageAndPos(const uint32_t p_uPageL, const t_eFSS_DB_DbStruct p_tDbStruct,
+                                               const uint32_t p_uEleIdx, uint32_t* const p_puPFound,
+                                               uint32_t* const p_puOffSetFound)
 {
     /* Local variable for result */
     e_eFSS_DB_RES l_eRes;
@@ -1111,56 +1134,78 @@ static e_eFSS_DB_RES eFSS_DB_GetPageAndPagePosition(const uint32_t p_uPageL, con
     t_eFSS_DB_DbElement l_tCurEle;
 
     /* Check null pointer */
-    if( ( NULL == p_puPageIdx ) || ( NULL == p_puLogPos ) )
+    if( ( NULL == p_puPFound ) || ( NULL == p_puOffSetFound ) || ( NULL == p_tDbStruct.ptDefEle ) )
     {
         l_eRes = e_eFSS_DB_RES_BADPOINTER;
     }
     else
     {
-        /* Init local variable */
-        l_eRes = e_eFSS_DB_RES_OK;
-        l_uCurPage = 0u;
-        l_uCurPageUsed = 0u;
-        l_uCurIndex = 0u;
-
-        /* Sum all other parameter of the DB till we reach the wanted one */
-        while( l_uCurIndex < p_uIndex )
+        /* Check element validity */
+        if( ( 0u == p_tDbStruct.uNEle ) || ( p_uPageL < EFSS_DB_MINPAGESIZE ) || ( p_uEleIdx > p_tDbStruct.uNEle ) )
         {
-            /* Get current element */
-            l_tCurEle = p_tDbStruct.ptDefEle[l_uCurIndex];
-
-            /* Check if can be placed in the current "page" */
-            if( ( l_tCurEle.uEleL + 2u + 2u ) > ( p_uPageL - l_uCurPageUsed ) )
-            {
-                /* Cannot be placed in this page */
-                l_uCurPage++;
-                l_uCurPageUsed = ( l_tCurEle.uEleL + 2u + 2u );
-            }
-            else
-            {
-                /* can be placed in this "page " */
-                l_uCurPageUsed += ( l_tCurEle.uEleL + 2u + 2u );
-            }
-
-            /* Increase index */
-            l_uCurIndex++;
+            l_eRes = e_eFSS_DB_RES_BADPARAM;
         }
-
-        /* Now just check if the current element can be present in this page */
-        /* Get current element */
-        l_tCurEle = p_tDbStruct.ptDefEle[l_uCurIndex];
-
-        /* Check if can be placed in the current "page" */
-        if( ( l_tCurEle.uEleL + 2u + 2u ) > ( p_uPageL - l_uCurPageUsed ) )
+        else
         {
-            /* Cannot be placed in this page */
-            l_uCurPage++;
+            /* Init local variable */
+            l_eRes = e_eFSS_DB_RES_OK;
+
+            /* Init local variable */
+            l_uCurPage = 0u;
             l_uCurPageUsed = 0u;
-        }
+            l_uCurIndex = 0u;
 
-        /* Valorize ret value */
-        *p_puPageIdx = l_uCurPage;
-        *p_puLogPos = l_uCurPageUsed;
+            /* Sum all other parameter of the DB till we reach the wanted one */
+            while( ( l_uCurIndex < p_uEleIdx ) && ( e_eFSS_DB_RES_OK == l_eRes ) )
+            {
+                /* Get current element */
+                l_tCurEle = p_tDbStruct.ptDefEle[l_uCurIndex];
+
+                /* Just check element validty, not needed but misra check */
+                if( ( l_tCurEle.uEleL + EFSS_DB_RAWOFF ) > p_uPageL )
+                {
+                    /* This DB struct seems wrong */
+                    l_eRes = e_eFSS_DB_RES_BADPARAM;
+                }
+                else
+                {
+                    /* Check if can be placed in the current "page" */
+                    if( ( l_tCurEle.uEleL + EFSS_DB_RAWOFF ) > ( p_uPageL - l_uCurPageUsed ) )
+                    {
+                        /* Cannot be placed in this page */
+                        l_uCurPage++;
+                        l_uCurPageUsed = ( l_tCurEle.uEleL + EFSS_DB_RAWOFF );
+                    }
+                    else
+                    {
+                        /* can be placed in this "page " */
+                        l_uCurPageUsed += ( l_tCurEle.uEleL + EFSS_DB_RAWOFF );
+                    }
+
+                    /* Increase index */
+                    l_uCurIndex++;
+                }
+            }
+
+            if( e_eFSS_DB_RES_OK == l_eRes )
+            {
+                /* Now just check if the current element can be present in this page */
+                /* Get current element */
+                l_tCurEle = p_tDbStruct.ptDefEle[l_uCurIndex];
+
+                /* Check if can be placed in the current "page" */
+                if( ( l_tCurEle.uEleL + EFSS_DB_RAWOFF ) > ( p_uPageL - l_uCurPageUsed ) )
+                {
+                    /* Cannot be placed in this page */
+                    l_uCurPage++;
+                    l_uCurPageUsed = 0u;
+                }
+
+                /* Valorize ret value */
+                *p_puPFound = l_uCurPage;
+                *p_puOffSetFound = l_uCurPageUsed;
+            }
+        }
     }
 
     return l_eRes;
