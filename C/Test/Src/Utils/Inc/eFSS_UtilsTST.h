@@ -1,14 +1,14 @@
 /**
- * @file       eFSS_BLOBTST.h
+ * @file       eFSS_UtilsTST.h
  *
- * @brief      Blob large file core module test
+ * @brief      Utils module test
  *
  * @author     Lorenzo Rosin
  *
  **********************************************************************************************************************/
 
-#ifndef EFSS_BLOBTST_H
-#define EFSS_BLOBTST_H
+#ifndef EFSS_UTILSTST_H
+#define EFSS_UTILSTST_H
 
 
 
@@ -29,13 +29,13 @@ extern "C" {
  * GLOBAL PROTOTYPES
  **********************************************************************************************************************/
 /**
- * @brief       Test the Blob module
+ * @brief       Test the Utils module
  *
  * @param[in]   none
  *
  * @return      none
  */
-void eFSS_BLOBTST_ExeTest(void);
+void eFSS_UtilsTST_ExeTest(void);
 
 
 
@@ -45,4 +45,4 @@ void eFSS_BLOBTST_ExeTest(void);
 
 
 
-#endif /* EFSS_BLOBTST_H */
+#endif /* EFSS_UTILSTST_H */

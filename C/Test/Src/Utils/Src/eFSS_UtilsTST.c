@@ -1,7 +1,7 @@
 /**
- * @file       eFSS_BLOBTST.c
+ * @file       eFSS_UtilsTST.c
  *
- * @brief      Blob large file core module test
+ * @brief      Utils module test
  *
  * @author     Lorenzo Rosin
  *
@@ -10,7 +10,7 @@
 /***********************************************************************************************************************
  *      INCLUDES
  **********************************************************************************************************************/
-#include "eFSS_BLOBTST.h"
+#include "eFSS_UtilsTST.h"
 #include <stdio.h>
 
 
@@ -42,12 +42,12 @@
 /***********************************************************************************************************************
  *   GLOBAL FUNCTIONS
  **********************************************************************************************************************/
-void eFSS_BLOBTST_ExeTest(void)
+void eFSS_UtilsTST_ExeTest(void)
 {
-	(void)printf("\n\nBLOB TEST START \n\n");
+	(void)printf("\n\nUTILS TEST START \n\n");
 
 
-    (void)printf("\n\nBLOB TEST END \n\n");
+    (void)printf("\n\nUTIL TEST END \n\n");
 }
 
 

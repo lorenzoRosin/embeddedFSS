@@ -1,14 +1,14 @@
 /**
- * @file       eFSS_BLOBTST.h
+ * @file       eFSS_BLOBCTST.h
  *
- * @brief      Blob large file core module test
+ * @brief      Blob Core - large file core module test
  *
  * @author     Lorenzo Rosin
  *
  **********************************************************************************************************************/
 
-#ifndef EFSS_BLOBTST_H
-#define EFSS_BLOBTST_H
+#ifndef EFSS_BLOBCTST_H
+#define EFSS_BLOBCTST_H
 
 
 
@@ -29,13 +29,13 @@ extern "C" {
  * GLOBAL PROTOTYPES
  **********************************************************************************************************************/
 /**
- * @brief       Test the Blob module
+ * @brief       Test Blob core module
  *
  * @param[in]   none
  *
  * @return      none
  */
-void eFSS_BLOBTST_ExeTest(void);
+void eFSS_BLOBCTST_ExeTest(void);
 
 
 
@@ -45,4 +45,4 @@ void eFSS_BLOBTST_ExeTest(void);
 
 
 
-#endif /* EFSS_BLOBTST_H */
+#endif /* EFSS_BLOBCTST_H */
