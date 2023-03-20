@@ -75,7 +75,7 @@ typedef struct
  *              e_eFSS_BLOB_RES_OK            - Operation ended correctly
  */
 e_eFSS_BLOB_RES eFSS_BLOB_InitCtx(t_eFSS_BLOB_Ctx* const p_ptCtx, const t_eFSS_TYPE_CbStorCtx p_tCtxCb,
-                                  const t_eFSS_TYPE_StorSet p_tStorSet, uint8_t* const p_puBuff, 
+                                  const t_eFSS_TYPE_StorSet p_tStorSet, uint8_t* const p_puBuff,
                                   const uint32_t p_uBuffL);
 
 /**
@@ -91,8 +91,8 @@ e_eFSS_BLOB_RES eFSS_BLOB_IsInit(t_eFSS_BLOB_Ctx* const p_ptCtx, bool_t* const p
 
 /**
  * @brief       Get the status of the storage. This need to be the first function to call when using the blob, just to
- *              be sure that something usefull and not corrupted is avaiable for any sort of operation. 
- *              if the blob is corrupted the only function that we can call to ripristinate the situation is the 
+ *              be sure that something usefull and not corrupted is avaiable for any sort of operation.
+ *              if the blob is corrupted the only function that we can call to ripristinate the situation is the
  *              eFSS_BLOB_Format function.
  *
  * @param[in]   p_ptCtx        - Blob context
@@ -134,7 +134,7 @@ e_eFSS_BLOB_RES eFSS_BLOB_GetStorageStatus(t_eFSS_BLOB_Ctx* const p_ptCtx);
 e_eFSS_BLOB_RES eFSS_BLOB_GetInfo(t_eFSS_BLOB_Ctx* const p_ptCtx, uint32_t* const p_puBlobSize);
 
 /**
- * @brief       Format the memory used for the blob and all data present. This is the only function that we can call 
+ * @brief       Format the memory used for the blob and all data present. This is the only function that we can call
  *              when the blob is corrupted and no valid data can be readed.
  *
  * @param[in]   p_ptCtx      - Blob context
@@ -175,7 +175,7 @@ e_eFSS_BLOB_RES eFSS_BLOB_Format(t_eFSS_BLOB_Ctx* const p_ptCtx);
  *              e_eFSS_BLOB_RES_CLBCKCRCERR        - Crc callback returned error
  *              e_eFSS_BLOB_RES_WRITENOMATCHREAD   - After Write operation the Read operation readed different data
  */
-e_eFSS_BLOB_RES eFSS_BLOB_ReadBlob(t_eFSS_BLOB_Ctx* const p_ptCtx, const uint32_t p_uOffset, const uint32_t p_uBuffL, 
+e_eFSS_BLOB_RES eFSS_BLOB_ReadBlob(t_eFSS_BLOB_Ctx* const p_ptCtx, const uint32_t p_uOffset, const uint32_t p_uBuffL,
                                    uint8_t* const p_puBuff);
 
 /**
