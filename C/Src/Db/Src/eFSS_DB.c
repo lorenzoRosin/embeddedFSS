@@ -274,14 +274,14 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
                                     {
                                         /* Check parameter */
                                         /* Is the ckeked parameter present in this page? */
-                                        if( ( l_tCurEle.uEleL + EFSS_DB_RAWOFF ) <= 
+                                        if( ( l_tCurEle.uEleL + EFSS_DB_RAWOFF ) <=
                                             ( l_tBuff.uBufL + l_uByteInPageDone ) )
                                         {
                                             /* Can retrive the element */
                                             l_tGettedEle.uEleL = l_tCurEle.uEleL;
                                             l_eRes = eFSS_DB_GetEleRawInBuffer( l_tCurEle.uEleL,
                                                                                 &l_tBuff.puBuf[l_uByteInPageDone],
-                                                                                &l_tGettedEle.uEleV, 
+                                                                                &l_tGettedEle.uEleV,
                                                                                 &l_tGettedEle.puEleRaw);
                                             if( e_eFSS_DB_RES_OK == l_eRes )
                                             {
@@ -369,7 +369,7 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
                                     {
                                         /* Check parameter but remeber, they must not be present on the storage */
                                         /* Is the ckeked parameter present in this page? */
-                                        if( ( l_tCurEle.uEleL + EFSS_DB_RAWOFF ) <= 
+                                        if( ( l_tCurEle.uEleL + EFSS_DB_RAWOFF ) <=
                                             ( l_tBuff.uBufL - l_uByteInPageDone ) )
                                         {
                                             /* Check that data is not valid because is zero */
@@ -556,7 +556,7 @@ e_eFSS_DB_RES eFSS_DB_FormatToDefault(t_eFSS_DB_Ctx* const p_ptCtx)
                                                                        p_ptCtx->tDB.ptDefEle[l_uCheckedElem]);
                                     if( e_eFSS_DB_RES_OK == l_eRes )
                                     {
-                                        l_uByteInPageDone += ( p_ptCtx->tDB.ptDefEle[l_uCheckedElem].uEleL + 
+                                        l_uByteInPageDone += ( p_ptCtx->tDB.ptDefEle[l_uCheckedElem].uEleL +
                                                                EFSS_DB_RAWOFF );
                                         l_uCheckedElem++;
                                     }
