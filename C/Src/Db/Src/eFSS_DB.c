@@ -59,7 +59,7 @@ e_eFSS_DB_RES eFSS_DB_InitCtx(t_eFSS_DB_Ctx* const p_ptCtx, const t_eFSS_TYPE_Cb
 {
     /* Local return variable */
     e_eFSS_DB_RES l_eRes;
-    e_eFSS_DBC_RES  l_eDBCRes;
+    e_eFSS_DBC_RES l_eDBCRes;
     bool_t l_bIsDbStructValid;
 
     /* Local storage variable */
@@ -87,7 +87,7 @@ e_eFSS_DB_RES eFSS_DB_InitCtx(t_eFSS_DB_Ctx* const p_ptCtx, const t_eFSS_TYPE_Cb
             }
             else
             {
-                /* Can init low level context, and after get the used space and check database validity  */
+                /* Can init low level context, and after get the used space and check database validity */
                 l_eDBCRes = eFSS_DBC_InitCtx(&p_ptCtx->tDbcCtx, p_tCtxCb, p_tStorSet, p_puBuff, p_uBuffL);
                 l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
 
@@ -105,6 +105,9 @@ e_eFSS_DB_RES eFSS_DB_InitCtx(t_eFSS_DB_Ctx* const p_ptCtx, const t_eFSS_TYPE_Cb
                         {
                             /* We need more space for the DB */
                             l_eRes = e_eFSS_DB_RES_BADPARAM;
+
+                            /* De init DBC */
+                            (void)memset(&p_ptCtx->tDbcCtx, 0, sizeof(t_eFSS_DBC_Ctx));
                         }
                         else
                         {
@@ -122,6 +125,8 @@ e_eFSS_DB_RES eFSS_DB_InitCtx(t_eFSS_DB_Ctx* const p_ptCtx, const t_eFSS_TYPE_Cb
                             {
                                 /* All ok, fill context */
                                 p_ptCtx->tDB = p_tDbStruct;
+
+                                /* Set to false fo the first operation will trigger a stored DB check */
                                 p_ptCtx->bIsDbCheked = false;
                             }
                         }
@@ -143,7 +148,7 @@ e_eFSS_DB_RES eFSS_DB_IsInit(t_eFSS_DB_Ctx* const p_ptCtx, bool_t* const p_pbIsI
 {
 	/* Local variable */
     e_eFSS_DB_RES l_eRes;
-    e_eFSS_DBC_RES  l_eDBCRes;
+    e_eFSS_DBC_RES l_eDBCRes;
 
 	/* Check pointer validity */
 	if( NULL == p_ptCtx )
@@ -162,7 +167,7 @@ e_eFSS_DB_RES eFSS_DB_IsInit(t_eFSS_DB_Ctx* const p_ptCtx, bool_t* const p_pbIsI
 e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
 {
 	/* Local return variable */
-    e_eFSS_DB_RES  l_eRes;
+    e_eFSS_DB_RES l_eRes;
     e_eFSS_DBC_RES l_eDBCRes;
     bool_t l_bIsInit;
 
@@ -178,6 +183,7 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
     bool_t l_bNewParAdd;
     bool_t l_bIsNewAllZero;
     t_eFSS_DB_DbElement l_tCurEle;
+    t_eFSS_DB_DbElement l_tGettedEle;
     uint32_t l_uZeroEleIdx;
 
 	/* Check pointer validity */
@@ -261,30 +267,35 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
 
                                 if( l_uCheckedElem < p_ptCtx->tDB.uNEle )
                                 {
+                                    /* Get current parameter to check */
+                                    l_tCurEle = p_ptCtx->tDB.ptDefEle[l_uCheckedElem];
+
                                     if( false == l_bNewParAdd )
                                     {
                                         /* Check parameter */
                                         /* Is the ckeked parameter present in this page? */
-                                        if( ( l_uByteInPageDone + p_ptCtx->tDB.ptDefEle[l_uCheckedElem].uEleL + EFSS_DB_RAWOFF ) <= l_tBuff.uBufL )
+                                        if( ( l_tCurEle.uEleL + EFSS_DB_RAWOFF ) <= 
+                                            ( l_tBuff.uBufL + l_uByteInPageDone ) )
                                         {
                                             /* Can retrive the element */
-                                            l_tCurEle.uEleL = p_ptCtx->tDB.ptDefEle[l_uCheckedElem].uEleL;
-                                            l_eRes = eFSS_DB_GetEleRawInBuffer( p_ptCtx->tDB.ptDefEle[l_uCheckedElem].uEleL,
+                                            l_tGettedEle.uEleL = l_tCurEle.uEleL;
+                                            l_eRes = eFSS_DB_GetEleRawInBuffer( l_tCurEle.uEleL,
                                                                                 &l_tBuff.puBuf[l_uByteInPageDone],
-                                                                                &l_tCurEle.uEleV, &l_tCurEle.puEleRaw);
+                                                                                &l_tGettedEle.uEleV, 
+                                                                                &l_tGettedEle.puEleRaw);
                                             if( e_eFSS_DB_RES_OK == l_eRes )
                                             {
                                                 /* Check parameter */
-                                                if( l_tCurEle.uEleV != p_ptCtx->tDB.ptDefEle[l_uCheckedElem].uEleV )
+                                                if( l_tCurEle.uEleV != l_tGettedEle.uEleV )
                                                 {
                                                     /* Need to update this entry */
                                                     l_eRes = eFSS_DB_SetEleRawInBuffer( &l_tBuff.puBuf[l_uByteInPageDone],
-                                                                                        p_ptCtx->tDB.ptDefEle[l_uCheckedElem]);
+                                                                                        l_tCurEle);
                                                     if( e_eFSS_DB_RES_OK == l_eRes )
                                                     {
                                                         /* Updated */
-                                                        l_uByteInPageDone += ( l_tCurEle.uEleL + EFSS_DB_RAWOFF );
                                                         l_uCheckedElem++;
+                                                        l_uByteInPageDone += ( l_tCurEle.uEleL + EFSS_DB_RAWOFF );
                                                         l_bIsPageMod = true;
                                                         l_eRes = e_eFSS_DB_RES_PARAM_DEF_RESET;
                                                     }
@@ -297,6 +308,8 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
                                                 else
                                                 {
                                                     /* DB entry is ok, nothing to do */
+                                                    l_uCheckedElem++;
+                                                    l_uByteInPageDone += ( l_tCurEle.uEleL + EFSS_DB_RAWOFF );
                                                 }
                                             }
                                             else if( e_eFSS_DB_RES_NOTVALIDDB == l_eRes )
@@ -305,7 +318,8 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
                                                    So check that data is not valid because is zero */
                                                 l_bIsNewAllZero = true;
                                                 l_uZeroEleIdx = 0u;
-                                                while( l_uZeroEleIdx < ( p_ptCtx->tDB.ptDefEle[l_uCheckedElem].uEleL + EFSS_DB_RAWOFF ) )
+                                                while( ( l_uZeroEleIdx < ( l_tCurEle.uEleL + EFSS_DB_RAWOFF ) ) &&
+                                                       ( true == l_bIsNewAllZero ) )
                                                 {
                                                     if( 0u == l_tBuff.puBuf[l_uByteInPageDone+l_uZeroEleIdx] )
                                                     {
@@ -325,19 +339,24 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
 
                                                     /* Need to update this entry */
                                                     l_eRes = eFSS_DB_SetEleRawInBuffer( &l_tBuff.puBuf[l_uByteInPageDone],
-                                                                                        p_ptCtx->tDB.ptDefEle[l_uCheckedElem]);
+                                                                                        l_tCurEle);
                                                     if( e_eFSS_DB_RES_OK == l_eRes )
                                                     {
                                                         /* Updated */
                                                         l_uByteInPageDone += ( l_tCurEle.uEleL + EFSS_DB_RAWOFF );
                                                         l_uCheckedElem++;
                                                         l_bIsPageMod = true;
+                                                        l_eRes = e_eFSS_DB_RES_PARAM_DEF_RESET;
                                                     }
                                                     else
                                                     {
                                                         /* Bad param */
                                                         l_eRes = e_eFSS_DB_RES_NOTVALIDDB;
                                                     }
+                                                }
+                                                else
+                                                {
+                                                    l_eRes = e_eFSS_DB_RES_NOTVALIDDB;
                                                 }
                                             }
                                             else
@@ -350,12 +369,14 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
                                     {
                                         /* Check parameter but remeber, they must not be present on the storage */
                                         /* Is the ckeked parameter present in this page? */
-                                        if( ( l_uByteInPageDone + p_ptCtx->tDB.ptDefEle[l_uCheckedElem].uEleL + EFSS_DB_RAWOFF ) <= l_tBuff.uBufL )
+                                        if( ( l_tCurEle.uEleL + EFSS_DB_RAWOFF ) <= 
+                                            ( l_tBuff.uBufL - l_uByteInPageDone ) )
                                         {
                                             /* Check that data is not valid because is zero */
                                             l_bIsNewAllZero = true;
                                             l_uZeroEleIdx = 0u;
-                                            while( l_uZeroEleIdx < ( p_ptCtx->tDB.ptDefEle[l_uCheckedElem].uEleL + EFSS_DB_RAWOFF ) )
+                                            while( ( l_uZeroEleIdx < ( l_tCurEle.uEleL + EFSS_DB_RAWOFF ) ) &&
+                                                   ( true == l_bIsNewAllZero ) )
                                             {
                                                 if( 0u == l_tBuff.puBuf[l_uByteInPageDone+l_uZeroEleIdx] )
                                                 {
@@ -373,7 +394,7 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
                                                 /* So it's a freslhy added parameter */
                                                 /* Need to update this entry */
                                                 l_eRes = eFSS_DB_SetEleRawInBuffer( &l_tBuff.puBuf[l_uByteInPageDone],
-                                                                                    p_ptCtx->tDB.ptDefEle[l_uCheckedElem]);
+                                                                                    l_tCurEle );
                                                 if( e_eFSS_DB_RES_OK == l_eRes )
                                                 {
                                                     /* Updated */
@@ -438,9 +459,9 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
                         }
                         else
                         {
-                            /* Database is corrupted, signal il as not cheked so we will not allow any other
+                            /* Database is corrupted, signal it as not cheked so we will not allow any other
                              * modification to this situation */
-                            p_ptCtx->bIsDbCheked = true;
+                            p_ptCtx->bIsDbCheked = false;
                         }
                     }
                 }
@@ -454,7 +475,7 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
 e_eFSS_DB_RES eFSS_DB_FormatToDefault(t_eFSS_DB_Ctx* const p_ptCtx)
 {
 	/* Local return variable */
-    e_eFSS_DB_RES  l_eRes;
+    e_eFSS_DB_RES l_eRes;
     e_eFSS_DBC_RES l_eDBCRes;
     bool_t l_bIsInit;
 
@@ -466,7 +487,6 @@ e_eFSS_DB_RES eFSS_DB_FormatToDefault(t_eFSS_DB_Ctx* const p_ptCtx)
     uint32_t l_uCurrPage;
     uint32_t l_uCheckedElem;
     uint32_t l_uByteInPageDone;
-    uint32_t l_uUsedByte;
 
 	/* Check pointer validity */
 	if( NULL == p_ptCtx )
@@ -516,7 +536,6 @@ e_eFSS_DB_RES eFSS_DB_FormatToDefault(t_eFSS_DB_Ctx* const p_ptCtx)
 
                             /* Set to zero the numbers of byte used */
                             l_uByteInPageDone = 0u;
-                            l_uUsedByte = 0u;
 
                             /* Continue till the page is full, parameter are avaiable, or an error occours */
                             while( ( e_eFSS_DB_RES_OK == l_eRes ) ||
@@ -537,7 +556,8 @@ e_eFSS_DB_RES eFSS_DB_FormatToDefault(t_eFSS_DB_Ctx* const p_ptCtx)
                                                                        p_ptCtx->tDB.ptDefEle[l_uCheckedElem]);
                                     if( e_eFSS_DB_RES_OK == l_eRes )
                                     {
-                                        l_uByteInPageDone += l_uUsedByte;
+                                        l_uByteInPageDone += ( p_ptCtx->tDB.ptDefEle[l_uCheckedElem].uEleL + 
+                                                               EFSS_DB_RAWOFF );
                                         l_uCheckedElem++;
                                     }
                                 }
@@ -575,7 +595,7 @@ e_eFSS_DB_RES eFSS_DB_SaveElemen(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_
 {
 	/* Local return variable */
     e_eFSS_DB_RES l_eRes;
-    e_eFSS_DBC_RES  l_eDBCRes;
+    e_eFSS_DBC_RES l_eDBCRes;
     bool_t l_bIsInit;
 
     /* Local variable for storage */
@@ -615,7 +635,7 @@ e_eFSS_DB_RES eFSS_DB_SaveElemen(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_
                 else
                 {
                     /* Verify if parameter is ok checked against the DB */
-                    if( ( p_uPos > p_ptCtx->tDB.uNEle ) || ( p_uElemL != p_ptCtx->tDB.ptDefEle[p_uPos].uEleL ) )
+                    if( ( p_uPos >= p_ptCtx->tDB.uNEle ) || ( p_uElemL != p_ptCtx->tDB.ptDefEle[p_uPos].uEleL ) )
                     {
                         l_eRes = e_eFSS_DB_RES_BADPARAM;
                     }
@@ -650,7 +670,7 @@ e_eFSS_DB_RES eFSS_DB_SaveElemen(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_
 
                                     if( ( e_eFSS_DB_RES_OK == l_eRes ) || ( e_eFSS_DB_RES_OK_BKP_RCVRD == l_eRes ) )
                                     {
-                                        /* Verify if the already stroed element is correct  */
+                                        /* Verify if the already stroed element is correct */
                                         l_tCurEle.uEleL = p_ptCtx->tDB.ptDefEle[p_uPos].uEleL;
                                         l_eRes = eFSS_DB_GetEleRawInBuffer( p_ptCtx->tDB.ptDefEle[p_uPos].uEleL,
                                                                             &l_tBuff.puBuf[p_puPagePos],
@@ -702,7 +722,7 @@ e_eFSS_DB_RES eFSS_DB_GetElement(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_
 {
 	/* Local return variable */
     e_eFSS_DB_RES l_eRes;
-    e_eFSS_DBC_RES  l_eDBCRes;
+    e_eFSS_DBC_RES l_eDBCRes;
     bool_t l_bIsInit;
 
     /* Local variable for storage */
@@ -710,8 +730,8 @@ e_eFSS_DB_RES eFSS_DB_GetElement(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_
     uint32_t l_uUsePages;
 
     /* Local variable for calculation */
-    uint32_t p_puPageIdx;
-    uint32_t p_puPagePos;
+    uint32_t l_uPageIdx;
+    uint32_t l_uPagePos;
     t_eFSS_DB_DbElement l_tCurEle;
 
 	/* Check pointer validity */
@@ -742,7 +762,7 @@ e_eFSS_DB_RES eFSS_DB_GetElement(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_
                 else
                 {
                     /* Verify if parameter is ok checked against the DB */
-                    if( ( p_uPos > p_ptCtx->tDB.uNEle ) || ( p_uElemL != p_ptCtx->tDB.ptDefEle[p_uPos].uEleL ) )
+                    if( ( p_uPos >= p_ptCtx->tDB.uNEle ) || ( p_uElemL != p_ptCtx->tDB.ptDefEle[p_uPos].uEleL ) )
                     {
                         l_eRes = e_eFSS_DB_RES_BADPARAM;
                     }
@@ -767,20 +787,20 @@ e_eFSS_DB_RES eFSS_DB_GetElement(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_
                             {
                                 /* Find the page and page index where to get the data */
                                 l_eRes = eFSS_DB_FindElePageAndPos(l_tBuff.uBufL, p_ptCtx->tDB, p_uPos,
-                                                                   &p_puPageIdx, &p_puPagePos);
+                                                                   &l_uPageIdx, &l_uPagePos);
 
                                 if( e_eFSS_DB_RES_OK == l_eRes )
                                 {
                                     /* Load the page where we can find the needed element */
-                                    l_eDBCRes = eFSS_DBC_LoadPageInBuff(&p_ptCtx->tDbcCtx, p_puPageIdx);
+                                    l_eDBCRes = eFSS_DBC_LoadPageInBuff(&p_ptCtx->tDbcCtx, l_uPageIdx);
                                     l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
 
                                     if( ( e_eFSS_DB_RES_OK == l_eRes ) || ( e_eFSS_DB_RES_OK_BKP_RCVRD == l_eRes ) )
                                     {
-                                        /* Verify if the already stroed element is correct  */
+                                        /* Verify if the already stroed element is correct */
                                         l_tCurEle.uEleL = p_ptCtx->tDB.ptDefEle[p_uPos].uEleL;
                                         l_eRes = eFSS_DB_GetEleRawInBuffer( p_ptCtx->tDB.ptDefEle[p_uPos].uEleL,
-                                                                            &l_tBuff.puBuf[p_puPagePos],
+                                                                            &l_tBuff.puBuf[l_uPagePos],
                                                                             &l_tCurEle.uEleV, &l_tCurEle.puEleRaw);
 
                                         if( e_eFSS_DB_RES_OK == l_eRes )
@@ -812,6 +832,7 @@ e_eFSS_DB_RES eFSS_DB_GetElement(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_
 }
 
 
+
 /***********************************************************************************************************************
  *  PRIVATE FUNCTION
  **********************************************************************************************************************/
@@ -819,7 +840,7 @@ static bool_t eFSS_DB_IsStatusStillCoherent(t_eFSS_DB_Ctx* const p_ptCtx)
 {
     /* Local return variable */
     bool_t l_eRes;
-    e_eFSS_DBC_RES  l_eDBCRes;
+    e_eFSS_DBC_RES l_eDBCRes;
 
     /* Local storage variable */
     t_eFSS_DBC_StorBuf l_tBuff;
@@ -1175,7 +1196,7 @@ static e_eFSS_DB_RES eFSS_DB_FindElePageAndPos(const uint32_t p_uPageL, const t_
     else
     {
         /* Check element validity */
-        if( ( 0u == p_tDbStruct.uNEle ) || ( p_uPageL < EFSS_DB_MINPAGESIZE ) || ( p_uEleIdx > p_tDbStruct.uNEle ) )
+        if( ( 0u == p_tDbStruct.uNEle ) || ( p_uPageL < EFSS_DB_MINPAGESIZE ) || ( p_uEleIdx >= p_tDbStruct.uNEle ) )
         {
             l_eRes = e_eFSS_DB_RES_BADPARAM;
         }
