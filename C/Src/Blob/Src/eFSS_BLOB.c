@@ -47,7 +47,7 @@ static e_eFSS_BLOB_RES eFSS_BLOB_BlobCtoBLOBRes(const e_eFSS_BLOBC_RES p_eCRes);
 /***********************************************************************************************************************
  *  PRIVATE UTILS STATIC FUNCTION DECLARATION
  **********************************************************************************************************************/
-static e_eFSS_BLOB_RES eFSS_BLOB_OriginBackupAligner(t_eFSS_BLOB_Ctx* const p_ptCtx);
+static e_eFSS_BLOB_RES eFSS_BLOB_OriginBackupAligner(t_eFSS_BLOB_Ctx* const p_ptCtx, const bool_t p_bForce);
 
 
 
@@ -180,18 +180,7 @@ e_eFSS_BLOB_RES eFSS_BLOB_GetStorageStatus(t_eFSS_BLOB_Ctx* const p_ptCtx)
                     }
                     else
                     {
-                        l_eRes = eFSS_BLOB_OriginBackupAligner(p_ptCtx);
-
-                        if( ( e_eFSS_BLOB_RES_OK == l_eRes ) || ( e_eFSS_BLOB_RES_OK_BKP_RCVRD == l_eRes ) )
-                        {
-                            /* Signal it has checked so we dont need to redo this ckeck every time */
-                            p_ptCtx->bIsBlobCheked = true;
-                        }
-                        else
-                        {
-                            /* Be sure to redo the check */
-                            p_ptCtx->bIsBlobCheked = false;
-                        }
+                        l_eRes = eFSS_BLOB_OriginBackupAligner(p_ptCtx, true);
                     }
                 }
             }
@@ -248,21 +237,7 @@ e_eFSS_BLOB_RES eFSS_BLOB_GetInfo(t_eFSS_BLOB_Ctx* const p_ptCtx, uint32_t* cons
                     }
                     else
                     {
-                        if( false == p_ptCtx->bIsBlobCheked )
-                        {
-                            l_eRes = eFSS_BLOB_OriginBackupAligner(p_ptCtx);
-
-                            if( ( e_eFSS_BLOB_RES_OK == l_eRes ) || ( e_eFSS_BLOB_RES_OK_BKP_RCVRD == l_eRes ) )
-                            {
-                                /* Signal it has checked so we dont need to redo this ckeck every time */
-                                p_ptCtx->bIsBlobCheked = true;
-                            }
-                            else
-                            {
-                                /* Be sure to redo the check */
-                                p_ptCtx->bIsBlobCheked = false;
-                            }
-                        }
+                        l_eRes = eFSS_BLOB_OriginBackupAligner(p_ptCtx, false);
 
                         if( ( e_eFSS_BLOB_RES_OK == l_eRes ) || ( e_eFSS_BLOB_RES_OK_BKP_RCVRD == l_eRes ) )
                         {
@@ -437,8 +412,8 @@ e_eFSS_BLOB_RES eFSS_BLOB_ReadBlob(t_eFSS_BLOB_Ctx* const p_ptCtx, const uint32_
     /* Local variable for calculation */
     bool_t l_bIsInit;
     t_eFSS_BLOBC_StorBuf l_tBuff;
-    uint32_t l_uUsableP;
-    uint32_t l_uBlobCrc;
+    uint32_t l_uUsePages;
+    uint32_t l_uSeqNumb;
     uint32_t l_uBlobSize;
     uint32_t l_uCurrPage;
     uint32_t l_uCurrPageR;
@@ -472,59 +447,87 @@ e_eFSS_BLOB_RES eFSS_BLOB_ReadBlob(t_eFSS_BLOB_Ctx* const p_ptCtx, const uint32_
                 }
                 else
                 {
-                    l_eResC = eFSS_BLOBC_GetBuff(&p_ptCtx->tBLOBCCtx, &l_tBuff);
-                    l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
-
-                    if( e_eFSS_BLOB_RES_OK == l_eRes )
+                    if( true == p_ptCtx->bIsWriteOngoing )
                     {
-                        l_eResC = eFSS_BLOBC_GetUsablePage(&p_ptCtx->tBLOBCCtx, &l_uUsableP);
-                        l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
+                        l_eRes = e_eFSS_BLOB_RES_WRITEONGOING;
+                    }
+                    else
+                    {
+                        /* Fix any memory problem */
+                        l_eRes = eFSS_BLOB_OriginBackupAligner(p_ptCtx, false);
 
-                        if( e_eFSS_BLOB_RES_OK == l_eRes )
+                        if( ( e_eFSS_BLOB_RES_OK == l_eRes ) || ( e_eFSS_BLOB_RES_OK_BKP_RCVRD == l_eRes ) )
                         {
-                            /* Fix any memory problem */
-                            l_eRes = eFSS_BLOB_OriginBackupAligner(p_ptCtx);
+                            /* Retrive buffer data */
+                            l_uUsePages = 0u;
+                            l_eResC = eFSS_BLOBC_GetBuffNUsable(&p_ptCtx->tBLOBCCtx, &l_tBuff, &l_uUsePages);
+                            l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
 
-                            if( ( e_eFSS_BLOB_RES_OK == l_eRes ) || ( e_eFSS_BLOB_RES_OK_BKP_RCVRD == l_eRes ) )
+                            if( e_eFSS_BLOB_RES_OK == l_eRes )
                             {
-                                /* Now we are sure page are aligned */
-                                l_eResC = eFSS_LOGC_GetOriginalPageMeta(&p_ptCtx->tBLOBCCtx, &l_uBlobSize, &l_uBlobCrc);
+                                /* Get Blob info, load last page */
+                                l_eResC = eFSS_BLOBC_LoadBufferFromPage(&p_ptCtx->tBLOBCCtx, true,
+                                                                        ( l_uUsePages - 1u ), &l_uSeqNumb);
                                 l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
                                 if( e_eFSS_BLOB_RES_OK == l_eRes )
                                 {
-                                    /* possible to read? */
-                                    if( ( p_uOffset + p_uBuffL ) > l_uBlobSize)
+                                    /* Extract data from the last page */
+                                    if( true != eFSS_Utils_RetriveU32(&l_tBuff.puBuf[l_tBuff.uBufL - EFSS_BLOB_LENOFF],
+                                                                      &l_uBlobSize ) )
                                     {
-                                        l_eRes = e_eFSS_BLOB_RES_BADPARAM;
+                                        l_eRes = e_eFSS_BLOB_RES_CORRUPTCTX;
                                     }
                                     else
                                     {
-                                        /* Find starting page */
-                                        l_uRemToRead = p_uBuffL;
-                                        l_uCurrPage = (uint32_t)(p_uOffset / l_tBuff.uBufL);
-                                        l_uCurrPageR = (uint32_t)(p_uOffset % l_tBuff.uBufL);
-
-                                        while( ( l_uRemToRead > 0u) && ( e_eFSS_BLOB_RES_OK == l_eRes ) )
+                                        /* Is retrived size coherent? */
+                                        if( l_uBlobSize > ( ( l_uUsePages * l_tBuff.uBufL ) - EFSS_BLOB_LENOFF ) )
                                         {
-                                            l_eResC = eFSS_LOGC_LoadBufferFromNewPage(&p_ptCtx->tBLOBCCtx, &l_uSeqN, l_uCurrPage);
-                                            l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
-
-                                            if( e_eFSS_BLOB_RES_OK == l_eRes )
+                                            l_eRes = e_eFSS_BLOB_RES_NOTVALIDBLOB;
+                                        }
+                                        else
+                                        {
+                                            /* Verify data validity */
+                                            if( ( p_uBuffL <= 0u ) || ( p_uBuffL > l_uBlobSize ) ||
+                                                ( p_uOffset > l_uBlobSize ) || ( ( p_uOffset + p_uBuffL ) > l_uBlobSize ) )
                                             {
+                                                l_eRes = e_eFSS_BLOB_RES_BADPARAM;
+                                            }
+                                            else
+                                            {
+                                                /* Now we are sure page are aligned, and that passed data is valid */
+                                                /* Ini read counter */
+                                                l_uRemToRead = p_uBuffL;
 
-                                                if( l_uRemToRead > (l_tBuff.uBufL - l_uCurrPageR) )
+                                                /* Find starting page *//* Find starting page */
+                                                l_uCurrPage = (uint32_t)(p_uOffset / l_tBuff.uBufL);
+                                                l_uCurrPageR = (uint32_t)(p_uOffset % l_tBuff.uBufL);
+
+                                                while( ( l_uRemToRead > 0u ) && ( e_eFSS_BLOB_RES_OK == l_eRes ) )
                                                 {
-                                                    memcpy(p_puBuff, &l_tBuff.puBuf[l_uCurrPageR], (l_tBuff.uBufL - l_uCurrPageR) );
-                                                    l_uCurrPageR = 0u;
-                                                    l_uRemToRead -= (l_tBuff.uBufL - l_uCurrPageR);
+                                                    /* Read the current buffer */
+                                                    l_eResC = eFSS_BLOBC_LoadBufferFromPage(&p_ptCtx->tBLOBCCtx, true,
+                                                                                            l_uCurrPage, &l_uSeqN);
+                                                    l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
+
+                                                    if( e_eFSS_BLOB_RES_OK == l_eRes )
+                                                    {
+                                                        /* Can copy data to the user buffer */
+                                                        if( l_uRemToRead > ( l_tBuff.uBufL - l_uCurrPageR ) )
+                                                        {
+                                                            memcpy(p_puBuff, &l_tBuff.puBuf[l_uCurrPageR], (l_tBuff.uBufL - l_uCurrPageR) );
+                                                            l_uCurrPageR = 0u;
+                                                            l_uRemToRead -= (l_tBuff.uBufL - l_uCurrPageR);
+                                                        }
+                                                        else
+                                                        {
+                                                            memcpy(p_puBuff, &l_tBuff.puBuf[l_uCurrPageR], l_uRemToRead);
+                                                            l_uCurrPageR = 0u;
+                                                            l_uRemToRead = 0u;
+                                                        }
+
+                                                        l_uCurrPage++;
+                                                    }
                                                 }
-                                                else
-                                                {
-                                                    memcpy(p_puBuff, &l_tBuff.puBuf[l_uCurrPageR], l_uRemToRead);
-                                                    l_uCurrPageR = 0u;
-                                                    l_uRemToRead = 0u;
-                                                }
-                                                l_uCurrPage++;
                                             }
                                         }
                                     }
@@ -548,8 +551,6 @@ e_eFSS_BLOB_RES eFSS_BLOB_StartWrite(t_eFSS_BLOB_Ctx* const p_ptCtx)
 
     /* Local variable for calculation */
     bool_t l_bIsInit;
-    uint32_t l_uBlobCrc;
-    uint32_t l_uBlobSize;
     uint32_t l_uSeqN;
 
 	/* Check pointer validity */
@@ -579,21 +580,30 @@ e_eFSS_BLOB_RES eFSS_BLOB_StartWrite(t_eFSS_BLOB_Ctx* const p_ptCtx)
                 }
                 else
                 {
-                    /* Fix any memory problem before start writing */
-                    l_eRes = eFSS_BLOB_OriginBackupAligner(p_ptCtx);
-
-                    if( ( e_eFSS_BLOB_RES_OK == l_eRes ) || ( e_eFSS_BLOB_RES_OK_BKP_RCVRD == l_eRes ) )
+                    if( true == p_ptCtx->bIsWriteOngoing )
                     {
-                        l_eResC = eFSS_LOGC_LoadBufferFromNewPage(&p_ptCtx->tBLOBCCtx, &l_uSeqN, 0u);
-                        l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
+                        l_eRes = e_eFSS_BLOB_RES_WRITEONGOING;
+                    }
+                    else
+                    {
+                        /* Fix any memory problem */
+                        l_eRes = eFSS_BLOB_OriginBackupAligner(p_ptCtx, false);
 
-                        if( e_eFSS_BLOB_RES_OK == l_eRes )
+                        if( ( e_eFSS_BLOB_RES_OK == l_eRes ) || ( e_eFSS_BLOB_RES_OK_BKP_RCVRD == l_eRes ) )
                         {
-                            /* Can return requested data if offset and size are coherent */
-                            p_ptCtx->bIsWriteOngoing = true;
-                            p_ptCtx->uDataWritten = 0u;
-                            p_ptCtx->uCrcOfDataWritten = 0u;
-                            p_ptCtx->uCurrentSeqN = l_uSeqN + 1u;
+                            /* Load a page just to read sequential number and increase it */
+                            l_eResC = eFSS_BLOBC_LoadBufferFromPage(&p_ptCtx->tBLOBCCtx, true,
+                                                                    0u, &l_uSeqN);
+                            l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
+
+                            if( e_eFSS_BLOB_RES_OK == l_eRes )
+                            {
+                                /* Can return requested data if offset and size are coherent */
+                                p_ptCtx->bIsWriteOngoing = true;
+                                p_ptCtx->uDataWritten = 0u;
+                                p_ptCtx->uCrcOfDataWritten = 0u;
+                                p_ptCtx->uCurrentSeqN = l_uSeqN + 1u;
+                            }
                         }
                     }
                 }
@@ -613,8 +623,7 @@ e_eFSS_BLOB_RES eFSS_BLOB_AppendData(t_eFSS_BLOB_Ctx* const p_ptCtx, uint8_t* co
     /* Local variable for calculation */
     bool_t l_bIsInit;
     t_eFSS_BLOBC_StorBuf l_tBuff;
-    uint32_t l_uUsableP;
-    uint32_t l_uBlobCrc;
+    uint32_t l_uUsePages;
     uint32_t l_uBlobSize;
     uint32_t l_uCurrPage;
     uint32_t l_uCurrPageR;
@@ -648,56 +657,68 @@ e_eFSS_BLOB_RES eFSS_BLOB_AppendData(t_eFSS_BLOB_Ctx* const p_ptCtx, uint8_t* co
                 }
                 else
                 {
-                    l_eResC = eFSS_BLOBC_GetBuff(&p_ptCtx->tBLOBCCtx, &l_tBuff);
-                    l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
-
-                    if( e_eFSS_BLOB_RES_OK == l_eRes )
+                    if( false == p_ptCtx->bIsWriteOngoing )
                     {
-                        l_eResC = eFSS_BLOBC_GetUsablePage(&p_ptCtx->tBLOBCCtx, &l_uUsableP);
+                        l_eRes = e_eFSS_BLOB_RES_BADPARAM;
+                    }
+                    else
+                    {
+                        l_uUsePages = 0u;
+                        l_eResC = eFSS_BLOBC_GetBuffNUsable(&p_ptCtx->tBLOBCCtx, &l_tBuff, &l_uUsePages);
                         l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
 
                         if( e_eFSS_BLOB_RES_OK == l_eRes )
                         {
-                            /* possible to write? */
-                            if( ( p_uBuffL + p_ptCtx->uDataWritten ) > ( l_uUsableP * l_tBuff.uBufL ) )
+                            /* Verify data validity */
+                            if( l_uBlobSize > ( ( l_uUsePages * l_tBuff.uBufL ) - EFSS_BLOB_LENOFF ) )
                             {
-                                l_eRes = e_eFSS_BLOB_RES_BADPARAM;
+                                l_eRes = e_eFSS_BLOB_RES_NOTVALIDBLOB;
                             }
                             else
                             {
-                                /* Find starting page */
-                                l_uRemToWrite = p_uBuffL;
-                                l_uCurrPage = (uint32_t)(p_ptCtx->uDataWritten / l_tBuff.uBufL);
-                                l_uCurrPageR = (uint32_t)(p_ptCtx->uDataWritten % l_tBuff.uBufL);
-
-                                while( ( l_uRemToWrite > 0u) && ( e_eFSS_BLOB_RES_OK == l_eRes ) )
+                                /* Verify data validity */
+                                if( ( p_uBuffL <= 0u ) || ( p_uBuffL > l_uBlobSize ) ||
+                                    ( p_ptCtx->uDataWritten > l_uBlobSize ) || ( ( p_ptCtx->uDataWritten + p_uBuffL ) > ( ( l_uUsePages * l_tBuff.uBufL ) - EFSS_BLOB_LENOFF ) ) )
                                 {
-                                    /* First load the page that we want to write */
-                                    l_eResC = eFSS_LOGC_LoadBufferFromNewPage(&p_ptCtx->tBLOBCCtx, &l_uSeqN, l_uCurrPage);
-                                    l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
+                                    l_eRes = e_eFSS_BLOB_RES_BADPARAM;
+                                }
+                                else
+                                {
+                                    /* Find starting page */
+                                    l_uRemToWrite = p_uBuffL;
+                                    l_uCurrPage = (uint32_t)(p_ptCtx->uDataWritten / l_tBuff.uBufL);
+                                    l_uCurrPageR = (uint32_t)(p_ptCtx->uDataWritten % l_tBuff.uBufL);
 
-                                    if( e_eFSS_BLOB_RES_OK == l_eRes )
+                                    while( ( l_uRemToWrite > 0u) && ( e_eFSS_BLOB_RES_OK == l_eRes ) )
                                     {
-                                        if( l_uRemToWrite > (l_tBuff.uBufL - l_uCurrPageR) )
-                                        {
-                                            memcpy(p_puBuff, &l_tBuff.puBuf[l_uCurrPageR], (l_tBuff.uBufL - l_uCurrPageR) );
-                                            l_uCurrPageR = 0u;
-                                            l_uRemToWrite -= (l_tBuff.uBufL - l_uCurrPageR);
-                                        }
-                                        else
-                                        {
-                                            /* Set to zero the unused data */
-                                            memset(&l_tBuff.puBuf, 0u, l_tBuff.uBufL);
-                                            memcpy(p_puBuff, &l_tBuff.puBuf[l_uCurrPageR], l_uRemToWrite);
-                                            l_uCurrPageR = 0u;
-                                            l_uRemToWrite = 0u;
-                                        }
-
-                                        /* Buffer flush */
-                                        l_eResC = eFSS_LOGC_FlushBufferInNewPage(&p_ptCtx->tBLOBCCtx, p_ptCtx->uCurrentSeqN, l_uCurrPage);
+                                        /* First load the page that we want to write, because we could have some
+                                           already appended data */
+                                        l_eResC = eFSS_BLOBC_LoadBufferFromPage(&p_ptCtx->tBLOBCCtx, true, l_uCurrPage, &l_uSeqN);
                                         l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
 
-                                        l_uCurrPage++;
+                                        if( e_eFSS_BLOB_RES_OK == l_eRes )
+                                        {
+                                            if( l_uRemToWrite > (l_tBuff.uBufL - l_uCurrPageR) )
+                                            {
+                                                memcpy(p_puBuff, &l_tBuff.puBuf[l_uCurrPageR], (l_tBuff.uBufL - l_uCurrPageR) );
+                                                l_uCurrPageR = 0u;
+                                                l_uRemToWrite -= (l_tBuff.uBufL - l_uCurrPageR);
+                                            }
+                                            else
+                                            {
+                                                /* Set to zero the unused data */
+                                                memset(&l_tBuff.puBuf, 0u, l_tBuff.uBufL);
+                                                memcpy(p_puBuff, &l_tBuff.puBuf[l_uCurrPageR], l_uRemToWrite);
+                                                l_uCurrPageR = 0u;
+                                                l_uRemToWrite = 0u;
+                                            }
+
+                                            /* Buffer flush */
+                                            l_eResC = eFSS_BLOBC_FlushBufferInPage(&p_ptCtx->tBLOBCCtx, true, l_uCurrPage, p_ptCtx->uCurrentSeqN);
+                                            l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
+
+                                            l_uCurrPage++;
+                                        }
                                     }
                                 }
                             }
@@ -719,6 +740,13 @@ e_eFSS_BLOB_RES eFSS_BLOB_EndWrite(t_eFSS_BLOB_Ctx* const p_ptCtx)
 
     /* Local variable for calculation */
     bool_t l_bIsInit;
+    t_eFSS_BLOBC_StorBuf l_tBuff;
+    uint32_t l_uUsePages;
+    uint32_t l_uBlobSize;
+    uint32_t l_uCurrPage;
+    uint32_t l_uCurrPageR;
+    uint32_t l_uRemToWrite;
+    uint32_t l_uSeqN;
 
 	/* Check pointer validity */
 	if( NULL == p_ptCtx )
@@ -747,14 +775,71 @@ e_eFSS_BLOB_RES eFSS_BLOB_EndWrite(t_eFSS_BLOB_Ctx* const p_ptCtx)
                 }
                 else
                 {
-                    /* Fix any memory problem */
-                    l_eResC = eFSS_LOGC_SetOriginalPageMeta(&p_ptCtx->tBLOBCCtx, p_ptCtx->uDataWritten, p_ptCtx->uCrcOfDataWritten);
-                    l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
-
-                    if( e_eFSS_BLOB_RES_OK == l_eRes )
+                    if( false == p_ptCtx->bIsWriteOngoing )
                     {
-                        l_eResC = eFSS_BLOBC_GenerateBkup(&p_ptCtx->tBLOBCCtx);
+                        l_eRes = e_eFSS_BLOB_RES_BADPARAM;
+                    }
+                    else
+                    {
+                        l_uUsePages = 0u;
+                        l_eResC = eFSS_BLOBC_GetBuffNUsable(&p_ptCtx->tBLOBCCtx, &l_tBuff, &l_uUsePages);
                         l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
+
+                        if( e_eFSS_BLOB_RES_OK == l_eRes )
+                        {
+                            /* Verify data validity */
+                            if( l_uBlobSize > ( ( l_uUsePages * l_tBuff.uBufL ) - EFSS_BLOB_LENOFF ) )
+                            {
+                                l_eRes = e_eFSS_BLOB_RES_NOTVALIDBLOB;
+                            }
+                            else
+                            {
+                                /* Verify data validity */
+                                if( p_ptCtx->uDataWritten > l_uBlobSize )
+                                {
+                                    l_eRes = e_eFSS_BLOB_RES_BADPARAM;
+                                }
+                                else
+                                {
+                                    /* Find starting page */
+                                    l_uRemToWrite = 0u;
+                                    l_uCurrPage = (uint32_t)(p_ptCtx->uDataWritten / l_tBuff.uBufL);
+                                    l_uCurrPageR = (uint32_t)(p_ptCtx->uDataWritten % l_tBuff.uBufL);
+
+                                    while( ( l_uRemToWrite > 0u) && ( e_eFSS_BLOB_RES_OK == l_eRes ) )
+                                    {
+                                        /* First load the page that we want to write, because we could have some
+                                           already appended data */
+                                        l_eResC = eFSS_BLOBC_LoadBufferFromPage(&p_ptCtx->tBLOBCCtx, true, l_uCurrPage, &l_uSeqN);
+                                        l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
+
+                                        if( e_eFSS_BLOB_RES_OK == l_eRes )
+                                        {
+                                            if( l_uRemToWrite > (l_tBuff.uBufL - l_uCurrPageR) )
+                                            {
+                                                memcpy(l_tBuff.puBuf, &l_tBuff.puBuf[l_uCurrPageR], (l_tBuff.uBufL - l_uCurrPageR) );
+                                                l_uCurrPageR = 0u;
+                                                l_uRemToWrite -= (l_tBuff.uBufL - l_uCurrPageR);
+                                            }
+                                            else
+                                            {
+                                                /* Set to zero the unused data */
+                                                memset(&l_tBuff.puBuf, 0u, l_tBuff.uBufL);
+                                                memcpy(l_tBuff.puBuf, &l_tBuff.puBuf[l_uCurrPageR], l_uRemToWrite);
+                                                l_uCurrPageR = 0u;
+                                                l_uRemToWrite = 0u;
+                                            }
+
+                                            /* Buffer flush */
+                                            l_eResC = eFSS_BLOBC_FlushBufferInPage(&p_ptCtx->tBLOBCCtx, true, l_uCurrPage, p_ptCtx->uCurrentSeqN);
+                                            l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
+
+                                            l_uCurrPage++;
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -772,6 +857,9 @@ e_eFSS_BLOB_RES eFSS_BLOB_AbortWrite(t_eFSS_BLOB_Ctx* const p_ptCtx)
 
     /* Local variable for calculation */
     bool_t l_bIsInit;
+    uint32_t l_uCurrPage;
+    t_eFSS_BLOBC_StorBuf l_tBuff;
+    uint32_t l_uUsePages;
 
 	/* Check pointer validity */
 	if( NULL == p_ptCtx )
@@ -800,14 +888,27 @@ e_eFSS_BLOB_RES eFSS_BLOB_AbortWrite(t_eFSS_BLOB_Ctx* const p_ptCtx)
                 }
                 else
                 {
-                    /* Fix any memory problem */
-                    l_eResC = eFSS_LOGC_SetOriginalPageMeta(&p_ptCtx->tBLOBCCtx, p_ptCtx->uDataWritten, p_ptCtx->uCrcOfDataWritten);
-                    l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
-
-                    if( e_eFSS_BLOB_RES_OK == l_eRes )
+                    if( false == p_ptCtx->bIsWriteOngoing )
                     {
-                        l_eResC = eFSS_BLOBC_GenerateBkup(&p_ptCtx->tBLOBCCtx);
+                        l_eRes = e_eFSS_BLOB_RES_BADPARAM;
+                    }
+                    else
+                    {
+                        l_uUsePages = 0u;
+                        l_eResC = eFSS_BLOBC_GetBuffNUsable(&p_ptCtx->tBLOBCCtx, &l_tBuff, &l_uUsePages);
                         l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
+
+                        if( e_eFSS_BLOB_RES_OK == l_eRes )
+                        {
+                            /* Ok, we need to abort the current write and ripristinate the backup */
+                            l_uCurrPage = 0u;
+
+                            while( ( l_uCurrPage < l_uUsePages ) && ( e_eFSS_BLOB_RES_OK == l_eRes ) )
+                            {
+                                l_eResC = eFSS_BLOBC_CopyOriInBkpIfNotEquals(&p_ptCtx->tBLOBCCtx, l_uCurrPage);
+                                l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
+                            }
+                        }
                     }
                 }
             }
@@ -922,7 +1023,7 @@ static e_eFSS_BLOB_RES eFSS_BLOB_BlobCtoBLOBRes(const e_eFSS_BLOBC_RES p_eCRes)
     return l_eRes;
 }
 
-static e_eFSS_BLOB_RES eFSS_BLOB_OriginBackupAligner(t_eFSS_BLOB_Ctx* const p_ptCtx)
+static e_eFSS_BLOB_RES eFSS_BLOB_OriginBackupAligner(t_eFSS_BLOB_Ctx* const p_ptCtx, const bool_t p_bForce)
 {
 	/* Local return variable */
 	e_eFSS_BLOB_RES l_eRes;
@@ -941,35 +1042,22 @@ static e_eFSS_BLOB_RES eFSS_BLOB_OriginBackupAligner(t_eFSS_BLOB_Ctx* const p_pt
     bool_t l_bIsValidOrig;
     bool_t l_bIsValidBkup;
 
-    l_eResC = eFSS_BLOBC_GetBuff(&p_ptCtx->tBLOBCCtx, &l_tBuff);
-    l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
-
-    if( e_eFSS_BLOB_RES_OK == l_eRes )
+    if( ( true == p_bForce ) || ( false == p_ptCtx->bIsBlobCheked ) )
     {
-        l_eResC = eFSS_BLOBC_GetUsablePage(&p_ptCtx->tBLOBCCtx, &l_uUsableP);
+        /* Start check */
+        l_eResC = eFSS_BLOBC_GetBuff(&p_ptCtx->tBLOBCCtx, &l_tBuff);
         l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
 
         if( e_eFSS_BLOB_RES_OK == l_eRes )
         {
-            /* Read all original pages, generate the page crc, verify sequential number and verify metadata validity */
-            l_uCurrPage = 0u;
-
-            while( ( l_uCurrPage < l_uUsableP ) && ( e_eFSS_BLOB_RES_OK == l_eRes ) )
-            {
-                l_eResC = eFSS_LOGC_LoadBufferFromNewPage(&p_ptCtx->tBLOBCCtx, &l_uSeqN, l_uCurrPage);
-                l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
-
-                if( e_eFSS_BLOB_RES_OK == l_eRes )
-                {
-                    l_eResC = eFSS_BLOBC_GetCrcFromTheBuffer(&p_ptCtx->tBLOBCCtx, l_uBlobCrc, &l_uBlobCrc);
-                    l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
-                }
-
-                l_uCurrPage++;
-            }
+            l_eResC = eFSS_BLOBC_GetUsablePage(&p_ptCtx->tBLOBCCtx, &l_uUsableP);
+            l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
 
             if( e_eFSS_BLOB_RES_OK == l_eRes )
             {
+                /* Read all original pages, generate the page crc, verify sequential number and verify metadata validity */
+                l_uCurrPage = 0u;
+
                 while( ( l_uCurrPage < l_uUsableP ) && ( e_eFSS_BLOB_RES_OK == l_eRes ) )
                 {
                     l_eResC = eFSS_LOGC_LoadBufferFromNewPage(&p_ptCtx->tBLOBCCtx, &l_uSeqN, l_uCurrPage);
@@ -986,25 +1074,53 @@ static e_eFSS_BLOB_RES eFSS_BLOB_OriginBackupAligner(t_eFSS_BLOB_Ctx* const p_pt
 
                 if( e_eFSS_BLOB_RES_OK == l_eRes )
                 {
-                    if( ( true == l_bIsValidOrig ) && ( true == l_bIsValidBkup ) )
+                    while( ( l_uCurrPage < l_uUsableP ) && ( e_eFSS_BLOB_RES_OK == l_eRes ) )
                     {
+                        l_eResC = eFSS_LOGC_LoadBufferFromNewPage(&p_ptCtx->tBLOBCCtx, &l_uSeqN, l_uCurrPage);
+                        l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
 
-                    }
-                    else if( ( true == l_bIsValidOrig ) && ( true == l_bIsValidBkup ) )
-                    {
+                        if( e_eFSS_BLOB_RES_OK == l_eRes )
+                        {
+                            l_eResC = eFSS_BLOBC_GetCrcFromTheBuffer(&p_ptCtx->tBLOBCCtx, l_uBlobCrc, &l_uBlobCrc);
+                            l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
+                        }
 
+                        l_uCurrPage++;
                     }
-                    else if( ( true == l_bIsValidOrig ) && ( true == l_bIsValidBkup ) )
-                    {
 
-                    }
-                    else
+                    if( e_eFSS_BLOB_RES_OK == l_eRes )
                     {
-                        l_eRes = e_eFSS_BLOB_RES_NOTVALIDBLOB;
+                        if( ( true == l_bIsValidOrig ) && ( true == l_bIsValidBkup ) )
+                        {
+
+                        }
+                        else if( ( true == l_bIsValidOrig ) && ( true == l_bIsValidBkup ) )
+                        {
+
+                        }
+                        else if( ( true == l_bIsValidOrig ) && ( true == l_bIsValidBkup ) )
+                        {
+
+                        }
+                        else
+                        {
+                            l_eRes = e_eFSS_BLOB_RES_NOTVALIDBLOB;
+                        }
                     }
                 }
             }
         }
+    }
+
+    if( ( e_eFSS_BLOB_RES_OK == l_eRes ) || ( e_eFSS_BLOB_RES_OK_BKP_RCVRD == l_eRes ) )
+    {
+        /* Signal it has checked so we dont need to redo this ckeck every time */
+        p_ptCtx->bIsBlobCheked = true;
+    }
+    else
+    {
+        /* Be sure to redo the check */
+        p_ptCtx->bIsBlobCheked = false;
     }
 
 	return l_eRes;
