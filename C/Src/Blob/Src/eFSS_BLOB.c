@@ -354,7 +354,7 @@ e_eFSS_BLOB_RES eFSS_BLOB_Format(t_eFSS_BLOB_Ctx* const p_ptCtx)
                                 {
                                     /* last page, calculate the CRC but exlude the CRC itself, and after that insert
                                        it inside the last page */
-                                    l_eResC = eFSS_BLOBC_GetCrcFromTheBuffer(&p_ptCtx->tBLOBCCtx, l_uBlobCrc, &l_uBlobCrc);
+                                    l_eResC = eFSS_BLOBC_GetCrcFromTheBuffer(&p_ptCtx->tBLOBCCtx, l_uBlobCrc, 0u, &l_uBlobCrc);
                                     l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
 
                                     if( e_eFSS_BLOB_RES_OK == l_eRes )
@@ -368,7 +368,7 @@ e_eFSS_BLOB_RES eFSS_BLOB_Format(t_eFSS_BLOB_Ctx* const p_ptCtx)
                                 }
                                 else
                                 {
-                                    l_eResC = eFSS_BLOBC_GetCrcFromTheBuffer(&p_ptCtx->tBLOBCCtx, l_uBlobCrc, &l_uBlobCrc);
+                                    l_eResC = eFSS_BLOBC_GetCrcFromTheBuffer(&p_ptCtx->tBLOBCCtx, l_uBlobCrc, 0u, &l_uBlobCrc);
                                     l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
                                 }
 
@@ -1065,7 +1065,7 @@ static e_eFSS_BLOB_RES eFSS_BLOB_OriginBackupAligner(t_eFSS_BLOB_Ctx* const p_pt
 
                     if( e_eFSS_BLOB_RES_OK == l_eRes )
                     {
-                        l_eResC = eFSS_BLOBC_GetCrcFromTheBuffer(&p_ptCtx->tBLOBCCtx, l_uBlobCrc, &l_uBlobCrc);
+                        l_eResC = eFSS_BLOBC_GetCrcFromTheBuffer(&p_ptCtx->tBLOBCCtx, l_uBlobCrc, 0u, &l_uBlobCrc);
                         l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
                     }
 
@@ -1081,7 +1081,7 @@ static e_eFSS_BLOB_RES eFSS_BLOB_OriginBackupAligner(t_eFSS_BLOB_Ctx* const p_pt
 
                         if( e_eFSS_BLOB_RES_OK == l_eRes )
                         {
-                            l_eResC = eFSS_BLOBC_GetCrcFromTheBuffer(&p_ptCtx->tBLOBCCtx, l_uBlobCrc, &l_uBlobCrc);
+                            l_eResC = eFSS_BLOBC_GetCrcFromTheBuffer(&p_ptCtx->tBLOBCCtx, l_uBlobCrc, 0u, &l_uBlobCrc);
                             l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
                         }
 

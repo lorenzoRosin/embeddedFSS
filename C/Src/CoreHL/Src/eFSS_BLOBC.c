@@ -391,7 +391,7 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_FlushBufferInPage(t_eFSS_BLOBC_Ctx* const p_ptCtx, c
 }
 
 e_eFSS_BLOBC_RES eFSS_BLOBC_GetCrcFromTheBuffer(t_eFSS_BLOBC_Ctx* const p_ptCtx, const uint32_t p_uSeed,
-                                                uint32_t* const p_puCrc)
+                                                const uint32_t p_uCrcL, uint32_t* const p_puCrc)
 {
 	/* Local variable */
 	e_eFSS_BLOBC_RES l_eRes;
@@ -437,8 +437,16 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_GetCrcFromTheBuffer(t_eFSS_BLOBC_Ctx* const p_ptCtx,
                         /* remove Seq Number from CRC calculation  */
                         l_uSeqOff = l_tBuff.uBufL - EFSS_BLOBC_PAGEMIN_L;
 
-                        l_eResHL = eFSS_COREHL_CalcCrcInBuff(&p_ptCtx->tCOREHLCtx, p_uSeed, l_uSeqOff, p_puCrc);
-                        l_eRes = eFSS_BLOBC_HLtoBLOBCRes(l_eResHL);
+                        /* Check data validity */
+                        if( ( 0u == p_uCrcL ) || ( p_uCrcL > l_uSeqOff ) )
+                        {
+                            l_eRes = e_eFSS_BLOBC_RES_BADPARAM;
+                        }
+                        else
+                        {
+                            l_eResHL = eFSS_COREHL_CalcCrcInBuff(&p_ptCtx->tCOREHLCtx, p_uSeed, p_uCrcL, p_puCrc);
+                            l_eRes = eFSS_BLOBC_HLtoBLOBCRes(l_eResHL);
+                        }
                     }
                 }
             }
@@ -534,6 +542,119 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_CopyOriInBkpIfNotEquals(t_eFSS_BLOBC_Ctx* const p_pt
                                                                                    EFSS_PAGESUBTYPE_BLOBBKP);
                                             l_eRes = eFSS_BLOBC_HLtoBLOBCRes(l_eResHL);
                                         }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+	}
+
+	return l_eRes;
+}
+
+e_eFSS_BLOBC_RES eFSS_BLOBC_CloneArea(t_eFSS_BLOBC_Ctx* const p_ptCtx, const bool_t p_bStartOri)
+{
+	/* Local variable */
+	e_eFSS_BLOBC_RES l_eRes;
+    e_eFSS_COREHL_RES l_eResHL;
+
+    /* Local var used for calculation */
+    bool_t l_bIsInit;
+    t_eFSS_TYPE_StorSet l_tStorSet;
+	uint32_t l_uLastPageIdx;
+    uint8_t l_uSubTypeReaded;
+
+    /* Local variable for ori backup target */
+    uint32_t l_uStartAreaOf;
+    uint32_t l_uTargetAreaOf;
+    uint8_t l_uStartAreaT;
+    uint8_t l_uTargetAreaT;
+    uint32_t l_uCurIdx;
+
+	/* Check pointer validity */
+	if( NULL == p_ptCtx )
+	{
+		l_eRes = e_eFSS_BLOBC_RES_BADPOINTER;
+	}
+	else
+	{
+		/* Check Init */
+        l_bIsInit = false;
+        l_eResHL = eFSS_COREHL_IsInit(&p_ptCtx->tCOREHLCtx, &l_bIsInit);
+        l_eRes = eFSS_BLOBC_HLtoBLOBCRes(l_eResHL);
+
+        if( e_eFSS_BLOBC_RES_OK == l_eRes )
+        {
+            if( false == l_bIsInit )
+            {
+                l_eRes = e_eFSS_BLOBC_RES_NOINITLIB;
+            }
+            else
+            {
+                /* Check internal status validity */
+                if( false == eFSS_BLOBC_IsStatusStillCoherent(p_ptCtx) )
+                {
+                    l_eRes = e_eFSS_BLOBC_RES_CORRUPTCTX;
+                }
+                else
+                {
+                    /* Get storage data */
+                    l_eResHL = eFSS_COREHL_GetStorSett(&p_ptCtx->tCOREHLCtx, &l_tStorSet);
+                    l_eRes = eFSS_BLOBC_HLtoBLOBCRes(l_eResHL);
+
+                    if( e_eFSS_BLOBC_RES_OK == l_eRes )
+                    {
+                        /* Get last page in order to separate the two different area */
+                        l_uLastPageIdx = l_tStorSet.uTotPages / 2u ;
+
+                        if( true == p_bStartOri )
+                        {
+                            l_uStartAreaOf = 0u;
+                            l_uTargetAreaOf = l_uLastPageIdx;
+                            l_uStartAreaT = EFSS_PAGESUBTYPE_BLOBORI;
+                            l_uTargetAreaT = EFSS_PAGESUBTYPE_BLOBBKP;
+                        }
+                        else
+                        {
+                            l_uStartAreaOf = l_uLastPageIdx;
+                            l_uTargetAreaOf = 0u;
+                            l_uStartAreaT = EFSS_PAGESUBTYPE_BLOBBKP;
+                            l_uTargetAreaT = EFSS_PAGESUBTYPE_BLOBORI;
+                        }
+
+                        /* Init counter var */
+                        l_uCurIdx = 0u;
+
+                        /* Start cloning process */
+                        while( ( l_uCurIdx < l_uLastPageIdx ) && ( e_eFSS_BLOBC_RES_OK == l_eRes ) )
+                        {
+                            /* Load the page in to the internal buffer */
+                            l_uSubTypeReaded = EFSS_PAGESUBTYPE_BLOBORI;
+                            l_eResHL = eFSS_COREHL_LoadPageInBuff(&p_ptCtx->tCOREHLCtx, ( l_uCurIdx + l_uStartAreaOf ),
+                                                                  &l_uSubTypeReaded);
+                            l_eRes = eFSS_BLOBC_HLtoBLOBCRes(l_eResHL);
+
+                            if( e_eFSS_BLOBC_RES_OK == l_eRes )
+                            {
+                                /* Verify basic data */
+                                if( l_uStartAreaT != l_uSubTypeReaded )
+                                {
+                                    l_eRes = e_eFSS_BLOBC_RES_NOTVALIDBLOB;
+                                }
+                                else
+                                {
+                                    /* Flush ori in backup */
+                                    l_eResHL = eFSS_COREHL_FlushBuffInPage(&p_ptCtx->tCOREHLCtx,
+                                                                           ( l_uCurIdx + l_uTargetAreaOf ),
+                                                                           l_uTargetAreaT);
+                                    l_eRes = eFSS_BLOBC_HLtoBLOBCRes(l_eResHL);
+
+                                    if( e_eFSS_BLOBC_RES_OK == l_eRes )
+                                    {
+                                        l_uCurIdx++;
                                     }
                                 }
                             }

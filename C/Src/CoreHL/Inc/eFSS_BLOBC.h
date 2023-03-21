@@ -156,6 +156,7 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_FlushBufferInPage(t_eFSS_BLOBC_Ctx* const p_ptCtx, c
  *
  * @param[in]   p_ptCtx     - Blob Core context
  * @param[in]   p_uSeed     - Seed to use during the calculation
+ * @param[in]   p_uCrcL     - Length that we want to use for the calculation
  * @param[out]  p_puCrc     - An uint32_t value that will be filled with the calculated CRC
  *
  * @return      e_eFSS_BLOBC_RES_BADPOINTER        - In case of bad pointer passed to the function
@@ -166,7 +167,7 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_FlushBufferInPage(t_eFSS_BLOBC_Ctx* const p_ptCtx, c
  *              e_eFSS_BLOBC_RES_OK                - Operation ended correctly
  */
 e_eFSS_BLOBC_RES eFSS_BLOBC_GetCrcFromTheBuffer(t_eFSS_BLOBC_Ctx* const p_ptCtx, const uint32_t p_uSeed,
-                                                uint32_t* const p_puCrc);
+                                                const uint32_t p_uCrcL, uint32_t* const p_puCrc);
 
 /**
  * @brief       If the original page is not equals to the backup pages, copy the original page in to the backup area.
@@ -189,6 +190,28 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_GetCrcFromTheBuffer(t_eFSS_BLOBC_Ctx* const p_ptCtx,
  *              e_eFSS_BLOBC_RES_OK                - Operation ended correctly
  */
 e_eFSS_BLOBC_RES eFSS_BLOBC_CopyOriInBkpIfNotEquals(t_eFSS_BLOBC_Ctx* const p_ptCtx, const uint32_t p_uIdx);
+
+/**
+ * @brief       Clone an area of the storage in the other one. So we can clone the original area in to the backup one
+ *              or viceversa
+ *
+ * @param[in]   p_ptCtx      - Blob Core context
+ * @param[in]   p_bStartOri  - bool_t parameter, if setted to true we will clone the original area in to the backup one
+ *
+ * @return      e_eFSS_BLOBC_RES_BADPOINTER        - In case of bad pointer passed to the function
+ *		        e_eFSS_BLOBC_RES_BADPARAM          - In case of an invalid parameter passed to the function
+ *		        e_eFSS_BLOBC_RES_CORRUPTCTX        - Context is corrupted
+ *		        e_eFSS_BLOBC_RES_NOINITLIB         - Need to init lib before calling function
+ *              e_eFSS_BLOBC_RES_CLBCKCRCERR       - The crc callback reported an error
+ *		        e_eFSS_BLOBC_RES_CLBCKERASEERR     - The erase callback reported an error
+ *		        e_eFSS_BLOBC_RES_CLBCKWRITEERR     - The write callback reported an error
+ *		        e_eFSS_BLOBC_RES_CLBCKREADERR      - The read callback reported an error
+ *		        e_eFSS_BLOBC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
+ *              e_eFSS_BLOBC_RES_NOTVALIDBLOB      - The readed page is invalid
+ *              e_eFSS_BLOBC_RES_NEWVERSIONBLOB    - The readed page has a new version
+ *              e_eFSS_BLOBC_RES_OK                - Operation ended correctly
+ */
+e_eFSS_BLOBC_RES eFSS_BLOBC_CloneArea(t_eFSS_BLOBC_Ctx* const p_ptCtx, const bool_t p_bStartOri);
 
 
 
