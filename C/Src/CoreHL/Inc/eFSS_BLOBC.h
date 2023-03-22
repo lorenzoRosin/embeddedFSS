@@ -171,10 +171,10 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_GetCrcFromTheBuffer(t_eFSS_BLOBC_Ctx* const p_ptCtx,
 
 /**
  * @brief       If the original page is not equals to the backup pages, copy the original page in to the backup area.
- *              If they are equals do nothing. In this case the comparsion comprend the sequential number
+ *              If they are equals do nothing. In this case the comparsion comprend the sequential number.
+ *              We will do this operation for every page of the original area
  *
  * @param[in]   p_ptCtx      - Blob Core context
- * @param[in]   p_uIdx       - Index of the original and backup pages where to do this check.
  *
  * @return      e_eFSS_BLOBC_RES_BADPOINTER        - In case of bad pointer passed to the function
  *		        e_eFSS_BLOBC_RES_BADPARAM          - In case of an invalid parameter passed to the function
@@ -189,7 +189,7 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_GetCrcFromTheBuffer(t_eFSS_BLOBC_Ctx* const p_ptCtx,
  *              e_eFSS_BLOBC_RES_NEWVERSIONBLOB    - The readed page has a new version
  *              e_eFSS_BLOBC_RES_OK                - Operation ended correctly
  */
-e_eFSS_BLOBC_RES eFSS_BLOBC_CopyOriInBkpIfNotEquals(t_eFSS_BLOBC_Ctx* const p_ptCtx, const uint32_t p_uIdx);
+e_eFSS_BLOBC_RES eFSS_BLOBC_CopyOriInBkpIfNotEquals(t_eFSS_BLOBC_Ctx* const p_ptCtx);
 
 /**
  * @brief       Clone an area of the storage in the other one. So we can clone the original area in to the backup one
