@@ -209,7 +209,7 @@ e_eFSS_BLOB_RES eFSS_BLOB_GetInfo(t_eFSS_BLOB_Ctx* const p_ptCtx, uint32_t* cons
     uint32_t l_uMaxBlobSize;
 
 	/* Check pointer validity */
-	if( NULL == p_ptCtx )
+	if( ( NULL == p_ptCtx ) || ( NULL == p_puBlobSize ) )
 	{
 		l_eRes = e_eFSS_BLOB_RES_BADPOINTER;
 	}
@@ -356,7 +356,7 @@ e_eFSS_BLOB_RES eFSS_BLOB_Format(t_eFSS_BLOB_Ctx* const p_ptCtx)
                             while( ( l_uCurrPage < l_uUsePages ) && ( e_eFSS_BLOB_RES_OK == l_eRes ) )
                             {
                                 /* Clear buffer */
-                                memset(l_tBuff.puBuf, 0u, l_tBuff.uBufL);
+                                (void)memset(l_tBuff.puBuf, 0, l_tBuff.uBufL);
 
                                 if( ( l_uUsePages - 1u ) == l_uCurrPage )
                                 {
@@ -539,17 +539,17 @@ e_eFSS_BLOB_RES eFSS_BLOB_ReadBlob(t_eFSS_BLOB_Ctx* const p_ptCtx, const uint32_
                                                         /* Can copy data to the user buffer */
                                                         if( l_uRemToRead > ( l_tBuff.uBufL - l_uCurPageOff ) )
                                                         {
-                                                            memcpy(&p_puBuff[l_uReadedByte],
-                                                                   &l_tBuff.puBuf[l_uCurPageOff],
-                                                                   (l_tBuff.uBufL - l_uCurPageOff) );
+                                                            (void)memcpy(&p_puBuff[l_uReadedByte],
+                                                                         &l_tBuff.puBuf[l_uCurPageOff],
+                                                                         (l_tBuff.uBufL - l_uCurPageOff) );
                                                             l_uCurPageOff = 0u;
                                                             l_uRemToRead -= (l_tBuff.uBufL - l_uCurPageOff);
                                                         }
                                                         else
                                                         {
-                                                            memcpy(&p_puBuff[l_uReadedByte],
-                                                                   &l_tBuff.puBuf[l_uCurPageOff],
-                                                                   l_uRemToRead);
+                                                            (void)memcpy(&p_puBuff[l_uReadedByte],
+                                                                         &l_tBuff.puBuf[l_uCurPageOff],
+                                                                         l_uRemToRead);
                                                             l_uCurPageOff = 0u;
                                                             l_uRemToRead = 0u;
                                                         }
@@ -621,6 +621,7 @@ e_eFSS_BLOB_RES eFSS_BLOB_StartWrite(t_eFSS_BLOB_Ctx* const p_ptCtx)
                         if( ( e_eFSS_BLOB_RES_OK == l_eRes ) || ( e_eFSS_BLOB_RES_OK_BKP_RCVRD == l_eRes ) )
                         {
                             /* Load a page just to read sequential number and increase it */
+                            l_uSeqN = 0u;
                             l_eResC = eFSS_BLOBC_LoadBufferFromPage(&p_ptCtx->tBLOBCCtx, true,
                                                                     0u, &l_uSeqN);
                             l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
@@ -741,8 +742,8 @@ e_eFSS_BLOB_RES eFSS_BLOB_AppendData(t_eFSS_BLOB_Ctx* const p_ptCtx, uint8_t* co
                                         if( l_uRemToWrite >= ( l_tBuff.uBufL - l_uCurPageOff ) )
                                         {
                                             /* full fill the page with data */
-                                            memcpy(&l_tBuff.puBuf[l_uCurPageOff], &p_puBuff[l_uWrittenByte],
-                                                   ( l_tBuff.uBufL - l_uCurPageOff ) );
+                                            (void)memcpy(&l_tBuff.puBuf[l_uCurPageOff], &p_puBuff[l_uWrittenByte],
+                                                         ( l_tBuff.uBufL - l_uCurPageOff ) );
 
                                             l_uCurPageOff = 0u;
                                             l_uRemToWrite -= ( l_tBuff.uBufL - l_uCurPageOff );
@@ -762,12 +763,12 @@ e_eFSS_BLOB_RES eFSS_BLOB_AppendData(t_eFSS_BLOB_Ctx* const p_ptCtx, uint8_t* co
                                         else
                                         {
                                             /* Set to zero the unused data, and do no calculate the CRC. */
-                                            memset(&l_tBuff.puBuf[l_uCurPageOff], 0u,
-                                                   ( l_tBuff.uBufL - l_uCurPageOff ) );
+                                            (void)memset(&l_tBuff.puBuf[l_uCurPageOff], 0,
+                                                         ( l_tBuff.uBufL - l_uCurPageOff ) );
 
                                             /* Copy remaining data */
-                                            memcpy(&l_tBuff.puBuf[l_uCurPageOff], &p_puBuff[l_uWrittenByte],
-                                                   l_uRemToWrite);
+                                            (void)memcpy(&l_tBuff.puBuf[l_uCurPageOff], &p_puBuff[l_uWrittenByte],
+                                                         l_uRemToWrite);
                                             l_uCurPageOff = 0u;
                                             l_uRemToWrite = 0u;
                                         }
@@ -886,7 +887,8 @@ e_eFSS_BLOB_RES eFSS_BLOB_EndWrite(t_eFSS_BLOB_Ctx* const p_ptCtx)
                                     if( l_uRemToWrite > ( l_tBuff.uBufL - l_uCurPageOff ) )
                                     {
                                         /* full fill the page with data setted to zero */
-                                        memset(&l_tBuff.puBuf[l_uCurPageOff], 0u, ( l_tBuff.uBufL - l_uCurPageOff ) );
+                                        (void)memset(&l_tBuff.puBuf[l_uCurPageOff], 0,
+                                                     ( l_tBuff.uBufL - l_uCurPageOff ) );
                                         l_uCurPageOff = 0u;
                                         l_uRemToWrite -= ( l_tBuff.uBufL - l_uCurPageOff );
 
@@ -901,7 +903,8 @@ e_eFSS_BLOB_RES eFSS_BLOB_EndWrite(t_eFSS_BLOB_Ctx* const p_ptCtx)
                                     else
                                     {
                                         /* Ok so this must be the last page. Set to zero the unused data */
-                                        memset(&l_tBuff.puBuf[l_uCurPageOff], 0u, ( l_tBuff.uBufL - l_uCurPageOff ) );
+                                        (void)memset(&l_tBuff.puBuf[l_uCurPageOff], 0,
+                                                     ( l_tBuff.uBufL - l_uCurPageOff ) );
 
                                         /* Update counter */
                                         l_uCurPageOff = 0u;
@@ -1312,6 +1315,7 @@ static e_eFSS_BLOB_RES eFSS_BLOB_IsAreaValid(t_eFSS_BLOB_Ctx* const p_ptCtx, con
     else
     {
         /* Get needed data structures */
+        l_uUsableP = 0u;
         l_eResC = eFSS_BLOBC_GetBuffNUsable(&p_ptCtx->tBLOBCCtx, &l_tBuff, &l_uUsableP);
         l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
 
@@ -1381,7 +1385,7 @@ static e_eFSS_BLOB_RES eFSS_BLOB_IsAreaValid(t_eFSS_BLOB_Ctx* const p_ptCtx, con
                             /* Check that unsued data is zero */
                             if( l_uRemByteToNoCheck < l_tBuff.uBufL )
                             {
-                                while( ( l_uRemByteToNoCheck > 0 ) && ( e_eFSS_BLOB_RES_OK == l_eRes ) )
+                                while( ( l_uRemByteToNoCheck > 0u ) && ( e_eFSS_BLOB_RES_OK == l_eRes ) )
                                 {
                                     if( 0u != l_tBuff.puBuf[ l_tBuff.uBufL - 1u - l_uRemByteToNoCheck ] )
                                     {
