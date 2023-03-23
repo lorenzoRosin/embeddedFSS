@@ -817,6 +817,7 @@ e_eFSS_BLOB_RES eFSS_BLOB_EndWrite(t_eFSS_BLOB_Ctx* const p_ptCtx)
     uint32_t l_uRemToWrite;
     uint32_t l_uSeqN;
     uint32_t l_uMaxBlobSize;
+    uint32_t l_uLenCrcOff;
 
 	/* Check pointer validity */
 	if( NULL == p_ptCtx )
@@ -845,6 +846,7 @@ e_eFSS_BLOB_RES eFSS_BLOB_EndWrite(t_eFSS_BLOB_Ctx* const p_ptCtx)
                 }
                 else
                 {
+                    /* Cannot end a write if it's not even started */
                     if( false == p_ptCtx->bIsWriteOngoing )
                     {
                         l_eRes = e_eFSS_BLOB_RES_WRITENOSTARTED;
@@ -861,9 +863,11 @@ e_eFSS_BLOB_RES eFSS_BLOB_EndWrite(t_eFSS_BLOB_Ctx* const p_ptCtx)
                             /* Calculat max blob len */
                             l_uMaxBlobSize = ( ( l_uUsePages * l_tBuff.uBufL ) - EFSS_BLOB_LENOFF );
 
-                            /* Ok we need to complete thw rite process writing to zero any remaining pages and
+                            /* Ok we need to complete the write process writing to zero any remaining pages and
                                updating CRC and BLOB size field */
-                            l_uRemToWrite = l_uMaxBlobSize - p_ptCtx->uDataWritten;
+                            l_uRemToWrite = ( l_uMaxBlobSize + EFSS_BLOB_LENOFF ) - p_ptCtx->uDataWritten;
+
+                            /* Find offset where to start zeeting to zero data */
                             l_uCurrPage   = (uint32_t)(p_ptCtx->uDataWritten / l_tBuff.uBufL);
                             l_uCurPageOff = (uint32_t)(p_ptCtx->uDataWritten % l_tBuff.uBufL);
 
@@ -877,7 +881,8 @@ e_eFSS_BLOB_RES eFSS_BLOB_EndWrite(t_eFSS_BLOB_Ctx* const p_ptCtx)
 
                                 if( e_eFSS_BLOB_RES_OK == l_eRes )
                                 {
-                                    /* Init variable */
+                                    /* Now, if we need to set to zero more data that present in the buffer we are
+                                       sure we didnt reached the last page. */
                                     if( l_uRemToWrite > ( l_tBuff.uBufL - l_uCurPageOff ) )
                                     {
                                         /* full fill the page with data setted to zero */
@@ -885,40 +890,44 @@ e_eFSS_BLOB_RES eFSS_BLOB_EndWrite(t_eFSS_BLOB_Ctx* const p_ptCtx)
                                         l_uCurPageOff = 0u;
                                         l_uRemToWrite -= ( l_tBuff.uBufL - l_uCurPageOff );
 
-                                        if( ( l_uUsePages - 1u ) != l_uCurrPage )
-                                        {
-                                            l_eResC =  eFSS_BLOBC_GetCrcFromTheBuffer(&p_ptCtx->tBLOBCCtx,
-                                                                                      p_ptCtx->uCrcOfDataWritten,
-                                                                                      l_tBuff.uBufL,
-                                                                                      &p_ptCtx->uCrcOfDataWritten);
-                                            l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
-                                        }
+                                        /* Not the last page, update the CRC also */
+                                        l_eResC =  eFSS_BLOBC_GetCrcFromTheBuffer(&p_ptCtx->tBLOBCCtx,
+                                                                                  p_ptCtx->uCrcOfDataWritten,
+                                                                                  l_tBuff.uBufL,
+                                                                                  &p_ptCtx->uCrcOfDataWritten);
+                                        l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
+
                                     }
                                     else
                                     {
-                                        /* Set to zero the unused data */
+                                        /* Ok so this must be the last page. Set to zero the unused data */
                                         memset(&l_tBuff.puBuf[l_uCurPageOff], 0u, ( l_tBuff.uBufL - l_uCurPageOff ) );
+
+                                        /* Update counter */
                                         l_uCurPageOff = 0u;
                                         l_uRemToWrite = 0u;
 
-                                        /* This is also the last page, update blob length */
-                                        if( true != eFSS_Utils_InsertU32(&l_tBuff.puBuf[l_tBuff.uBufL - EFSS_BLOB_LENOFF],
+                                        /* We must update blob length and it's CRC  */
+                                        l_uLenCrcOff = l_tBuff.uBufL - EFSS_BLOB_LENOFF;
+                                        if( true != eFSS_Utils_InsertU32(&l_tBuff.puBuf[l_uLenCrcOff],
                                                                          p_ptCtx->uDataWritten ) )
                                         {
                                             l_eRes = e_eFSS_BLOB_RES_CORRUPTCTX;
                                         }
                                         else
                                         {
-                                            /* Can now calculate the CRC of the last page */
+                                            /* Can now calculate the CRC of the last page, excluding the CRC itself */
                                             l_eResC =  eFSS_BLOBC_GetCrcFromTheBuffer(&p_ptCtx->tBLOBCCtx,
-                                                                                    p_ptCtx->uCrcOfDataWritten,
-                                                                                    l_tBuff.uBufL - EFSS_BLOB_CRCOFF,
-                                                                                    &p_ptCtx->uCrcOfDataWritten);
+                                                                                      p_ptCtx->uCrcOfDataWritten,
+                                                                                      l_tBuff.uBufL - EFSS_BLOB_CRCOFF,
+                                                                                      &p_ptCtx->uCrcOfDataWritten);
                                             l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
 
+                                            /* If all ok insert the CRC */
                                             if( e_eFSS_BLOB_RES_OK == l_eRes )
                                             {
-                                                if( true != eFSS_Utils_InsertU32(&l_tBuff.puBuf[l_tBuff.uBufL - EFSS_BLOB_CRCOFF],
+                                                l_uLenCrcOff = l_tBuff.uBufL - EFSS_BLOB_CRCOFF;
+                                                if( true != eFSS_Utils_InsertU32(&l_tBuff.puBuf[l_uLenCrcOff],
                                                                                  p_ptCtx->uCrcOfDataWritten ) )
                                                 {
                                                     l_eRes = e_eFSS_BLOB_RES_CORRUPTCTX;
@@ -927,13 +936,27 @@ e_eFSS_BLOB_RES eFSS_BLOB_EndWrite(t_eFSS_BLOB_Ctx* const p_ptCtx)
                                         }
                                     }
 
-                                    /* Buffer flush */
-                                    l_eResC = eFSS_BLOBC_FlushBufferInPage(&p_ptCtx->tBLOBCCtx, true, l_uCurrPage,
-                                                                           p_ptCtx->uCurrentSeqN);
-                                    l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
+                                    /* if all ok can flush the page in the storage area */
+                                    if( e_eFSS_BLOB_RES_OK == l_eRes )
+                                    {
+                                        /* Buffer flush */
+                                        l_eResC = eFSS_BLOBC_FlushBufferInPage(&p_ptCtx->tBLOBCCtx, true, l_uCurrPage,
+                                                                               p_ptCtx->uCurrentSeqN);
+                                        l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
+                                    }
 
+                                    /* Continue with the next one */
                                     l_uCurrPage++;
                                 }
+                            }
+
+                            /* If all ok we are done, ripristinate the non writing situation */
+                            if( e_eFSS_BLOB_RES_OK == l_eRes )
+                            {
+                                p_ptCtx->bIsWriteOngoing = false;
+                                p_ptCtx->uDataWritten = 0u;
+                                p_ptCtx->uCrcOfDataWritten = 0u;
+                                p_ptCtx->uCurrentSeqN = 0u;
                             }
                         }
                     }
