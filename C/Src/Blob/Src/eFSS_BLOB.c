@@ -655,7 +655,7 @@ e_eFSS_BLOB_RES eFSS_BLOB_AppendData(t_eFSS_BLOB_Ctx* const p_ptCtx, uint8_t* co
     uint32_t l_uUsePages;
 
     /* Local variable for calculation utils */
-    uint32_t l_uMaxblobLen;
+    uint32_t l_uMaxBlobSize;
 
     /* Local variable for calculation */
     uint32_t l_uCurrPage;
@@ -705,18 +705,20 @@ e_eFSS_BLOB_RES eFSS_BLOB_AppendData(t_eFSS_BLOB_Ctx* const p_ptCtx, uint8_t* co
                         if( e_eFSS_BLOB_RES_OK == l_eRes )
                         {
                             /* Calculat max blob len */
-                            l_uMaxblobLen = ( ( l_uUsePages * l_tBuff.uBufL ) - EFSS_BLOB_LENOFF );
+                            l_uMaxBlobSize = ( ( l_uUsePages * l_tBuff.uBufL ) - EFSS_BLOB_LENOFF );
 
                             /* Verify parameter validity */
-                            if( ( p_uBuffL > l_uMaxblobLen ) || ( p_uBuffL <= 0u ) ||
-                                ( ( p_ptCtx->uDataWritten + p_uBuffL ) > l_uMaxblobLen ) )
+                            if( ( p_uBuffL > l_uMaxBlobSize ) || ( p_uBuffL <= 0u ) ||
+                                ( ( p_ptCtx->uDataWritten + p_uBuffL ) > l_uMaxBlobSize ) )
                             {
                                 l_eRes = e_eFSS_BLOB_RES_BADPARAM;
                             }
                             else
                             {
-                                /* Find starting page */
+                                /* Init remaining byte to write variable */
                                 l_uRemToWrite = p_uBuffL;
+
+                                /* Find starting page */
                                 l_uCurrPage = (uint32_t)(p_ptCtx->uDataWritten / l_tBuff.uBufL);
                                 l_uCurPageOff = (uint32_t)(p_ptCtx->uDataWritten % l_tBuff.uBufL);
 
@@ -733,6 +735,9 @@ e_eFSS_BLOB_RES eFSS_BLOB_AppendData(t_eFSS_BLOB_Ctx* const p_ptCtx, uint8_t* co
                                         /* Init variable */
                                         l_uWrittenByte = p_uBuffL - l_uRemToWrite;
 
+                                        /* Are we able to fill a full page? If yes, we can calculate the CRC of the
+                                           whole page also, if not, we insert data and fill the remaining space with
+                                           zero. We will calculate the CRC of the inserted data on the next round */
                                         if( l_uRemToWrite >= ( l_tBuff.uBufL - l_uCurPageOff ) )
                                         {
                                             /* full fill the page with data */
@@ -756,9 +761,9 @@ e_eFSS_BLOB_RES eFSS_BLOB_AppendData(t_eFSS_BLOB_Ctx* const p_ptCtx, uint8_t* co
                                         }
                                         else
                                         {
-                                            /* Set to zero the unused data */
+                                            /* Set to zero the unused data, and do no calculate the CRC. */
                                             memset(&l_tBuff.puBuf[l_uCurPageOff], 0u,
-                                                   ( l_tBuff.uBufL - l_uCurPageOff ));
+                                                   ( l_tBuff.uBufL - l_uCurPageOff ) );
 
                                             /* Copy remaining data */
                                             memcpy(&l_tBuff.puBuf[l_uCurPageOff], &p_puBuff[l_uWrittenByte],
@@ -767,13 +772,24 @@ e_eFSS_BLOB_RES eFSS_BLOB_AppendData(t_eFSS_BLOB_Ctx* const p_ptCtx, uint8_t* co
                                             l_uRemToWrite = 0u;
                                         }
 
-                                        /* Buffer flush */
-                                        l_eResC = eFSS_BLOBC_FlushBufferInPage(&p_ptCtx->tBLOBCCtx, true, l_uCurrPage,
-                                                                               p_ptCtx->uCurrentSeqN);
-                                        l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
+                                        /* If previous operation are OK we can flush the updated page */
+                                        if( e_eFSS_BLOB_RES_OK == l_eRes )
+                                        {
+                                            /* Buffer flush */
+                                            l_eResC = eFSS_BLOBC_FlushBufferInPage(&p_ptCtx->tBLOBCCtx, true,
+                                                                                   l_uCurrPage, p_ptCtx->uCurrentSeqN);
+                                            l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
+                                        }
 
+                                        /* Increase the page so we can write on the next one */
                                         l_uCurrPage++;
                                     }
+                                }
+
+                                /* If all ok increase context counter */
+                                if( e_eFSS_BLOB_RES_OK == l_eRes )
+                                {
+                                    p_ptCtx->uDataWritten += p_uBuffL;
                                 }
                             }
                         }
@@ -800,7 +816,7 @@ e_eFSS_BLOB_RES eFSS_BLOB_EndWrite(t_eFSS_BLOB_Ctx* const p_ptCtx)
     uint32_t l_uCurPageOff;
     uint32_t l_uRemToWrite;
     uint32_t l_uSeqN;
-    uint32_t l_uMaxblobLen;
+    uint32_t l_uMaxBlobSize;
 
 	/* Check pointer validity */
 	if( NULL == p_ptCtx )
@@ -843,11 +859,11 @@ e_eFSS_BLOB_RES eFSS_BLOB_EndWrite(t_eFSS_BLOB_Ctx* const p_ptCtx)
                         if( e_eFSS_BLOB_RES_OK == l_eRes )
                         {
                             /* Calculat max blob len */
-                            l_uMaxblobLen = ( ( l_uUsePages * l_tBuff.uBufL ) - EFSS_BLOB_LENOFF );
+                            l_uMaxBlobSize = ( ( l_uUsePages * l_tBuff.uBufL ) - EFSS_BLOB_LENOFF );
 
                             /* Ok we need to complete thw rite process writing to zero any remaining pages and
                                updating CRC and BLOB size field */
-                            l_uRemToWrite = l_uMaxblobLen - p_ptCtx->uDataWritten;
+                            l_uRemToWrite = l_uMaxBlobSize - p_ptCtx->uDataWritten;
                             l_uCurrPage   = (uint32_t)(p_ptCtx->uDataWritten / l_tBuff.uBufL);
                             l_uCurPageOff = (uint32_t)(p_ptCtx->uDataWritten % l_tBuff.uBufL);
 
@@ -1008,7 +1024,7 @@ static bool_t eFSS_BLOB_IsStatusStillCoherent(t_eFSS_BLOB_Ctx* const p_ptCtx)
     uint32_t l_uUsePages;
 
     /* Local variable for calculation utils */
-    uint32_t l_uMaxblobLen;
+    uint32_t l_uMaxBlobSize;
 
     /* Get usable pages and buffer length so we can check blob default value validity */
     l_uUsePages = 0u;
@@ -1032,9 +1048,9 @@ static bool_t eFSS_BLOB_IsStatusStillCoherent(t_eFSS_BLOB_Ctx* const p_ptCtx)
             if( true == p_ptCtx->bIsWriteOngoing )
             {
                 /* Calculat max blob len */
-                l_uMaxblobLen = ( ( l_uUsePages * l_tBuff.uBufL ) - EFSS_BLOB_LENOFF );
+                l_uMaxBlobSize = ( ( l_uUsePages * l_tBuff.uBufL ) - EFSS_BLOB_LENOFF );
 
-                if( p_ptCtx->uCrcOfDataWritten > l_uMaxblobLen )
+                if( p_ptCtx->uCrcOfDataWritten > l_uMaxBlobSize )
                 {
                     /* wrong  */
                     l_bRes = false;
