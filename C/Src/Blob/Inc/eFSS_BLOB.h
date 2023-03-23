@@ -92,8 +92,8 @@ e_eFSS_BLOB_RES eFSS_BLOB_IsInit(t_eFSS_BLOB_Ctx* const p_ptCtx, bool_t* const p
 
 /**
  * @brief       Get the status of the storage. This need to be the first function to call when using the blob, just to
- *              be sure that something usefull and not corrupted is avaiable for any sort of operation.
- *              if the blob is corrupted the only function that we can call to ripristinate the situation is the
+ *              be sure that something usefull and not corrupted is avaiable for the next operation.
+ *              If the blob is corrupted the only function that we can call to ripristinate the situation is the
  *              eFSS_BLOB_Format function.
  *
  * @param[in]   p_ptCtx        - Blob context
@@ -114,7 +114,7 @@ e_eFSS_BLOB_RES eFSS_BLOB_IsInit(t_eFSS_BLOB_Ctx* const p_ptCtx, bool_t* const p
 e_eFSS_BLOB_RES eFSS_BLOB_GetStorageStatus(t_eFSS_BLOB_Ctx* const p_ptCtx);
 
 /**
- * @brief       Get info about the stored blob, at this time we support only returning blob size
+ * @brief       Get info about the stored blob.
  *
  * @param[in]   p_ptCtx      - Blob context
  * @param[out]  p_puBlobSize - Pointer to a uint32_t that will be filled with the size of the blob
