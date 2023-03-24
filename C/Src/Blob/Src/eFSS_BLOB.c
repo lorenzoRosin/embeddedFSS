@@ -1079,7 +1079,7 @@ static bool_t eFSS_BLOB_IsStatusStillCoherent(t_eFSS_BLOB_Ctx* const p_ptCtx)
 
                 if( p_ptCtx->uCrcOfDataWritten > l_uMaxBlobSize )
                 {
-                    /* wrong  */
+                    /* wrong */
                     l_bRes = false;
                 }
                 else
@@ -1093,7 +1093,7 @@ static bool_t eFSS_BLOB_IsStatusStillCoherent(t_eFSS_BLOB_Ctx* const p_ptCtx)
                 if( ( 0u != p_ptCtx->uDataWritten ) || ( 0u != p_ptCtx->uCrcOfDataWritten ) ||
                     ( 0u != p_ptCtx->uCurrentSeqN ) )
                 {
-                    /* wrong  */
+                    /* wrong */
                     l_bRes = false;
                 }
                 else
