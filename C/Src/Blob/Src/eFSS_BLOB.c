@@ -1315,7 +1315,7 @@ static e_eFSS_BLOB_RES eFSS_BLOB_IsAreaValid(t_eFSS_BLOB_Ctx* const p_ptCtx, con
     }
     else
     {
-        /* Get needed data structures */
+        /* Get needed basic data structures */
         l_uUsableP = 0u;
         l_eResC = eFSS_BLOBC_GetBuffNUsable(&p_ptCtx->tBLOBCCtx, &l_tBuff, &l_uUsableP);
         l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
