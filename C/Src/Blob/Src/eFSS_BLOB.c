@@ -1227,7 +1227,7 @@ static e_eFSS_BLOB_RES eFSS_BLOB_OriginBackupAligner(t_eFSS_BLOB_Ctx* const p_pt
         if( e_eFSS_BLOB_RES_OK == l_eRes )
         {
             /* Check is needed, how can we do it?
-            * 1 - Verify if original partition contain a valid blob
+            * 1 - Verify if original partition contain a valid blob.
             * 2 - If original partition is valid, clone, if needed, original partition in backup one using
             *     eFSS_BLOBC_CopyOriInBkpIfNotEquals
             * 3 - If original is not valid, verify if backup partition has a valid blob
