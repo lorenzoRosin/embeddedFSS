@@ -1007,6 +1007,7 @@ e_eFSS_BLOB_RES eFSS_BLOB_AbortWrite(t_eFSS_BLOB_Ctx* const p_ptCtx)
                 }
                 else
                 {
+                    /* Cannot abort write if not started */
                     if( false == p_ptCtx->bIsWriteOngoing )
                     {
                         l_eRes = e_eFSS_BLOB_RES_WRITENOSTARTED;
