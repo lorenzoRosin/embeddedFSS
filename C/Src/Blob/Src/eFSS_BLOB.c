@@ -50,7 +50,7 @@ static e_eFSS_BLOB_RES eFSS_BLOB_BlobCtoBLOBRes(const e_eFSS_BLOBC_RES p_eCRes);
  **********************************************************************************************************************/
 static e_eFSS_BLOB_RES eFSS_BLOB_OriginBackupAligner(t_eFSS_BLOB_Ctx* const p_ptCtx, const bool_t p_bForce);
 static e_eFSS_BLOB_RES eFSS_BLOB_IsAreaValid(t_eFSS_BLOB_Ctx* const p_ptCtx, const bool_t p_bIsOri,
-                                             bool_t* const p_pbIsOri);
+                                             bool_t* const p_pbIsVal);
 
 
 /***********************************************************************************************************************
@@ -1077,7 +1077,7 @@ static bool_t eFSS_BLOB_IsStatusStillCoherent(t_eFSS_BLOB_Ctx* const p_ptCtx)
                 /* Calculat max blob len */
                 l_uMaxBlobSize = ( ( l_uUsePages * l_tBuff.uBufL ) - EFSS_BLOB_LENOFF );
 
-                if( p_ptCtx->uCrcOfDataWritten > l_uMaxBlobSize )
+                if( p_ptCtx->uDataWritten > l_uMaxBlobSize )
                 {
                     /* wrong */
                     l_bRes = false;
@@ -1287,7 +1287,7 @@ static e_eFSS_BLOB_RES eFSS_BLOB_OriginBackupAligner(t_eFSS_BLOB_Ctx* const p_pt
 }
 
 static e_eFSS_BLOB_RES eFSS_BLOB_IsAreaValid(t_eFSS_BLOB_Ctx* const p_ptCtx, const bool_t p_bIsOri,
-                                             bool_t* const p_pbIsOri)
+                                             bool_t* const p_pbIsVal)
 {
 	/* Local return variable */
 	e_eFSS_BLOB_RES l_eRes;
@@ -1307,9 +1307,11 @@ static e_eFSS_BLOB_RES eFSS_BLOB_IsAreaValid(t_eFSS_BLOB_Ctx* const p_ptCtx, con
     uint32_t l_uCurrPage;
     uint32_t l_uBlobCrc;
     uint32_t l_uRemByteToNoCheck;
+    uint32_t l_uZeroToCheck;
+    uint32_t l_uMaxBlobSize;
 
     /* Check data validity */
-    if( ( NULL == p_ptCtx ) || ( NULL == p_pbIsOri ) )
+    if( ( NULL == p_ptCtx ) || ( NULL == p_pbIsVal ) )
     {
         l_eRes = e_eFSS_BLOB_RES_BADPOINTER;
     }
@@ -1326,10 +1328,11 @@ static e_eFSS_BLOB_RES eFSS_BLOB_IsAreaValid(t_eFSS_BLOB_Ctx* const p_ptCtx, con
             * 1 - Verify CRC validity
             * 2 - Verify that data outside blob len is setted to zero
             * 3 - Verify that every page has the same sequential number of the other one
+            * 4 - Verify that data length is coherent
             */
 
             /* Start reading only tyhe last page in order to retrive basic data */
-            l_eResC = eFSS_BLOBC_LoadBufferFromPage(&p_ptCtx->tBLOBCCtx, true, ( l_uUsableP - 1u ), &l_uReadedSeqN);
+            l_eResC = eFSS_BLOBC_LoadBufferFromPage(&p_ptCtx->tBLOBCCtx, p_bIsOri, ( l_uUsableP - 1u ), &l_uReadedSeqN);
             l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
 
             if( e_eFSS_BLOB_RES_OK == l_eRes )
@@ -1342,16 +1345,18 @@ static e_eFSS_BLOB_RES eFSS_BLOB_IsAreaValid(t_eFSS_BLOB_Ctx* const p_ptCtx, con
                 }
                 else
                 {
-                    /* estrapolate BLOB size and BLOB len */
-                    if( true != eFSS_Utils_RetriveU32(&l_tBuff.puBuf[l_tBuff.uBufL - EFSS_BLOB_LENOFF],
+                    if( true != eFSS_Utils_RetriveU32(&l_tBuff.puBuf[l_tBuff.uBufL - EFSS_BLOB_CRCOFF],
                                                       &l_uReadedCRC ) )
                     {
                         l_eRes = e_eFSS_BLOB_RES_CORRUPTCTX;
                     }
                     else
                     {
+                        /* Calculat max blob len */
+                        l_uMaxBlobSize = ( ( l_uUsableP * l_tBuff.uBufL ) - EFSS_BLOB_LENOFF );
+
                         /* Verify just readed data validity */
-                        if( l_uReadedLen > ( ( l_uUsableP * l_tBuff.uBufL ) - EFSS_BLOB_LENOFF ) )
+                        if( l_uReadedLen > l_uMaxBlobSize )
                         {
                             l_eRes = e_eFSS_BLOB_RES_NOTVALIDBLOB;
                         }
@@ -1383,23 +1388,33 @@ static e_eFSS_BLOB_RES eFSS_BLOB_IsAreaValid(t_eFSS_BLOB_Ctx* const p_ptCtx, con
                         }
                         else
                         {
-                            /* Check that unsued data is zero */
+                            /* ------------ Check that unsued data is zero */
                             if( l_uRemByteToNoCheck < l_tBuff.uBufL )
                             {
-                                while( ( l_uRemByteToNoCheck > 0u ) && ( e_eFSS_BLOB_RES_OK == l_eRes ) )
+                                /* How many zero to check? */
+                                l_uZeroToCheck = l_tBuff.uBufL - l_uRemByteToNoCheck;
+
+                                /* Check */
+                                while( ( l_uZeroToCheck > 0u ) && ( e_eFSS_BLOB_RES_OK == l_eRes ) )
                                 {
-                                    if( 0u != l_tBuff.puBuf[ l_tBuff.uBufL - 1u - l_uRemByteToNoCheck ] )
+                                    if( 0u != l_tBuff.puBuf[ l_tBuff.uBufL - l_uZeroToCheck ] )
                                     {
                                         /* Not valid blob */
                                         l_eRes = e_eFSS_BLOB_RES_NOTVALIDBLOB;
                                     }
+
+                                    l_uZeroToCheck--;
                                 }
+
+                                /* No remaining byte to check */
+                                l_uRemByteToNoCheck = 0u;
                             }
                             else
                             {
                                 l_uRemByteToNoCheck -= l_tBuff.uBufL;
                             }
 
+                            /* ------------ Calculate the CRC */
                             if( e_eFSS_BLOB_RES_OK == l_eRes )
                             {
                                 if( ( l_uUsableP - 1u ) != l_uCurrPage )
@@ -1424,10 +1439,6 @@ static e_eFSS_BLOB_RES eFSS_BLOB_IsAreaValid(t_eFSS_BLOB_Ctx* const p_ptCtx, con
                                         {
                                             /* This area is not correct */
                                             l_eRes = e_eFSS_BLOB_RES_NOTVALIDBLOB;
-                                        }
-                                        else
-                                        {
-                                            /* Perfect, this area is OK */
                                         }
                                     }
                                 }
