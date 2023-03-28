@@ -13,24 +13,28 @@
 #include "eFSS_LOG.h"
 
 /* In this module the page field has the following meaning:
+ *
+ *  --> NEWEST PAGE OR NEWEST BACKUP PAGES
  * ------------------------------------------------------------------ User data
  * - [uint8_t] -                    -> N byte of user data           |
- * ------------------------------------------------------------------ Metadata  (4 byte)
- * - uint32_t  - Byte in Page       -> Valorized byte in page        |
- * - uint32_t  - Page Index         -> Page Index                    |
- * ------------------------------------------------------------------ Under we have LL/HL metadata
- * - LOW LEVEL / HIGH LEVEL METADATA                                 |
+ * ------------------------------------------------------------------ Metadata  (4 byte)|
+ * - uint32_t  - AlreadyFilled P    -> Already filled pages          |
+ * ------------------------------------------------------------------ Under we have LL/HL/LOGC metadata
+ * - LOW LEVEL / HIGH LEVEL / LOGC METADATA                          |
  * ------------------------------------------------------------------ End of Page
  *
- * In this module the storage is organizated as follow :
- *
- *   bFullBckup = true, bFlashCache = true
- * - [ 0                            -    ( ( uTotPages - 2 ) / 2 ) - 1 ]  -> Original pages
- * - [ ( ( uTotPages - 2 ) / 2 )    -    uTotPages - 1 -2              ]  -> Backup pages
- * - [ uTotPages - 1 -1             -    uTotPages - 1 -1              ]  -> Cache original
- * - [ uTotPages - 1                -    uTotPages - 1                 ]  -> Cache backup
- *
- * First write original pages and after the backup pages
+ *  --> LOG PAGES
+ * ------------------------------------------------------------------ User data
+ * - [uint8_t] -                    -> N byte of user data           |
+ * ------------------------------------------------------------------ Under we have LL/HL/LOGC metadata
+ * - LOW LEVEL / HIGH LEVEL / LOGC METADATA                           |
+ * ------------------------------------------------------------------ End of Page
+ * 
+ * This module is used to store LOGS. Remeber to check where the last log is stored using the flash cache if enabled.
+ * If flash cache is not enabled the last log pages must be searched inside all log. 
+ * After a newest page is finalized and becames a log pages we must remove the last 4 byte used in the newest pages. 
+ * Keep in mind that the last 4 byte in the newest page are not counted in the filed called: byte in page used by 
+ * LOGC module.
  * An unused page is always left after newer page and backup index.
  * Newest and oldest page index can be identical only when the log storage is empty. When the storage is full an empty
  * page is always present between new and old log index.
@@ -43,63 +47,112 @@
  * uPageUseSpec2 = 3
  */
 
+
+
+/***********************************************************************************************************************
+ *      PRIVATE DEFINE
+ **********************************************************************************************************************/
+#define EFSS_LOG_MINPAGESIZE                                                              ( ( uint32_t )         0x05u )
+#define EFSS_LOG_FILLPOFF                                                                 ( ( uint32_t )         0x04u )
+#define EFSS_LOG_NEWBKPEMPY_P                                                             ( ( uint32_t )         0x03u )
+
+
+
 /***********************************************************************************************************************
  *  PRIVATE STATIC FUNCTION DECLARATION
  **********************************************************************************************************************/
-static bool_t eFSS_LOG_IsStatusStillCoherent(const t_eFSS_LOG_Ctx* p_ptCtx);
+static bool_t eFSS_LOG_IsStatusStillCoherent(t_eFSS_LOG_Ctx* const p_ptCtx);
 static e_eFSS_LOG_RES eFSS_LOG_LOGCtoLOGRes(const e_eFSS_LOGC_RES p_eLOGCRes);
+
+
+
+/***********************************************************************************************************************
+ *  PRIVATE UTILS STATIC FUNCTION DECLARATION
+ **********************************************************************************************************************/
 static e_eFSS_LOG_RES eFSS_LOGC_LoadIndexNRepair(t_eFSS_LOG_Ctx* const p_ptCtx);
 static e_eFSS_LOG_RES eFSS_LOGC_LoadIndexFromCache(t_eFSS_LOG_Ctx* const p_ptCtx);
 static e_eFSS_LOG_RES eFSS_LOGC_LoadIndxBySearch(t_eFSS_LOG_Ctx* const p_ptCtx);
 
 
+
 /***********************************************************************************************************************
  *   GLOBAL FUNCTIONS
  **********************************************************************************************************************/
-e_eFSS_LOG_RES eFSS_LOG_InitCtx(t_eFSS_LOG_Ctx* const p_ptCtx, t_eFSS_TYPE_CbStorCtx const p_tCtxCb,
-                                t_eFSS_TYPE_StorSet p_tStorSet, uint8_t* const p_puBuff, uint32_t p_uBuffL,
-                                bool_t p_bFlashCache, bool_t p_bFullBckup)
+e_eFSS_LOG_RES eFSS_LOG_InitCtx(t_eFSS_LOG_Ctx* const p_ptCtx, const t_eFSS_TYPE_CbStorCtx p_tCtxCb,
+                                const t_eFSS_TYPE_StorSet p_tStorSet, uint8_t* const p_puBuff, 
+                                const uint32_t p_uBuffL, const bool_t p_bFlashCache, const bool_t p_bFullBckup)
 {
+    /* return local variable */
     e_eFSS_LOG_RES  l_eRes;
-    e_eFSS_LOGC_RES l_eLOGCRes;
+    e_eFSS_LOGC_RES l_eResC;
+
+    /* Local storage variable */
+    t_eFSS_LOGC_StorBuf l_tBuff;
+    uint32_t l_uUsePages;
 
 	/* Check pointer validity */
-	if( ( NULL == p_ptCtx ) || ( NULL == p_puBuff ) )
+	if( NULL == p_ptCtx )
 	{
 		l_eRes = e_eFSS_LOG_RES_BADPOINTER;
 	}
 	else
 	{
         /* Can init low level context */
-        l_eLOGCRes = eFSS_LOGC_InitCtx(&p_ptCtx->tLOGCCtx, p_tCtxCb, p_tStorSet, p_puBuff, p_uBuffL,
-                                      p_bFlashCache, p_bFullBckup);
-        l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eLOGCRes);
+        l_eResC = eFSS_LOGC_InitCtx(&p_ptCtx->tLOGCCtx, p_tCtxCb, p_tStorSet, p_puBuff, p_uBuffL,
+                                    p_bFlashCache, p_bFullBckup);
+        l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
 
         if( e_eFSS_LOG_RES_OK == l_eRes )
         {
-            p_ptCtx->uNewPagIdx = 0;
-            p_ptCtx->uFullFilledP = 0;
+            /* Get usable pages and buffer length so we can check blob default value validity */
+            l_uUsePages = 0u;
+            l_eResC = eFSS_LOGC_GetBuffNUsable(&p_ptCtx->tLOGCCtx, &l_tBuff, &l_uUsePages);
+            l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
+
+            if( e_eFSS_LOG_RES_OK == l_eRes )
+            {
+                /* Check if page length is OK */
+                if( l_tBuff.uBufL < EFSS_LOG_MINPAGESIZE )
+                {
+                    /* We need more space for the BLOB */
+                    l_eRes = e_eFSS_LOGC_RES_BADPARAM;
+
+                    /* De init LOGC */
+                    (void)memset(&p_ptCtx->tLOGCCtx, 0, sizeof(t_eFSS_LOGC_Ctx));
+                }
+                else
+                {
+                    /* All ok, fill context */
+                    p_ptCtx->uNewPagIdx = 0;
+                    p_ptCtx->uFullFilledP = 0;
+                }
+            }
+            else
+            {
+                /* De init LOGC */
+                (void)memset(&p_ptCtx->tLOGCCtx, 0, sizeof(t_eFSS_LOGC_Ctx));
+            }
         }
     }
 
     return l_eRes;
 }
 
-e_eFSS_LOG_RES eFSS_LOG_IsInit(t_eFSS_LOG_Ctx* const p_ptCtx, bool_t* p_pbIsInit)
+e_eFSS_LOG_RES eFSS_LOG_IsInit(t_eFSS_LOG_Ctx* const p_ptCtx, bool_t* const p_pbIsInit)
 {
 	/* Local variable */
     e_eFSS_LOG_RES l_eRes;
-    e_eFSS_LOGC_RES l_eLOGCRes;
+    e_eFSS_LOGC_RES l_eResC;
 
 	/* Check pointer validity */
-	if( ( NULL == p_ptCtx ) || ( NULL == p_pbIsInit ) )
+	if( NULL == p_ptCtx )
 	{
 		l_eRes = e_eFSS_LOG_RES_BADPOINTER;
 	}
 	else
 	{
-        l_eLOGCRes = eFSS_LOGC_IsInit(&p_ptCtx->tLOGCCtx, p_pbIsInit);
-        l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eLOGCRes);
+        l_eResC = eFSS_LOGC_IsInit(&p_ptCtx->tLOGCCtx, p_pbIsInit);
+        l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
 	}
 
 	return l_eRes;
@@ -107,9 +160,9 @@ e_eFSS_LOG_RES eFSS_LOG_IsInit(t_eFSS_LOG_Ctx* const p_ptCtx, bool_t* p_pbIsInit
 
 e_eFSS_LOG_RES eFSS_LOG_GetLogStatus(t_eFSS_LOG_Ctx* const p_ptCtx)
 {
-	/* Local variable */
+	/* Local return variable */
 	e_eFSS_LOG_RES l_eRes;
-    e_eFSS_LOGC_RES l_eLOGCRes;
+    e_eFSS_LOGC_RES l_eResC;
 
     /* Local var used for calculation */
     bool_t l_bIsInit;
@@ -122,8 +175,9 @@ e_eFSS_LOG_RES eFSS_LOG_GetLogStatus(t_eFSS_LOG_Ctx* const p_ptCtx)
 	else
 	{
 		/* Check Init */
-        l_eLOGCRes = eFSS_LOGC_IsInit(&p_ptCtx->tLOGCCtx, &l_bIsInit);
-        l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eLOGCRes);
+        l_bIsInit = false;
+        l_eResC = eFSS_LOGC_IsInit(&p_ptCtx->tLOGCCtx, &l_bIsInit);
+        l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
 
         if( e_eFSS_LOG_RES_OK == l_eRes )
         {
@@ -151,16 +205,20 @@ e_eFSS_LOG_RES eFSS_LOG_GetLogStatus(t_eFSS_LOG_Ctx* const p_ptCtx)
 	return l_eRes;
 }
 
-e_eFSS_LOG_RES eFSS_LOG_GetLogInfo(t_eFSS_LOG_Ctx* const p_ptCtx, uint32_t *p_puNewLogI, uint32_t *p_puOldLogI,
-                                   uint32_t *p_puNpageUsed, uint32_t *p_puNpageTot)
+e_eFSS_LOG_RES eFSS_LOG_GetLogInfo(t_eFSS_LOG_Ctx* const p_ptCtx, uint32_t* const p_puNewLogI, 
+                                   uint32_t* const p_puOldLogI, uint32_t* const p_puNpageUsed, 
+                                   uint32_t* const p_puNpageTot)
 {
 	/* Local return variable */
 	e_eFSS_LOG_RES l_eRes;
-    e_eFSS_LOGC_RES l_eLOGCRes;
+    e_eFSS_LOGC_RES l_eResC;
+
+    /* Local storage variable */
+    t_eFSS_LOGC_StorBuf l_tBuff;
+    uint32_t l_uUsePages;
 
     /* Local var used for calculation */
     bool_t l_bIsInit;
-    uint32_t l_uNPageU;
     uint32_t l_uRemain;
 
 	/* Check pointer validity */
@@ -172,8 +230,9 @@ e_eFSS_LOG_RES eFSS_LOG_GetLogInfo(t_eFSS_LOG_Ctx* const p_ptCtx, uint32_t *p_pu
 	else
 	{
 		/* Check Init */
-        l_eLOGCRes = eFSS_LOGC_IsInit(&p_ptCtx->tLOGCCtx, &l_bIsInit);
-        l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eLOGCRes);
+        l_bIsInit = false;
+        l_eResC = eFSS_LOGC_IsInit(&p_ptCtx->tLOGCCtx, &l_bIsInit);
+        l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
 
         if( e_eFSS_LOG_RES_OK == l_eRes )
         {
@@ -194,23 +253,33 @@ e_eFSS_LOG_RES eFSS_LOG_GetLogInfo(t_eFSS_LOG_Ctx* const p_ptCtx, uint32_t *p_pu
                     l_eRes = eFSS_LOGC_LoadIndexNRepair(p_ptCtx);
                     if( e_eFSS_LOG_RES_OK == l_eRes )
                     {
-                        /* Calculate n page */
-                        eFSS_LOGC_GetUsablePage(&p_ptCtx->tLOGCCtx, &l_uNPageU);
+                        /* Calculate n page */            
+                        l_uUsePages = 0u;
+                        l_eResC = eFSS_LOGC_GetBuffNUsable(&p_ptCtx->tLOGCCtx, &l_tBuff, &l_uUsePages);
+                        l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
 
-                        /* Copy result */
-                        *p_puNewLogI = p_ptCtx->uNewPagIdx;
-                        *p_puNpageUsed = p_ptCtx->uFullFilledP;
-                        if( p_ptCtx->uNewPagIdx < p_ptCtx->uFullFilledP )
+                        if( e_eFSS_LOG_RES_OK == l_eRes )
                         {
-                            l_uRemain = p_ptCtx->uFullFilledP - p_ptCtx->uNewPagIdx;
-                            *p_puOldLogI = l_uNPageU - l_uRemain;
-                        }
-                        else
-                        {
-                            *p_puOldLogI = p_ptCtx->uNewPagIdx - p_ptCtx->uFullFilledP;
-                        }
+                            /* New log index fill */
+                            *p_puNewLogI = p_ptCtx->uNewPagIdx;
 
-                        *p_puNpageTot = l_uNPageU;
+                            /* Oldest log index fill */
+                            if( p_ptCtx->uNewPagIdx < p_ptCtx->uFullFilledP )
+                            {
+                                l_uRemain = p_ptCtx->uFullFilledP - p_ptCtx->uNewPagIdx;
+                                *p_puOldLogI = l_uUsePages - l_uRemain;
+                            }
+                            else
+                            {
+                                *p_puOldLogI = p_ptCtx->uNewPagIdx - p_ptCtx->uFullFilledP;
+                            }
+
+                            /* Numbers of filled page fill */
+                            *p_puNpageUsed = p_ptCtx->uFullFilledP;
+
+                            /* Total pages fill */
+                            *p_puNpageTot = l_uUsePages;
+                        }
                     }
                 }
             }
@@ -224,13 +293,16 @@ e_eFSS_LOG_RES eFSS_LOG_Format(t_eFSS_LOG_Ctx* const p_ptCtx)
 {
 	/* Local return variable */
 	e_eFSS_LOG_RES l_eRes;
-    e_eFSS_LOGC_RES l_eLOGCRes;
+    e_eFSS_LOGC_RES l_eResC;
+
+    /* Local storage variable */
+    t_eFSS_LOGC_StorBuf l_tBuff;
+    uint32_t l_uUsePages;
 
     /* Local var used for calculation */
     bool_t l_bIsInit;
-    t_eFSS_TYPE_StorBuf l_tBuff;
     uint32_t l_uNextIndex;
-
+    
     /* Local variable for decision making */
     bool_t l_bInvalidateCurrent;
     bool_t l_bIsFlashCacheUsed;
@@ -243,8 +315,9 @@ e_eFSS_LOG_RES eFSS_LOG_Format(t_eFSS_LOG_Ctx* const p_ptCtx)
 	else
 	{
 		/* Check Init */
-        l_eLOGCRes = eFSS_LOGC_IsInit(&p_ptCtx->tLOGCCtx, &l_bIsInit);
-        l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eLOGCRes);
+        l_bIsInit = false;
+        l_eResC = eFSS_LOGC_IsInit(&p_ptCtx->tLOGCCtx, &l_bIsInit);
+        l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
 
         if( e_eFSS_LOG_RES_OK == l_eRes )
         {
@@ -261,8 +334,9 @@ e_eFSS_LOG_RES eFSS_LOG_Format(t_eFSS_LOG_Ctx* const p_ptCtx)
                 }
                 else
                 {
-                    l_eLOGCRes = eFSS_LOGC_GetBuff(&p_ptCtx->tLOGCCtx, &l_tBuff);
-                    l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eLOGCRes);
+                    l_uUsePages = 0u;
+                    l_eResC = eFSS_LOGC_GetBuffNUsable(&p_ptCtx->tLOGCCtx, &l_tBuff, &l_uUsePages);
+                    l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
 
                     if( e_eFSS_LOG_RES_OK == l_eRes )
                     {
@@ -317,15 +391,15 @@ e_eFSS_LOG_RES eFSS_LOG_Format(t_eFSS_LOG_Ctx* const p_ptCtx)
                                 memset(l_tBuff.puBuf, 0u, l_tBuff.uBufL);
                                 memset(&l_tBuff.ptMeta, 0u, sizeof(t_eFSS_TYPE_PageMeta));
 
-                                l_eLOGCRes = eFSS_LOGC_FlushBufferAsLog(&p_ptCtx->tLOGCCtx, p_ptCtx->uNewPagIdx);
-                                l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eLOGCRes);
+                                l_eResC = eFSS_LOGC_FlushBufferAsLog(&p_ptCtx->tLOGCCtx, p_ptCtx->uNewPagIdx);
+                                l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
 
                                 if( e_eFSS_LOG_RES_OK == l_eRes )
                                 {
                                     /* Invalidate newest backup also */
                                     eFSS_LOGC_GetNextIndex(&p_ptCtx->tLOGCCtx, p_ptCtx->uNewPagIdx, &l_uNextIndex);
-                                    l_eLOGCRes = eFSS_LOGC_FlushBufferAsLog(&p_ptCtx->tLOGCCtx, l_uNextIndex);
-                                    l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eLOGCRes);
+                                    l_eResC = eFSS_LOGC_FlushBufferAsLog(&p_ptCtx->tLOGCCtx, l_uNextIndex);
+                                    l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
                                 }
                             }
 
@@ -335,8 +409,8 @@ e_eFSS_LOG_RES eFSS_LOG_Format(t_eFSS_LOG_Ctx* const p_ptCtx)
                                 memset(l_tBuff.puBuf, 0u, l_tBuff.uBufL);
                                 memset(&l_tBuff.ptMeta, 0u, sizeof(t_eFSS_TYPE_PageMeta));
 
-                                l_eLOGCRes = eFSS_LOGC_FlushBufferAsNewestNBkpPage(&p_ptCtx->tLOGCCtx, 0u);
-                                l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eLOGCRes);
+                                l_eResC = eFSS_LOGC_FlushBufferAsNewestNBkpPage(&p_ptCtx->tLOGCCtx, 0u);
+                                l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
 
                                 if( e_eFSS_LOG_RES_OK == l_eRes )
                                 {
@@ -344,8 +418,8 @@ e_eFSS_LOG_RES eFSS_LOG_Format(t_eFSS_LOG_Ctx* const p_ptCtx)
                                     eFSS_LOGC_IsFlashCacheUsed(&p_ptCtx->tLOGCCtx, &l_bIsFlashCacheUsed);
                                     if( true == l_bIsFlashCacheUsed )
                                     {
-                                        l_eLOGCRes = eFSS_LOGC_WriteCache(&p_ptCtx->tLOGCCtx, 0u, 0u);
-                                        l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eLOGCRes);
+                                        l_eResC = eFSS_LOGC_WriteCache(&p_ptCtx->tLOGCCtx, 0u, 0u);
+                                        l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
                                     }
                                 }
                             }
@@ -359,15 +433,18 @@ e_eFSS_LOG_RES eFSS_LOG_Format(t_eFSS_LOG_Ctx* const p_ptCtx)
 	return l_eRes;
 }
 
-e_eFSS_LOG_RES eFSS_LOG_AddLog(t_eFSS_LOG_Ctx* const p_ptCtx, uint16_t p_uElemL, uint8_t* p_puRawVal)
+e_eFSS_LOG_RES eFSS_LOG_AddLog(t_eFSS_LOG_Ctx* const p_ptCtx, uint8_t* const p_puRawVal, const uint32_t p_uElemL)
 {
 	/* Local return variable */
 	e_eFSS_LOG_RES l_eRes;
-    e_eFSS_LOGC_RES l_eLOGCRes;
+    e_eFSS_LOGC_RES l_eResC;
+
+    /* Local storage variable */
+    t_eFSS_LOGC_StorBuf l_tBuff;
+    uint32_t l_uUsePages;
 
     /* Local var used for calculation */
     bool_t l_bIsInit;
-    t_eFSS_TYPE_StorBuf l_tBuff;
     uint32_t l_uPages;
 
 	/* Check pointer validity */
@@ -378,8 +455,9 @@ e_eFSS_LOG_RES eFSS_LOG_AddLog(t_eFSS_LOG_Ctx* const p_ptCtx, uint16_t p_uElemL,
 	else
 	{
 		/* Check Init */
-        l_eLOGCRes = eFSS_LOGC_IsInit(&p_ptCtx->tLOGCCtx, &l_bIsInit);
-        l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eLOGCRes);
+        l_bIsInit = false;
+        l_eResC = eFSS_LOGC_IsInit(&p_ptCtx->tLOGCCtx, &l_bIsInit);
+        l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
 
         if( e_eFSS_LOG_RES_OK == l_eRes )
         {
@@ -396,8 +474,9 @@ e_eFSS_LOG_RES eFSS_LOG_AddLog(t_eFSS_LOG_Ctx* const p_ptCtx, uint16_t p_uElemL,
                 }
                 else
                 {
-                    l_eLOGCRes = eFSS_LOGC_GetBuff(&p_ptCtx->tLOGCCtx, &l_tBuff);
-                    l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eLOGCRes);
+                    l_uUsePages = 0u;
+                    l_eResC = eFSS_LOGC_GetBuffNUsable(&p_ptCtx->tLOGCCtx, &l_tBuff, &l_uUsePages);
+                    l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
 
                     if( e_eFSS_LOG_RES_OK == l_eRes )
                     {
@@ -415,8 +494,8 @@ e_eFSS_LOG_RES eFSS_LOG_AddLog(t_eFSS_LOG_Ctx* const p_ptCtx, uint16_t p_uElemL,
                                  *    PAGE FULL: Go next, and save log in next page
                                  *    PAGE EMPTY: Save log in the current page and we are done
                                  */
-                                l_eLOGCRes = eFSS_LOGC_LoadBufferAsNewestNBkpPage(&p_ptCtx->tLOGCCtx, p_ptCtx->uNewPagIdx);
-                                l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eLOGCRes);
+                                l_eResC = eFSS_LOGC_LoadBufferAsNewestNBkpPage(&p_ptCtx->tLOGCCtx, p_ptCtx->uNewPagIdx);
+                                l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
 
                                 if( e_eFSS_LOG_RES_OK == l_eRes )
                                 {
@@ -433,8 +512,8 @@ e_eFSS_LOG_RES eFSS_LOG_AddLog(t_eFSS_LOG_Ctx* const p_ptCtx, uint16_t p_uElemL,
                                         l_tBuff.ptMeta->uPageUseSpec3+= p_uElemL;
 
                                         /* Write page */
-                                        l_eLOGCRes = eFSS_LOGC_FlushBufferAsNewestNBkpPage(&p_ptCtx->tLOGCCtx, p_ptCtx->uNewPagIdx);
-                                        l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eLOGCRes);
+                                        l_eResC = eFSS_LOGC_FlushBufferAsNewestNBkpPage(&p_ptCtx->tLOGCCtx, p_ptCtx->uNewPagIdx);
+                                        l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
                                     }
                                     else
                                     {
@@ -445,30 +524,30 @@ e_eFSS_LOG_RES eFSS_LOG_AddLog(t_eFSS_LOG_Ctx* const p_ptCtx, uint16_t p_uElemL,
                                         *    4 - Trasform the backup page in the original pages
                                         */
                                         /* Step 1 - finalize original page */
-                                        l_eLOGCRes = eFSS_LOGC_FlushBufferAsLog(&p_ptCtx->tLOGCCtx, p_ptCtx->uNewPagIdx);
-                                        l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eLOGCRes);
+                                        l_eResC = eFSS_LOGC_FlushBufferAsLog(&p_ptCtx->tLOGCCtx, p_ptCtx->uNewPagIdx);
+                                        l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
 
                                         if( e_eFSS_LOG_RES_OK == l_eRes )
                                         {
                                             /* Step 2 - add the new bkup page after the current bkup page */
                                             eFSS_LOGC_GetNextIndex(&p_ptCtx->tLOGCCtx, p_ptCtx->uFullFilledP, &l_uPages);
                                             eFSS_LOGC_GetNextIndex(&p_ptCtx->tLOGCCtx, l_uPages, &l_uPages);
-                                            l_eLOGCRes = eFSS_LOGC_FlushBufferAsNewestBkupOnly(&p_ptCtx->tLOGCCtx, l_uPages);
-                                            l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eLOGCRes);
+                                            l_eResC = eFSS_LOGC_FlushBufferAsNewestBkupOnly(&p_ptCtx->tLOGCCtx, l_uPages);
+                                            l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
 
                                             if( e_eFSS_LOG_RES_OK == l_eRes )
                                             {
                                                 /* Step 3 - If cache is present update cache with the new index */
                                                 eFSS_LOGC_GetNextIndex(&p_ptCtx->tLOGCCtx, p_ptCtx->uFullFilledP, &l_uPages);
-                                                l_eLOGCRes = eFSS_LOGC_WriteCache(&p_ptCtx->tLOGCCtx, l_uPages, p_ptCtx->uFullFilledP + 1u);
-                                                l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eLOGCRes);
+                                                l_eResC = eFSS_LOGC_WriteCache(&p_ptCtx->tLOGCCtx, l_uPages, p_ptCtx->uFullFilledP + 1u);
+                                                l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
 
                                                 if( e_eFSS_LOG_RES_OK == l_eRes )
                                                 {
                                                     /* Step 4 - Trasform the backup page in the original pages */
                                                     eFSS_LOGC_GetNextIndex(&p_ptCtx->tLOGCCtx, p_ptCtx->uFullFilledP, &l_uPages);
-                                                    l_eLOGCRes = eFSS_LOGC_FlushBufferAsNewestOnly(&p_ptCtx->tLOGCCtx, l_uPages);
-                                                    l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eLOGCRes);
+                                                    l_eResC = eFSS_LOGC_FlushBufferAsNewestOnly(&p_ptCtx->tLOGCCtx, l_uPages);
+                                                    l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
                                                 }
                                             }
                                         }
@@ -485,27 +564,31 @@ e_eFSS_LOG_RES eFSS_LOG_AddLog(t_eFSS_LOG_Ctx* const p_ptCtx, uint16_t p_uElemL,
 	return l_eRes;
 }
 
-e_eFSS_LOG_RES eFSS_LOG_GetLogOfAPage(t_eFSS_LOG_Ctx* const p_ptCtx, uint32_t p_uindx, uint8_t* p_puBuf,
-                                      uint32_t* p_puBufL, uint32_t p_uBufMaxL)
+e_eFSS_LOG_RES eFSS_LOG_GetLogOfAPage(t_eFSS_LOG_Ctx* const p_ptCtx, const uint32_t p_uindx, uint8_t* const p_puBuf,
+                                      const uint32_t p_uBufL, uint32_t* const p_puValorByte)
 {
 	/* Local return variable */
 	e_eFSS_LOG_RES l_eRes;
-    e_eFSS_LOGC_RES l_eLOGCRes;
+    e_eFSS_LOGC_RES l_eResC;
+
+    /* Local storage variable */
+    t_eFSS_LOGC_StorBuf l_tBuff;
+    uint32_t l_uUsePages;
 
     /* Local var used for calculation */
     bool_t l_bIsInit;
-    t_eFSS_TYPE_StorBuf l_tBuff;
 
 	/* Check pointer validity */
-	if( ( NULL == p_ptCtx ) || ( NULL == p_puBuf ) || ( NULL == p_puBufL ) )
+	if( ( NULL == p_ptCtx ) || ( NULL == p_puBuf ) || ( NULL == p_puValorByte ) )
 	{
 		l_eRes = e_eFSS_LOG_RES_BADPOINTER;
 	}
 	else
 	{
 		/* Check Init */
-        l_eLOGCRes = eFSS_LOGC_IsInit(&p_ptCtx->tLOGCCtx, &l_bIsInit);
-        l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eLOGCRes);
+        l_bIsInit = false;
+        l_eResC = eFSS_LOGC_IsInit(&p_ptCtx->tLOGCCtx, &l_bIsInit);
+        l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
 
         if( e_eFSS_LOG_RES_OK == l_eRes )
         {
@@ -522,8 +605,9 @@ e_eFSS_LOG_RES eFSS_LOG_GetLogOfAPage(t_eFSS_LOG_Ctx* const p_ptCtx, uint32_t p_
                 }
                 else
                 {
-                    l_eLOGCRes = eFSS_LOGC_GetBuff(&p_ptCtx->tLOGCCtx, &l_tBuff);
-                    l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eLOGCRes);
+                    l_uUsePages = 0u;
+                    l_eResC = eFSS_LOGC_GetBuffNUsable(&p_ptCtx->tLOGCCtx, &l_tBuff, &l_uUsePages);
+                    l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
 
                     if( e_eFSS_LOG_RES_OK == l_eRes )
                     {
@@ -540,8 +624,8 @@ e_eFSS_LOG_RES eFSS_LOG_GetLogOfAPage(t_eFSS_LOG_Ctx* const p_ptCtx, uint32_t p_
                                 /* Can now retrive data */
                                 if( p_uindx == p_ptCtx->uNewPagIdx )
                                 {
-                                    l_eLOGCRes =  eFSS_LOGC_LoadBufferAsNewestNBkpPage(&p_ptCtx->tLOGCCtx, p_uindx);
-                                    l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eLOGCRes);
+                                    l_eResC =  eFSS_LOGC_LoadBufferAsNewestNBkpPage(&p_ptCtx->tLOGCCtx, p_uindx);
+                                    l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
                                     if( e_eFSS_LOG_RES_OK == l_eRes )
                                     {
                                         if( p_uBufMaxL >= l_tBuff.ptMeta->uPageUseSpec3 )
@@ -557,8 +641,8 @@ e_eFSS_LOG_RES eFSS_LOG_GetLogOfAPage(t_eFSS_LOG_Ctx* const p_ptCtx, uint32_t p_
                                 else
                                 {
                                     /* Check index validity TODO */
-                                    l_eLOGCRes =  eFSS_LOGC_LoadBufferAsLog(&p_ptCtx->tLOGCCtx, p_uindx);
-                                    l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eLOGCRes);
+                                    l_eResC =  eFSS_LOGC_LoadBufferAsLog(&p_ptCtx->tLOGCCtx, p_uindx);
+                                    l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
                                     if( e_eFSS_LOG_RES_OK == l_eRes )
                                     {
                                         if( p_uBufMaxL >= l_tBuff.ptMeta->uPageUseSpec3 )
@@ -587,7 +671,7 @@ e_eFSS_LOG_RES eFSS_LOG_GetLogOfAPage(t_eFSS_LOG_Ctx* const p_ptCtx, uint32_t p_
 /***********************************************************************************************************************
  *  PRIVATE FUNCTION
  **********************************************************************************************************************/
-static bool_t eFSS_LOG_IsStatusStillCoherent(const t_eFSS_LOG_Ctx* p_ptCtx)
+static bool_t eFSS_LOG_IsStatusStillCoherent(t_eFSS_LOG_Ctx* const p_ptCtx)
 {
     bool_t l_eRes;
 
@@ -688,27 +772,27 @@ static e_eFSS_LOG_RES eFSS_LOGC_LoadIndexFromCache(t_eFSS_LOG_Ctx* const p_ptCtx
 {
 	/* Local return variable */
 	e_eFSS_LOG_RES l_eRes;
-    e_eFSS_LOGC_RES l_eLOGCRes;
+    e_eFSS_LOGC_RES l_eResC;
 
     /* Local variable used for calculation */
     uint32_t l_uIdxN;
     uint32_t l_uIFlP;
-    t_eFSS_TYPE_StorBuf l_tBuff;
+    t_eFSS_LOGC_StorBuf l_tBuff;
 
-    l_eLOGCRes = eFSS_LOGC_GetBuff(&p_ptCtx->tLOGCCtx, &l_tBuff);
-    l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eLOGCRes);
+    l_eResC = eFSS_LOGC_GetBuff(&p_ptCtx->tLOGCCtx, &l_tBuff);
+    l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
 
     if( e_eFSS_LOG_RES_OK == l_eRes )
     {
         /* Read cache */
-        l_eLOGCRes = eFSS_LOGC_ReadCache(&p_ptCtx->tLOGCCtx, &l_uIdxN, &l_uIFlP);
-        l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eLOGCRes);
+        l_eResC = eFSS_LOGC_ReadCache(&p_ptCtx->tLOGCCtx, &l_uIdxN, &l_uIFlP);
+        l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
 
         if( ( e_eFSS_LOG_RES_OK == l_eRes ) || ( e_eFSS_LOG_RES_OK_BKP_RCVRD == l_eRes ) )
         {
             /* Ok, index are readed, verify if pointed page is rely the newest page */
-            l_eLOGCRes = eFSS_LOGC_LoadBufferAsNewestNBkpPage(&p_ptCtx->tLOGCCtx, l_uIdxN);
-            l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eLOGCRes);
+            l_eResC = eFSS_LOGC_LoadBufferAsNewestNBkpPage(&p_ptCtx->tLOGCCtx, l_uIdxN);
+            l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
 
             if( ( e_eFSS_LOG_RES_OK == l_eRes ) || ( e_eFSS_LOG_RES_OK_BKP_RCVRD == l_eRes ) )
             {
@@ -734,18 +818,18 @@ static e_eFSS_LOG_RES eFSS_LOGC_LoadIndxBySearch(t_eFSS_LOG_Ctx* const p_ptCtx)
 {
 	/* Local return variable */
 	e_eFSS_LOG_RES l_eRes;
-    e_eFSS_LOGC_RES l_eLOGCRes;
+    e_eFSS_LOGC_RES l_eResC;
 
     /* Local var used for settings */
-    t_eFSS_TYPE_StorBuf l_tBuff;
+    t_eFSS_LOGC_StorBuf l_tBuff;
 
     /* Local var used for search */
     uint32_t l_uNSearched;
     uint32_t l_uIdxSearch;
     uint32_t l_uUsablePage;
 
-    l_eLOGCRes = eFSS_LOGC_GetBuff(&p_ptCtx->tLOGCCtx, &l_tBuff);
-    l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eLOGCRes);
+    l_eResC = eFSS_LOGC_GetBuff(&p_ptCtx->tLOGCCtx, &l_tBuff);
+    l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
 
     if( e_eFSS_LOG_RES_OK == l_eRes )
     {
@@ -760,8 +844,8 @@ static e_eFSS_LOG_RES eFSS_LOGC_LoadIndxBySearch(t_eFSS_LOG_Ctx* const p_ptCtx)
 
         while( ( l_uNSearched < l_uUsablePage ) && ( e_eFSS_LOG_RES_NOTVALIDLOG == l_eRes )  )
         {
-            l_eLOGCRes = eFSS_LOGC_LoadBufferAsNewestNBkpPage(&p_ptCtx->tLOGCCtx, p_ptCtx->uNewPagIdx);
-            l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eLOGCRes);
+            l_eResC = eFSS_LOGC_LoadBufferAsNewestNBkpPage(&p_ptCtx->tLOGCCtx, p_ptCtx->uNewPagIdx);
+            l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
 
             if( e_eFSS_LOG_RES_OK == l_eRes )
             {

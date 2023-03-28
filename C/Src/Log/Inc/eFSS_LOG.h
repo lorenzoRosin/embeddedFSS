@@ -18,21 +18,19 @@ extern "C" {
 
 
 
+/* In this module we need to keep in mind a few things:
+ * 1 - Log are stored RAW, and the module dosent know anything about theyr structures
+ * 2 - We cannot read a single log from this module because the module itself dosent know the struct of the logs
+ * 3 - We can only read a page, where log are stored, and it's up to the user to estrapolate the stored log
+ * 4 - Logs are stored sequentialy in the page and they cannot be splitted between two pages. 
+ */ 
+
+
+
 /***********************************************************************************************************************
  *      INCLUDES
  **********************************************************************************************************************/
 #include "eFSS_LOGC.h"
-
-
-
-/***********************************************************************************************************************
- *      LOG TYPEDEFS
- **********************************************************************************************************************/
-typedef struct
-{
-    uint16_t uLogL;
-    uint8_t* puRawVal;
-}t_eFSS_LOG_LogElement;
 
 
 
@@ -71,10 +69,10 @@ typedef struct
 /**
  * @brief       Initialize the Log module context
  *
- * @param[in]   p_ptCtx       - Log context
+ * @param[in]   p_ptCtx          - Log context
  * @param[in]   p_tCtxCb         - All callback collection context
  * @param[in]   p_tStorSet       - Storage settings
- * @param[in]   p_puBuff         - Pointer to a buffer used by the modules to make calc, must ne pageSize * 2
+ * @param[in]   p_puBuff         - Pointer to a buffer used by the modules to make calc, must be pageSize * 2
  * @param[in]   p_uBuffL         - Size of p_puBuff
  * @param[in]   p_bFlashCache    - Use flash as cache for storing and resuming index
  * @param[in]   p_bFullBckup     - Save every log data in a backup pages
@@ -83,9 +81,9 @@ typedef struct
  *		        e_eFSS_LOG_RES_BADPARAM      - In case of an invalid parameter passed to the function
  *              e_eFSS_LOG_RES_OK            - Operation ended correctly
  */
-e_eFSS_LOG_RES eFSS_LOG_InitCtx(t_eFSS_LOG_Ctx* const p_ptCtx, t_eFSS_TYPE_CbStorCtx const p_tCtxCb,
-                                t_eFSS_TYPE_StorSet p_tStorSet, uint8_t* const p_puBuff, uint32_t p_uBuffL,
-                                bool_t p_bFlashCache, bool_t p_bFullBckup);
+e_eFSS_LOG_RES eFSS_LOG_InitCtx(t_eFSS_LOG_Ctx* const p_ptCtx, const t_eFSS_TYPE_CbStorCtx p_tCtxCb,
+                                const t_eFSS_TYPE_StorSet p_tStorSet, uint8_t* const p_puBuff, 
+                                const uint32_t p_uBuffL, const bool_t p_bFlashCache, const bool_t p_bFullBckup);
 
 /**
  * @brief       Check if the lib is initialized
@@ -96,7 +94,7 @@ e_eFSS_LOG_RES eFSS_LOG_InitCtx(t_eFSS_LOG_Ctx* const p_ptCtx, t_eFSS_TYPE_CbSto
  * @return      e_eFSS_LOG_RES_BADPOINTER    - In case of bad pointer passed to the function
  *              e_eFSS_LOG_RES_OK            - Operation ended correctly
  */
-e_eFSS_LOG_RES eFSS_LOG_IsInit(t_eFSS_LOG_Ctx* const p_ptCtx, bool_t* p_pbIsInit);
+e_eFSS_LOG_RES eFSS_LOG_IsInit(t_eFSS_LOG_Ctx* const p_ptCtx, bool_t* const p_pbIsInit);
 
 /**
  * @brief       Get the status of the storage. This operation will restore any corrupted information if possible.
@@ -127,8 +125,8 @@ e_eFSS_LOG_RES eFSS_LOG_GetLogStatus(t_eFSS_LOG_Ctx* const p_ptCtx);
  * @param[in]   p_ptCtx       - Log context
  * @param[out]  p_puNewLogI   - Pointer to a uint32_t that will be filled with the Newest log index
  * @param[out]  p_puOldLogI   - Pointer to a uint32_t that will be filled with the oldest log index
- * @param[out]  p_puNpageUsed - Pointer to a uint32_t that will be filled with the number of valorized page
- * @param[out]  p_puNpageTot  - Pointer to a uint32_t that will be filled with the number of redable page
+ * @param[out]  p_puNpageUsed - Pointer to a uint32_t that will be filled with the number of valorized page with log
+ * @param[out]  p_puNpageTot  - Pointer to a uint32_t that will be filled with the total number of log page
  *
  * @return      e_eFSS_LOG_RES_BADPOINTER         - In case of bad pointer passed to the function
  *              e_eFSS_LOG_RES_OK                 - Operation ended correctly
@@ -143,11 +141,13 @@ e_eFSS_LOG_RES eFSS_LOG_GetLogStatus(t_eFSS_LOG_Ctx* const p_ptCtx);
  *              e_eFSS_LOG_RES_CLBCKCRCERR        - Crc callback returned error
  *              e_eFSS_LOG_RES_WRITENOMATCHREAD   - After Write operation the Read operation readed different data
  */
-e_eFSS_LOG_RES eFSS_LOG_GetLogInfo(t_eFSS_LOG_Ctx* const p_ptCtx, uint32_t *p_puNewLogI, uint32_t *p_puOldLogI,
-                                   uint32_t *p_puNpageUsed, uint32_t *p_puNpageTot);
+e_eFSS_LOG_RES eFSS_LOG_GetLogInfo(t_eFSS_LOG_Ctx* const p_ptCtx, uint32_t* const p_puNewLogI, 
+                                   uint32_t* const p_puOldLogI, uint32_t* const p_puNpageUsed, 
+                                   uint32_t* const p_puNpageTot);
 
 /**
- * @brief       Format the memory used for the log, previous data, if present, will be lost.
+ * @brief       Format the memory used for the log, previous data, if present, will be lost. This function is the only 
+ *              one that can ripristinate a non valid log structure
  *
  * @param[in]   p_ptCtx       - Log context
  *
@@ -167,11 +167,11 @@ e_eFSS_LOG_RES eFSS_LOG_GetLogInfo(t_eFSS_LOG_Ctx* const p_ptCtx, uint32_t *p_pu
 e_eFSS_LOG_RES eFSS_LOG_Format(t_eFSS_LOG_Ctx* const p_ptCtx);
 
 /**
- * @brief       Add a log
+ * @brief       Add a log inside the storage area. 
  *
  * @param[in]   p_ptCtx       - Log context
- * @param[out]  p_uElemL      - Length of the element
- * @param[out]  p_puRawVal    - Raw value of the element we want to save
+ * @param[in]   p_puRawVal    - Raw value of the element we want to save
+ * @param[in]   p_uElemL      - Length of the element
  *
  * @return      e_eFSS_LOG_RES_BADPOINTER         - In case of bad pointer passed to the function
  *              e_eFSS_LOG_RES_OK                 - Operation ended correctly
@@ -186,16 +186,16 @@ e_eFSS_LOG_RES eFSS_LOG_Format(t_eFSS_LOG_Ctx* const p_ptCtx);
  *              e_eFSS_LOG_RES_CLBCKCRCERR        - Crc callback returned error
  *              e_eFSS_LOG_RES_WRITENOMATCHREAD   - After Write operation the Read operation readed different data
  */
-e_eFSS_LOG_RES eFSS_LOG_AddLog(t_eFSS_LOG_Ctx* const p_ptCtx, uint16_t p_uElemL, uint8_t* p_puRawVal);
+e_eFSS_LOG_RES eFSS_LOG_AddLog(t_eFSS_LOG_Ctx* const p_ptCtx, uint8_t* const p_puRawVal, const uint32_t p_uElemL);
 
 /**
- * @brief       Get all the log present on a specific page.
+ * @brief       Get all the data present on a specifi pages. The meaning of the data in unknow for this module.
  *
  * @param[in]   p_ptCtx        - Log context
  * @param[in]   p_uindx        - Index to get data from
- * @param[in]   p_puBuf        - Pointer to a buffer where founded log will be copied
- * @param[in]   p_puBufL       - Size of the copied log
- * @param[in]   p_uBufMaxL     - Max size of p_puBuf
+ * @param[out]  p_puBuf        - Pointer to a buffer where founded log will be copied
+ * @param[in]   p_uBufL        - Size of the p_puBuf buffer
+ * @param[out]  p_puValorByte  - Number of valid byte that where present in the page
  *
  * @return      e_eFSS_LOG_RES_BADPOINTER         - In case of bad pointer passed to the function
  *              e_eFSS_LOG_RES_OK                 - Operation ended correctly
@@ -210,8 +210,8 @@ e_eFSS_LOG_RES eFSS_LOG_AddLog(t_eFSS_LOG_Ctx* const p_ptCtx, uint16_t p_uElemL,
  *              e_eFSS_LOG_RES_CLBCKCRCERR        - Crc callback returned error
  *              e_eFSS_LOG_RES_WRITENOMATCHREAD   - After Write operation the Read operation readed different data
  */
-e_eFSS_LOG_RES eFSS_LOG_GetLogOfAPage(t_eFSS_LOG_Ctx* const p_ptCtx, uint32_t p_uindx, uint8_t* p_puBuf,
-                                      uint32_t* p_puBufL, uint32_t p_uBufMaxL);
+e_eFSS_LOG_RES eFSS_LOG_GetLogOfAPage(t_eFSS_LOG_Ctx* const p_ptCtx, const uint32_t p_uindx, uint8_t* const p_puBuf,
+                                      const uint32_t p_uBufL, uint32_t* const p_puValorByte);
 
 #ifdef __cplusplus
 } /* extern "C" */
