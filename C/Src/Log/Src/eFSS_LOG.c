@@ -72,8 +72,18 @@ static e_eFSS_LOG_RES eFSS_LOG_LOGCtoLOGRes(const e_eFSS_LOGC_RES p_eLOGCRes);
 static e_eFSS_LOG_RES eFSS_LOG_LoadIndexNRepair(t_eFSS_LOG_Ctx* const p_ptCtx);
 static e_eFSS_LOG_RES eFSS_LOG_LoadIndexFromCache(t_eFSS_LOG_Ctx* const p_ptCtx);
 static e_eFSS_LOG_RES eFSS_LOG_LoadIndxBySearch(t_eFSS_LOG_Ctx* const p_ptCtx);
+static e_eFSS_LOG_RES eFSS_LOG_GetNextIndex(t_eFSS_LOG_Ctx* const p_ptCtx, const uint32_t p_uCurIdx,
+                                            uint32_t* const p_uNextIdx);
 
 
+
+/***********************************************************************************************************************
+ *  PRIVATE UTILS FOR BKUP PAGE STATIC FUNCTION DECLARATION
+ **********************************************************************************************************************/
+static e_eFSS_LOG_RES eFSS_LOG_FlushBufferAsNewestNBkpPage(t_eFSS_LOG_Ctx* const p_ptCtx, const uint32_t p_uIdx,
+                                                           const uint32_t p_ubyteInPage);
+static e_eFSS_LOG_RES eFSS_LOG_LoadBufferAsNewestNBkpPage(t_eFSS_LOG_Ctx* const p_ptCtx, const uint32_t p_uIdx,
+                                                          uint32_t* const p_puByteInPage);
 
 /***********************************************************************************************************************
  *   GLOBAL FUNCTIONS
@@ -340,22 +350,26 @@ e_eFSS_LOG_RES eFSS_LOG_Format(t_eFSS_LOG_Ctx* const p_ptCtx)
 
                     if( e_eFSS_LOG_RES_OK == l_eRes )
                     {
-                        /* Load index */
+                        /* Load index if possible, why? Because if we start formatting and a power outage occour
+                           we need that the log must remain recoverable or must be totaly formatted (or corrupted
+                           also). We dont want that a power outage could leave the area in state where wrong data
+                           could be readed */
                         l_eRes = eFSS_LOG_LoadIndexNRepair(p_ptCtx);
 
                         if( ( e_eFSS_LOG_RES_OK == l_eRes ) || ( e_eFSS_LOG_RES_OK_BKP_RCVRD == l_eRes ) )
                         {
                             /* Flash cache, so we find a valid newest page pointed by cache.
-                               If the newest page is at index zero just format that page at index zero, withouth
-                               modifyng the caches, otherwise invalidate
-                               the current page (during a power outage the state of the storage will be invalid)
-                               write newest page on index zero, and finaly update the flash cache (even
-                               if a power outage occours, and the state of the storage will be invalid, no
-                               problem: we were formatting the storage anyway.. ) */
+                               1 - If the newest page is at index zero just format that page at index zero, withouth
+                                   modifyng the caches
+                               2 - If the newest page is not at index zero invalidate the current page (during a power
+                                   outage the state of the storage will be invalid) write newest page on index zero,
+                                   and finaly update the flash cache (even if a power outage occours, and the state of
+                                   the storage will be invalid, no problem: we were formatting the storage anyway.. ) */
 
                             /* No flash cache, so we find a valid newest page.
-                               If the newest page is at index zero just format that page otherwise invalidate
-                               the current page and just after write newest on index zero */
+                               1 - If the newest page is at index zero just format that page otherwise invalidate
+                               2 - If the newest page is not at index zero invalidate the current page and just after
+                                   write newest on index zero */
 
                             if( 0u != p_ptCtx->uNewPagIdx )
                             {
@@ -378,48 +392,47 @@ e_eFSS_LOG_RES eFSS_LOG_Format(t_eFSS_LOG_Ctx* const p_ptCtx)
                         else
                         {
                             /* Found some strange error, cannot continue */
+                            l_bInvalidateCurrent = true;
                         }
 
                         /* Start the procedure */
                         if( ( e_eFSS_LOG_RES_OK == l_eRes ) || ( e_eFSS_LOG_RES_OK_BKP_RCVRD == l_eRes ) ||
                             ( e_eFSS_LOG_RES_NOTVALIDLOG == l_eRes ) )
                         {
-                            /* Invalidate the current pages */
+                            /* Invalidate the current pages if needed */
                             if( true == l_bInvalidateCurrent )
                             {
                                 /* Clear buffer  */
                                 memset(l_tBuff.puBuf, 0u, l_tBuff.uBufL);
-                                memset(&l_tBuff.ptMeta, 0u, sizeof(t_eFSS_TYPE_PageMeta));
 
-                                l_eResC = eFSS_LOGC_FlushBufferAsLog(&p_ptCtx->tLOGCCtx, p_ptCtx->uNewPagIdx);
-                                l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
-
-                                if( e_eFSS_LOG_RES_OK == l_eRes )
-                                {
-                                    /* Invalidate newest backup also */
-                                    eFSS_LOGC_GetNextIndex(&p_ptCtx->tLOGCCtx, p_ptCtx->uNewPagIdx, &l_uNextIndex);
-                                    l_eResC = eFSS_LOGC_FlushBufferAsLog(&p_ptCtx->tLOGCCtx, l_uNextIndex);
-                                    l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
-                                }
+                                /* Flush */
+                                l_eRes = eFSS_LOG_FlushBufferAsNewestNBkpPage(p_ptCtx, p_ptCtx->uNewPagIdx, 0u);
                             }
 
                             if( e_eFSS_LOG_RES_OK == l_eRes )
                             {
                                 /* Write newest in first index */
-                                memset(l_tBuff.puBuf, 0u, l_tBuff.uBufL);
-                                memset(&l_tBuff.ptMeta, 0u, sizeof(t_eFSS_TYPE_PageMeta));
+                                p_ptCtx->uNewPagIdx = 0u;
+                                p_ptCtx->uFullFilledP = 0u;
 
-                                l_eResC = eFSS_LOGC_FlushBufferAsNewestNBkpPage(&p_ptCtx->tLOGCCtx, 0u);
-                                l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
+                                /* Clear buffer  */
+                                memset(l_tBuff.puBuf, 0u, l_tBuff.uBufL);
+
+                                /* Flush */
+                                l_eRes = eFSS_LOG_FlushBufferAsNewestNBkpPage(p_ptCtx, p_ptCtx->uNewPagIdx, 0u);
 
                                 if( e_eFSS_LOG_RES_OK == l_eRes )
                                 {
-                                    /* write cache */
-                                    eFSS_LOGC_IsFlashCacheUsed(&p_ptCtx->tLOGCCtx, &l_bIsFlashCacheUsed);
-                                    if( true == l_bIsFlashCacheUsed )
+                                    /* write cache, if needed */
+                                    l_eResC =  eFSS_LOGC_IsFlashCacheUsed(&p_ptCtx->tLOGCCtx, &l_bIsFlashCacheUsed);
+                                    l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
+                                    if( e_eFSS_LOG_RES_OK == l_eRes )
                                     {
-                                        l_eResC = eFSS_LOGC_WriteCache(&p_ptCtx->tLOGCCtx, 0u, 0u);
-                                        l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
+                                        if( true == l_bIsFlashCacheUsed )
+                                        {
+                                            l_eResC = eFSS_LOGC_WriteCache(&p_ptCtx->tLOGCCtx, 0u, 0u);
+                                            l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
+                                        }
                                     }
                                 }
                             }
@@ -494,7 +507,7 @@ e_eFSS_LOG_RES eFSS_LOG_AddLog(t_eFSS_LOG_Ctx* const p_ptCtx, uint8_t* const p_p
                                  *    PAGE FULL: Go next, and save log in next page
                                  *    PAGE EMPTY: Save log in the current page and we are done
                                  */
-                                l_eResC = eFSS_LOGC_LoadBufferAsNewestNBkpPage(&p_ptCtx->tLOGCCtx, p_ptCtx->uNewPagIdx);
+                                l_eResC = eFSS_LOG_LoadBufferAsNewestNBkpPage(&p_ptCtx->tLOGCCtx, p_ptCtx->uNewPagIdx);
                                 l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
 
                                 if( e_eFSS_LOG_RES_OK == l_eRes )
@@ -512,7 +525,7 @@ e_eFSS_LOG_RES eFSS_LOG_AddLog(t_eFSS_LOG_Ctx* const p_ptCtx, uint8_t* const p_p
                                         l_tBuff.ptMeta->uPageUseSpec3+= p_uElemL;
 
                                         /* Write page */
-                                        l_eResC = eFSS_LOGC_FlushBufferAsNewestNBkpPage(&p_ptCtx->tLOGCCtx, p_ptCtx->uNewPagIdx);
+                                        l_eResC = eFSS_LOG_FlushBufferAsNewestNBkpPage(&p_ptCtx->tLOGCCtx, p_ptCtx->uNewPagIdx);
                                         l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
                                     }
                                     else
@@ -530,22 +543,22 @@ e_eFSS_LOG_RES eFSS_LOG_AddLog(t_eFSS_LOG_Ctx* const p_ptCtx, uint8_t* const p_p
                                         if( e_eFSS_LOG_RES_OK == l_eRes )
                                         {
                                             /* Step 2 - add the new bkup page after the current bkup page */
-                                            eFSS_LOGC_GetNextIndex(&p_ptCtx->tLOGCCtx, p_ptCtx->uFullFilledP, &l_uPages);
-                                            eFSS_LOGC_GetNextIndex(&p_ptCtx->tLOGCCtx, l_uPages, &l_uPages);
+                                            eFSS_LOG_GetNextIndex(&p_ptCtx->tLOGCCtx, p_ptCtx->uFullFilledP, &l_uPages);
+                                            eFSS_LOG_GetNextIndex(&p_ptCtx->tLOGCCtx, l_uPages, &l_uPages);
                                             l_eResC = eFSS_LOGC_FlushBufferAsNewestBkupOnly(&p_ptCtx->tLOGCCtx, l_uPages);
                                             l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
 
                                             if( e_eFSS_LOG_RES_OK == l_eRes )
                                             {
                                                 /* Step 3 - If cache is present update cache with the new index */
-                                                eFSS_LOGC_GetNextIndex(&p_ptCtx->tLOGCCtx, p_ptCtx->uFullFilledP, &l_uPages);
+                                                eFSS_LOG_GetNextIndex(&p_ptCtx->tLOGCCtx, p_ptCtx->uFullFilledP, &l_uPages);
                                                 l_eResC = eFSS_LOGC_WriteCache(&p_ptCtx->tLOGCCtx, l_uPages, p_ptCtx->uFullFilledP + 1u);
                                                 l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
 
                                                 if( e_eFSS_LOG_RES_OK == l_eRes )
                                                 {
                                                     /* Step 4 - Trasform the backup page in the original pages */
-                                                    eFSS_LOGC_GetNextIndex(&p_ptCtx->tLOGCCtx, p_ptCtx->uFullFilledP, &l_uPages);
+                                                    eFSS_LOG_GetNextIndex(&p_ptCtx->tLOGCCtx, p_ptCtx->uFullFilledP, &l_uPages);
                                                     l_eResC = eFSS_LOGC_FlushBufferAsNewestOnly(&p_ptCtx->tLOGCCtx, l_uPages);
                                                     l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
                                                 }
@@ -624,7 +637,7 @@ e_eFSS_LOG_RES eFSS_LOG_GetLogOfAPage(t_eFSS_LOG_Ctx* const p_ptCtx, const uint3
                                 /* Can now retrive data */
                                 if( p_uindx == p_ptCtx->uNewPagIdx )
                                 {
-                                    l_eResC =  eFSS_LOGC_LoadBufferAsNewestNBkpPage(&p_ptCtx->tLOGCCtx, p_uindx);
+                                    l_eResC =  eFSS_LOG_LoadBufferAsNewestNBkpPage(&p_ptCtx->tLOGCCtx, p_uindx);
                                     l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
                                     if( e_eFSS_LOG_RES_OK == l_eRes )
                                     {
@@ -747,6 +760,11 @@ static e_eFSS_LOG_RES eFSS_LOG_LOGCtoLOGRes(const e_eFSS_LOGC_RES p_eLOGCRes)
     return l_eRes;
 }
 
+
+
+/***********************************************************************************************************************
+ *  PRIVATE UTILS STATIC FUNCTION DECLARATION
+ **********************************************************************************************************************/
 static e_eFSS_LOG_RES eFSS_LOG_LoadIndexNRepair(t_eFSS_LOG_Ctx* const p_ptCtx)
 {
     e_eFSS_LOG_RES l_eRes;
@@ -791,7 +809,7 @@ static e_eFSS_LOG_RES eFSS_LOG_LoadIndexFromCache(t_eFSS_LOG_Ctx* const p_ptCtx)
         if( ( e_eFSS_LOG_RES_OK == l_eRes ) || ( e_eFSS_LOG_RES_OK_BKP_RCVRD == l_eRes ) )
         {
             /* Ok, index are readed, verify if pointed page is rely the newest page */
-            l_eResC = eFSS_LOGC_LoadBufferAsNewestNBkpPage(&p_ptCtx->tLOGCCtx, l_uIdxN);
+            l_eResC = eFSS_LOG_LoadBufferAsNewestNBkpPage(&p_ptCtx->tLOGCCtx, l_uIdxN);
             l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
 
             if( ( e_eFSS_LOG_RES_OK == l_eRes ) || ( e_eFSS_LOG_RES_OK_BKP_RCVRD == l_eRes ) )
@@ -844,7 +862,7 @@ static e_eFSS_LOG_RES eFSS_LOG_LoadIndxBySearch(t_eFSS_LOG_Ctx* const p_ptCtx)
 
         while( ( l_uNSearched < l_uUsablePage ) && ( e_eFSS_LOG_RES_NOTVALIDLOG == l_eRes )  )
         {
-            l_eResC = eFSS_LOGC_LoadBufferAsNewestNBkpPage(&p_ptCtx->tLOGCCtx, p_ptCtx->uNewPagIdx);
+            l_eResC = eFSS_LOG_LoadBufferAsNewestNBkpPage(&p_ptCtx->tLOGCCtx, p_ptCtx->uNewPagIdx);
             l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
 
             if( e_eFSS_LOG_RES_OK == l_eRes )
@@ -856,7 +874,7 @@ static e_eFSS_LOG_RES eFSS_LOG_LoadIndxBySearch(t_eFSS_LOG_Ctx* const p_ptCtx)
             else if( e_eFSS_LOG_RES_NOTVALIDLOG == l_eRes )
             {
                 /* Not this one */
-                eFSS_LOGC_GetNextIndex( &p_ptCtx->tLOGCCtx, l_uIdxSearch, &l_uIdxSearch );
+                eFSS_LOG_GetNextIndex( &p_ptCtx->tLOGCCtx, l_uIdxSearch, &l_uIdxSearch );
                 l_uNSearched++;
             }
             else
@@ -869,9 +887,182 @@ static e_eFSS_LOG_RES eFSS_LOG_LoadIndxBySearch(t_eFSS_LOG_Ctx* const p_ptCtx)
 	return l_eRes;
 }
 
+static e_eFSS_LOG_RES eFSS_LOG_GetNextIndex(t_eFSS_LOG_Ctx* const p_ptCtx, const uint32_t p_uCurIdx,
+                                            uint32_t* const p_uNextIdx)
+{
+
+
+
+}
+
+
+
+/***********************************************************************************************************************
+ *  PRIVATE UTILS FOR BKUP PAGE STATIC FUNCTION DECLARATION
+ **********************************************************************************************************************/
+static e_eFSS_LOG_RES eFSS_LOG_FlushBufferAsNewestNBkpPage(t_eFSS_LOG_Ctx* const p_ptCtx, const uint32_t p_uIdx,
+                                                           const uint32_t p_ubyteInPage)
+{
+	/* Local return variable */
+	e_eFSS_LOG_RES l_eRes;
+    e_eFSS_LOGC_RES l_eResC;
+
+    /* Local storage variable */
+    t_eFSS_LOGC_StorBuf l_tBuff;
+    uint32_t l_uUsePages;
+
+    /* Local var used for calculation */
+    bool_t l_bIsInit;
+    uint32_t l_uNextIndex;
+
+    /* Local variable for decision making */
+    bool_t l_bInvalidateCurrent;
+    bool_t l_bIsFlashCacheUsed;
+
+	/* Check pointer validity */
+	if( NULL == p_ptCtx )
+	{
+		l_eRes = e_eFSS_LOG_RES_BADPOINTER;
+	}
+	else
+	{
+		/* Check Init */
+        l_bIsInit = false;
+        l_eResC = eFSS_LOGC_IsInit(&p_ptCtx->tLOGCCtx, &l_bIsInit);
+        l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
+
+        if( e_eFSS_LOG_RES_OK == l_eRes )
+        {
+            if( false == l_bIsInit )
+            {
+                l_eRes = e_eFSS_LOG_RES_NOINITLIB;
+            }
+            else
+            {
+                /* Check internal status validity */
+                if( false == eFSS_LOG_IsStatusStillCoherent(p_ptCtx) )
+                {
+                    l_eRes = e_eFSS_LOG_RES_CORRUPTCTX;
+                }
+                else
+                {
+                    l_uUsePages = 0u;
+                    l_eResC = eFSS_LOGC_GetBuffNUsable(&p_ptCtx->tLOGCCtx, &l_tBuff, &l_uUsePages);
+                    l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
+
+                    if( e_eFSS_LOG_RES_OK == l_eRes )
+                    {
+                        /* Load index if possible, why? Because if we start formatting and a power outage occour
+                           we need that the log must remain recoverable or must be totaly formatted (or corrupted
+                           also). We dont want that a power outage could leave the area in state where wrong data
+                           could be readed */
+                        l_eRes = eFSS_LOG_LoadIndexNRepair(p_ptCtx);
+
+                        if( ( e_eFSS_LOG_RES_OK == l_eRes ) || ( e_eFSS_LOG_RES_OK_BKP_RCVRD == l_eRes ) )
+                        {
+                            /* Flash cache, so we find a valid newest page pointed by cache.
+                               1 - If the newest page is at index zero just format that page at index zero, withouth
+                                   modifyng the caches
+                               2 - If the newest page is not at index zero invalidate the current page (during a power
+                                   outage the state of the storage will be invalid) write newest page on index zero,
+                                   and finaly update the flash cache (even if a power outage occours, and the state of
+                                   the storage will be invalid, no problem: we were formatting the storage anyway.. ) */
+
+                            /* No flash cache, so we find a valid newest page.
+                               1 - If the newest page is at index zero just format that page otherwise invalidate
+                               2 - If the newest page is not at index zero invalidate the current page and just after
+                                   write newest on index zero */
+
+                            if( 0u != p_ptCtx->uNewPagIdx )
+                            {
+                                l_bInvalidateCurrent = true;
+                            }
+                            else
+                            {
+                                l_bInvalidateCurrent = false;
+                            }
+                        }
+                        else if( e_eFSS_LOG_RES_NOTVALIDLOG == l_eRes )
+                        {
+                            /* Flash cache: We could be in the cases where chache has bad index.
+                               first write newest page in index zero and after update caches */
+
+                            /* No flash cache: no newest found. just write newest page in index 0 */
+
+                            l_bInvalidateCurrent = false;
+                        }
+                        else
+                        {
+                            /* Found some strange error, cannot continue */
+                            l_bInvalidateCurrent = true;
+                        }
+
+                        /* Start the procedure */
+                        if( ( e_eFSS_LOG_RES_OK == l_eRes ) || ( e_eFSS_LOG_RES_OK_BKP_RCVRD == l_eRes ) ||
+                            ( e_eFSS_LOG_RES_NOTVALIDLOG == l_eRes ) )
+                        {
+                            /* Invalidate the current pages if needed */
+                            if( true == l_bInvalidateCurrent )
+                            {
+                                /* Clear buffer  */
+                                memset(l_tBuff.puBuf, 0u, l_tBuff.uBufL);
+
+                                l_eResC = eFSS_LOGC_FlushBufferAs(&p_ptCtx->tLOGCCtx, e_eFSS_LOGC_PAGETYPE_LOG,
+                                                                  p_ptCtx->uNewPagIdx, 0u);
+                                l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
+
+                                if( e_eFSS_LOG_RES_OK == l_eRes )
+                                {
+                                    /* Invalidate newest backup also */
+                                    l_eRes = eFSS_LOG_GetNextIndex(&p_ptCtx->tLOGCCtx, p_ptCtx->uNewPagIdx,
+                                                                   &l_uNextIndex);
+
+                                    if( e_eFSS_LOG_RES_OK == l_eRes )
+                                    {
+                                        l_eResC = eFSS_LOGC_FlushBufferAs(&p_ptCtx->tLOGCCtx, e_eFSS_LOGC_PAGETYPE_LOG,
+                                                                        l_uNextIndex, 0u);
+                                        l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
+                                    }
+                                }
+                            }
+
+                            if( e_eFSS_LOG_RES_OK == l_eRes )
+                            {
+                                /* Write newest in first index */
+                                memset(l_tBuff.puBuf, 0u, l_tBuff.uBufL);
+
+                                l_eResC = eFSS_LOG_FlushBufferAsNewestNBkpPage(&p_ptCtx->tLOGCCtx, 0u);
+                                l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
+
+                                if( e_eFSS_LOG_RES_OK == l_eRes )
+                                {
+                                    /* write cache */
+                                    eFSS_LOGC_IsFlashCacheUsed(&p_ptCtx->tLOGCCtx, &l_bIsFlashCacheUsed);
+                                    if( true == l_bIsFlashCacheUsed )
+                                    {
+                                        l_eResC = eFSS_LOGC_WriteCache(&p_ptCtx->tLOGCCtx, 0u, 0u);
+                                        l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+	}
+
+	return l_eRes;
+}
+
+static e_eFSS_LOG_RES eFSS_LOG_LoadBufferAsNewestNBkpPage(t_eFSS_LOG_Ctx* const p_ptCtx, const uint32_t p_uIdx,
+                                                          uint32_t* const p_puByteInPage)
+{
+
+}
 /**********************************************************************************************************************/
 #if 0u
-e_eFSS_LOGC_RES eFSS_LOGC_FlushBufferAsNewestNBkpPage(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint32_t p_uIdx,
+e_eFSS_LOGC_RES eFSS_LOG_FlushBufferAsNewestNBkpPage(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint32_t p_uIdx,
                                                       const uint32_t p_uFillInPage)
 {
 	/* Local variable */
@@ -941,7 +1132,7 @@ e_eFSS_LOGC_RES eFSS_LOGC_FlushBufferAsNewestNBkpPage(t_eFSS_LOGC_Ctx* const p_p
 	return l_eRes;
 }
 
-e_eFSS_LOGC_RES eFSS_LOGC_LoadBufferAsNewestNBkpPage(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint32_t p_uIdx,
+e_eFSS_LOGC_RES eFSS_LOG_LoadBufferAsNewestNBkpPage(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint32_t p_uIdx,
                                                      uint32_t* const p_puFillInPage)
 {
 	/* Local variable */
@@ -1091,7 +1282,7 @@ e_eFSS_LOGC_RES eFSS_LOGC_LoadBufferAsNewestNBkpPage(t_eFSS_LOGC_Ctx* const p_pt
  *		        e_eFSS_LOGC_RES_NOINITLIB     - Need to init lib before calling function
  *              e_eFSS_LOGC_RES_OK            - Operation ended correctly
  */
-e_eFSS_LOGC_RES eFSS_LOGC_GetNextIndex(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint32_t p_uIdx,
+e_eFSS_LOGC_RES eFSS_LOG_GetNextIndex(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint32_t p_uIdx,
                                        uint32_t* const p_puNextIdx);
 
 /**
@@ -1110,7 +1301,7 @@ e_eFSS_LOGC_RES eFSS_LOGC_GetNextIndex(t_eFSS_LOGC_Ctx* const p_ptCtx, const uin
 e_eFSS_LOGC_RES eFSS_LOGC_GetPrevIndex(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint32_t p_uIdx,
                                        uint32_t* const p_puPrevIdx);
 
-e_eFSS_LOGC_RES eFSS_LOGC_GetNextIndex(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint32_t p_uIdx,
+e_eFSS_LOGC_RES eFSS_LOG_GetNextIndex(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint32_t p_uIdx,
                                        uint32_t* const p_puNextIdx)
 {
 	/* Local variable */
