@@ -29,11 +29,11 @@
  * ------------------------------------------------------------------ Under we have LL/HL/LOGC metadata
  * - LOW LEVEL / HIGH LEVEL / LOGC METADATA                           |
  * ------------------------------------------------------------------ End of Page
- * 
+ *
  * This module is used to store LOGS. Remeber to check where the last log is stored using the flash cache if enabled.
- * If flash cache is not enabled the last log pages must be searched inside all log. 
- * After a newest page is finalized and becames a log pages we must remove the last 4 byte used in the newest pages. 
- * Keep in mind that the last 4 byte in the newest page are not counted in the filed called: byte in page used by 
+ * If flash cache is not enabled the last log pages must be searched inside all log.
+ * After a newest page is finalized and becames a log pages we must remove the last 4 byte used in the newest pages.
+ * Keep in mind that the last 4 byte in the newest page are not counted in the field called: byte in page used by
  * LOGC module.
  * An unused page is always left after newer page and backup index.
  * Newest and oldest page index can be identical only when the log storage is empty. When the storage is full an empty
@@ -69,9 +69,9 @@ static e_eFSS_LOG_RES eFSS_LOG_LOGCtoLOGRes(const e_eFSS_LOGC_RES p_eLOGCRes);
 /***********************************************************************************************************************
  *  PRIVATE UTILS STATIC FUNCTION DECLARATION
  **********************************************************************************************************************/
-static e_eFSS_LOG_RES eFSS_LOGC_LoadIndexNRepair(t_eFSS_LOG_Ctx* const p_ptCtx);
-static e_eFSS_LOG_RES eFSS_LOGC_LoadIndexFromCache(t_eFSS_LOG_Ctx* const p_ptCtx);
-static e_eFSS_LOG_RES eFSS_LOGC_LoadIndxBySearch(t_eFSS_LOG_Ctx* const p_ptCtx);
+static e_eFSS_LOG_RES eFSS_LOG_LoadIndexNRepair(t_eFSS_LOG_Ctx* const p_ptCtx);
+static e_eFSS_LOG_RES eFSS_LOG_LoadIndexFromCache(t_eFSS_LOG_Ctx* const p_ptCtx);
+static e_eFSS_LOG_RES eFSS_LOG_LoadIndxBySearch(t_eFSS_LOG_Ctx* const p_ptCtx);
 
 
 
@@ -79,7 +79,7 @@ static e_eFSS_LOG_RES eFSS_LOGC_LoadIndxBySearch(t_eFSS_LOG_Ctx* const p_ptCtx);
  *   GLOBAL FUNCTIONS
  **********************************************************************************************************************/
 e_eFSS_LOG_RES eFSS_LOG_InitCtx(t_eFSS_LOG_Ctx* const p_ptCtx, const t_eFSS_TYPE_CbStorCtx p_tCtxCb,
-                                const t_eFSS_TYPE_StorSet p_tStorSet, uint8_t* const p_puBuff, 
+                                const t_eFSS_TYPE_StorSet p_tStorSet, uint8_t* const p_puBuff,
                                 const uint32_t p_uBuffL, const bool_t p_bFlashCache, const bool_t p_bFullBckup)
 {
     /* return local variable */
@@ -196,7 +196,7 @@ e_eFSS_LOG_RES eFSS_LOG_GetLogStatus(t_eFSS_LOG_Ctx* const p_ptCtx)
                 {
                     /* How to know the status of the storage? Load storage index, if they are not found the storage
                        is corrupted or non initialized */
-                    l_eRes = eFSS_LOGC_LoadIndexNRepair(p_ptCtx);
+                    l_eRes = eFSS_LOG_LoadIndexNRepair(p_ptCtx);
                 }
             }
         }
@@ -205,8 +205,8 @@ e_eFSS_LOG_RES eFSS_LOG_GetLogStatus(t_eFSS_LOG_Ctx* const p_ptCtx)
 	return l_eRes;
 }
 
-e_eFSS_LOG_RES eFSS_LOG_GetLogInfo(t_eFSS_LOG_Ctx* const p_ptCtx, uint32_t* const p_puNewLogI, 
-                                   uint32_t* const p_puOldLogI, uint32_t* const p_puNpageUsed, 
+e_eFSS_LOG_RES eFSS_LOG_GetLogInfo(t_eFSS_LOG_Ctx* const p_ptCtx, uint32_t* const p_puNewLogI,
+                                   uint32_t* const p_puOldLogI, uint32_t* const p_puNpageUsed,
                                    uint32_t* const p_puNpageTot)
 {
 	/* Local return variable */
@@ -250,10 +250,10 @@ e_eFSS_LOG_RES eFSS_LOG_GetLogInfo(t_eFSS_LOG_Ctx* const p_ptCtx, uint32_t* cons
                 else
                 {
                     /* Verify storage integrity and load in the context the log index */
-                    l_eRes = eFSS_LOGC_LoadIndexNRepair(p_ptCtx);
+                    l_eRes = eFSS_LOG_LoadIndexNRepair(p_ptCtx);
                     if( e_eFSS_LOG_RES_OK == l_eRes )
                     {
-                        /* Calculate n page */            
+                        /* Calculate n page */
                         l_uUsePages = 0u;
                         l_eResC = eFSS_LOGC_GetBuffNUsable(&p_ptCtx->tLOGCCtx, &l_tBuff, &l_uUsePages);
                         l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
@@ -302,7 +302,7 @@ e_eFSS_LOG_RES eFSS_LOG_Format(t_eFSS_LOG_Ctx* const p_ptCtx)
     /* Local var used for calculation */
     bool_t l_bIsInit;
     uint32_t l_uNextIndex;
-    
+
     /* Local variable for decision making */
     bool_t l_bInvalidateCurrent;
     bool_t l_bIsFlashCacheUsed;
@@ -341,7 +341,7 @@ e_eFSS_LOG_RES eFSS_LOG_Format(t_eFSS_LOG_Ctx* const p_ptCtx)
                     if( e_eFSS_LOG_RES_OK == l_eRes )
                     {
                         /* Load index */
-                        l_eRes = eFSS_LOGC_LoadIndexNRepair(p_ptCtx);
+                        l_eRes = eFSS_LOG_LoadIndexNRepair(p_ptCtx);
 
                         if( ( e_eFSS_LOG_RES_OK == l_eRes ) || ( e_eFSS_LOG_RES_OK_BKP_RCVRD == l_eRes ) )
                         {
@@ -487,7 +487,7 @@ e_eFSS_LOG_RES eFSS_LOG_AddLog(t_eFSS_LOG_Ctx* const p_ptCtx, uint8_t* const p_p
                         }
                         else
                         {
-                            l_eRes = eFSS_LOGC_LoadIndexNRepair(p_ptCtx);
+                            l_eRes = eFSS_LOG_LoadIndexNRepair(p_ptCtx);
                             if( e_eFSS_LOG_RES_OK == l_eRes )
                             {
                                 /* Read current write page:
@@ -618,7 +618,7 @@ e_eFSS_LOG_RES eFSS_LOG_GetLogOfAPage(t_eFSS_LOG_Ctx* const p_ptCtx, const uint3
                         else
                         {
                             /* Repair and load index */
-                            l_eRes = eFSS_LOGC_LoadIndexNRepair(p_ptCtx);
+                            l_eRes = eFSS_LOG_LoadIndexNRepair(p_ptCtx);
                             if( e_eFSS_LOG_RES_OK == l_eRes )
                             {
                                 /* Can now retrive data */
@@ -747,7 +747,7 @@ static e_eFSS_LOG_RES eFSS_LOG_LOGCtoLOGRes(const e_eFSS_LOGC_RES p_eLOGCRes)
     return l_eRes;
 }
 
-static e_eFSS_LOG_RES eFSS_LOGC_LoadIndexNRepair(t_eFSS_LOG_Ctx* const p_ptCtx)
+static e_eFSS_LOG_RES eFSS_LOG_LoadIndexNRepair(t_eFSS_LOG_Ctx* const p_ptCtx)
 {
     e_eFSS_LOG_RES l_eRes;
     bool_t l_bIsFlashCacheUsed;
@@ -757,18 +757,18 @@ static e_eFSS_LOG_RES eFSS_LOGC_LoadIndexNRepair(t_eFSS_LOG_Ctx* const p_ptCtx)
     if( true == l_bIsFlashCacheUsed )
     {
         /* Load index from cache */
-        l_eRes = eFSS_LOGC_LoadIndexFromCache(p_ptCtx);
+        l_eRes = eFSS_LOG_LoadIndexFromCache(p_ptCtx);
     }
     else
     {
         /* Search for index */
-        l_eRes = eFSS_LOGC_LoadIndxBySearch(p_ptCtx);
+        l_eRes = eFSS_LOG_LoadIndxBySearch(p_ptCtx);
     }
 
     return l_eRes;
 }
 
-static e_eFSS_LOG_RES eFSS_LOGC_LoadIndexFromCache(t_eFSS_LOG_Ctx* const p_ptCtx)
+static e_eFSS_LOG_RES eFSS_LOG_LoadIndexFromCache(t_eFSS_LOG_Ctx* const p_ptCtx)
 {
 	/* Local return variable */
 	e_eFSS_LOG_RES l_eRes;
@@ -814,7 +814,7 @@ static e_eFSS_LOG_RES eFSS_LOGC_LoadIndexFromCache(t_eFSS_LOG_Ctx* const p_ptCtx
     return l_eRes;
 }
 
-static e_eFSS_LOG_RES eFSS_LOGC_LoadIndxBySearch(t_eFSS_LOG_Ctx* const p_ptCtx)
+static e_eFSS_LOG_RES eFSS_LOG_LoadIndxBySearch(t_eFSS_LOG_Ctx* const p_ptCtx)
 {
 	/* Local return variable */
 	e_eFSS_LOG_RES l_eRes;
