@@ -74,6 +74,10 @@ static e_eFSS_LOG_RES eFSS_LOG_LoadIndexFromCache(t_eFSS_LOG_Ctx* const p_ptCtx)
 static e_eFSS_LOG_RES eFSS_LOG_LoadIndxBySearch(t_eFSS_LOG_Ctx* const p_ptCtx);
 static e_eFSS_LOG_RES eFSS_LOG_GetNextIndex(t_eFSS_LOG_Ctx* const p_ptCtx, const uint32_t p_uCurIdx,
                                             uint32_t* const p_uNextIdx);
+static e_eFSS_LOG_RES eFSS_LOG_GetPrevIndex(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint32_t p_uCurIdx,
+                                            uint32_t* const p_puPrevIdx);
+
+
 
 
 
@@ -458,7 +462,12 @@ e_eFSS_LOG_RES eFSS_LOG_AddLog(t_eFSS_LOG_Ctx* const p_ptCtx, uint8_t* const p_p
 
     /* Local var used for calculation */
     bool_t l_bIsInit;
+    uint32_t l_uByteInPage;
     uint32_t l_uPages;
+
+    /* Decision making flag */
+    bool_t l_bNextBeforeSave;
+    bool_t l_bNextAfterSave;
 
 	/* Check pointer validity */
 	if( ( NULL == p_ptCtx ) || ( NULL == p_puRawVal ) )
@@ -494,25 +503,87 @@ e_eFSS_LOG_RES eFSS_LOG_AddLog(t_eFSS_LOG_Ctx* const p_ptCtx, uint8_t* const p_p
                     if( e_eFSS_LOG_RES_OK == l_eRes )
                     {
                         /* Check data validity */
-                        if( (p_uElemL <= 0u ) || ( (2u + p_uElemL) > l_tBuff.uBufL ) )
+                        if( (p_uElemL <= 0u ) || ( p_uElemL > l_tBuff.uBufL ) )
                         {
                             l_eRes = e_eFSS_LOG_RES_BADPARAM;
                         }
                         else
                         {
+                            /* Need to load latest index in order to do this */
                             l_eRes = eFSS_LOG_LoadIndexNRepair(p_ptCtx);
                             if( e_eFSS_LOG_RES_OK == l_eRes )
                             {
-                                /* Read current write page:
-                                 *    PAGE FULL: Go next, and save log in next page
-                                 *    PAGE EMPTY: Save log in the current page and we are done
+                                /* Read current newest page:
+                                 *    We have no space: Go next, and save log in next page
+                                 *    We have space: Save log in the current page, and if the avaiable space after
+                                 *                   saving is less than the size of filled page go next page
                                  */
-                                l_eResC = eFSS_LOG_LoadBufferAsNewestNBkpPage(&p_ptCtx->tLOGCCtx, p_ptCtx->uNewPagIdx);
-                                l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
+                                l_eRes = eFSS_LOG_LoadBufferAsNewestNBkpPage(p_ptCtx, p_ptCtx->uNewPagIdx,
+                                                                             &l_uByteInPage);
 
                                 if( e_eFSS_LOG_RES_OK == l_eRes )
                                 {
-                                    if( ( l_tBuff.uBufL - l_tBuff.ptMeta->uPageUseSpec3 ) >= (2u + p_uElemL) )
+                                    /* Choose what we have to do */
+                                    if( p_uElemL > ( l_tBuff.uBufL - l_uByteInPage ) )
+                                    {
+                                        /* Need to save the element on the next page */
+                                        l_bNextBeforeSave = true;
+
+                                        /* Need to skip even after the saving? */
+                                        if( p_uElemL > ( l_tBuff.uBufL - EFSS_LOG_FILLPOFF ) )
+                                        {
+                                            /* Next page even after the save */
+                                            l_bNextAfterSave = true;
+                                        }
+                                        else
+                                        {
+                                            l_bNextAfterSave = false;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        /* can save the element on the current page, need to choose if we need to go
+                                           next page after saving */
+                                           l_bNextBeforeSave = false;
+
+                                           if( ( l_tBuff.uBufL - l_uByteInPage ) < EFSS_LOG_FILLPOFF )
+                                           {
+                                                l_bNextAfterSave = false;
+                                           }
+                                           else
+                                           {
+                                                /* Need to skip even after the saving? */
+                                                if( p_uElemL > ( l_tBuff.uBufL - l_uByteInPage - EFSS_LOG_FILLPOFF ) )
+                                                {
+                                                    /* Next page even after the save */
+                                                    l_bNextAfterSave = true;
+                                                }
+                                                else
+                                                {
+                                                    l_bNextAfterSave = false;
+                                                }
+                                           }
+                                    }
+
+                                    /* */
+                                    if( true == l_bNextBeforeSave )
+                                    {
+
+                                    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                    if( ( l_tBuff.uBufL - l_uByteInPage ) >= p_uElemL )
                                     {
                                         /* We have some free space, add data in this page */
                                         l_tBuff.puBuf[l_tBuff.ptMeta->uPageUseSpec3] = p_uElemL & 0xFF;
@@ -590,6 +661,7 @@ e_eFSS_LOG_RES eFSS_LOG_GetLogOfAPage(t_eFSS_LOG_Ctx* const p_ptCtx, const uint3
 
     /* Local var used for calculation */
     bool_t l_bIsInit;
+    uint32_t l_uByteInPages;
 
 	/* Check pointer validity */
 	if( ( NULL == p_ptCtx ) || ( NULL == p_puBuf ) || ( NULL == p_puValorByte ) )
@@ -618,13 +690,14 @@ e_eFSS_LOG_RES eFSS_LOG_GetLogOfAPage(t_eFSS_LOG_Ctx* const p_ptCtx, const uint3
                 }
                 else
                 {
+                    /* First get basic data in order to verify passed param validity */
                     l_uUsePages = 0u;
                     l_eResC = eFSS_LOGC_GetBuffNUsable(&p_ptCtx->tLOGCCtx, &l_tBuff, &l_uUsePages);
                     l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
 
                     if( e_eFSS_LOG_RES_OK == l_eRes )
                     {
-                        if( 0u == p_uBufMaxL )
+                        if( ( p_uindx >= l_uUsePages ) || ( p_uBufL < l_tBuff.uBufL ) )
                         {
                             l_eRes = e_eFSS_LOG_RES_BADPARAM;
                         }
@@ -634,37 +707,42 @@ e_eFSS_LOG_RES eFSS_LOG_GetLogOfAPage(t_eFSS_LOG_Ctx* const p_ptCtx, const uint3
                             l_eRes = eFSS_LOG_LoadIndexNRepair(p_ptCtx);
                             if( e_eFSS_LOG_RES_OK == l_eRes )
                             {
-                                /* Can now retrive data */
+                                /* Can now retrive data, before doing this check if it's the newest */
                                 if( p_uindx == p_ptCtx->uNewPagIdx )
                                 {
-                                    l_eResC =  eFSS_LOG_LoadBufferAsNewestNBkpPage(&p_ptCtx->tLOGCCtx, p_uindx);
-                                    l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
+                                    /* Newest page, load using proper function */
+                                    l_eRes =  eFSS_LOG_LoadBufferAsNewestNBkpPage(p_ptCtx, p_uindx, &l_uByteInPages);
+
                                     if( e_eFSS_LOG_RES_OK == l_eRes )
                                     {
-                                        if( p_uBufMaxL >= l_tBuff.ptMeta->uPageUseSpec3 )
+                                        if( l_uByteInPages > p_uBufL )
                                         {
-                                            memcpy(p_puBuf, l_tBuff.puBuf, l_tBuff.ptMeta->uPageUseSpec3);
+                                            /* Not possible */
+                                            l_eRes = e_eFSS_LOG_RES_BADPARAM;
                                         }
                                         else
                                         {
-                                            memcpy(p_puBuf, l_tBuff.puBuf, p_uBufMaxL);
+                                            memcpy(p_puBuf, l_tBuff.puBuf, l_uByteInPages);
                                         }
                                     }
                                 }
                                 else
                                 {
-                                    /* Check index validity TODO */
-                                    l_eResC =  eFSS_LOGC_LoadBufferAsLog(&p_ptCtx->tLOGCCtx, p_uindx);
+                                    /* Check index validity, cannot read an invalid or actualy an un used page */
+
+                                    /* Read the log page */
+                                    l_eResC =  eFSS_LOGC_LoadBufferAs(&p_ptCtx->tLOGCCtx, e_eFSS_LOGC_PAGETYPE_LOG,
+                                                                      p_uindx, &l_uByteInPages);
                                     l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
                                     if( e_eFSS_LOG_RES_OK == l_eRes )
                                     {
-                                        if( p_uBufMaxL >= l_tBuff.ptMeta->uPageUseSpec3 )
+                                        if( l_uByteInPages > p_uBufL )
                                         {
-                                            memcpy(p_puBuf, l_tBuff.puBuf, l_tBuff.ptMeta->uPageUseSpec3);
+                                            l_eRes = e_eFSS_LOG_RES_BADPARAM;
                                         }
                                         else
                                         {
-                                            memcpy(p_puBuf, l_tBuff.puBuf, p_uBufMaxL);
+                                            memcpy(p_puBuf, l_tBuff.puBuf, l_uByteInPages);
                                         }
                                     }
                                 }
@@ -895,7 +973,12 @@ static e_eFSS_LOG_RES eFSS_LOG_GetNextIndex(t_eFSS_LOG_Ctx* const p_ptCtx, const
 
 }
 
+static e_eFSS_LOG_RES eFSS_LOG_GetPrevIndex(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint32_t p_uCurIdx,
+                                            uint32_t* const p_puPrevIdx)
+{
 
+
+}
 
 /***********************************************************************************************************************
  *  PRIVATE UTILS FOR BKUP PAGE STATIC FUNCTION DECLARATION
@@ -1298,7 +1381,7 @@ e_eFSS_LOGC_RES eFSS_LOG_GetNextIndex(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint
  *		        e_eFSS_LOGC_RES_NOINITLIB     - Need to init lib before calling function
  *              e_eFSS_LOGC_RES_OK            - Operation ended correctly
  */
-e_eFSS_LOGC_RES eFSS_LOGC_GetPrevIndex(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint32_t p_uIdx,
+e_eFSS_LOGC_RES eFSS_LOG_GetPrevIndex(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint32_t p_uIdx,
                                        uint32_t* const p_puPrevIdx);
 
 e_eFSS_LOGC_RES eFSS_LOG_GetNextIndex(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint32_t p_uIdx,
@@ -1367,7 +1450,7 @@ e_eFSS_LOGC_RES eFSS_LOG_GetNextIndex(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint
 	return l_eRes;
 }
 
-e_eFSS_LOGC_RES eFSS_LOGC_GetPrevIndex(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint32_t p_uIdx,
+e_eFSS_LOGC_RES eFSS_LOG_GetPrevIndex(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint32_t p_uIdx,
                                        uint32_t* const p_puPrevIdx)
 {
 	/* Local variable */
