@@ -74,10 +74,8 @@ static e_eFSS_LOG_RES eFSS_LOG_LoadIndexFromCache(t_eFSS_LOG_Ctx* const p_ptCtx)
 static e_eFSS_LOG_RES eFSS_LOG_LoadIndxBySearch(t_eFSS_LOG_Ctx* const p_ptCtx);
 static e_eFSS_LOG_RES eFSS_LOG_GetNextIndex(t_eFSS_LOG_Ctx* const p_ptCtx, const uint32_t p_uCurIdx,
                                             uint32_t* const p_uNextIdx);
-static e_eFSS_LOG_RES eFSS_LOG_GetPrevIndex(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint32_t p_uCurIdx,
+static e_eFSS_LOG_RES eFSS_LOG_GetPrevIndex(t_eFSS_LOG_Ctx* const p_ptCtx, const uint32_t p_uCurIdx,
                                             uint32_t* const p_puPrevIdx);
-
-
 
 
 
@@ -847,20 +845,29 @@ static e_eFSS_LOG_RES eFSS_LOG_LOGCtoLOGRes(const e_eFSS_LOGC_RES p_eLOGCRes)
  **********************************************************************************************************************/
 static e_eFSS_LOG_RES eFSS_LOG_LoadIndexNRepair(t_eFSS_LOG_Ctx* const p_ptCtx)
 {
-    e_eFSS_LOG_RES l_eRes;
+    /* Local variable for return */
+    e_eFSS_LOG_RES  l_eRes;
+    e_eFSS_LOGC_RES l_eResC;
+
+    /* Local variable used for support */
     bool_t l_bIsFlashCacheUsed;
 
     /* Search for index in the flash cache if present */
-    eFSS_LOGC_IsFlashCacheUsed(&p_ptCtx->tLOGCCtx, &l_bIsFlashCacheUsed);
-    if( true == l_bIsFlashCacheUsed )
+    l_eResC = eFSS_LOGC_IsFlashCacheUsed(&p_ptCtx->tLOGCCtx, &l_bIsFlashCacheUsed);
+    l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
+
+    if( e_eFSS_LOG_RES_OK == l_eRes )
     {
-        /* Load index from cache */
-        l_eRes = eFSS_LOG_LoadIndexFromCache(p_ptCtx);
-    }
-    else
-    {
-        /* Search for index */
-        l_eRes = eFSS_LOG_LoadIndxBySearch(p_ptCtx);
+        if( true == l_bIsFlashCacheUsed )
+        {
+            /* Load index from cache, and verify index validity of course */
+            l_eRes = eFSS_LOG_LoadIndexFromCache(p_ptCtx);
+        }
+        else
+        {
+            /* Search for index reading all logs */
+            l_eRes = eFSS_LOG_LoadIndxBySearch(p_ptCtx);
+        }
     }
 
     return l_eRes;
@@ -971,133 +978,94 @@ static e_eFSS_LOG_RES eFSS_LOG_GetNextIndex(t_eFSS_LOG_Ctx* const p_ptCtx, const
                                             uint32_t* const p_uNextIdx)
 {
 	/* Local variable */
-	e_eFSS_LOGC_RES l_eRes;
-    e_eFSS_COREHL_RES l_eResC;
+	e_eFSS_LOG_RES l_eRes;
+    e_eFSS_LOGC_RES l_eResC;
 
-    /* Local var used for calculation */
-    bool_t l_bIsInit;
-	uint32_t l_uNPageU;
-    uint32_t l_uNextIdx;
-    t_eFSS_TYPE_StorSet l_tStorSet;
+    /* Local storage variable */
+    t_eFSS_LOGC_StorBuf l_tBuff;
+    uint32_t l_uUsePages;
 
 	/* Check pointer validity */
-	if( ( NULL == p_ptCtx ) || ( NULL == p_puNextIdx ) )
+	if( ( NULL == p_ptCtx ) || ( NULL == p_uNextIdx ) )
 	{
-		l_eRes = e_eFSS_LOGC_RES_BADPOINTER;
+		l_eRes = e_eFSS_LOG_RES_BADPOINTER;
 	}
 	else
 	{
-		/* Check Init */
-        l_eResC = eFSS_COREHL_IsInit(&p_ptCtx->tLOGCCtx, &l_bIsInit);
+        /* Get basic storage info in order to verify passed parameter */
+        l_uUsePages = 0u;
+        l_eResC = eFSS_LOGC_GetBuffNUsable(&p_ptCtx->tLOGCCtx, &l_tBuff, &l_uUsePages);
         l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
 
-        if( e_eFSS_LOGC_RES_OK == l_eRes )
+        if( e_eFSS_LOG_RES_OK == l_eRes )
         {
-            if( false == l_bIsInit )
+            /* Verify parameter */
+            if( p_uCurIdx >= l_uUsePages )
             {
-                l_eRes = e_eFSS_LOGC_RES_NOINITLIB;
+                l_eRes = e_eFSS_LOG_RES_BADPARAM;
             }
             else
             {
-                /* Check internal status validity */
-                if( false == eFSS_LOGC_IsStatusStillCoherent(p_ptCtx) )
+                if( p_uCurIdx >= ( l_uUsePages - 1u ) )
                 {
-                    l_eRes = e_eFSS_LOGC_RES_CORRUPTCTX;
+                    *p_uNextIdx = 0u;
                 }
                 else
                 {
-                    l_eResC = eFSS_COREHL_GetStorSett(&p_ptCtx->tLOGCCtx, &l_tStorSet);
-                    l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
-
-                    if( e_eFSS_LOGC_RES_OK == l_eRes )
-                    {
-                        /* Get the total numbers of page */
-                        l_uNPageU = eFSS_LOGC_GetMaxPage(p_ptCtx->bFullBckup, p_ptCtx->bFlashCache, l_tStorSet.uTotPages);
-
-                        if( p_uIdx >= ( l_uNPageU - 1u ) )
-                        {
-                            l_uNextIdx = 0u;
-                        }
-                        else
-                        {
-                            l_uNextIdx = p_uIdx + 1u;
-                        }
-
-                        *p_puNextIdx = l_uNextIdx;
-                    }
+                    *p_uNextIdx = p_uCurIdx + 1u;
                 }
             }
         }
-	}
+    }
 
 	return l_eRes;
 }
 
-static e_eFSS_LOG_RES eFSS_LOG_GetPrevIndex(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint32_t p_uCurIdx,
+static e_eFSS_LOG_RES eFSS_LOG_GetPrevIndex(t_eFSS_LOG_Ctx* const p_ptCtx, const uint32_t p_uCurIdx,
                                             uint32_t* const p_puPrevIdx)
 {
 	/* Local variable */
-	e_eFSS_LOGC_RES l_eRes;
-    e_eFSS_COREHL_RES l_eResC;
+	e_eFSS_LOG_RES l_eRes;
+    e_eFSS_LOGC_RES l_eResC;
 
-    /* Local var used for calculation */
-    bool_t l_bIsInit;
-	uint32_t l_uNPageU;
-    uint32_t l_uPrevIdx;
-    t_eFSS_TYPE_StorSet l_tStorSet;
+    /* Local storage variable */
+    t_eFSS_LOGC_StorBuf l_tBuff;
+    uint32_t l_uUsePages;
 
 	/* Check pointer validity */
 	if( ( NULL == p_ptCtx ) || ( NULL == p_puPrevIdx ) )
 	{
-		l_eRes = e_eFSS_LOGC_RES_BADPOINTER;
+		l_eRes = e_eFSS_LOG_RES_BADPOINTER;
 	}
 	else
 	{
-		/* Check Init */
-        l_eResC = eFSS_COREHL_IsInit(&p_ptCtx->tLOGCCtx, &l_bIsInit);
+        /* Get basic storage info in order to verify passed parameter */
+        l_uUsePages = 0u;
+        l_eResC = eFSS_LOGC_GetBuffNUsable(&p_ptCtx->tLOGCCtx, &l_tBuff, &l_uUsePages);
         l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
 
-        if( e_eFSS_LOGC_RES_OK == l_eRes )
+        if( e_eFSS_LOG_RES_OK == l_eRes )
         {
-            if( false == l_bIsInit )
+            /* Verify parameter */
+            if( p_uCurIdx >= l_uUsePages )
             {
-                l_eRes = e_eFSS_LOGC_RES_NOINITLIB;
+                l_eRes = e_eFSS_LOG_RES_BADPARAM;
             }
             else
             {
-                /* Check internal status validity */
-                if( false == eFSS_LOGC_IsStatusStillCoherent(p_ptCtx) )
+                if( p_uCurIdx <= 0u )
                 {
-                    l_eRes = e_eFSS_LOGC_RES_CORRUPTCTX;
+                    *p_puPrevIdx = l_uUsePages - 1u;
                 }
                 else
                 {
-                    l_eResC = eFSS_COREHL_GetStorSett(&p_ptCtx->tLOGCCtx, &l_tStorSet);
-                    l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
-
-                    if( e_eFSS_LOGC_RES_OK == l_eRes )
-                    {
-                        /* Get the total numbers of page */
-                        l_uNPageU = eFSS_LOGC_GetMaxPage(p_ptCtx->bFullBckup, p_ptCtx->bFlashCache, l_tStorSet.uTotPages);
-
-                        if( p_uIdx <= 0u )
-                        {
-                            l_uPrevIdx = l_uNPageU - 1u;
-                        }
-                        else
-                        {
-                            l_uPrevIdx = p_uIdx - 1u;
-                        }
-
-                        *p_puPrevIdx = l_uPrevIdx;
-                    }
+                    *p_puPrevIdx = p_uCurIdx - 1u;
                 }
             }
         }
-	}
+    }
 
 	return l_eRes;
-
 }
 
 
