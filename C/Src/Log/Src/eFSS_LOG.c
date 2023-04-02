@@ -11,6 +11,7 @@
  *      INCLUDES
  **********************************************************************************************************************/
 #include "eFSS_LOG.h"
+#include "eFSS_Utils.h"
 
 /* In this module the page field has the following meaning:
  *
@@ -129,7 +130,7 @@ e_eFSS_LOG_RES eFSS_LOG_InitCtx(t_eFSS_LOG_Ctx* const p_ptCtx, const t_eFSS_TYPE
                 if( l_tBuff.uBufL < EFSS_LOG_MINPAGESIZE )
                 {
                     /* We need more space for the BLOB */
-                    l_eRes = e_eFSS_LOGC_RES_BADPARAM;
+                    l_eRes = e_eFSS_LOG_RES_BADPARAM;
 
                     /* De init LOGC */
                     (void)memset(&p_ptCtx->tLOGCCtx, 0, sizeof(t_eFSS_LOGC_Ctx));
@@ -315,7 +316,6 @@ e_eFSS_LOG_RES eFSS_LOG_Format(t_eFSS_LOG_Ctx* const p_ptCtx)
 
     /* Local var used for calculation */
     bool_t l_bIsInit;
-    uint32_t l_uNextIndex;
 
     /* Local variable for decision making */
     bool_t l_bInvalidateCurrent;
@@ -596,8 +596,7 @@ e_eFSS_LOG_RES eFSS_LOG_AddLog(t_eFSS_LOG_Ctx* const p_ptCtx, uint8_t* const p_p
                                         l_tBuff.ptMeta->uPageUseSpec3+= p_uElemL;
 
                                         /* Write page */
-                                        l_eResC = eFSS_LOG_FlushBufferAsNewestNBkpPage(&p_ptCtx->tLOGCCtx, p_ptCtx->uNewPagIdx);
-                                        l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
+                                        l_eRes = eFSS_LOG_FlushBufferAsNewestNBkpPage(&p_ptCtx->tLOGCCtx, p_ptCtx->uNewPagIdx);
                                     }
                                     else
                                     {
@@ -1027,7 +1026,7 @@ static e_eFSS_LOG_RES eFSS_LOG_LoadIndxBySearch(t_eFSS_LOG_Ctx* const p_ptCtx)
                     /* Not this one, go to the next index */
                     l_eRes = eFSS_LOG_GetNextIndex(p_ptCtx, l_uIdxSearch, &l_uIdxSearch);
 
-                    if( e_eFSS_LOGC_RES_OK == l_eRes )
+                    if( e_eFSS_LOG_RES_OK == l_eRes )
                     {
                         l_uNSearched++;
                     }
@@ -1182,13 +1181,13 @@ static e_eFSS_LOG_RES eFSS_LOG_FlushBufferAsNewestNBkpPage(t_eFSS_LOG_Ctx* const
                                                   p_uByteInPage);
                 l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
 
-                if( e_eFSS_LOGC_RES_OK == l_eRes )
+                if( e_eFSS_LOG_RES_OK == l_eRes )
                 {
                     /* Search for the next page that will be used as */
                     l_uNextIdx = 0u;
                     l_eRes = eFSS_LOG_GetNextIndex(p_ptCtx, p_uIdx, &l_uNextIdx);
 
-                    if( e_eFSS_LOGC_RES_OK == l_eRes )
+                    if( e_eFSS_LOG_RES_OK == l_eRes )
                     {
                         /* Flush the backup page */
                         l_eResC = eFSS_LOGC_FlushBufferAs(&p_ptCtx->tLOGCCtx, e_eFSS_LOGC_PAGETYPE_NEWEST_BKUP,
@@ -1264,7 +1263,7 @@ static e_eFSS_LOG_RES eFSS_LOG_LoadBufferAsNewestNBkpPage(t_eFSS_LOG_Ctx* const 
                     l_uBkupPageIdx = 0u;
                     l_eRes = eFSS_LOG_GetNextIndex(p_ptCtx, p_uIdx, &l_uBkupPageIdx);
 
-                    if( e_eFSS_LOGC_RES_OK == l_eRes )
+                    if( e_eFSS_LOG_RES_OK == l_eRes )
                     {
                         /* Now we can try to load the newest nackup page */
                         l_eResC =  eFSS_LOGC_LoadBufferAs(&p_ptCtx->tLOGCCtx, e_eFSS_LOGC_PAGETYPE_NEWEST_BKUP,
@@ -1288,7 +1287,7 @@ static e_eFSS_LOG_RES eFSS_LOG_LoadBufferAsNewestNBkpPage(t_eFSS_LOG_Ctx* const 
                             if( ( true == l_bIsOrigValid ) && ( true == l_bIsBkupValid ) )
                             {
                                 /* No a single valid pages found */
-                                l_eRes = e_eFSS_LOGC_RES_NOTVALIDLOG;
+                                l_eRes = e_eFSS_LOG_RES_NOTVALIDLOG;
                             }
                             else if( ( true == l_bIsOrigValid ) && ( false == l_bIsBkupValid ) )
                             {
