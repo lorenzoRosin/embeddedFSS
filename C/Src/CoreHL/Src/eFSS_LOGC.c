@@ -849,6 +849,132 @@ e_eFSS_LOGC_RES eFSS_LOGC_IsPageNewOrBkup(t_eFSS_LOGC_Ctx* const p_ptCtx, const 
 	return l_eRes;
 }
 
+e_eFSS_LOGC_RES eFSS_LOGC_FlushBuffIfNotEquals(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint32_t p_uIdx,
+                                               const e_eFSS_LOGC_PAGETYPE p_eTypeFlush)
+{
+	/* Local variable */
+	e_eFSS_LOGC_RES l_eRes;
+    e_eFSS_COREHL_RES l_eResHL;
+
+    /* Local var used for calculation */
+    bool_t l_bIsInit;
+    t_eFSS_TYPE_StorSet l_tStorSet;
+    t_eFSS_COREHL_StorBuf l_tBuff;
+    uint32_t l_uNPageU;
+    bool_t l_bAreEquals;
+    uint8_t l_uPagSubTOri;
+    uint8_t l_uPagSubTBkp;
+    uint32_t l_uByteInPage;
+
+	/* Check pointer validity */
+	if( NULL == p_ptCtx )
+	{
+		l_eRes = e_eFSS_LOGC_RES_BADPOINTER;
+	}
+	else
+	{
+		/* Check Init */
+        l_bIsInit = false;
+        l_eResHL = eFSS_COREHL_IsInit(&p_ptCtx->tCOREHLCtx, &l_bIsInit);
+        l_eRes = eFSS_LOGC_HLtoLOGCRes(l_eResHL);
+
+        if( e_eFSS_LOGC_RES_OK == l_eRes )
+        {
+            if( false == l_bIsInit )
+            {
+                l_eRes = e_eFSS_LOGC_RES_NOINITLIB;
+            }
+            else
+            {
+                /* Check internal status validity */
+                if( false == eFSS_LOGC_IsStatusStillCoherent(p_ptCtx) )
+                {
+                    l_eRes = e_eFSS_LOGC_RES_CORRUPTCTX;
+                }
+                else
+                {
+                    l_eResHL = eFSS_COREHL_GetBuffNStor(&p_ptCtx->tCOREHLCtx, &l_tBuff, &l_tStorSet);
+                    l_eRes = eFSS_LOGC_HLtoLOGCRes(l_eResHL);
+
+                    if( e_eFSS_LOGC_RES_OK == l_eRes )
+                    {
+                        /* Calculate n page and byte offset  */
+                        l_uNPageU = eFSS_LOGC_GetMaxPage(p_ptCtx->bFullBckup, p_ptCtx->bFlashCache,
+                                                         l_tStorSet.uTotPages);
+
+                        if( p_uIdx >= l_uNPageU )
+                        {
+                            l_eRes = e_eFSS_LOGC_RES_BADPARAM;
+                        }
+                        else
+                        {
+                            switch(p_eTypeFlush)
+                            {
+                                case e_eFSS_LOGC_PAGETYPE_LOG:
+                                {
+                                    l_uPagSubTOri = EFSS_PAGESUBTYPE_LOGORI;
+                                    l_uPagSubTBkp = EFSS_PAGESUBTYPE_LOGBKP;
+                                    break;
+                                }
+
+                                case e_eFSS_LOGC_PAGETYPE_NEWEST:
+                                {
+                                    l_uPagSubTOri = EFSS_PAGESUBTYPE_LOGNEWESTORI;
+                                    l_uPagSubTBkp = EFSS_PAGESUBTYPE_LOGNEWESTBKP;
+                                    break;
+                                }
+
+                                case e_eFSS_LOGC_PAGETYPE_NEWEST_BKUP:
+                                {
+                                    l_uPagSubTOri = EFSS_PAGESUBTYPE_LOGNEWESTBKPORI;
+                                    l_uPagSubTBkp = EFSS_PAGESUBTYPE_LOGNEWESTBKPBKP;
+                                    break;
+                                }
+
+                                default:
+                                {
+                                    l_uPagSubTOri = 0u;
+                                    l_uPagSubTBkp = 0u;
+                                    l_eRes = e_eFSS_LOGC_RES_BADPARAM;
+                                    break;
+                                }
+                            }
+
+                            if( e_eFSS_LOGC_RES_OK == l_eRes )
+                            {
+                                l_bAreEquals = false;
+                                l_eResHL = eFSS_COREHL_IsBuffEqualToPage(&p_ptCtx->tCOREHLCtx, p_uIdx, &l_bAreEquals);
+                                l_eRes = eFSS_LOGC_HLtoLOGCRes(l_eResHL);
+
+                                if( e_eFSS_LOGC_RES_OK == l_eRes )
+                                {
+                                    /* Retrive parameter */
+                                    if( true != eFSS_Utils_RetriveU32(&l_tBuff.puBuf[4u], &l_uByteInPage) )
+                                    {
+                                        l_eRes = e_eFSS_LOGC_RES_CORRUPTCTX;
+                                    }
+                                    else
+                                    {
+                                        if( false == l_bAreEquals )
+                                        {
+                                            /* Not equal! Flush buffer here */
+                                            l_eRes = eFSS_LOGC_FlushBuff(p_ptCtx, p_ptCtx->bFullBckup, l_uByteInPage,
+                                                                        p_uIdx, ( l_uNPageU + p_uIdx ), l_uPagSubTOri,
+                                                                        l_uPagSubTBkp);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+	}
+
+	return l_eRes;
+}
+
 
 
 /***********************************************************************************************************************

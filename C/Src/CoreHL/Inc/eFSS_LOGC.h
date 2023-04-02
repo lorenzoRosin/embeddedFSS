@@ -251,6 +251,29 @@ e_eFSS_LOGC_RES eFSS_LOGC_LoadBufferAs(t_eFSS_LOGC_Ctx* const p_ptCtx, const e_e
 e_eFSS_LOGC_RES eFSS_LOGC_IsPageNewOrBkup(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint32_t p_uIdx,
                                           bool_t* const p_pbIsNewest);
 
+/**
+ * @brief       Check if the data present in to the internal buffer is equals to an another page. Keep in mind that
+ *              subtype are not compared, the comparsion is only done using raw data. Th previusly present buffer
+ *              is not modified after this call.
+ *
+ * @param[in]   p_ptCtx         - High Level Core context
+ * @param[in]   p_uIdx          - uint32_t index rappresenting the page that we want to compare
+ * @param[out]  p_pbIsEquals    - pointer to a bool_t that will be filled with true if the intenral buffer is equals to
+ *                                the data presnet in the page p_uPIdx
+ *
+ * @return      e_eFSS_LOGC_RES_BADPOINTER      - In case of bad pointer passed to the function
+ *		        e_eFSS_LOGC_RES_BADPARAM        - In case of an invalid parameter passed to the function
+ *		        e_eFSS_LOGC_RES_CORRUPTCTX      - Context is corrupted
+ *		        e_eFSS_LOGC_RES_NOINITLIB       - Need to init lib before calling function
+ *		        e_eFSS_LOGC_RES_CLBCKREADERR    - The read callback reported an error
+ *              e_eFSS_LOGC_RES_CLBCKCRCERR     - The crc callback reported an error
+ *              e_eFSS_LOGC_RES_NOTVALIDPAGE    - The readed page is invalid
+ *              e_eFSS_LOGC_RES_NEWVERSIONFOUND - The readed page has a new version
+ *              e_eFSS_LOGC_RES_OK              - Operation ended correctly
+ */
+e_eFSS_LOGC_RES eFSS_LOGC_FlushBuffIfNotEquals(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint32_t p_uIdx,
+                                               const e_eFSS_LOGC_PAGETYPE p_eTypeFlush);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
