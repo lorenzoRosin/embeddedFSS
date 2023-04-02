@@ -946,6 +946,10 @@ static e_eFSS_LOG_RES eFSS_LOG_LoadIndxBySearch(t_eFSS_LOG_Ctx* const p_ptCtx)
     /* Local var used for search */
     uint32_t l_uNSearched;
     uint32_t l_uIdxSearch;
+    uint32_t l_uNewstIdx;
+    uint32_t l_uByteInPage;
+    uint32_t l_uFilled;
+    bool_t   l_bIsNewest;
 
     /* Load page index by searching. We will start searching from the last cached index in order to speed up
        operation */
@@ -959,33 +963,74 @@ static e_eFSS_LOG_RES eFSS_LOG_LoadIndxBySearch(t_eFSS_LOG_Ctx* const p_ptCtx)
         if( ( p_ptCtx->uNewPagIdx >= l_uUsePages ) || ( p_ptCtx->uFullFilledP >= ( l_uUsePages - EFSS_LOG_NEWBKPEMPY_P ) ) )
         {
             /* Very very strange, and quite impossible */
-            l_eRes = e_eFSS_LOG_RES_NOTVALIDLOG;
+            l_eRes = e_eFSS_LOG_RES_CORRUPTCTX;
         }
         else
         {
             /* Init variable */
             l_uNSearched = 0u;
+            l_eRes = e_eFSS_LOG_RES_NOTVALIDLOG;
 
             /* Start searching from the cached page */
             l_uIdxSearch = p_ptCtx->uNewPagIdx;
-            l_eRes = e_eFSS_LOG_RES_NOTVALIDLOG;
+
 
             while( ( l_uNSearched < l_uUsePages ) && ( e_eFSS_LOG_RES_NOTVALIDLOG == l_eRes )  )
             {
-                l_eResC = eFSS_LOG_LoadBufferAsNewestNBkpPage(&p_ptCtx->tLOGCCtx, p_ptCtx->uNewPagIdx);
+                /* Is the current page the newest or the newest backup? */
+                l_eResC = eFSS_LOGC_IsPageNewOrBkup(&p_ptCtx->tLOGCCtx, l_uIdxSearch, &l_bIsNewest);
                 l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
 
                 if( e_eFSS_LOG_RES_OK == l_eRes )
                 {
-                    /* Founded, super!! */
-                    p_ptCtx->uNewPagIdx   = l_uIdxSearch;
-                    p_ptCtx->uFullFilledP = l_tBuff.ptMeta->uPageUseSpec2;
+                    /* Founded the newest or the newest backup */
+                    if( true == l_bIsNewest )
+                    {
+                        l_uNewstIdx = l_uIdxSearch;
+                    }
+                    else
+                    {
+                        /* Find newest index also */
+                        l_eRes = eFSS_LOG_GetPrevIndex(p_ptCtx, l_uIdxSearch, &l_uNewstIdx);
+                    }
+
+                    if( e_eFSS_LOG_RES_OK == l_eRes )
+                    {
+                        /* All index founded, verify all the two pages validity */
+                        l_eRes = eFSS_LOG_LoadBufferAsNewestNBkpPage(p_ptCtx, l_uNewstIdx, &l_uByteInPage);
+
+                        if( e_eFSS_LOG_RES_OK == l_eRes )
+                        {
+                            if( true != eFSS_Utils_RetriveU32(&l_tBuff.puBuf[l_tBuff.uBufL - EFSS_LOG_FILLPOFF], &l_uFilled) )
+                            {
+                                l_eRes = e_eFSS_LOG_RES_CORRUPTCTX;
+                            }
+                            else
+                            {
+                                /* Need to verify parameter before confirm the validity of the page */
+                                if( ( l_uByteInPage > l_tBuff.uBufL ) || ( ( l_tBuff.uBufL - l_uByteInPage ) < EFSS_LOG_NEWBKPEMPY_P ) )
+                                {
+                                    l_eRes = e_eFSS_LOG_RES_NOTVALIDLOG;
+                                }
+                                else
+                                {
+                                    /* All ok, update index */
+                                    p_ptCtx->uNewPagIdx = l_uNewstIdx;
+                                    p_ptCtx->uFullFilledP = l_uFilled;
+                                }
+                            }
+                        }
+                    }
                 }
                 else if( e_eFSS_LOG_RES_NOTVALIDLOG == l_eRes )
                 {
-                    /* Not this one */
-                    eFSS_LOG_GetNextIndex( &p_ptCtx->tLOGCCtx, l_uIdxSearch, &l_uIdxSearch );
-                    l_uNSearched++;
+                    /* Not this one, go to the next index */
+                    l_eRes = eFSS_LOG_GetNextIndex(p_ptCtx, l_uIdxSearch, &l_uIdxSearch);
+
+                    if( e_eFSS_LOGC_RES_OK == l_eRes )
+                    {
+                        l_uNSearched++;
+                    }
                 }
                 else
                 {
