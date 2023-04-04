@@ -91,6 +91,14 @@ static e_eFSS_LOG_RES eFSS_LOG_LoadBufferAsNewestNBkpPage(t_eFSS_LOG_Ctx* const 
 
 
 /***********************************************************************************************************************
+ *  PRIVATE UTILS FOR SAVING LOG ON NEXT PAGE STATIC FUNCTION DECLARATION
+ **********************************************************************************************************************/
+static e_eFSS_LOG_RES eFSS_LOG_SaveLogOnNextPage(t_eFSS_LOG_Ctx* const p_ptCtx, uint8_t* const p_puRawVal,
+                                                 const uint32_t p_uElemL);
+
+
+
+/***********************************************************************************************************************
  *   GLOBAL FUNCTIONS
  **********************************************************************************************************************/
 e_eFSS_LOG_RES eFSS_LOG_InitCtx(t_eFSS_LOG_Ctx* const p_ptCtx, const t_eFSS_TYPE_CbStorCtx p_tCtxCb,
@@ -561,22 +569,10 @@ e_eFSS_LOG_RES eFSS_LOG_AddLog(t_eFSS_LOG_Ctx* const p_ptCtx, uint8_t* const p_p
                                     /* Ok, so now we have al cases and we can proceed with reading and writing pages */
                                     if( ( true == l_bNextBeforeSave ) && ( true == l_bNextAfterSave ) )
                                     {
-                                        /* No space detected */
-                                    }
-                                    else if( ( true == l_bNextBeforeSave ) && ( false == l_bNextAfterSave ) )
-                                    {
-                                        /* No space detected */
-                                    }
-                                    /* Ok, so now we have al cases and we can proceed with reading and writing pages */
-                                    else if( ( false == l_bNextBeforeSave ) && ( true == l_bNextAfterSave ) )
-                                    {
                                         /* We have space to append the log but just after we need to increase log
                                          * page:
                                          *   1 - Append the log and flush the page as LOG page
-                                         *   2 - Add a Newest backup page after the current newest bkp page ( so in the
-                                         *       currently unused page )
-                                         *   3 - If cache is present update the newest index and the filled page number
-                                         *   4 - Transform the old newest page bkup in to the newest page only
+                                         *   2 - Save an empty pge just after
                                          */
 
                                         memcpy(&l_tBuff.puBuf[l_uByteInPage], p_puRawVal, p_uElemL);
@@ -588,52 +584,48 @@ e_eFSS_LOG_RES eFSS_LOG_AddLog(t_eFSS_LOG_Ctx* const p_ptCtx, uint8_t* const p_p
 
                                         if( e_eFSS_LOG_RES_OK == l_eRes )
                                         {
-                                            /* Step 2 - add the new bkup page after the current bkup page */
-                                            if( e_eFSS_LOG_RES_OK == eFSS_LOG_GetNextIndex(p_ptCtx, p_ptCtx->uNewPagIdx,
-                                                                                           &l_uNextIdx) )
-                                            {
-                                                if( e_eFSS_LOG_RES_OK == eFSS_LOG_GetNextIndex(p_ptCtx, l_uNextIdx,
-                                                                                               &l_uNextNextIdx) )
-                                                {
-                                                    memset(l_tBuff.puBuf, 0u, l_tBuff.uBufL);
-                                                    l_uByteInPage = 0u;
+                                            l_eRes = eFSS_LOG_SaveLogOnNextPage(p_ptCtx,  p_puRawVal, 0u);
+                                        }
+                                    }
+                                    else if( ( true == l_bNextBeforeSave ) && ( false == l_bNextAfterSave ) )
+                                    {
+                                        /* We have space to append the log but just after we need to increase log
+                                         * page:
+                                         *   1 - Append the log and flush the page as LOG page
+                                         *   2 - Save an empty pge just after
+                                         */
 
-                                                    if( true != eFSS_Utils_InsertU32(&l_tBuff.puBuf[l_tBuff.uBufL - EFSS_LOG_FILLPOFF], p_ptCtx->uFullFilledP) )
-                                                    {
-                                                        l_eRes = e_eFSS_LOG_RES_CORRUPTCTX;
-                                                    }
-                                                    else
-                                                    {
-                                                        l_eResC = eFSS_LOGC_FlushBufferAs(&p_ptCtx->tLOGCCtx, e_eFSS_LOGC_PAGETYPE_NEWEST_BKUP,
-                                                                                          l_uNextNextIdx, l_uByteInPage);
-                                                        l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
+                                        memcpy(&l_tBuff.puBuf[l_uByteInPage], p_puRawVal, p_uElemL);
+                                        l_uByteInPage += p_uElemL;
 
-                                                        if( e_eFSS_LOG_RES_OK == l_eRes )
-                                                        {
-                                                            l_eResC = eFSS_LOGC_IsFlashCacheUsed(&p_ptCtx->tLOGCCtx, &l_bIsFlashC);
-                                                            l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
+                                        l_eResC = eFSS_LOGC_FlushBufferAs(&p_ptCtx->tLOGCCtx, e_eFSS_LOGC_PAGETYPE_LOG,
+                                                                          p_ptCtx->uNewPagIdx, l_uByteInPage);
+                                        l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
 
-                                                            if( e_eFSS_LOG_RES_OK == l_eRes )
-                                                            {
-                                                                /* Step 3 - If cache is present update cache with the new index */
-                                                                if( true == l_bIsFlashC )
-                                                                {
-                                                                    l_eResC = eFSS_LOGC_WriteCache(&p_ptCtx->tLOGCCtx, l_uNextIdx, p_ptCtx->uFullFilledP + 1u);
-                                                                    l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
-                                                                }
+                                        if( e_eFSS_LOG_RES_OK == l_eRes )
+                                        {
+                                            l_eRes = eFSS_LOG_SaveLogOnNextPage(p_ptCtx,  p_puRawVal, 0u);
+                                        }
+                                    }
+                                    /* Ok, so now we have al cases and we can proceed with reading and writing pages */
+                                    else if( ( false == l_bNextBeforeSave ) && ( true == l_bNextAfterSave ) )
+                                    {
+                                        /* We have space to append the log but just after we need to increase log
+                                         * page:
+                                         *   1 - Append the log and flush the page as LOG page
+                                         *   2 - Save an empty pge just after
+                                         */
 
-                                                                if( e_eFSS_LOG_RES_OK == l_eRes )
-                                                                {
-                                                                    /* Step 4 - Trasform the backup page in the original pages */
-                                                                    l_eResC = eFSS_LOGC_FlushBufferAs(&p_ptCtx->tLOGCCtx, e_eFSS_LOGC_PAGETYPE_NEWEST,
-                                                                                                      l_uNextIdx, l_uByteInPage);
-                                                                    l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            }
+                                        memcpy(&l_tBuff.puBuf[l_uByteInPage], p_puRawVal, p_uElemL);
+                                        l_uByteInPage += p_uElemL;
+
+                                        l_eResC = eFSS_LOGC_FlushBufferAs(&p_ptCtx->tLOGCCtx, e_eFSS_LOGC_PAGETYPE_LOG,
+                                                                          p_ptCtx->uNewPagIdx, l_uByteInPage);
+                                        l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
+
+                                        if( e_eFSS_LOG_RES_OK == l_eRes )
+                                        {
+                                            l_eRes = eFSS_LOG_SaveLogOnNextPage(p_ptCtx,  p_puRawVal, 0u);
                                         }
                                     }
                                     else
@@ -1326,4 +1318,116 @@ static e_eFSS_LOG_RES eFSS_LOG_LoadBufferAsNewestNBkpPage(t_eFSS_LOG_Ctx* const 
 	}
 
 	return l_eRes;	/* Local variable */
+}
+
+
+
+/***********************************************************************************************************************
+ *  PRIVATE UTILS FOR SAVING LOG ON NEXT PAGE STATIC FUNCTION DECLARATION
+ **********************************************************************************************************************/
+static e_eFSS_LOG_RES eFSS_LOG_SaveLogOnNextPage(t_eFSS_LOG_Ctx* const p_ptCtx, uint8_t* const p_puRawVal,
+                                                 const uint32_t p_uElemL)
+{
+	/* Local return variable */
+	e_eFSS_LOG_RES l_eRes;
+    e_eFSS_LOGC_RES l_eResC;
+
+    /* Local storage variable */
+    t_eFSS_LOGC_StorBuf l_tBuff;
+    uint32_t l_uUsePages;
+
+    /* Local var used for calculation */
+    bool_t l_bIsFlashC;
+    uint32_t l_uByteInPage;
+    uint32_t l_uNextIdx;
+    uint32_t l_uNextNextIdx;
+
+	/* Check pointer validity */
+	if( ( NULL == p_ptCtx ) || ( NULL == p_puRawVal ) )
+	{
+		l_eRes = e_eFSS_LOG_RES_BADPOINTER;
+	}
+	else
+	{
+        l_uUsePages = 0u;
+        l_eResC = eFSS_LOGC_GetBuffNUsable(&p_ptCtx->tLOGCCtx, &l_tBuff, &l_uUsePages);
+        l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
+
+        if( e_eFSS_LOG_RES_OK == l_eRes )
+        {
+            /* Check data validity */
+            if( p_uElemL > l_tBuff.uBufL )
+            {
+                l_eRes = e_eFSS_LOG_RES_BADPARAM;
+            }
+            else
+            {
+                /* We need to save this log on the next page
+                 *   1 - Add a Newest backup page after the current newest bkp page ( so in the
+                 *       currently unused page )
+                 *   2 - If cache is present update the newest index and the filled page number
+                 *   3 - Transform the old newest page bkup in to the newest page only
+                 */
+
+                memcpy(&l_tBuff.puBuf[l_uByteInPage], p_puRawVal, p_uElemL);
+                l_uByteInPage += p_uElemL;
+
+                l_eResC = eFSS_LOGC_FlushBufferAs(&p_ptCtx->tLOGCCtx, e_eFSS_LOGC_PAGETYPE_LOG,
+                                                  p_ptCtx->uNewPagIdx, l_uByteInPage);
+                l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
+
+                if( e_eFSS_LOG_RES_OK == l_eRes )
+                {
+                    /* Step 2 - add the new bkup page after the current bkup page */
+                    if( e_eFSS_LOG_RES_OK == eFSS_LOG_GetNextIndex(p_ptCtx, p_ptCtx->uNewPagIdx,
+                                                                   &l_uNextIdx) )
+                    {
+                        if( e_eFSS_LOG_RES_OK == eFSS_LOG_GetNextIndex(p_ptCtx, l_uNextIdx,
+                                                                       &l_uNextNextIdx) )
+                        {
+                            memset(l_tBuff.puBuf, 0u, l_tBuff.uBufL);
+                            l_uByteInPage = 0u;
+
+                            if( true != eFSS_Utils_InsertU32(&l_tBuff.puBuf[l_tBuff.uBufL - EFSS_LOG_FILLPOFF], p_ptCtx->uFullFilledP) )
+                            {
+                                l_eRes = e_eFSS_LOG_RES_CORRUPTCTX;
+                            }
+                            else
+                            {
+                                l_eResC = eFSS_LOGC_FlushBufferAs(&p_ptCtx->tLOGCCtx, e_eFSS_LOGC_PAGETYPE_NEWEST_BKUP,
+                                                                  l_uNextNextIdx, l_uByteInPage);
+                                l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
+
+                                if( e_eFSS_LOG_RES_OK == l_eRes )
+                                {
+                                    l_eResC = eFSS_LOGC_IsFlashCacheUsed(&p_ptCtx->tLOGCCtx, &l_bIsFlashC);
+                                    l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
+
+                                    if( e_eFSS_LOG_RES_OK == l_eRes )
+                                    {
+                                        /* Step 3 - If cache is present update cache with the new index */
+                                        if( true == l_bIsFlashC )
+                                        {
+                                            l_eResC = eFSS_LOGC_WriteCache(&p_ptCtx->tLOGCCtx, l_uNextIdx, p_ptCtx->uFullFilledP + 1u);
+                                            l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
+                                        }
+
+                                        if( e_eFSS_LOG_RES_OK == l_eRes )
+                                        {
+                                            /* Step 4 - Trasform the backup page in the original pages */
+                                            l_eResC = eFSS_LOGC_FlushBufferAs(&p_ptCtx->tLOGCCtx, e_eFSS_LOGC_PAGETYPE_NEWEST,
+                                                                              l_uNextIdx, l_uByteInPage);
+                                            l_eRes = eFSS_LOG_LOGCtoLOGRes(l_eResC);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+	}
+
+	return l_eRes;
 }
