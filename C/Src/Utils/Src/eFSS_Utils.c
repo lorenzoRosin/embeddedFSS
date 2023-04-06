@@ -36,7 +36,7 @@ bool_t eFSS_Utils_InsertU32(uint8_t* const p_puBuf, const uint32_t p_uToInsert)
 		l_bRes = true;
 		l_uIndx = 0u;
 
-		/* Insert */
+		/* Insert LE */
 		p_puBuf[l_uIndx] = (uint8_t) ( ( p_uToInsert        ) & 0x000000FFu );
 		l_uIndx++;
 
@@ -72,7 +72,7 @@ bool_t eFSS_Utils_InsertU16(uint8_t* const p_puBuf, const uint16_t p_uToInsert)
 		l_bRes = true;
 		l_uIndx = 0u;
 
-		/* Insert */
+		/* Insert LE */
 		p_puBuf[l_uIndx] = (uint8_t) ( ( p_uToInsert        ) & 0x00FFu );
 		l_uIndx++;
 
@@ -131,7 +131,7 @@ bool_t eFSS_Utils_RetriveU32(const uint8_t* p_puBuf, uint32_t* const p_puToRetri
 		l_uIndx = 0u;
 		*p_puToRetrive = 0u;
 
-		/* Retrive */
+		/* Retrive LE */
 		l_uTemp = (uint32_t) p_puBuf[l_uIndx];
 		*p_puToRetrive |= ( l_uTemp & 0x000000FFu );
 		l_uIndx++;
@@ -173,7 +173,7 @@ bool_t eFSS_Utils_RetriveU16(const uint8_t* p_puBuf, uint16_t* const p_puToRetri
 		l_uIndx = 0u;
 		*p_puToRetrive = 0u;
 
-		/* Retrive */
+		/* Retrive LE */
 		l_uTemp = (uint16_t) p_puBuf[l_uIndx];
 		*p_puToRetrive |= ( l_uTemp & 0x00FFu );
 		l_uIndx++;
