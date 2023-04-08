@@ -144,6 +144,56 @@ static void eFSP_UtilsTST_BadPointer(void)
 
 static void eFSP_UtilsTST_Insert(void)
 {
+    /* Local variable */
+    uint8_t  l_auMemArea[4u];
+    uint32_t l_uTest32;
+    uint16_t l_uTest16;
+    uint8_t l_uTest8;
+
+    /* Init var */
+    l_uTest32 = 0u;
+    l_uTest16 = 0u;
+    l_uTest8 = 0u;
+
+    /* Function */
+    memset(l_auMemArea, 0u, sizeof( l_auMemArea ));
+    l_uTest32 = 0x12345678u;
+    if( true == eFSS_Utils_InsertU32(l_auMemArea, l_uTest32) )
+    {
+        if( ( 0x78 == l_auMemArea[0u]) && ( 0x56 == l_auMemArea[1u]) && ( 0x34 == l_auMemArea[2u]) &&
+            ( 0x12 == l_auMemArea[3u]) )
+        {
+            (void)printf("eFSP_UtilsTST_Insert 1  -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSP_UtilsTST_Insert 1  -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSP_UtilsTST_Insert 1  -- FAIL \n");
+    }
+
+    /* Function */
+    memset(l_auMemArea, 0u, sizeof( l_auMemArea ));
+    l_uTest16 = 0x1234u;
+    if( true == eFSS_Utils_InsertU16(l_auMemArea, l_uTest16) )
+    {
+        if( ( 0x34 == l_auMemArea[0u]) && ( 0x12 == l_auMemArea[1u]) && ( 0x00 == l_auMemArea[2u]) &&
+            ( 0x00 == l_auMemArea[3u]) )
+        {
+            (void)printf("eFSP_UtilsTST_Insert 2  -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSP_UtilsTST_Insert 2  -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSP_UtilsTST_Insert 2  -- FAIL \n");
+    }
 
 }
 
