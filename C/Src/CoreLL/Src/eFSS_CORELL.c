@@ -320,7 +320,7 @@ e_eFSS_CORELL_RES eFSS_CORELL_LoadPageInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, c
             }
             else
             {
-                /* Check param validity */
+                /* Check parameter validity */
                 if( p_uPageIndx >= p_ptCtx->tStorSett.uTotPages )
                 {
                     l_eRes = e_eFSS_CORELL_RES_BADPARAM;
