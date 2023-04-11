@@ -19,9 +19,24 @@
 /***********************************************************************************************************************
  *   PRIVATE TEST STRUCT DECLARATION
  **********************************************************************************************************************/
-struct t_eFSP_MSGD_CrcCtxUser
+struct t_eFSS_TYPE_EraseCtxUser
 {
-    e_eCU_CRC_RES eLastEr;
+    e_eFSS_CORELL_RES eLastEr;
+};
+
+struct t_eFSS_TYPE_WriteCtxUser
+{
+    e_eFSS_CORELL_RES eLastEr;
+};
+
+struct t_eFSS_TYPE_ReadCtxUser
+{
+    e_eFSS_CORELL_RES eLastEr;
+};
+
+struct t_eFSS_TYPE_CrcCtxUser
+{
+    e_eFSS_CORELL_RES eLastEr;
 };
 
 
@@ -29,15 +44,27 @@ struct t_eFSP_MSGD_CrcCtxUser
 /***********************************************************************************************************************
  *   PRIVATE TEST FUNCTION DECLARATION
  **********************************************************************************************************************/
-static bool_t eFSP_MSGDTST_c32SAdapt(t_eFSP_MSGD_CrcCtx* p_ptCtx, const uint32_t p_uS, const uint8_t* p_puD, const uint32_t p_uDLen, uint32_t* const p_puC32Val);
-static bool_t eFSP_MSGDTST_c32SAdaptEr(t_eFSP_MSGD_CrcCtx* p_ptCtx, const uint32_t p_uS, const uint8_t* p_puD, const uint32_t p_uDLen, uint32_t* const p_puC32Val);
+static bool_t eFSS_CORELLTST_EraseAdapt(t_eFSS_TYPE_EraseCtx* const p_ptCtx, const uint32_t p_uPageToErase);
 
+static bool_t eFSS_CORELLTST_WriteAdapt(t_eFSS_TYPE_WriteCtx* const p_ptCtx,
+                                        const uint32_t p_uPageToWrite, const uint8_t* p_puDataToWrite,
+                                        const uint32_t p_uDataToWriteL );
 
+static bool_t eFSS_CORELLTST_ReadAdapt(t_eFSS_TYPE_ReadCtx* const p_ptCtx,
+                                       const uint32_t p_uPageToRead, uint8_t* const p_puReadBuffer,
+                                       const uint32_t p_uReadBufferL );
+
+static bool_t eFSS_CORELLTST_CrcAdapt(t_eFSS_TYPE_CrcCtx* const p_ptCtx, const uint32_t p_uUseed,
+                                      const uint8_t* p_puData, const uint32_t p_uDataL,
+                                      uint32_t* const p_puCrc32Val );
 
 /***********************************************************************************************************************
  *   PRIVATE FUNCTION DECLARATION
  **********************************************************************************************************************/
-static void eFSP_MSGDTST_BadPointer(void);
+static void eFSS_CORELLTST_BadPointer(void);
+
+
+#if 0
 static void eFSP_MSGDTST_BadInit(void);
 static void eFSP_MSGDTST_BadParamEntr(void);
 static void eFSP_MSGDTST_CorruptedCtx(void);
@@ -54,7 +81,7 @@ static void eFSP_MSGDTST_ErrorAndContinueEx(void);
 static void eFSP_MSGDTST_ErrorShortFrame(void);
 static void eFSP_MSGDTST_ErrorBadStuff(void);
 static void eFSP_MSGDTST_Corner(void);
-
+#endif
 
 
 /***********************************************************************************************************************
@@ -64,23 +91,7 @@ void eFSS_CORELLTST_ExeTest(void)
 {
 	(void)printf("\n\nCORE LOW LEVEL TEST START \n\n");
 
-    eFSP_MSGDTST_BadPointer();
-    eFSP_MSGDTST_BadInit();
-    eFSP_MSGDTST_BadParamEntr();
-    eFSP_MSGDTST_CorruptedCtx();
-    eFSP_MSGDTST_BadClBck();
-    eFSP_MSGDTST_OutOfMem();
-    eFSP_MSGDTST_MsgEnd();
-    eFSP_MSGDTST_BadFrame();
-    eFSP_MSGDTST_FrameRestart();
-    eFSP_MSGDTST_General();
-    eFSP_MSGDTST_General2();
-    eFSP_MSGDTST_CorernerMulti();
-    eFSP_MSGDTST_ErrorAndContinue();
-    eFSP_MSGDTST_ErrorAndContinueEx();
-    eFSP_MSGDTST_ErrorShortFrame();
-    eFSP_MSGDTST_ErrorBadStuff();
-    eFSP_MSGDTST_Corner();
+    eFSS_CORELLTST_BadPointer();
 
     (void)printf("\n\nCORE LOW LEVEL TEST END \n\n");
 }
@@ -89,298 +100,349 @@ void eFSS_CORELLTST_ExeTest(void)
 /***********************************************************************************************************************
  *   PRIVATE TEST FUNCTION DECLARATION
  **********************************************************************************************************************/
-bool_t eFSP_MSGDTST_c32SAdapt(t_eFSP_MSGD_CrcCtx* p_ptCtx, const uint32_t p_uS, const uint8_t* p_puD, const uint32_t p_uDLen, uint32_t* const p_puC32Val)
+static bool_t eFSS_CORELLTST_EraseAdapt(t_eFSS_TYPE_EraseCtx* const p_ptCtx, const uint32_t p_uPageToErase)
 {
-    bool_t l_bResult;
 
-    if( ( NULL == p_ptCtx ) || ( NULL == p_puC32Val ) )
-    {
-        l_bResult = false;
-    }
-    else
-    {
-        p_ptCtx->eLastEr = eCU_CRC_32Seed(p_uS, (const uint8_t*)p_puD, p_uDLen, p_puC32Val);
-        if( e_eCU_CRC_RES_OK == p_ptCtx->eLastEr )
-        {
-            l_bResult = true;
-        }
-        else
-        {
-            l_bResult = false;
-        }
-    }
-
-    return l_bResult;
 }
 
-bool_t eFSP_MSGDTST_c32SAdaptEr(t_eFSP_MSGD_CrcCtx* p_ptCtx, const uint32_t p_uS, const uint8_t* p_puD, const uint32_t p_uDLen, uint32_t* const p_puC32Val)
+static bool_t eFSS_CORELLTST_WriteAdapt(t_eFSS_TYPE_WriteCtx* const p_ptCtx,
+                                        const uint32_t p_uPageToWrite, const uint8_t* p_puDataToWrite,
+                                        const uint32_t p_uDataToWriteL )
 {
-    bool_t l_bResult;
 
-    (void)p_uS;
-    (void)p_puD;
-    (void)p_uDLen;
-
-    if( ( NULL == p_ptCtx ) || ( NULL == p_puC32Val ) )
-    {
-        l_bResult = false;
-    }
-    else
-    {
-        p_ptCtx->eLastEr = e_eCU_CRC_RES_BADPOINTER;
-        l_bResult = false;
-        *p_puC32Val = 0u;
-    }
-
-    return l_bResult;
 }
 
+static bool_t eFSS_CORELLTST_ReadAdapt(t_eFSS_TYPE_ReadCtx* const p_ptCtx,
+                                       const uint32_t p_uPageToRead, uint8_t* const p_puReadBuffer,
+                                       const uint32_t p_uReadBufferL )
+{
+
+}
+
+static bool_t eFSS_CORELLTST_CrcAdapt(t_eFSS_TYPE_CrcCtx* const p_ptCtx, const uint32_t p_uUseed,
+                                      const uint8_t* p_puData, const uint32_t p_uDataL,
+                                      uint32_t* const p_puCrc32Val )
+{
+
+}
 
 
 
 /***********************************************************************************************************************
  *   PRIVATE FUNCTION
  **********************************************************************************************************************/
-void eFSP_MSGDTST_BadPointer(void)
+void eFSS_CORELLTST_BadPointer(void)
 {
     /* Local variable */
-    t_eFSP_MSGD_Ctx l_tCtx;
-    uint8_t  l_auMemArea[10u];
-    f_eFSP_MSGD_CrcCb l_fCrcPTest = &eFSP_MSGDTST_c32SAdapt;
-    t_eFSP_MSGD_CrcCtx l_tCtxAdapterCrc;
-    uint32_t l_uVar32;
-    uint8_t* l_puData;
-    bool_t l_bIsMsgDec;
+    t_eFSS_CORELL_Ctx l_tCtx;
+    t_eFSS_TYPE_CbStorCtx l_tCtxCb;
+    t_eFSS_TYPE_StorSet l_tStorSet;
+    uint8_t l_uStorType;
+    uint8_t l_auStor[24u];
+    t_eFSS_TYPE_EraseCtx  l_tCtxErase;
+	t_eFSS_TYPE_WriteCtx  l_tCtxWrite;
+	t_eFSS_TYPE_ReadCtx   l_tCtxRead;
+	t_eFSS_TYPE_CrcCtx    l_tCtxCrc32;
     bool_t l_bIsInit;
+    t_eFSS_TYPE_StorSet l_tGetStorSet;
+    t_eFSS_CORELL_StorBuf l_ltUseBuff1;
+    t_eFSS_CORELL_StorBuf l_ltUseBuff2;
+    uint32_t l_uCrcGetted;
+
+    /* Init callback var */
+    l_tCtxCb.ptCtxErase = &l_tCtxErase;
+    l_tCtxCb.fErase = &eFSS_CORELLTST_EraseAdapt;
+	l_tCtxCb.ptCtxWrite = &l_tCtxWrite;
+    l_tCtxCb.fWrite = &eFSS_CORELLTST_WriteAdapt;
+	l_tCtxCb.ptCtxRead = &l_tCtxRead;
+    l_tCtxCb.fRead = &eFSS_CORELLTST_ReadAdapt;
+	l_tCtxCb.ptCtxCrc32 = &l_tCtxCrc32;
+    l_tCtxCb.fCrc32 = &eFSS_CORELLTST_CrcAdapt;
+
+    /* Init storage settings */
+    l_tStorSet.uTotPages = 1u;
+    l_tStorSet.uPagesLen = 24u;
+    l_tStorSet.uRWERetry = 2u;
+    l_tStorSet.uPageVersion = 1u;
+
+    l_uStorType = 1u;
 
     /* Function */
-    if( e_eFSP_MSGD_RES_BADPOINTER == eFSP_MSGD_InitCtx(NULL, l_auMemArea, sizeof(l_auMemArea), l_fCrcPTest, &l_tCtxAdapterCrc) )
+    if( e_eFSS_CORELL_RES_BADPOINTER == eFSS_CORELL_InitCtx(NULL, l_tCtxCb, l_tStorSet, l_uStorType, l_auStor, sizeof(l_auStor) ) )
     {
-        (void)printf("eFSP_MSGDTST_BadPointer 1  -- OK \n");
+        (void)printf("eFSS_CORELLTST_BadPointer 1  -- OK \n");
     }
     else
     {
-        (void)printf("eFSP_MSGDTST_BadPointer 1  -- FAIL \n");
-    }
-
-    /* Function */
-    if( e_eFSP_MSGD_RES_BADPOINTER == eFSP_MSGD_InitCtx(&l_tCtx, NULL, sizeof(l_auMemArea), l_fCrcPTest, &l_tCtxAdapterCrc) )
-    {
-        (void)printf("eFSP_MSGDTST_BadPointer 2  -- OK \n");
-    }
-    else
-    {
-        (void)printf("eFSP_MSGDTST_BadPointer 2  -- FAIL \n");
-    }
-
-    /* Function */
-    if( e_eFSP_MSGD_RES_BADPOINTER == eFSP_MSGD_InitCtx(&l_tCtx, l_auMemArea, sizeof(l_auMemArea), NULL, &l_tCtxAdapterCrc) )
-    {
-        (void)printf("eFSP_MSGDTST_BadPointer 3  -- OK \n");
-    }
-    else
-    {
-        (void)printf("eFSP_MSGDTST_BadPointer 3  -- FAIL \n");
-    }
-
-    /* Function */
-    if( e_eFSP_MSGD_RES_BADPOINTER == eFSP_MSGD_InitCtx(&l_tCtx, l_auMemArea, sizeof(l_auMemArea), l_fCrcPTest, NULL) )
-    {
-        (void)printf("eFSP_MSGDTST_BadPointer 4  -- OK \n");
-    }
-    else
-    {
-        (void)printf("eFSP_MSGDTST_BadPointer 4  -- FAIL \n");
+        (void)printf("eFSS_CORELLTST_BadPointer 1  -- FAIL \n");
     }
 
     /* Function */
-    if( e_eFSP_MSGD_RES_BADPOINTER == eFSP_MSGD_NewMsg(NULL) )
+    if( e_eFSS_CORELL_RES_BADPOINTER == eFSS_CORELL_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_uStorType, NULL, sizeof(l_auStor) ) )
     {
-        (void)printf("eFSP_MSGDTST_BadPointer 5  -- OK \n");
+        (void)printf("eFSS_CORELLTST_BadPointer 2  -- OK \n");
     }
     else
     {
-        (void)printf("eFSP_MSGDTST_BadPointer 5  -- FAIL \n");
+        (void)printf("eFSS_CORELLTST_BadPointer 2  -- FAIL \n");
     }
 
     /* Function */
-    if( e_eFSP_MSGD_RES_BADPOINTER == eFSP_MSGD_GetDecodedData(NULL, &l_puData, &l_uVar32) )
+    l_tCtxCb.ptCtxErase = NULL;
+    if( e_eFSS_CORELL_RES_BADPOINTER == eFSS_CORELL_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_uStorType, l_auStor, sizeof(l_auStor) ) )
     {
-        (void)printf("eFSP_MSGDTST_BadPointer 6  -- OK \n");
+        (void)printf("eFSS_CORELLTST_BadPointer 3  -- OK \n");
+        l_tCtxCb.ptCtxErase = &l_tCtxErase;
     }
     else
     {
-        (void)printf("eFSP_MSGDTST_BadPointer 6  -- FAIL \n");
+        (void)printf("eFSS_CORELLTST_BadPointer 3  -- FAIL \n");
+        l_tCtxCb.ptCtxErase = &l_tCtxErase;
     }
 
     /* Function */
-    if( e_eFSP_MSGD_RES_BADPOINTER == eFSP_MSGD_GetDecodedData(&l_tCtx, NULL, &l_uVar32) )
+    l_tCtxCb.fErase = NULL;
+    if( e_eFSS_CORELL_RES_BADPOINTER == eFSS_CORELL_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_uStorType, l_auStor, sizeof(l_auStor) ) )
     {
-        (void)printf("eFSP_MSGDTST_BadPointer 7  -- OK \n");
+        (void)printf("eFSS_CORELLTST_BadPointer 4  -- OK \n");
+        l_tCtxCb.fErase = &eFSS_CORELLTST_EraseAdapt;
     }
     else
     {
-        (void)printf("eFSP_MSGDTST_BadPointer 7  -- FAIL \n");
+        (void)printf("eFSS_CORELLTST_BadPointer 4  -- FAIL \n");
+        l_tCtxCb.fErase = &eFSS_CORELLTST_EraseAdapt;
     }
 
     /* Function */
-    if( e_eFSP_MSGD_RES_BADPOINTER == eFSP_MSGD_GetDecodedData(&l_tCtx, &l_puData, NULL) )
+    l_tCtxCb.ptCtxWrite = NULL;
+    if( e_eFSS_CORELL_RES_BADPOINTER == eFSS_CORELL_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_uStorType, l_auStor, sizeof(l_auStor) ) )
     {
-        (void)printf("eFSP_MSGDTST_BadPointer 8  -- OK \n");
+        (void)printf("eFSS_CORELLTST_BadPointer 5  -- OK \n");
+        l_tCtxCb.ptCtxWrite = &l_tCtxWrite;
     }
     else
     {
-        (void)printf("eFSP_MSGDTST_BadPointer 8  -- FAIL \n");
+        (void)printf("eFSS_CORELLTST_BadPointer 5  -- FAIL \n");
+        l_tCtxCb.ptCtxWrite = &l_tCtxWrite;
     }
 
     /* Function */
-    if( e_eFSP_MSGD_RES_BADPOINTER == eFSP_MSGD_GetDecodedLen(NULL, &l_uVar32) )
+    l_tCtxCb.fWrite = NULL;
+    if( e_eFSS_CORELL_RES_BADPOINTER == eFSS_CORELL_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_uStorType, l_auStor, sizeof(l_auStor) ) )
     {
-        (void)printf("eFSP_MSGDTST_BadPointer 9  -- OK \n");
+        (void)printf("eFSS_CORELLTST_BadPointer 6  -- OK \n");
+        l_tCtxCb.fWrite = &eFSS_CORELLTST_WriteAdapt;
     }
     else
     {
-        (void)printf("eFSP_MSGDTST_BadPointer 9  -- FAIL \n");
+        (void)printf("eFSS_CORELLTST_BadPointer 6  -- FAIL \n");
+        l_tCtxCb.fWrite = &eFSS_CORELLTST_WriteAdapt;
     }
 
     /* Function */
-    if( e_eFSP_MSGD_RES_BADPOINTER == eFSP_MSGD_GetDecodedLen(&l_tCtx, NULL) )
+    l_tCtxCb.ptCtxRead = NULL;
+    if( e_eFSS_CORELL_RES_BADPOINTER == eFSS_CORELL_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_uStorType, l_auStor, sizeof(l_auStor) ) )
     {
-        (void)printf("eFSP_MSGDTST_BadPointer 10 -- OK \n");
+        (void)printf("eFSS_CORELLTST_BadPointer 7  -- OK \n");
+        l_tCtxCb.ptCtxRead = &l_tCtxRead;
     }
     else
     {
-        (void)printf("eFSP_MSGDTST_BadPointer 10 -- FAIL \n");
+        (void)printf("eFSS_CORELLTST_BadPointer 7  -- FAIL \n");
+        l_tCtxCb.ptCtxRead = &l_tCtxRead;
     }
 
     /* Function */
-    if( e_eFSP_MSGD_RES_BADPOINTER == eFSP_MSGD_IsWaitingSof(NULL, &l_bIsMsgDec) )
+    l_tCtxCb.fRead = NULL;
+    if( e_eFSS_CORELL_RES_BADPOINTER == eFSS_CORELL_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_uStorType, l_auStor, sizeof(l_auStor) ) )
     {
-        (void)printf("eFSP_MSGDTST_BadPointer 11 -- OK \n");
+        (void)printf("eFSS_CORELLTST_BadPointer 8  -- OK \n");
+        l_tCtxCb.fRead = &eFSS_CORELLTST_ReadAdapt;
     }
     else
     {
-        (void)printf("eFSP_MSGDTST_BadPointer 11 -- FAIL \n");
+        (void)printf("eFSS_CORELLTST_BadPointer 8  -- FAIL \n");
+        l_tCtxCb.fRead = &eFSS_CORELLTST_ReadAdapt;
     }
 
     /* Function */
-    if( e_eFSP_MSGD_RES_BADPOINTER == eFSP_MSGD_IsWaitingSof(&l_tCtx, NULL) )
+    l_tCtxCb.ptCtxCrc32 = NULL;
+    if( e_eFSS_CORELL_RES_BADPOINTER == eFSS_CORELL_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_uStorType, l_auStor, sizeof(l_auStor) ) )
     {
-        (void)printf("eFSP_MSGDTST_BadPointer 12 -- OK \n");
+        (void)printf("eFSS_CORELLTST_BadPointer 9  -- OK \n");
+        l_tCtxCb.ptCtxCrc32 = &l_tCtxCrc32;
     }
     else
     {
-        (void)printf("eFSP_MSGDTST_BadPointer 12 -- FAIL \n");
+        (void)printf("eFSS_CORELLTST_BadPointer 9  -- FAIL \n");
+        l_tCtxCb.ptCtxCrc32 = &l_tCtxCrc32;
     }
 
     /* Function */
-    if( e_eFSP_MSGD_RES_BADPOINTER == eFSP_MSGD_IsAFullMsgDecoded(NULL, &l_bIsMsgDec) )
+    l_tCtxCb.fCrc32 = NULL;
+    if( e_eFSS_CORELL_RES_BADPOINTER == eFSS_CORELL_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_uStorType, l_auStor, sizeof(l_auStor) ) )
     {
-        (void)printf("eFSP_MSGDTST_BadPointer 13 -- OK \n");
+        (void)printf("eFSS_CORELLTST_BadPointer 10 -- OK \n");
+        l_tCtxCb.fCrc32 = &eFSS_CORELLTST_CrcAdapt;
     }
     else
     {
-        (void)printf("eFSP_MSGDTST_BadPointer 13 -- FAIL \n");
+        (void)printf("eFSS_CORELLTST_BadPointer 10 -- FAIL \n");
+        l_tCtxCb.fCrc32 = &eFSS_CORELLTST_CrcAdapt;
     }
 
     /* Function */
-    if( e_eFSP_MSGD_RES_BADPOINTER == eFSP_MSGD_IsAFullMsgDecoded(&l_tCtx, NULL) )
+    if( e_eFSS_CORELL_RES_BADPOINTER == eFSS_CORELL_IsInit(NULL, &l_bIsInit) )
     {
-        (void)printf("eFSP_MSGDTST_BadPointer 14 -- OK \n");
+        (void)printf("eFSS_CORELLTST_BadPointer 11 -- OK \n");
     }
     else
     {
-        (void)printf("eFSP_MSGDTST_BadPointer 14 -- FAIL \n");
+        (void)printf("eFSS_CORELLTST_BadPointer 11 -- FAIL \n");
     }
 
     /* Function */
-    if( e_eFSP_MSGD_RES_BADPOINTER == eFSP_MSGD_IsFrameBad(NULL, &l_bIsMsgDec) )
+    if( e_eFSS_CORELL_RES_BADPOINTER == eFSS_CORELL_IsInit(&l_tCtx, NULL) )
     {
-        (void)printf("eFSP_MSGDTST_BadPointer 15 -- OK \n");
+        (void)printf("eFSS_CORELLTST_BadPointer 12 -- OK \n");
     }
     else
     {
-        (void)printf("eFSP_MSGDTST_BadPointer 15 -- FAIL \n");
+        (void)printf("eFSS_CORELLTST_BadPointer 12 -- FAIL \n");
     }
 
     /* Function */
-    if( e_eFSP_MSGD_RES_BADPOINTER == eFSP_MSGD_IsFrameBad(&l_tCtx, NULL) )
+    if( e_eFSS_CORELL_RES_BADPOINTER == eFSS_CORELL_GetStorSett(NULL, &l_tGetStorSet) )
     {
-        (void)printf("eFSP_MSGDTST_BadPointer 16 -- OK \n");
+        (void)printf("eFSS_CORELLTST_BadPointer 13 -- OK \n");
     }
     else
     {
-        (void)printf("eFSP_MSGDTST_BadPointer 16 -- FAIL \n");
+        (void)printf("eFSS_CORELLTST_BadPointer 13 -- FAIL \n");
     }
 
     /* Function */
-    if( e_eFSP_MSGD_RES_BADPOINTER == eFSP_MSGD_GetMostEffDatLen(NULL, &l_uVar32) )
+    if( e_eFSS_CORELL_RES_BADPOINTER == eFSS_CORELL_GetStorSett(&l_tCtx, NULL) )
     {
-        (void)printf("eFSP_MSGDTST_BadPointer 17 -- OK \n");
+        (void)printf("eFSS_CORELLTST_BadPointer 14 -- OK \n");
     }
     else
     {
-        (void)printf("eFSP_MSGDTST_BadPointer 17 -- FAIL \n");
+        (void)printf("eFSS_CORELLTST_BadPointer 14 -- FAIL \n");
     }
 
     /* Function */
-    if( e_eFSP_MSGD_RES_BADPOINTER == eFSP_MSGD_GetMostEffDatLen(&l_tCtx, NULL) )
+    if( e_eFSS_CORELL_RES_BADPOINTER == eFSS_CORELL_GetBuff(NULL, &l_ltUseBuff1, &l_ltUseBuff2) )
     {
-        (void)printf("eFSP_MSGDTST_BadPointer 18 -- OK \n");
+        (void)printf("eFSS_CORELLTST_BadPointer 15 -- OK \n");
     }
     else
     {
-        (void)printf("eFSP_MSGDTST_BadPointer 18 -- FAIL \n");
+        (void)printf("eFSS_CORELLTST_BadPointer 15 -- FAIL \n");
     }
 
     /* Function */
-    if( e_eFSP_MSGD_RES_BADPOINTER == eFSP_MSGD_InsEncChunk(NULL, l_auMemArea, sizeof(l_auMemArea), &l_uVar32) )
+    if( e_eFSS_CORELL_RES_BADPOINTER == eFSS_CORELL_GetBuff(&l_tCtx, NULL, &l_ltUseBuff2) )
     {
-        (void)printf("eFSP_MSGDTST_BadPointer 19 -- OK \n");
+        (void)printf("eFSS_CORELLTST_BadPointer 16 -- OK \n");
     }
     else
     {
-        (void)printf("eFSP_MSGDTST_BadPointer 19 -- FAIL \n");
+        (void)printf("eFSS_CORELLTST_BadPointer 16 -- FAIL \n");
     }
 
     /* Function */
-    if( e_eFSP_MSGD_RES_BADPOINTER == eFSP_MSGD_InsEncChunk(&l_tCtx, NULL, sizeof(l_auMemArea), &l_uVar32) )
+    if( e_eFSS_CORELL_RES_BADPOINTER == eFSS_CORELL_GetBuff(&l_tCtx, &l_ltUseBuff1, NULL) )
     {
-        (void)printf("eFSP_MSGDTST_BadPointer 20 -- OK \n");
+        (void)printf("eFSS_CORELLTST_BadPointer 17 -- OK \n");
     }
     else
     {
-        (void)printf("eFSP_MSGDTST_BadPointer 20 -- FAIL \n");
+        (void)printf("eFSS_CORELLTST_BadPointer 17 -- FAIL \n");
     }
 
     /* Function */
-    if( e_eFSP_MSGD_RES_BADPOINTER == eFSP_MSGD_InsEncChunk(&l_tCtx, l_auMemArea, sizeof(l_auMemArea), NULL) )
+    if( e_eFSS_CORELL_RES_BADPOINTER == eFSS_CORELL_GetBuffNStor(NULL, &l_ltUseBuff1, &l_ltUseBuff2, &l_tGetStorSet) )
     {
-        (void)printf("eFSP_MSGDTST_BadPointer 21 -- OK \n");
+        (void)printf("eFSS_CORELLTST_BadPointer 18 -- OK \n");
     }
     else
     {
-        (void)printf("eFSP_MSGDTST_BadPointer 21 -- FAIL \n");
+        (void)printf("eFSS_CORELLTST_BadPointer 18 -- FAIL \n");
     }
 
-    if( e_eFSP_MSGD_RES_BADPOINTER == eFSP_MSGD_IsInit( NULL, &l_bIsInit ) )
+    /* Function */
+    if( e_eFSS_CORELL_RES_BADPOINTER == eFSS_CORELL_GetBuffNStor(&l_tCtx, NULL, &l_ltUseBuff2, &l_tGetStorSet) )
     {
-        (void)printf("eFSP_MSGDTST_BadPointer 22 -- OK \n");
+        (void)printf("eFSS_CORELLTST_BadPointer 19 -- OK \n");
     }
     else
     {
-        (void)printf("eFSP_MSGDTST_BadPointer 22 -- FAIL \n");
+        (void)printf("eFSS_CORELLTST_BadPointer 19 -- FAIL \n");
     }
 
-    if( e_eFSP_MSGD_RES_BADPOINTER == eFSP_MSGD_IsInit( &l_tCtx, NULL ) )
+    /* Function */
+    if( e_eFSS_CORELL_RES_BADPOINTER == eFSS_CORELL_GetBuffNStor(&l_tCtx, &l_ltUseBuff1, NULL, &l_tGetStorSet) )
     {
-        (void)printf("eFSP_MSGDTST_BadPointer 23 -- OK \n");
+        (void)printf("eFSS_CORELLTST_BadPointer 20 -- OK \n");
     }
     else
     {
-        (void)printf("eFSP_MSGDTST_BadPointer 23 -- FAIL \n");
+        (void)printf("eFSS_CORELLTST_BadPointer 20 -- FAIL \n");
+    }
+
+    /* Function */
+    if( e_eFSS_CORELL_RES_BADPOINTER == eFSS_CORELL_GetBuffNStor(&l_tCtx, &l_ltUseBuff1, &l_ltUseBuff2, NULL) )
+    {
+        (void)printf("eFSS_CORELLTST_BadPointer 21 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_CORELLTST_BadPointer 21 -- FAIL \n");
+    }
+
+    /* Function */
+    if( e_eFSS_CORELL_RES_BADPOINTER == eFSS_CORELL_LoadPageInBuff(NULL, e_eFSS_CORELL_BUFFTYPE_1, 0u) )
+    {
+        (void)printf("eFSS_CORELLTST_BadPointer 22 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_CORELLTST_BadPointer 22 -- FAIL \n");
+    }
+
+    /* Function */
+    if( e_eFSS_CORELL_RES_BADPOINTER == eFSS_CORELL_FlushBuffInPage(NULL, e_eFSS_CORELL_BUFFTYPE_1, 0u) )
+    {
+        (void)printf("eFSS_CORELLTST_BadPointer 23 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_CORELLTST_BadPointer 23 -- FAIL \n");
+    }
+
+    /* Function */
+    if( e_eFSS_CORELL_RES_BADPOINTER == eFSS_CORELL_CalcCrcInBuff(NULL, e_eFSS_CORELL_BUFFTYPE_1, 0u, 1u, &l_uCrcGetted) )
+    {
+        (void)printf("eFSS_CORELLTST_BadPointer 24 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_CORELLTST_BadPointer 24 -- FAIL \n");
+    }
+
+    /* Function */
+    if( e_eFSS_CORELL_RES_BADPOINTER == eFSS_CORELL_CalcCrcInBuff(&l_tCtx, e_eFSS_CORELL_BUFFTYPE_1, 0u, 1u, NULL) )
+    {
+        (void)printf("eFSS_CORELLTST_BadPointer 25 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_CORELLTST_BadPointer 25 -- FAIL \n");
     }
 }
+
+#if 0
 
 void eFSP_MSGDTST_BadInit(void)
 {
@@ -4360,3 +4422,5 @@ void eFSP_MSGDTST_Corner(void)
         (void)printf("eFSP_MSGDTST_Corner 4  -- FAIL \n");
     }
 }
+
+#endif
