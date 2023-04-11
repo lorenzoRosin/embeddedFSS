@@ -529,7 +529,7 @@ e_eFSS_CORELL_RES eFSS_CORELL_FlushBuffInPage(t_eFSS_CORELL_Ctx* const p_ptCtx,
                         l_tPrvMeta.uPageMagicNumber = EFSS_CORELL_PAGEMAGNUM;
                         l_tPrvMeta.uPageCrc = 0u;
 
-                        /* Insert requested data */
+                        /* Insert requested data, even if CRC is still not calculated */
                         l_eRes = eFSS_CORELLPRV_InsertData(l_ptMainBuf, &l_tPrvMeta);
 
                         if( e_eFSS_CORELL_RES_OK == l_eRes )
@@ -540,7 +540,7 @@ e_eFSS_CORELL_RES eFSS_CORELL_FlushBuffInPage(t_eFSS_CORELL_Ctx* const p_ptCtx,
                             /* Calculate CRC */
                             if( l_ptMainBuf->uBufL > EFSS_CORELL_PAGEMIN_L )
                             {
-                                l_uBuffCrcLen = ( l_ptMainBuf->uBufL - 4u );
+                                l_uBuffCrcLen = ( l_ptMainBuf->uBufL - EFSS_CORELL_CRC_L );
                                 l_bCbRes = (*(p_ptCtx->tCtxCb.fCrc32))(p_ptCtx->tCtxCb.ptCtxCrc32, MAX_UINT32VAL,
                                                                        l_ptMainBuf->puBuf, l_uBuffCrcLen,
                                                                        &l_uPageCrcCalc );
@@ -558,13 +558,13 @@ e_eFSS_CORELL_RES eFSS_CORELL_FlushBuffInPage(t_eFSS_CORELL_Ctx* const p_ptCtx,
 
                             if( e_eFSS_CORELL_RES_OK == l_eRes )
                             {
-                                /* Insert Crc data */
+                                /* Insert Crc data in to the metadata, and insert metadata in to the buffer to flush */
                                 l_tPrvMeta.uPageCrc = l_uPageCrcCalc;
                                 l_eRes = eFSS_CORELLPRV_InsertData(l_ptMainBuf, &l_tPrvMeta);
 
                                 if( e_eFSS_CORELL_RES_OK == l_eRes )
                                 {
-                                    /* Now that we have the buffer ready we need to: erase write and check the
+                                    /* Now that we have the buffer ready we need to: erase, write, and check the
                                        storage area indicated by the index */
                                     /* Init var */
                                     l_eRes = e_eFSS_CORELL_RES_CLBCKERASEERR;
