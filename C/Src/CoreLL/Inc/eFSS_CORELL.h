@@ -104,7 +104,7 @@ e_eFSS_CORELL_RES eFSS_CORELL_InitCtx(t_eFSS_CORELL_Ctx* const p_ptCtx, const t_
  * @return      e_eFSS_CORELL_RES_BADPOINTER    - In case of bad pointer passed to the function
  *              e_eFSS_CORELL_RES_OK            - Operation ended correctly
  */
-e_eFSS_CORELL_RES eFSS_CORELL_IsInit(t_eFSS_CORELL_Ctx* const p_ptCtx, bool_t* const p_pbIsInit);
+e_eFSS_CORELL_RES eFSS_CORELL_IsInit(const t_eFSS_CORELL_Ctx* p_ptCtx, bool_t* const p_pbIsInit);
 
 /**
  * @brief       Get storage settings used during init
@@ -216,7 +216,7 @@ e_eFSS_CORELL_RES eFSS_CORELL_FlushBuffInPage(t_eFSS_CORELL_Ctx* const p_ptCtx,
  *		        e_eFSS_CORELL_RES_CLBCKCRCERR      - The CRC callback reported an error
  *              e_eFSS_CORELL_RES_OK               - Operation ended correctly
  */
-e_eFSS_CORELL_RES eFSS_CORELL_CalcCrcInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx,
+e_eFSS_CORELL_RES eFSS_CORELL_CalcCrcInBuff(const t_eFSS_CORELL_Ctx* p_ptCtx,
                                             const e_eFSS_CORELL_BUFFTYPE p_eBuffType, const uint32_t p_uCrcSeed,
 								            const uint32_t p_uLenCalc, uint32_t* const p_puCrc);
 

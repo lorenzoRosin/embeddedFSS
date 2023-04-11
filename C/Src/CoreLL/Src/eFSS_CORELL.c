@@ -56,10 +56,10 @@ typedef struct
  *  PRIVATE STATIC FUNCTION DECLARATION
  **********************************************************************************************************************/
 static bool_t eFSS_CORELL_IsStatusStillCoherent(const t_eFSS_CORELL_Ctx* p_ptCtx);
-static e_eFSS_CORELL_RES eFSS_CORELLPRV_ExtractData(t_eFSS_CORELL_StorBufPrv* const p_ptBuff,
+static e_eFSS_CORELL_RES eFSS_CORELLPRV_ExtractData(const t_eFSS_CORELL_StorBufPrv* p_ptBuff,
                                                     t_eFSS_CORELLPRV_PrvMeta* const p_ptPar);
 static e_eFSS_CORELL_RES eFSS_CORELLPRV_InsertData(t_eFSS_CORELL_StorBufPrv* const p_ptBuff,
-                                                   t_eFSS_CORELLPRV_PrvMeta* const p_ptPar);
+                                                   const t_eFSS_CORELLPRV_PrvMeta* p_ptPar);
 
 
 
@@ -140,7 +140,7 @@ e_eFSS_CORELL_RES eFSS_CORELL_InitCtx(t_eFSS_CORELL_Ctx* const p_ptCtx, const t_
     return l_eRes;
 }
 
-e_eFSS_CORELL_RES eFSS_CORELL_IsInit(t_eFSS_CORELL_Ctx* const p_ptCtx, bool_t* const p_pbIsInit)
+e_eFSS_CORELL_RES eFSS_CORELL_IsInit(const t_eFSS_CORELL_Ctx* p_ptCtx, bool_t* const p_pbIsInit)
 {
     /* Return local var */
 	e_eFSS_CORELL_RES l_eRes;
@@ -646,7 +646,7 @@ e_eFSS_CORELL_RES eFSS_CORELL_FlushBuffInPage(t_eFSS_CORELL_Ctx* const p_ptCtx,
 	return l_eRes;
 }
 
-e_eFSS_CORELL_RES eFSS_CORELL_CalcCrcInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx,
+e_eFSS_CORELL_RES eFSS_CORELL_CalcCrcInBuff(const t_eFSS_CORELL_Ctx* p_ptCtx,
                                             const e_eFSS_CORELL_BUFFTYPE p_eBuffType, const uint32_t p_uCrcSeed,
 								            const uint32_t p_uLenCalc, uint32_t* const p_puCrc)
 {
@@ -799,7 +799,7 @@ static bool_t eFSS_CORELL_IsStatusStillCoherent(const t_eFSS_CORELL_Ctx* p_ptCtx
     return l_eRes;
 }
 
-static e_eFSS_CORELL_RES eFSS_CORELLPRV_ExtractData(t_eFSS_CORELL_StorBufPrv* const p_ptBuff,
+static e_eFSS_CORELL_RES eFSS_CORELLPRV_ExtractData(const t_eFSS_CORELL_StorBufPrv* p_ptBuff,
                                                     t_eFSS_CORELLPRV_PrvMeta* const p_ptPar)
 {
 	/* Return local var */
@@ -881,7 +881,7 @@ static e_eFSS_CORELL_RES eFSS_CORELLPRV_ExtractData(t_eFSS_CORELL_StorBufPrv* co
 }
 
 static e_eFSS_CORELL_RES eFSS_CORELLPRV_InsertData(t_eFSS_CORELL_StorBufPrv* const p_ptBuff,
-                                                   t_eFSS_CORELLPRV_PrvMeta* const p_ptPar)
+                                                   const t_eFSS_CORELLPRV_PrvMeta* p_ptPar)
 {
 	/* Return local var */
 	e_eFSS_CORELL_RES l_eRes;
