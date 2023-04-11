@@ -32,6 +32,7 @@
  *      PRIVATE DEFINE
  **********************************************************************************************************************/
 #define EFSS_CORELL_PAGEMIN_L                                                                      ( ( uint32_t )  19u )
+#define EFSS_CORELL_CRC_L                                                                          ( ( uint32_t )   4u )
 #define EFSS_CORELL_PAGEMAGNUM                                                             ( ( uint32_t )  0xA5A5A5A5u )
 
 
@@ -389,7 +390,7 @@ e_eFSS_CORELL_RES eFSS_CORELL_LoadPageInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, c
 
                                 if( l_ptMainBuf->uBufL > EFSS_CORELL_PAGEMIN_L )
                                 {
-                                    l_uBuffCrcLen = ( l_ptMainBuf->uBufL - 4u );
+                                    l_uBuffCrcLen = ( l_ptMainBuf->uBufL - EFSS_CORELL_CRC_L );
                                     l_bCbRes = (*(p_ptCtx->tCtxCb.fCrc32))(p_ptCtx->tCtxCb.ptCtxCrc32, MAX_UINT32VAL,
                                                                           l_ptMainBuf->puBuf, l_uBuffCrcLen,
                                                                           &l_uPageCrcCalc );
@@ -407,12 +408,15 @@ e_eFSS_CORELL_RES eFSS_CORELL_LoadPageInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, c
 
                                 if( e_eFSS_CORELL_RES_OK == l_eRes )
                                 {
+                                    /* calculated CRC must be equals to the stored CRC */
                                     if( l_uPageCrcCalc != l_tPrvMeta.uPageCrc )
                                     {
                                         l_eRes = e_eFSS_CORELL_RES_NOTVALIDPAGE;
                                     }
                                     else
                                     {
+                                        /* Crc is correct, page validity is cofirmed. Check others metadata in order
+                                           to be sure that the previously saved page is related to this subtype */
                                         if( ( EFSS_CORELL_PAGEMAGNUM          != l_tPrvMeta.uPageMagicNumber ) ||
                                             ( p_ptCtx->tStorSett.uTotPages    != l_tPrvMeta.uPageTot ) ||
                                             ( p_ptCtx->uStorType              != l_tPrvMeta.uPageType ) ||
@@ -422,6 +426,8 @@ e_eFSS_CORELL_RES eFSS_CORELL_LoadPageInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, c
                                         }
                                         else
                                         {
+                                            /* All ok, page is correct. Verify if we are reading the same page version,
+                                               or if the previously stored page was related to anothers version */
                                             if( p_ptCtx->tStorSett.uPageVersion != l_tPrvMeta.uPageVersion )
                                             {
                                                 l_eRes = e_eFSS_CORELL_RES_NEWVERSIONFOUND;

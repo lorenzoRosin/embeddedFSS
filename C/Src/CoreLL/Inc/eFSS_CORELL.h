@@ -199,7 +199,8 @@ e_eFSS_CORELL_RES eFSS_CORELL_FlushBuffInPage(t_eFSS_CORELL_Ctx* const p_ptCtx,
 
 /**
  * @brief       Calculate the Crc of the data present in the choosen buffer. It's not necessary to calculate the CRC
- *              value of the whole pages, we can choose to calculate the CRC of a portion of the page.
+ *              value of the whole pages, we can choose to calculate the CRC of a portion of the page. In this
+ *              calculation private metadata is not included.
  *
  * @param[in]   p_ptCtx       - Low Level Core context
  * @param[in]   p_eBuffType   - Enum used to select wich buffer we want to select for the calculation
