@@ -29,7 +29,7 @@ extern "C" {
  * GLOBAL PROTOTYPES
  **********************************************************************************************************************/
 /**
- * @brief       Test Core low level module
+ * @brief       Test the Core low level module
  *
  * @param[in]   none
  *
