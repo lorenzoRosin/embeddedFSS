@@ -158,7 +158,7 @@ e_eFSS_CORELL_RES eFSS_CORELL_GetBuffNStor(t_eFSS_CORELL_Ctx* const p_ptCtx, t_e
  *              be modified
  *
  * @param[in]   p_ptCtx       - Low Level Core context
- * @param[in]   p_eBuffType   - Enum used to select wich buffer we want to select
+ * @param[in]   p_eBuffType   - Enum used to select wich buffer we want to use for the reading process
  * @param[in]   p_uPageIndx   - uint32_t index rappresenting the page that we want to load from storage
  *
  * @return      e_eFSS_CORELL_RES_BADPOINTER      - In case of bad pointer passed to the function
@@ -171,16 +171,16 @@ e_eFSS_CORELL_RES eFSS_CORELL_GetBuffNStor(t_eFSS_CORELL_Ctx* const p_ptCtx, t_e
  *              e_eFSS_CORELL_RES_NEWVERSIONFOUND - The readed page has a new version
  *              e_eFSS_CORELL_RES_OK              - Operation ended correctly
  */
-e_eFSS_CORELL_RES eFSS_CORELL_LoadPageInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFFTYPE p_eBuffType,
+e_eFSS_CORELL_RES eFSS_CORELL_LoadPageInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, const e_eFSS_CORELL_BUFFTYPE p_eBuffType,
 								             const uint32_t p_uPageIndx);
 
 /**
- * @brief       Flush one of the two buffer in the storage area. Keep in mind that the other buffer will be used
+ * @brief       Flush one of the two buffer in to the storage area. Keep in mind that the other buffer will be used
  *              to check if the data was flushed correctly, and so after this operation it will contains different value
  *              from the one stored before. Only the buffer of the flushed area will be valid after this operation.
  *
  * @param[in]   p_ptCtx       - Low Level Core context
- * @param[in]   p_eBuffType   - Enum used to select wich buffer we want to select
+ * @param[in]   p_eBuffType   - Enum used to select wich buffer we want to use for the writing process
  * @param[in]   p_uPageIndx   - uint32_t index rappresenting the page that we want to flush in storage
  *
  * @return      e_eFSS_CORELL_RES_BADPOINTER       - In case of bad pointer passed to the function
@@ -194,8 +194,8 @@ e_eFSS_CORELL_RES eFSS_CORELL_LoadPageInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e
  *		        e_eFSS_CORELL_RES_WRITENOMATCHREAD - Writen data dosent match what requested
  *              e_eFSS_CORELL_RES_OK               - Operation ended correctly
  */
-e_eFSS_CORELL_RES eFSS_CORELL_FlushBuffInPage(t_eFSS_CORELL_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFFTYPE p_eBuffType,
-								              const uint32_t p_uPageIndx);
+e_eFSS_CORELL_RES eFSS_CORELL_FlushBuffInPage(t_eFSS_CORELL_Ctx* const p_ptCtx,
+								              const e_eFSS_CORELL_BUFFTYPE p_eBuffType, const uint32_t p_uPageIndx);
 
 /**
  * @brief       Calculate the Crc of the data present in the choosen buffer. It's not necessary to calculate the CRC
@@ -205,7 +205,7 @@ e_eFSS_CORELL_RES eFSS_CORELL_FlushBuffInPage(t_eFSS_CORELL_Ctx* const p_ptCtx, 
  * @param[in]   p_eBuffType   - Enum used to select wich buffer we want to select for the calculation
  * @param[in]   p_uCrcSeed    - uint32_t rappresenting the seed we want to use in the calc
  * @param[in]   p_uLenCalc    - uint32_t rappresenting the lenght we want to calc. This value cannot be bigger than the
- *                              internal buffer page size
+ *                              internal buffer page size getted using eFSS_CORELL_GetBuff
  * @param[out]  p_puCrc       - Pointer to a uint32_t variable where the CRC calculated will be placed
  *
  * @return      e_eFSS_CORELL_RES_BADPOINTER       - In case of bad pointer passed to the function
@@ -215,9 +215,9 @@ e_eFSS_CORELL_RES eFSS_CORELL_FlushBuffInPage(t_eFSS_CORELL_Ctx* const p_ptCtx, 
  *		        e_eFSS_CORELL_RES_CLBCKCRCERR      - The CRC callback reported an error
  *              e_eFSS_CORELL_RES_OK               - Operation ended correctly
  */
-e_eFSS_CORELL_RES eFSS_CORELL_CalcCrcInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFFTYPE p_eBuffType,
-								            const uint32_t p_uCrcSeed, const uint32_t p_uLenCalc,
-                                            uint32_t* const p_puCrc);
+e_eFSS_CORELL_RES eFSS_CORELL_CalcCrcInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx,
+                                            const e_eFSS_CORELL_BUFFTYPE p_eBuffType, const uint32_t p_uCrcSeed,
+								            const uint32_t p_uLenCalc, uint32_t* const p_puCrc);
 
 
 

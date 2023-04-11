@@ -61,6 +61,7 @@ static e_eFSS_CORELL_RES eFSS_CORELLPRV_InsertData(t_eFSS_CORELL_StorBufPrv* con
                                                    t_eFSS_CORELLPRV_PrvMeta* const p_ptPar);
 
 
+
 /***********************************************************************************************************************
  *   GLOBAL FUNCTIONS
  **********************************************************************************************************************/
@@ -282,7 +283,7 @@ e_eFSS_CORELL_RES eFSS_CORELL_GetBuffNStor(t_eFSS_CORELL_Ctx* const p_ptCtx, t_e
 	return l_eRes;
 }
 
-e_eFSS_CORELL_RES eFSS_CORELL_LoadPageInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFFTYPE p_eBuffType,
+e_eFSS_CORELL_RES eFSS_CORELL_LoadPageInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, const e_eFSS_CORELL_BUFFTYPE p_eBuffType,
 								             const uint32_t p_uPageIndx)
 {
 	/* Return local var */
@@ -439,8 +440,8 @@ e_eFSS_CORELL_RES eFSS_CORELL_LoadPageInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e
 	return l_eRes;
 }
 
-e_eFSS_CORELL_RES eFSS_CORELL_FlushBuffInPage(t_eFSS_CORELL_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFFTYPE p_eBuffType,
-								              const uint32_t p_uPageIndx)
+e_eFSS_CORELL_RES eFSS_CORELL_FlushBuffInPage(t_eFSS_CORELL_Ctx* const p_ptCtx,
+								              const e_eFSS_CORELL_BUFFTYPE p_eBuffType, const uint32_t p_uPageIndx)
 {
 	/* Return local var */
 	e_eFSS_CORELL_RES l_eRes;
@@ -639,9 +640,9 @@ e_eFSS_CORELL_RES eFSS_CORELL_FlushBuffInPage(t_eFSS_CORELL_Ctx* const p_ptCtx, 
 	return l_eRes;
 }
 
-e_eFSS_CORELL_RES eFSS_CORELL_CalcCrcInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx, e_eFSS_CORELL_BUFFTYPE p_eBuffType,
-								            const uint32_t p_uCrcSeed, const uint32_t p_uLenCalc,
-                                            uint32_t* const p_puCrc)
+e_eFSS_CORELL_RES eFSS_CORELL_CalcCrcInBuff(t_eFSS_CORELL_Ctx* const p_ptCtx,
+                                            const e_eFSS_CORELL_BUFFTYPE p_eBuffType, const uint32_t p_uCrcSeed,
+								            const uint32_t p_uLenCalc, uint32_t* const p_puCrc)
 {
 	/* Return local var */
 	e_eFSS_CORELL_RES l_eRes;
