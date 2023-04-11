@@ -741,7 +741,7 @@ static bool_t eFSS_CORELL_IsStatusStillCoherent(const t_eFSS_CORELL_Ctx* p_ptCtx
         ( NULL == p_ptCtx->tCtxCb.ptCtxWrite ) || ( NULL == p_ptCtx->tCtxCb.fWrite ) ||
         ( NULL == p_ptCtx->tCtxCb.ptCtxRead  ) || ( NULL == p_ptCtx->tCtxCb.fRead  ) ||
         ( NULL == p_ptCtx->tCtxCb.ptCtxCrc32 ) || ( NULL == p_ptCtx->tCtxCb.fCrc32 ) ||
-        ( NULL == p_ptCtx->tBuff1.puBuf ) || ( NULL == p_ptCtx->tBuff2.puBuf ) )
+        ( NULL == p_ptCtx->tBuff1.puBuf )      || ( NULL == p_ptCtx->tBuff2.puBuf ) )
     {
         l_eRes = false;
     }
@@ -822,42 +822,42 @@ static e_eFSS_CORELL_RES eFSS_CORELLPRV_ExtractData(t_eFSS_CORELL_StorBufPrv* co
             /* Estract */
             if( false == eFSS_Utils_RetriveU32(&l_puCBuff[l_uCurrIdx], &p_ptPar->uPageIndx) )
             {
-                l_eRes = e_eFSS_CORELL_RES_BADPOINTER;
+                l_eRes = e_eFSS_CORELL_RES_CORRUPTCTX;
             }
             else
             {
                 l_uCurrIdx += 4u;
                 if( false == eFSS_Utils_RetriveU8(&l_puCBuff[l_uCurrIdx], &p_ptPar->uPageType) )
                 {
-                    l_eRes = e_eFSS_CORELL_RES_BADPOINTER;
+                    l_eRes = e_eFSS_CORELL_RES_CORRUPTCTX;
                 }
                 else
                 {
                     l_uCurrIdx += 1u;
                     if( false == eFSS_Utils_RetriveU16(&l_puCBuff[l_uCurrIdx], &p_ptPar->uPageVersion) )
                     {
-                        l_eRes = e_eFSS_CORELL_RES_BADPOINTER;
+                        l_eRes = e_eFSS_CORELL_RES_CORRUPTCTX;
                     }
                     else
                     {
                         l_uCurrIdx += 2u;
                         if( false == eFSS_Utils_RetriveU32(&l_puCBuff[l_uCurrIdx], &p_ptPar->uPageTot) )
                         {
-                            l_eRes = e_eFSS_CORELL_RES_BADPOINTER;
+                            l_eRes = e_eFSS_CORELL_RES_CORRUPTCTX;
                         }
                         else
                         {
                             l_uCurrIdx += 4u;
                             if( false == eFSS_Utils_RetriveU32(&l_puCBuff[l_uCurrIdx], &p_ptPar->uPageMagicNumber) )
                             {
-                                l_eRes = e_eFSS_CORELL_RES_BADPOINTER;
+                                l_eRes = e_eFSS_CORELL_RES_CORRUPTCTX;
                             }
                             else
                             {
                                 l_uCurrIdx += 4u;
                                 if( false == eFSS_Utils_RetriveU32(&l_puCBuff[l_uCurrIdx], &p_ptPar->uPageCrc) )
                                 {
-                                    l_eRes = e_eFSS_CORELL_RES_BADPOINTER;
+                                    l_eRes = e_eFSS_CORELL_RES_CORRUPTCTX;
                                 }
                                 else
                                 {
@@ -900,45 +900,45 @@ static e_eFSS_CORELL_RES eFSS_CORELLPRV_InsertData(t_eFSS_CORELL_StorBufPrv* con
             l_puCBuff = &p_ptBuff->puBuf[p_ptBuff->uBufL - EFSS_CORELL_PAGEMIN_L];
             l_uCurrIdx = 0u;
 
-            /* Estract */
+            /* Insert */
             if( false == eFSS_Utils_InsertU32(&l_puCBuff[l_uCurrIdx], p_ptPar->uPageIndx) )
             {
-                l_eRes = e_eFSS_CORELL_RES_BADPOINTER;
+                l_eRes = e_eFSS_CORELL_RES_CORRUPTCTX;
             }
             else
             {
                 l_uCurrIdx += 4u;
                 if( false == eFSS_Utils_InsertU8(&l_puCBuff[l_uCurrIdx], p_ptPar->uPageType) )
                 {
-                    l_eRes = e_eFSS_CORELL_RES_BADPOINTER;
+                    l_eRes = e_eFSS_CORELL_RES_CORRUPTCTX;
                 }
                 else
                 {
                     l_uCurrIdx += 1u;
                     if( false == eFSS_Utils_InsertU16(&l_puCBuff[l_uCurrIdx], p_ptPar->uPageVersion) )
                     {
-                        l_eRes = e_eFSS_CORELL_RES_BADPOINTER;
+                        l_eRes = e_eFSS_CORELL_RES_CORRUPTCTX;
                     }
                     else
                     {
                         l_uCurrIdx += 2u;
                         if( false == eFSS_Utils_InsertU32(&l_puCBuff[l_uCurrIdx], p_ptPar->uPageTot) )
                         {
-                            l_eRes = e_eFSS_CORELL_RES_BADPOINTER;
+                            l_eRes = e_eFSS_CORELL_RES_CORRUPTCTX;
                         }
                         else
                         {
                             l_uCurrIdx += 4u;
                             if( false == eFSS_Utils_InsertU32(&l_puCBuff[l_uCurrIdx], p_ptPar->uPageMagicNumber) )
                             {
-                                l_eRes = e_eFSS_CORELL_RES_BADPOINTER;
+                                l_eRes = e_eFSS_CORELL_RES_CORRUPTCTX;
                             }
                             else
                             {
                                 l_uCurrIdx += 4u;
                                 if( false == eFSS_Utils_InsertU32(&l_puCBuff[l_uCurrIdx], p_ptPar->uPageCrc) )
                                 {
-                                    l_eRes = e_eFSS_CORELL_RES_BADPOINTER;
+                                    l_eRes = e_eFSS_CORELL_RES_CORRUPTCTX;
                                 }
                                 else
                                 {
