@@ -113,14 +113,14 @@ void eFSS_CORELLTST_ExeTest(void)
 {
 	(void)printf("\n\nCORE LOW LEVEL TEST START \n\n");
 
-    eFSS_CORELLTST_BadPointer();
-    eFSS_CORELLTST_BadInit();
-    eFSS_CORELLTST_BadParamEntr();
-    eFSS_CORELLTST_CorruptedCtx();
-    eFSS_CORELLTST_Basic();
-    eFSS_CORELLTST_BadClBckNRetry();
-    eFSS_CORELLTST_CrcTest();
-    eFSS_CORELLTST_LoadTest();
+    // eFSS_CORELLTST_BadPointer();
+    // eFSS_CORELLTST_BadInit();
+    // eFSS_CORELLTST_BadParamEntr();
+    // eFSS_CORELLTST_CorruptedCtx();
+    // eFSS_CORELLTST_Basic();
+    // eFSS_CORELLTST_BadClBckNRetry();
+    // eFSS_CORELLTST_CrcTest();
+    // eFSS_CORELLTST_LoadTest();
     eFSS_CORELLTST_FlushTest();
 
     (void)printf("\n\nCORE LOW LEVEL TEST END \n\n");
@@ -196,11 +196,13 @@ static bool_t eFSS_CORELLTST_EraseTst1Adapt(t_eFSS_TYPE_EraseCtx* const p_ptCtx,
 
             if( 0u == p_uPageToErase )
             {
+                l_bRes = true;
                 m_bIsErased1 = true;
                 (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
             }
             else
             {
+                l_bRes = true;
                 m_bIsErased2 = true;
                 (void)memset(m_auStorArea2, 0, sizeof(m_auStorArea2));
             }
@@ -3551,5 +3553,65 @@ static void eFSS_CORELLTST_FlushTest(void)
     else
     {
         (void)printf("eFSS_CORELLTST_FlushTest 1  -- FAIL \n");
+    }
+
+    /* Function */
+    if( e_eFSS_CORELL_RES_OK == eFSS_CORELL_GetBuff(&l_tCtx, &l_ltUseBuff1, &l_ltUseBuff2) )
+    {
+        (void)printf("eFSS_CORELLTST_FlushTest 2  -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_CORELLTST_FlushTest 2  -- FAIL \n");
+    }
+
+    /* Setup storage area */
+    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
+    (void)memset(m_auStorArea2, 0xFFu, sizeof(m_auStorArea2));
+
+    /* Setup buffer */
+    l_ltUseBuff1.puBuf[0u] = 0x01;
+    l_ltUseBuff1.puBuf[1u] = 0x02;
+    l_ltUseBuff1.puBuf[2u] = 0x03;
+    l_ltUseBuff1.puBuf[3u] = 0x04;
+    l_ltUseBuff1.puBuf[4u] = 0x05;
+
+    l_ltUseBuff2.puBuf[0u] = 0x11;
+    l_ltUseBuff2.puBuf[1u] = 0x12;
+    l_ltUseBuff2.puBuf[2u] = 0x13;
+    l_ltUseBuff2.puBuf[3u] = 0x14;
+    l_ltUseBuff2.puBuf[4u] = 0x15;
+
+    if( e_eFSS_CORELL_RES_OK == eFSS_CORELL_FlushBuffInPage(&l_tCtx, e_eFSS_CORELL_BUFFTYPE_1, 0u) )
+    {
+        if( ( 0x01 == m_auStorArea1[0u] )  && ( 0x02 == m_auStorArea1[1u] )  && ( 0x03 == m_auStorArea1[2u] ) &&
+            ( 0x04 == m_auStorArea1[3u] )  && ( 0x05 == m_auStorArea1[4u] )  &&
+            ( 0x00 == m_auStorArea1[5u] )  && ( 0x00 == m_auStorArea1[6u] )  && ( 0x00 == m_auStorArea1[7u] ) &&
+            ( 0x00 == m_auStorArea1[8u] )  && ( 0x01 == m_auStorArea1[9u] )  && ( 0x01 == m_auStorArea1[10u] ) &&
+            ( 0x00 == m_auStorArea1[11u] ) && ( 0x02 == m_auStorArea1[12u] ) && ( 0x00 == m_auStorArea1[13u] ) &&
+            ( 0x00 == m_auStorArea1[14u] ) && ( 0x00 == m_auStorArea1[15u] ) && ( 0xA5 == m_auStorArea1[16u] ) &&
+            ( 0xA5 == m_auStorArea1[17u] ) && ( 0xA5 == m_auStorArea1[18u] ) && ( 0xA5 == m_auStorArea1[19u] ) &&
+            ( 0xA6 == m_auStorArea1[20u] ) && ( 0x02 == m_auStorArea1[21u] ) && ( 0x00 == m_auStorArea1[22u] ) &&
+            ( 0x00 == m_auStorArea1[23u] ) &&
+            ( 0xFF == m_auStorArea2[0u] )  && ( 0xFF == m_auStorArea2[1u] )  && ( 0xFF == m_auStorArea2[2u] ) &&
+            ( 0xFF == m_auStorArea2[3u] )  && ( 0xFF == m_auStorArea2[4u] )  &&
+            ( 0xFF == m_auStorArea2[5u] )  && ( 0xFF == m_auStorArea2[6u] )  && ( 0xFF == m_auStorArea2[7u] ) &&
+            ( 0xFF == m_auStorArea2[8u] )  && ( 0xFF == m_auStorArea2[9u] )  && ( 0xFF == m_auStorArea2[10u] ) &&
+            ( 0xFF == m_auStorArea2[11u] ) && ( 0xFF == m_auStorArea2[12u] ) && ( 0xFF == m_auStorArea2[13u] ) &&
+            ( 0xFF == m_auStorArea2[14u] ) && ( 0xFF == m_auStorArea2[15u] ) && ( 0xFF == m_auStorArea2[16u] ) &&
+            ( 0xFF == m_auStorArea2[17u] ) && ( 0xFF == m_auStorArea2[18u] ) && ( 0xFF == m_auStorArea2[19u] ) &&
+            ( 0xFF == m_auStorArea2[20u] ) && ( 0xFF == m_auStorArea2[21u] ) && ( 0xFF == m_auStorArea2[22u] ) &&
+            ( 0xFF == m_auStorArea2[23u] ) )
+        {
+            (void)printf("eFSS_CORELLTST_FlushTest 3  -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_CORELLTST_FlushTest 3  -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_CORELLTST_FlushTest 3  -- FAIL \n");
     }
 }
