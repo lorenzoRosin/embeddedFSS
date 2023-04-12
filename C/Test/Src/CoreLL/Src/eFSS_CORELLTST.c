@@ -148,6 +148,7 @@ static uint8_t m_auStorArea2[24u];
 static bool_t eFSS_CORELLTST_EraseAdapt(t_eFSS_TYPE_EraseCtx* const p_ptCtx, const uint32_t p_uPageToErase)
 {
     bool_t l_bRes;
+    (void)p_uPageToErase;
 
     if( NULL == p_ptCtx )
     {
@@ -166,6 +167,7 @@ static bool_t eFSS_CORELLTST_EraseAdapt(t_eFSS_TYPE_EraseCtx* const p_ptCtx, con
 static bool_t eFSS_CORELLTST_EraseErrAdapt(t_eFSS_TYPE_EraseCtx* const p_ptCtx, const uint32_t p_uPageToErase)
 {
     bool_t l_bRes;
+    (void)p_uPageToErase;
 
     if( NULL == p_ptCtx )
     {
@@ -191,7 +193,7 @@ static bool_t eFSS_CORELLTST_EraseTst1Adapt(t_eFSS_TYPE_EraseCtx* const p_ptCtx,
     }
     else
     {
-        if( p_uPageToErase >= 2)
+        if( p_uPageToErase >= 2u )
         {
             l_bRes = false;
             p_ptCtx->eLastEr = e_eFSS_CORELL_RES_BADPARAM;
@@ -223,6 +225,7 @@ static bool_t eFSS_CORELLTST_WriteAdapt(t_eFSS_TYPE_WriteCtx* const p_ptCtx,
                                         const uint32_t p_uDataToWriteL )
 {
     bool_t l_bRes;
+    (void)p_uPageToWrite;
 
     if( NULL == p_ptCtx )
     {
@@ -295,7 +298,7 @@ static bool_t eFSS_CORELLTST_WriteTst1Adapt(t_eFSS_TYPE_WriteCtx* const p_ptCtx,
         }
         else
         {
-            if( p_uPageToWrite >= 2)
+            if( p_uPageToWrite >= 2u )
             {
                 l_bRes = false;
                 p_ptCtx->eLastEr = e_eFSS_CORELL_RES_BADPARAM;
@@ -427,7 +430,7 @@ static bool_t eFSS_CORELLTST_ReadTst1Adapt(t_eFSS_TYPE_ReadCtx* const p_ptCtx,
         }
         else
         {
-            if( p_uPageToRead >= 2)
+            if( p_uPageToRead >= 2u )
             {
                 l_bRes = false;
                 p_ptCtx->eLastEr = e_eFSS_CORELL_RES_BADPARAM;
@@ -482,7 +485,7 @@ static bool_t eFSS_CORELLTST_ReadTst2Adapt(t_eFSS_TYPE_ReadCtx* const p_ptCtx,
         }
         else
         {
-            if( p_uPageToRead >= 2)
+            if( p_uPageToRead >= 2u )
             {
                 l_bRes = false;
                 p_ptCtx->eLastEr = e_eFSS_CORELL_RES_BADPARAM;
@@ -2437,16 +2440,16 @@ static void eFSS_CORELLTST_CrcTest(void)
 
     /* Setup buffer */
     l_ltUseBuff1.puBuf[0u] = 0x01u;
-    l_ltUseBuff1.puBuf[1u] = 0x00;
-    l_ltUseBuff1.puBuf[2u] = 0x00;
-    l_ltUseBuff1.puBuf[3u] = 0x00;
-    l_ltUseBuff1.puBuf[4u] = 0x00;
+    l_ltUseBuff1.puBuf[1u] = 0x00u;
+    l_ltUseBuff1.puBuf[2u] = 0x00u;
+    l_ltUseBuff1.puBuf[3u] = 0x00u;
+    l_ltUseBuff1.puBuf[4u] = 0x00u;
 
     l_ltUseBuff2.puBuf[0u] = 0x02u;
-    l_ltUseBuff2.puBuf[1u] = 0x00;
-    l_ltUseBuff2.puBuf[2u] = 0x00;
-    l_ltUseBuff2.puBuf[3u] = 0x00;
-    l_ltUseBuff2.puBuf[4u] = 0x00;
+    l_ltUseBuff2.puBuf[1u] = 0x00u;
+    l_ltUseBuff2.puBuf[2u] = 0x00u;
+    l_ltUseBuff2.puBuf[3u] = 0x00u;
+    l_ltUseBuff2.puBuf[4u] = 0x00u;
 
     /* Function */
     l_tCtxErase.uTimeUsed = 0u;
@@ -2674,7 +2677,7 @@ static void eFSS_CORELLTST_CrcTest(void)
         {
             if( 5u == l_ltUseBuff1.uBufL )
             {
-                if( 0x5F == l_uCrcGetted )
+                if( 0x5Fu == l_uCrcGetted )
                 {
                     (void)printf("eFSS_CORELLTST_CrcTest 8 -- OK \n");
                 }
@@ -2720,7 +2723,7 @@ static void eFSS_CORELLTST_CrcTest(void)
     l_tCtxRead.eLastEr = e_eFSS_CORELL_RES_OK;
     l_tCtxCrc32.uTimeUsed = 0u;
     l_tCtxCrc32.eLastEr = e_eFSS_CORELL_RES_OK;
-    if( e_eFSS_CORELL_RES_OK == eFSS_CORELL_CalcCrcInBuff(&l_tCtx, e_eFSS_CORELL_BUFFTYPE_1, 0u, 2, &l_uCrcGetted) )
+    if( e_eFSS_CORELL_RES_OK == eFSS_CORELL_CalcCrcInBuff(&l_tCtx, e_eFSS_CORELL_BUFFTYPE_1, 0u, 2u, &l_uCrcGetted) )
     {
         if( ( 1u == l_tCtxCrc32.uTimeUsed ) && ( e_eFSS_CORELL_RES_OK == l_tCtxCrc32.eLastEr ) )
         {
@@ -2772,7 +2775,7 @@ static void eFSS_CORELLTST_CrcTest(void)
     l_tCtxRead.eLastEr = e_eFSS_CORELL_RES_OK;
     l_tCtxCrc32.uTimeUsed = 0u;
     l_tCtxCrc32.eLastEr = e_eFSS_CORELL_RES_OK;
-    if( e_eFSS_CORELL_RES_OK == eFSS_CORELL_CalcCrcInBuff(&l_tCtx, e_eFSS_CORELL_BUFFTYPE_1, 0u, 1, &l_uCrcGetted) )
+    if( e_eFSS_CORELL_RES_OK == eFSS_CORELL_CalcCrcInBuff(&l_tCtx, e_eFSS_CORELL_BUFFTYPE_1, 0u, 1u, &l_uCrcGetted) )
     {
         if( ( 1u == l_tCtxCrc32.uTimeUsed ) && ( e_eFSS_CORELL_RES_OK == l_tCtxCrc32.eLastEr ) )
         {
@@ -2802,7 +2805,7 @@ static void eFSS_CORELLTST_CrcTest(void)
         (void)printf("eFSS_CORELLTST_CrcTest 10-- FAIL \n");
     }
 
-    if( e_eFSS_CORELL_RES_BADPARAM == eFSS_CORELL_CalcCrcInBuff(&l_tCtx, e_eFSS_CORELL_BUFFTYPE_1, 0u, 6, &l_uCrcGetted) )
+    if( e_eFSS_CORELL_RES_BADPARAM == eFSS_CORELL_CalcCrcInBuff(&l_tCtx, e_eFSS_CORELL_BUFFTYPE_1, 0u, 6u, &l_uCrcGetted) )
     {
         (void)printf("eFSS_CORELLTST_CrcTest 11-- OK \n");
     }
@@ -2881,7 +2884,7 @@ static void eFSS_CORELLTST_LoadTest(void)
 
     /* Setup storage area */
     (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    (void)memset(m_auStorArea2, 0xFFu, sizeof(m_auStorArea2));
+    (void)memset(m_auStorArea2, 0xFF, sizeof(m_auStorArea2));
 
     /* Setup buffer */
     l_ltUseBuff1.puBuf[0u] = 0x01u;
@@ -2966,16 +2969,16 @@ static void eFSS_CORELLTST_LoadTest(void)
 
     /* Setup storage area */
     (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    m_auStorArea1[20u] = 0xFF;
-    m_auStorArea1[21u] = 0xFF;
-    m_auStorArea1[22u] = 0xFF;
-    m_auStorArea1[23u] = 0xFF;
+    m_auStorArea1[20u] = 0xFFu;
+    m_auStorArea1[21u] = 0xFFu;
+    m_auStorArea1[22u] = 0xFFu;
+    m_auStorArea1[23u] = 0xFFu;
 
-    (void)memset(m_auStorArea2, 0x10u, sizeof(m_auStorArea2));
-    m_auStorArea2[20u] = 0x3F;
+    (void)memset(m_auStorArea2, 0x10, sizeof(m_auStorArea2));
+    m_auStorArea2[20u] = 0x3Fu;
     m_auStorArea2[21u] = 0x01u;
-    m_auStorArea2[22u] = 0x00;
-    m_auStorArea2[23u] = 0x00;
+    m_auStorArea2[22u] = 0x00u;
+    m_auStorArea2[23u] = 0x00u;
 
     /* Setup buffer */
     l_ltUseBuff1.puBuf[0u] = 0x01u;
@@ -3060,24 +3063,24 @@ static void eFSS_CORELLTST_LoadTest(void)
 
     /* Setup storage area */
     (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    m_auStorArea1[16u] = 0xA5;
-    m_auStorArea1[17u] = 0xA5;
-    m_auStorArea1[18u] = 0xA5;
-    m_auStorArea1[19u] = 0xA5;
-    m_auStorArea1[20u] = 0x93;
+    m_auStorArea1[16u] = 0xA5u;
+    m_auStorArea1[17u] = 0xA5u;
+    m_auStorArea1[18u] = 0xA5u;
+    m_auStorArea1[19u] = 0xA5u;
+    m_auStorArea1[20u] = 0x93u;
     m_auStorArea1[21u] = 0x02u;
-    m_auStorArea1[22u] = 0x00;
-    m_auStorArea1[23u] = 0x00;
+    m_auStorArea1[22u] = 0x00u;
+    m_auStorArea1[23u] = 0x00u;
 
-    (void)memset(m_auStorArea2, 0x10u, sizeof(m_auStorArea2));
-    m_auStorArea2[16u] = 0xA5;
-    m_auStorArea2[17u] = 0xA5;
-    m_auStorArea2[18u] = 0xA5;
-    m_auStorArea2[19u] = 0xA5;
-    m_auStorArea2[20u] = 0x93;
+    (void)memset(m_auStorArea2, 0x10, sizeof(m_auStorArea2));
+    m_auStorArea2[16u] = 0xA5u;
+    m_auStorArea2[17u] = 0xA5u;
+    m_auStorArea2[18u] = 0xA5u;
+    m_auStorArea2[19u] = 0xA5u;
+    m_auStorArea2[20u] = 0x93u;
     m_auStorArea2[21u] = 0x03u;
-    m_auStorArea2[22u] = 0x00;
-    m_auStorArea2[23u] = 0x00;
+    m_auStorArea2[22u] = 0x00u;
+    m_auStorArea2[23u] = 0x00u;
 
     /* Setup buffer */
     l_ltUseBuff1.puBuf[0u] = 0x01u;
@@ -3129,31 +3132,31 @@ static void eFSS_CORELLTST_LoadTest(void)
     /* Setup storage area */
     (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
     m_auStorArea1[12u] = 0x02u;
-    m_auStorArea1[13u] = 0x00;
-    m_auStorArea1[14u] = 0x00;
-    m_auStorArea1[15u] = 0x00;
-    m_auStorArea1[16u] = 0xA5;
-    m_auStorArea1[17u] = 0xA5;
-    m_auStorArea1[18u] = 0xA5;
-    m_auStorArea1[19u] = 0xA5;
-    m_auStorArea1[20u] = 0x95;
+    m_auStorArea1[13u] = 0x00u;
+    m_auStorArea1[14u] = 0x00u;
+    m_auStorArea1[15u] = 0x00u;
+    m_auStorArea1[16u] = 0xA5u;
+    m_auStorArea1[17u] = 0xA5u;
+    m_auStorArea1[18u] = 0xA5u;
+    m_auStorArea1[19u] = 0xA5u;
+    m_auStorArea1[20u] = 0x95u;
     m_auStorArea1[21u] = 0x02u;
-    m_auStorArea1[22u] = 0x00;
-    m_auStorArea1[23u] = 0x00;
+    m_auStorArea1[22u] = 0x00u;
+    m_auStorArea1[23u] = 0x00u;
 
-    (void)memset(m_auStorArea2, 0x10u, sizeof(m_auStorArea2));
+    (void)memset(m_auStorArea2, 0x10, sizeof(m_auStorArea2));
     m_auStorArea2[12u] = 0x02u;
-    m_auStorArea2[13u] = 0x00;
-    m_auStorArea2[14u] = 0x00;
-    m_auStorArea2[15u] = 0x00;
-    m_auStorArea2[16u] = 0xA5;
-    m_auStorArea2[17u] = 0xA5;
-    m_auStorArea2[18u] = 0xA5;
-    m_auStorArea2[19u] = 0xA5;
-    m_auStorArea2[20u] = 0x55;
+    m_auStorArea2[13u] = 0x00u;
+    m_auStorArea2[14u] = 0x00u;
+    m_auStorArea2[15u] = 0x00u;
+    m_auStorArea2[16u] = 0xA5u;
+    m_auStorArea2[17u] = 0xA5u;
+    m_auStorArea2[18u] = 0xA5u;
+    m_auStorArea2[19u] = 0xA5u;
+    m_auStorArea2[20u] = 0x55u;
     m_auStorArea2[21u] = 0x03u;
-    m_auStorArea2[22u] = 0x00;
-    m_auStorArea2[23u] = 0x00;
+    m_auStorArea2[22u] = 0x00u;
+    m_auStorArea2[23u] = 0x00u;
 
     /* Setup buffer */
     l_ltUseBuff1.puBuf[0u] = 0x01u;
@@ -3205,35 +3208,35 @@ static void eFSS_CORELLTST_LoadTest(void)
     /* Setup storage area */
     (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
     m_auStorArea1[10u] = 0x01u;
-    m_auStorArea1[11u] = 0x00;
+    m_auStorArea1[11u] = 0x00u;
     m_auStorArea1[12u] = 0x02u;
-    m_auStorArea1[13u] = 0x00;
-    m_auStorArea1[14u] = 0x00;
-    m_auStorArea1[15u] = 0x00;
-    m_auStorArea1[16u] = 0xA5;
-    m_auStorArea1[17u] = 0xA5;
-    m_auStorArea1[18u] = 0xA5;
-    m_auStorArea1[19u] = 0xA5;
-    m_auStorArea1[20u] = 0x96;
+    m_auStorArea1[13u] = 0x00u;
+    m_auStorArea1[14u] = 0x00u;
+    m_auStorArea1[15u] = 0x00u;
+    m_auStorArea1[16u] = 0xA5u;
+    m_auStorArea1[17u] = 0xA5u;
+    m_auStorArea1[18u] = 0xA5u;
+    m_auStorArea1[19u] = 0xA5u;
+    m_auStorArea1[20u] = 0x96u;
     m_auStorArea1[21u] = 0x02u;
-    m_auStorArea1[22u] = 0x00;
-    m_auStorArea1[23u] = 0x00;
+    m_auStorArea1[22u] = 0x00u;
+    m_auStorArea1[23u] = 0x00u;
 
-    (void)memset(m_auStorArea2, 0x10u, sizeof(m_auStorArea2));
+    (void)memset(m_auStorArea2, 0x10, sizeof(m_auStorArea2));
     m_auStorArea2[10u] = 0x01u;
-    m_auStorArea2[11u] = 0x00;
+    m_auStorArea2[11u] = 0x00u;
     m_auStorArea2[12u] = 0x02u;
-    m_auStorArea2[13u] = 0x00;
-    m_auStorArea2[14u] = 0x00;
-    m_auStorArea2[15u] = 0x00;
-    m_auStorArea2[16u] = 0xA5;
-    m_auStorArea2[17u] = 0xA5;
-    m_auStorArea2[18u] = 0xA5;
-    m_auStorArea2[19u] = 0xA5;
-    m_auStorArea2[20u] = 0x36;
+    m_auStorArea2[13u] = 0x00u;
+    m_auStorArea2[14u] = 0x00u;
+    m_auStorArea2[15u] = 0x00u;
+    m_auStorArea2[16u] = 0xA5u;
+    m_auStorArea2[17u] = 0xA5u;
+    m_auStorArea2[18u] = 0xA5u;
+    m_auStorArea2[19u] = 0xA5u;
+    m_auStorArea2[20u] = 0x36u;
     m_auStorArea2[21u] = 0x03u;
-    m_auStorArea2[22u] = 0x00;
-    m_auStorArea2[23u] = 0x00;
+    m_auStorArea2[22u] = 0x00u;
+    m_auStorArea2[23u] = 0x00u;
 
     /* Setup buffer */
     l_ltUseBuff1.puBuf[0u] = 0x01u;
@@ -3286,36 +3289,36 @@ static void eFSS_CORELLTST_LoadTest(void)
     (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
     m_auStorArea1[9u] = 0x01u;
     m_auStorArea1[10u] = 0x01u;
-    m_auStorArea1[11u] = 0x00;
+    m_auStorArea1[11u] = 0x00u;
     m_auStorArea1[12u] = 0x02u;
-    m_auStorArea1[13u] = 0x00;
-    m_auStorArea1[14u] = 0x00;
-    m_auStorArea1[15u] = 0x00;
-    m_auStorArea1[16u] = 0xA5;
-    m_auStorArea1[17u] = 0xA5;
-    m_auStorArea1[18u] = 0xA5;
-    m_auStorArea1[19u] = 0xA5;
-    m_auStorArea1[20u] = 0x97;
+    m_auStorArea1[13u] = 0x00u;
+    m_auStorArea1[14u] = 0x00u;
+    m_auStorArea1[15u] = 0x00u;
+    m_auStorArea1[16u] = 0xA5u;
+    m_auStorArea1[17u] = 0xA5u;
+    m_auStorArea1[18u] = 0xA5u;
+    m_auStorArea1[19u] = 0xA5u;
+    m_auStorArea1[20u] = 0x97u;
     m_auStorArea1[21u] = 0x02u;
-    m_auStorArea1[22u] = 0x00;
-    m_auStorArea1[23u] = 0x00;
+    m_auStorArea1[22u] = 0x00u;
+    m_auStorArea1[23u] = 0x00u;
 
-    (void)memset(m_auStorArea2, 0x10u, sizeof(m_auStorArea2));
+    (void)memset(m_auStorArea2, 0x10, sizeof(m_auStorArea2));
     m_auStorArea2[9u] = 0x01u;
     m_auStorArea2[10u] = 0x01u;
-    m_auStorArea2[11u] = 0x00;
+    m_auStorArea2[11u] = 0x00u;
     m_auStorArea2[12u] = 0x02u;
-    m_auStorArea2[13u] = 0x00;
-    m_auStorArea2[14u] = 0x00;
-    m_auStorArea2[15u] = 0x00;
-    m_auStorArea2[16u] = 0xA5;
-    m_auStorArea2[17u] = 0xA5;
-    m_auStorArea2[18u] = 0xA5;
-    m_auStorArea2[19u] = 0xA5;
-    m_auStorArea2[20u] = 0x27;
+    m_auStorArea2[13u] = 0x00u;
+    m_auStorArea2[14u] = 0x00u;
+    m_auStorArea2[15u] = 0x00u;
+    m_auStorArea2[16u] = 0xA5u;
+    m_auStorArea2[17u] = 0xA5u;
+    m_auStorArea2[18u] = 0xA5u;
+    m_auStorArea2[19u] = 0xA5u;
+    m_auStorArea2[20u] = 0x27u;
     m_auStorArea2[21u] = 0x03u;
-    m_auStorArea2[22u] = 0x00;
-    m_auStorArea2[23u] = 0x00;
+    m_auStorArea2[22u] = 0x00u;
+    m_auStorArea2[23u] = 0x00u;
 
     /* Setup buffer */
     l_ltUseBuff1.puBuf[0u] = 0x01u;
@@ -3367,46 +3370,46 @@ static void eFSS_CORELLTST_LoadTest(void)
     /* Setup storage area */
     (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
     m_auStorArea1[5u] = 0x01u;
-    m_auStorArea1[6u] = 0x00;
-    m_auStorArea1[7u] = 0x00;
-    m_auStorArea1[8u] = 0x00;
+    m_auStorArea1[6u] = 0x00u;
+    m_auStorArea1[7u] = 0x00u;
+    m_auStorArea1[8u] = 0x00u;
     m_auStorArea1[9u] = 0x01u;
     m_auStorArea1[10u] = 0x01u;
-    m_auStorArea1[11u] = 0x00;
+    m_auStorArea1[11u] = 0x00u;
     m_auStorArea1[12u] = 0x02u;
-    m_auStorArea1[13u] = 0x00;
-    m_auStorArea1[14u] = 0x00;
-    m_auStorArea1[15u] = 0x00;
-    m_auStorArea1[16u] = 0xA5;
-    m_auStorArea1[17u] = 0xA5;
-    m_auStorArea1[18u] = 0xA5;
-    m_auStorArea1[19u] = 0xA5;
-    m_auStorArea1[20u] = 0x98;
+    m_auStorArea1[13u] = 0x00u;
+    m_auStorArea1[14u] = 0x00u;
+    m_auStorArea1[15u] = 0x00u;
+    m_auStorArea1[16u] = 0xA5u;
+    m_auStorArea1[17u] = 0xA5u;
+    m_auStorArea1[18u] = 0xA5u;
+    m_auStorArea1[19u] = 0xA5u;
+    m_auStorArea1[20u] = 0x98u;
     m_auStorArea1[21u] = 0x02u;
-    m_auStorArea1[22u] = 0x00;
-    m_auStorArea1[23u] = 0x00;
+    m_auStorArea1[22u] = 0x00u;
+    m_auStorArea1[23u] = 0x00u;
 
-    (void)memset(m_auStorArea2, 0x10u, sizeof(m_auStorArea2));
+    (void)memset(m_auStorArea2, 0x10, sizeof(m_auStorArea2));
 
     m_auStorArea2[5u] = 0x01u;
-    m_auStorArea2[6u] = 0x00;
-    m_auStorArea2[7u] = 0x00;
-    m_auStorArea2[8u] = 0x00;
+    m_auStorArea2[6u] = 0x00u;
+    m_auStorArea2[7u] = 0x00u;
+    m_auStorArea2[8u] = 0x00u;
     m_auStorArea2[9u] = 0x01u;
     m_auStorArea2[10u] = 0x01u;
-    m_auStorArea2[11u] = 0x00;
+    m_auStorArea2[11u] = 0x00u;
     m_auStorArea2[12u] = 0x02u;
-    m_auStorArea2[13u] = 0x00;
-    m_auStorArea2[14u] = 0x00;
-    m_auStorArea2[15u] = 0x00;
-    m_auStorArea2[16u] = 0xA5;
-    m_auStorArea2[17u] = 0xA5;
-    m_auStorArea2[18u] = 0xA5;
-    m_auStorArea2[19u] = 0xA5;
-    m_auStorArea2[20u] = 0xE8;
+    m_auStorArea2[13u] = 0x00u;
+    m_auStorArea2[14u] = 0x00u;
+    m_auStorArea2[15u] = 0x00u;
+    m_auStorArea2[16u] = 0xA5u;
+    m_auStorArea2[17u] = 0xA5u;
+    m_auStorArea2[18u] = 0xA5u;
+    m_auStorArea2[19u] = 0xA5u;
+    m_auStorArea2[20u] = 0xE8u;
     m_auStorArea2[21u] = 0x02u;
-    m_auStorArea2[22u] = 0x00;
-    m_auStorArea2[23u] = 0x00;
+    m_auStorArea2[22u] = 0x00u;
+    m_auStorArea2[23u] = 0x00u;
 
     /* Setup buffer */
     l_ltUseBuff1.puBuf[0u] = 0x01u;
@@ -3457,47 +3460,47 @@ static void eFSS_CORELLTST_LoadTest(void)
 
     /* Setup storage area */
     (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    m_auStorArea1[5u] = 0x00;
-    m_auStorArea1[6u] = 0x00;
-    m_auStorArea1[7u] = 0x00;
-    m_auStorArea1[8u] = 0x00;
+    m_auStorArea1[5u] = 0x00u;
+    m_auStorArea1[6u] = 0x00u;
+    m_auStorArea1[7u] = 0x00u;
+    m_auStorArea1[8u] = 0x00u;
     m_auStorArea1[9u] = 0x01u;
-    m_auStorArea1[10u] = 0x00;
-    m_auStorArea1[11u] = 0x00;
+    m_auStorArea1[10u] = 0x00u;
+    m_auStorArea1[11u] = 0x00u;
     m_auStorArea1[12u] = 0x02u;
-    m_auStorArea1[13u] = 0x00;
-    m_auStorArea1[14u] = 0x00;
-    m_auStorArea1[15u] = 0x00;
-    m_auStorArea1[16u] = 0xA5;
-    m_auStorArea1[17u] = 0xA5;
-    m_auStorArea1[18u] = 0xA5;
-    m_auStorArea1[19u] = 0xA5;
-    m_auStorArea1[20u] = 0x96;
+    m_auStorArea1[13u] = 0x00u;
+    m_auStorArea1[14u] = 0x00u;
+    m_auStorArea1[15u] = 0x00u;
+    m_auStorArea1[16u] = 0xA5u;
+    m_auStorArea1[17u] = 0xA5u;
+    m_auStorArea1[18u] = 0xA5u;
+    m_auStorArea1[19u] = 0xA5u;
+    m_auStorArea1[20u] = 0x96u;
     m_auStorArea1[21u] = 0x02u;
-    m_auStorArea1[22u] = 0x00;
-    m_auStorArea1[23u] = 0x00;
+    m_auStorArea1[22u] = 0x00u;
+    m_auStorArea1[23u] = 0x00u;
 
-    (void)memset(m_auStorArea2, 0x10u, sizeof(m_auStorArea2));
+    (void)memset(m_auStorArea2, 0x10, sizeof(m_auStorArea2));
 
     m_auStorArea2[5u] = 0x01u;
-    m_auStorArea2[6u] = 0x00;
-    m_auStorArea2[7u] = 0x00;
-    m_auStorArea2[8u] = 0x00;
+    m_auStorArea2[6u] = 0x00u;
+    m_auStorArea2[7u] = 0x00u;
+    m_auStorArea2[8u] = 0x00u;
     m_auStorArea2[9u] = 0x01u;
     m_auStorArea2[10u] = 0x02u;
-    m_auStorArea2[11u] = 0x00;
+    m_auStorArea2[11u] = 0x00u;
     m_auStorArea2[12u] = 0x02u;
-    m_auStorArea2[13u] = 0x00;
-    m_auStorArea2[14u] = 0x00;
-    m_auStorArea2[15u] = 0x00;
-    m_auStorArea2[16u] = 0xA5;
-    m_auStorArea2[17u] = 0xA5;
-    m_auStorArea2[18u] = 0xA5;
-    m_auStorArea2[19u] = 0xA5;
-    m_auStorArea2[20u] = 0xE9;
+    m_auStorArea2[13u] = 0x00u;
+    m_auStorArea2[14u] = 0x00u;
+    m_auStorArea2[15u] = 0x00u;
+    m_auStorArea2[16u] = 0xA5u;
+    m_auStorArea2[17u] = 0xA5u;
+    m_auStorArea2[18u] = 0xA5u;
+    m_auStorArea2[19u] = 0xA5u;
+    m_auStorArea2[20u] = 0xE9u;
     m_auStorArea2[21u] = 0x02u;
-    m_auStorArea2[22u] = 0x00;
-    m_auStorArea2[23u] = 0x00;
+    m_auStorArea2[22u] = 0x00u;
+    m_auStorArea2[23u] = 0x00u;
 
     /* Setup buffer */
     l_ltUseBuff1.puBuf[0u] = 0x01u;
@@ -3616,7 +3619,7 @@ static void eFSS_CORELLTST_FlushTest(void)
 
     /* Setup storage area */
     (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    (void)memset(m_auStorArea2, 0xFFu, sizeof(m_auStorArea2));
+    (void)memset(m_auStorArea2, 0xFF, sizeof(m_auStorArea2));
 
     /* Setup buffer */
     l_ltUseBuff1.puBuf[0u] = 0x01u;
@@ -3676,7 +3679,7 @@ static void eFSS_CORELLTST_FlushTest(void)
 
     /* Setup storage area */
     (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    (void)memset(m_auStorArea2, 0xFFu, sizeof(m_auStorArea2));
+    (void)memset(m_auStorArea2, 0xFF, sizeof(m_auStorArea2));
 
     /* Setup buffer */
     l_ltUseBuff1.puBuf[0u] = 0x01u;
@@ -3736,7 +3739,7 @@ static void eFSS_CORELLTST_FlushTest(void)
 
     /* Setup storage area */
     (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    (void)memset(m_auStorArea2, 0xFFu, sizeof(m_auStorArea2));
+    (void)memset(m_auStorArea2, 0xFF, sizeof(m_auStorArea2));
 
     /* Setup buffer */
     l_ltUseBuff1.puBuf[0u] = 0x11u;
@@ -3796,7 +3799,7 @@ static void eFSS_CORELLTST_FlushTest(void)
 
     /* Setup storage area */
     (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    (void)memset(m_auStorArea2, 0xFFu, sizeof(m_auStorArea2));
+    (void)memset(m_auStorArea2, 0xFF, sizeof(m_auStorArea2));
 
     /* Setup buffer */
     l_ltUseBuff1.puBuf[0u] = 0x11u;
@@ -3890,7 +3893,7 @@ static void eFSS_CORELLTST_FlushTest(void)
 
     /* Setup storage area */
     (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    (void)memset(m_auStorArea2, 0xFFu, sizeof(m_auStorArea2));
+    (void)memset(m_auStorArea2, 0xFF, sizeof(m_auStorArea2));
 
     /* Setup buffer */
     l_ltUseBuff1.puBuf[0u] = 0x01u;
@@ -3916,7 +3919,7 @@ static void eFSS_CORELLTST_FlushTest(void)
 
     /* Setup storage area */
     (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    (void)memset(m_auStorArea2, 0xFFu, sizeof(m_auStorArea2));
+    (void)memset(m_auStorArea2, 0xFF, sizeof(m_auStorArea2));
 
     /* Setup buffer */
     l_ltUseBuff1.puBuf[0u] = 0x01u;
@@ -3942,7 +3945,7 @@ static void eFSS_CORELLTST_FlushTest(void)
 
     /* Setup storage area */
     (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    (void)memset(m_auStorArea2, 0xFFu, sizeof(m_auStorArea2));
+    (void)memset(m_auStorArea2, 0xFF, sizeof(m_auStorArea2));
 
     /* Setup buffer */
     l_ltUseBuff1.puBuf[0u] = 0x01u;
@@ -3968,7 +3971,7 @@ static void eFSS_CORELLTST_FlushTest(void)
 
     /* Setup storage area */
     (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    (void)memset(m_auStorArea2, 0xFFu, sizeof(m_auStorArea2));
+    (void)memset(m_auStorArea2, 0xFF, sizeof(m_auStorArea2));
 
     /* Setup buffer */
     l_ltUseBuff1.puBuf[0u] = 0x01u;
@@ -4062,7 +4065,7 @@ static void eFSS_CORELLTST_GenTest(void)
 
     /* Setup storage area */
     (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    (void)memset(m_auStorArea2, 0xFFu, sizeof(m_auStorArea2));
+    (void)memset(m_auStorArea2, 0xFF, sizeof(m_auStorArea2));
 
     /* Setup buffer */
     l_ltUseBuff1.puBuf[0u] = 0x01u;
@@ -4105,7 +4108,7 @@ static void eFSS_CORELLTST_GenTest(void)
 
     /* Setup storage area */
     (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    (void)memset(m_auStorArea2, 0xFFu, sizeof(m_auStorArea2));
+    (void)memset(m_auStorArea2, 0xFF, sizeof(m_auStorArea2));
 
     /* Setup buffer */
     l_ltUseBuff1.puBuf[0u] = 0x01u;
