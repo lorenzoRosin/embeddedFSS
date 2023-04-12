@@ -4102,4 +4102,64 @@ static void eFSS_CORELLTST_GenTest(void)
     {
         (void)printf("eFSS_CORELLTST_GenTest 3  -- FAIL \n");
     }
+
+    if( e_eFSS_CORELL_RES_OK == eFSS_CORELL_LoadPageInBuff(&l_tCtx, e_eFSS_CORELL_BUFFTYPE_2, 0u) )
+    {
+        if( ( 0x01 == l_ltUseBuff2.puBuf[0u] ) && ( 0x02 == l_ltUseBuff2.puBuf[1u] ) && ( 0x03 == l_ltUseBuff2.puBuf[2u] ) &&
+             ( 0x04 == l_ltUseBuff2.puBuf[3u] ) && ( 0x05 == l_ltUseBuff2.puBuf[4u] ))
+        {
+            (void)printf("eFSS_CORELLTST_GenTest 4  -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_CORELLTST_GenTest 4  -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_CORELLTST_GenTest 4  -- FAIL \n");
+    }
+
+    /* Setup storage area */
+    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
+    (void)memset(m_auStorArea2, 0xFFu, sizeof(m_auStorArea2));
+
+    /* Setup buffer */
+    l_ltUseBuff1.puBuf[0u] = 0x01;
+    l_ltUseBuff1.puBuf[1u] = 0x02;
+    l_ltUseBuff1.puBuf[2u] = 0x03;
+    l_ltUseBuff1.puBuf[3u] = 0x04;
+    l_ltUseBuff1.puBuf[4u] = 0x05;
+
+    l_ltUseBuff2.puBuf[0u] = 0x11;
+    l_ltUseBuff2.puBuf[1u] = 0x12;
+    l_ltUseBuff2.puBuf[2u] = 0x13;
+    l_ltUseBuff2.puBuf[3u] = 0x14;
+    l_ltUseBuff2.puBuf[4u] = 0x15;
+
+    if( e_eFSS_CORELL_RES_OK == eFSS_CORELL_FlushBuffInPage(&l_tCtx, e_eFSS_CORELL_BUFFTYPE_2, 1u) )
+    {
+        (void)printf("eFSS_CORELLTST_GenTest 5  -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_CORELLTST_GenTest 5  -- FAIL \n");
+    }
+
+    if( e_eFSS_CORELL_RES_OK == eFSS_CORELL_LoadPageInBuff(&l_tCtx, e_eFSS_CORELL_BUFFTYPE_1, 1u) )
+    {
+        if( ( 0x11 == l_ltUseBuff1.puBuf[0u] ) && ( 0x12 == l_ltUseBuff1.puBuf[1u] ) && ( 0x13 == l_ltUseBuff1.puBuf[2u] ) &&
+            ( 0x14 == l_ltUseBuff1.puBuf[3u] ) && ( 0x15 == l_ltUseBuff1.puBuf[4u] ))
+        {
+            (void)printf("eFSS_CORELLTST_GenTest 6  -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_CORELLTST_GenTest 6  -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_CORELLTST_GenTest 6  -- FAIL \n");
+    }
 }
