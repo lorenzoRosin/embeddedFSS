@@ -3603,7 +3603,17 @@ static void eFSS_CORELLTST_FlushTest(void)
             ( 0xFF == m_auStorArea2[20u] ) && ( 0xFF == m_auStorArea2[21u] ) && ( 0xFF == m_auStorArea2[22u] ) &&
             ( 0xFF == m_auStorArea2[23u] ) )
         {
-            (void)printf("eFSS_CORELLTST_FlushTest 3  -- OK \n");
+            if( ( 0x01 == l_ltUseBuff1.puBuf[0u] )  && ( 0x02 == l_ltUseBuff1.puBuf[1u] )  && ( 0x03 == l_ltUseBuff1.puBuf[2u] ) &&
+                ( 0x04 == l_ltUseBuff1.puBuf[3u] )  && ( 0x05 == l_ltUseBuff1.puBuf[4u] )  &&
+                ( 0x01 == l_ltUseBuff2.puBuf[0u] )  && ( 0x02 == l_ltUseBuff2.puBuf[1u] )  && ( 0x03 == l_ltUseBuff2.puBuf[2u] ) &&
+                ( 0x04 == l_ltUseBuff2.puBuf[3u] )  && ( 0x05 == l_ltUseBuff2.puBuf[4u] ) )
+            {
+                (void)printf("eFSS_CORELLTST_FlushTest 3  -- OK \n");
+            }
+            else
+            {
+                (void)printf("eFSS_CORELLTST_FlushTest 3  -- FAIL \n");
+            }
         }
         else
         {
