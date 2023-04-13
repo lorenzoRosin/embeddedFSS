@@ -470,10 +470,7 @@ e_eFSS_LOG_RES eFSS_LOG_AddLog(t_eFSS_LOG_Ctx* const p_ptCtx, uint8_t* const p_p
 
     /* Local var used for calculation */
     bool_t l_bIsInit;
-    bool_t l_bIsFlashC;
     uint32_t l_uByteInPage;
-    uint32_t l_uNextIdx;
-    uint32_t l_uNextNextIdx;
 
     /* Decision making flag */
     bool_t l_bNextBeforeSave;
@@ -1341,6 +1338,10 @@ static e_eFSS_LOG_RES eFSS_LOG_SaveLogOnNextPage(t_eFSS_LOG_Ctx* const p_ptCtx, 
     uint32_t l_uByteInPage;
     uint32_t l_uNextIdx;
     uint32_t l_uNextNextIdx;
+
+    /* To fix */
+    l_uByteInPage = 0u;
+
 
 	/* Check pointer validity */
 	if( ( NULL == p_ptCtx ) || ( NULL == p_puRawVal ) )

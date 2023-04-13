@@ -145,6 +145,12 @@ static uint8_t m_auStorArea2[24u];
 /***********************************************************************************************************************
  *   PRIVATE TEST FUNCTION DECLARATION
  **********************************************************************************************************************/
+
+#ifdef __IAR_SYSTEMS_ICC__
+    #pragma cstat_disable = "MISRAC2012-Rule-8.13"
+    /* Suppressed for code clarity in test execution*/
+#endif
+
 static bool_t eFSS_CORELLTST_EraseAdapt(t_eFSS_TYPE_EraseCtx* const p_ptCtx, const uint32_t p_uPageToErase)
 {
     bool_t l_bRes;
@@ -226,6 +232,7 @@ static bool_t eFSS_CORELLTST_WriteAdapt(t_eFSS_TYPE_WriteCtx* const p_ptCtx,
 {
     bool_t l_bRes;
     (void)p_uPageToWrite;
+    (void)p_uDataToWriteL;
 
     if( NULL == p_ptCtx )
     {
@@ -255,6 +262,8 @@ static bool_t eFSS_CORELLTST_WriteErrAdapt(t_eFSS_TYPE_WriteCtx* const p_ptCtx,
                                            const uint32_t p_uDataToWriteL )
 {
     bool_t l_bRes;
+    (void)p_uDataToWriteL;
+    (void)p_uPageToWrite;
 
     if( NULL == p_ptCtx )
     {
@@ -358,6 +367,8 @@ static bool_t eFSS_CORELLTST_ReadAdapt(t_eFSS_TYPE_ReadCtx* const p_ptCtx,
                                        const uint32_t p_uReadBufferL )
 {
     bool_t l_bRes;
+    (void)p_uReadBufferL;
+    (void)p_uPageToRead;
 
     if( NULL == p_ptCtx )
     {
@@ -387,6 +398,8 @@ static bool_t eFSS_CORELLTST_ReadErrAdapt(t_eFSS_TYPE_ReadCtx* const p_ptCtx,
                                        const uint32_t p_uReadBufferL )
 {
     bool_t l_bRes;
+    (void)p_uReadBufferL;
+    (void)p_uPageToRead;
 
     if( NULL == p_ptCtx )
     {
@@ -528,6 +541,8 @@ static bool_t eFSS_CORELLTST_CrcAdapt(t_eFSS_TYPE_CrcCtx* const p_ptCtx, const u
                                       uint32_t* const p_puCrc32Val )
 {
     bool_t l_bRes;
+    (void)p_uUseed;
+    (void)p_uDataL;
 
     if( NULL == p_ptCtx )
     {
@@ -545,6 +560,7 @@ static bool_t eFSS_CORELLTST_CrcAdapt(t_eFSS_TYPE_CrcCtx* const p_ptCtx, const u
         else
         {
             l_bRes = true;
+            *p_puCrc32Val = 0u;
             p_ptCtx->eLastEr = e_eFSS_CORELL_RES_OK;
         }
     }
@@ -557,6 +573,8 @@ static bool_t eFSS_CORELLTST_CrcErrAdapt(t_eFSS_TYPE_CrcCtx* const p_ptCtx, cons
                                          uint32_t* const p_puCrc32Val )
 {
     bool_t l_bRes;
+    (void)p_uUseed;
+    (void)p_uDataL;
 
     if( NULL == p_ptCtx )
     {
@@ -574,6 +592,7 @@ static bool_t eFSS_CORELLTST_CrcErrAdapt(t_eFSS_TYPE_CrcCtx* const p_ptCtx, cons
         else
         {
             l_bRes = false;
+            *p_puCrc32Val = 0u;
             p_ptCtx->eLastEr = e_eFSS_CORELL_RES_BADPOINTER;
         }
     }
@@ -625,9 +644,19 @@ static bool_t eFSS_CORELLTST_CrcTst1Adapt(t_eFSS_TYPE_CrcCtx* const p_ptCtx, con
     return l_bRes;
 }
 
+#ifdef __IAR_SYSTEMS_ICC__
+    #pragma cstat_restore = "MISRAC2012-Rule-8.13"
+#endif
+
 /***********************************************************************************************************************
  *   PRIVATE FUNCTION
  **********************************************************************************************************************/
+
+#ifdef __IAR_SYSTEMS_ICC__
+    #pragma cstat_disable = "MISRAC2012-Rule-2.2_b"
+    /* Suppressed for code clarity in test execution*/
+#endif
+
 void eFSS_CORELLTST_BadPointer(void)
 {
     /* Local variable */
@@ -645,6 +674,16 @@ void eFSS_CORELLTST_BadPointer(void)
     t_eFSS_CORELL_StorBuf l_ltUseBuff1;
     t_eFSS_CORELL_StorBuf l_ltUseBuff2;
     uint32_t l_uCrcGetted;
+
+    /* Misra complaiant */
+    l_tCtxErase.eLastEr = e_eFSS_CORELL_RES_OK;
+    l_tCtxWrite.eLastEr = e_eFSS_CORELL_RES_OK;
+    l_tCtxRead.eLastEr = e_eFSS_CORELL_RES_OK;
+    l_tCtxCrc32.eLastEr = e_eFSS_CORELL_RES_OK;
+    l_tCtxErase.uTimeUsed = 0u;
+    l_tCtxWrite.uTimeUsed = 0u;
+    l_tCtxRead.uTimeUsed = 0u;
+    l_tCtxCrc32.uTimeUsed = 0u;
 
     /* Init callback var */
     l_tCtxCb.ptCtxErase = &l_tCtxErase;
@@ -937,9 +976,21 @@ void eFSS_CORELLTST_BadPointer(void)
     {
         (void)printf("eFSS_CORELLTST_BadPointer 25 -- FAIL \n");
     }
+
+    /* Misra complaiant */
+    (void)l_tCtxErase.eLastEr;
+    (void)l_tCtxErase.uTimeUsed;
+    (void)l_tCtxWrite.eLastEr;
+    (void)l_tCtxWrite.uTimeUsed;
+    (void)l_tCtxRead.eLastEr;
+    (void)l_tCtxRead.uTimeUsed;
+    (void)l_tCtxCrc32.eLastEr;
+    (void)l_tCtxCrc32.uTimeUsed;
 }
 
-
+#ifdef __IAR_SYSTEMS_ICC__
+    #pragma cstat_restore = "MISRAC2012-Rule-2.2_b"
+#endif
 
 void eFSS_CORELLTST_BadInit(void)
 {
@@ -1032,6 +1083,11 @@ void eFSS_CORELLTST_BadInit(void)
     }
 }
 
+#ifdef __IAR_SYSTEMS_ICC__
+    #pragma cstat_disable = "MISRAC2012-Rule-10.5"
+    /* Suppressed for code clarity in test execution*/
+#endif
+
 void eFSS_CORELLTST_BadParamEntr(void)
 {
     /* Local variable */
@@ -1055,6 +1111,16 @@ void eFSS_CORELLTST_BadParamEntr(void)
     l_tCtxCb.fRead = &eFSS_CORELLTST_ReadAdapt;
 	l_tCtxCb.ptCtxCrc32 = &l_tCtxCrc32;
     l_tCtxCb.fCrc32 = &eFSS_CORELLTST_CrcAdapt;
+
+    /* Misra complaiant */
+    (void)l_tCtxErase.eLastEr;
+    (void)l_tCtxErase.uTimeUsed;
+    (void)l_tCtxWrite.eLastEr;
+    (void)l_tCtxWrite.uTimeUsed;
+    (void)l_tCtxRead.eLastEr;
+    (void)l_tCtxRead.uTimeUsed;
+    (void)l_tCtxCrc32.eLastEr;
+    (void)l_tCtxCrc32.uTimeUsed;
 
     /* Init storage settings */
     l_tStorSet.uTotPages = 1u;
@@ -1221,6 +1287,10 @@ void eFSS_CORELLTST_BadParamEntr(void)
         (void)printf("eFSS_CORELLTST_BadParamEntr 12 -- OK \n");
     }
 }
+
+#ifdef __IAR_SYSTEMS_ICC__
+    #pragma cstat_restore = "MISRAC2012-Rule-10.5"
+#endif
 
 void eFSS_CORELLTST_CorruptedCtx(void)
 {
@@ -1622,6 +1692,16 @@ void eFSS_CORELLTST_CorruptedCtx(void)
     {
         (void)printf("eFSS_CORELLTST_CorruptedCtx 33 -- FAIL \n");
     }
+
+    /* Misra complaiant */
+    (void)l_tCtxErase.eLastEr;
+    (void)l_tCtxErase.uTimeUsed;
+    (void)l_tCtxWrite.eLastEr;
+    (void)l_tCtxWrite.uTimeUsed;
+    (void)l_tCtxRead.eLastEr;
+    (void)l_tCtxRead.uTimeUsed;
+    (void)l_tCtxCrc32.eLastEr;
+    (void)l_tCtxCrc32.uTimeUsed;
 }
 
 void eFSS_CORELLTST_Basic(void)
@@ -1650,6 +1730,16 @@ void eFSS_CORELLTST_Basic(void)
     l_tCtxCb.fRead = &eFSS_CORELLTST_ReadErrAdapt;
 	l_tCtxCb.ptCtxCrc32 = &l_tCtxCrc32;
     l_tCtxCb.fCrc32 = &eFSS_CORELLTST_CrcAdapt;
+
+    /* Misra complaiant */
+    (void)l_tCtxErase.eLastEr;
+    (void)l_tCtxErase.uTimeUsed;
+    (void)l_tCtxWrite.eLastEr;
+    (void)l_tCtxWrite.uTimeUsed;
+    (void)l_tCtxRead.eLastEr;
+    (void)l_tCtxRead.uTimeUsed;
+    (void)l_tCtxCrc32.eLastEr;
+    (void)l_tCtxCrc32.uTimeUsed;
 
     /* Init storage settings */
     l_tStorSet.uTotPages = 1u;
@@ -1806,6 +1896,16 @@ void eFSS_CORELLTST_BadClBckNRetry(void)
     l_tCtxCb.fRead = &eFSS_CORELLTST_ReadErrAdapt;
 	l_tCtxCb.ptCtxCrc32 = &l_tCtxCrc32;
     l_tCtxCb.fCrc32 = &eFSS_CORELLTST_CrcAdapt;
+
+    /* Misra complaiant */
+    (void)l_tCtxErase.eLastEr;
+    (void)l_tCtxErase.uTimeUsed;
+    (void)l_tCtxWrite.eLastEr;
+    (void)l_tCtxWrite.uTimeUsed;
+    (void)l_tCtxRead.eLastEr;
+    (void)l_tCtxRead.uTimeUsed;
+    (void)l_tCtxCrc32.eLastEr;
+    (void)l_tCtxCrc32.uTimeUsed;
 
     /* Init storage settings */
     l_tStorSet.uTotPages = 1u;
@@ -2813,7 +2913,23 @@ static void eFSS_CORELLTST_CrcTest(void)
     {
         (void)printf("eFSS_CORELLTST_CrcTest 11-- FAIL \n");
     }
+
+    /* Misra complaiant */
+    (void)l_tCtxErase.eLastEr;
+    (void)l_tCtxErase.uTimeUsed;
+    (void)l_tCtxWrite.eLastEr;
+    (void)l_tCtxWrite.uTimeUsed;
+    (void)l_tCtxRead.eLastEr;
+    (void)l_tCtxRead.uTimeUsed;
+    (void)l_tCtxCrc32.eLastEr;
+    (void)l_tCtxCrc32.uTimeUsed;
+    (void)l_ltUseBuff2.puBuf;
 }
+
+#ifdef __IAR_SYSTEMS_ICC__
+    #pragma cstat_disable = "CERT-INT31-C_c"
+    /* Suppressed for code clarity in test execution*/
+#endif
 
 static void eFSS_CORELLTST_LoadTest(void)
 {
@@ -3548,7 +3664,21 @@ static void eFSS_CORELLTST_LoadTest(void)
     {
         (void)printf("eFSS_CORELLTST_LoadTest 22 -- FAIL \n");
     }
+
+    /* Misra complaiant */
+    (void)l_tCtxErase.eLastEr;
+    (void)l_tCtxErase.uTimeUsed;
+    (void)l_tCtxWrite.eLastEr;
+    (void)l_tCtxWrite.uTimeUsed;
+    (void)l_tCtxRead.eLastEr;
+    (void)l_tCtxRead.uTimeUsed;
+    (void)l_tCtxCrc32.eLastEr;
+    (void)l_tCtxCrc32.uTimeUsed;
 }
+
+#ifdef __IAR_SYSTEMS_ICC__
+    #pragma cstat_restore = "CERT-INT31-C_c"
+#endif
 
 static void eFSS_CORELLTST_FlushTest(void)
 {
@@ -3994,6 +4124,18 @@ static void eFSS_CORELLTST_FlushTest(void)
     {
         (void)printf("eFSS_CORELLTST_FlushTest 12 -- FAIL \n");
     }
+
+    /* Misra complaiant */
+    (void)l_tCtxErase.eLastEr;
+    (void)l_tCtxErase.uTimeUsed;
+    (void)l_tCtxWrite.eLastEr;
+    (void)l_tCtxWrite.uTimeUsed;
+    (void)l_tCtxRead.eLastEr;
+    (void)l_tCtxRead.uTimeUsed;
+    (void)l_tCtxCrc32.eLastEr;
+    (void)l_tCtxCrc32.uTimeUsed;
+    (void)l_ltUseBuff1.puBuf;
+    (void)l_ltUseBuff2.puBuf;
 }
 
 static void eFSS_CORELLTST_GenTest(void)
@@ -4148,4 +4290,15 @@ static void eFSS_CORELLTST_GenTest(void)
     {
         (void)printf("eFSS_CORELLTST_GenTest 6  -- FAIL \n");
     }
+
+    /* Misra complaiant */
+    (void)l_tCtxErase.eLastEr;
+    (void)l_tCtxErase.uTimeUsed;
+    (void)l_tCtxWrite.eLastEr;
+    (void)l_tCtxWrite.uTimeUsed;
+    (void)l_tCtxRead.eLastEr;
+    (void)l_tCtxRead.uTimeUsed;
+    (void)l_tCtxCrc32.eLastEr;
+    (void)l_tCtxCrc32.uTimeUsed;
+    (void)l_ltUseBuff2.puBuf;
 }
