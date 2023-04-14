@@ -52,7 +52,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_InitCtx(t_eFSS_COREHL_Ctx* const p_ptCtx, const t_
     e_eFSS_COREHL_RES l_eRes;
     e_eFSS_CORELL_RES l_eResLL;
 
-    /* Calc local variable */
+    /* Local variable for storage */
     t_eFSS_CORELL_StorBuf l_tBuff1;
     t_eFSS_CORELL_StorBuf l_tBuff2;
 
@@ -115,6 +115,8 @@ e_eFSS_COREHL_RES eFSS_COREHL_GetStorSett(t_eFSS_COREHL_Ctx* const p_ptCtx, t_eF
     /* Return local var */
     e_eFSS_COREHL_RES l_eRes;
     e_eFSS_CORELL_RES l_eResLL;
+
+    /* Local var for init */
     bool_t l_bIsInit;
 
     if( NULL == p_ptCtx )
@@ -158,9 +160,11 @@ e_eFSS_COREHL_RES eFSS_COREHL_GetBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, t_eFSS_C
     /* Return local var */
     e_eFSS_COREHL_RES l_eRes;
     e_eFSS_CORELL_RES l_eResLL;
+
+    /* Local var for init */
     bool_t l_bIsInit;
 
-    /* Calc local variable */
+    /* Local variable for storage */
     t_eFSS_CORELL_StorBuf l_tBuff1;
     t_eFSS_CORELL_StorBuf l_tBuff2;
 
@@ -195,8 +199,8 @@ e_eFSS_COREHL_RES eFSS_COREHL_GetBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, t_eFSS_C
 
                     if( e_eFSS_COREHL_RES_OK == l_eRes )
                     {
-                        /* The upper layer will use only the buffer 1 as main buffer, buffer 2 is reserved as support
-                           buffer */
+                        /* The upper layer will use only the buffer 1 as main buffer, buffer 2 is reserved and used
+                           internaly as support buffer */
                         p_ptBuff->puBuf = l_tBuff1.puBuf;
                         p_ptBuff->uBufL = l_tBuff1.uBufL - EFSS_COREHL_PAGEMIN_L;
                     }
@@ -214,9 +218,11 @@ e_eFSS_COREHL_RES eFSS_COREHL_GetBuffNStor(t_eFSS_COREHL_Ctx* const p_ptCtx, t_e
     /* Return local var */
     e_eFSS_COREHL_RES l_eRes;
     e_eFSS_CORELL_RES l_eResLL;
+
+    /* Local var for init */
     bool_t l_bIsInit;
 
-    /* Calc local variable */
+    /* Local variable for storage */
     t_eFSS_CORELL_StorBuf l_tBuff1;
     t_eFSS_CORELL_StorBuf l_tBuff2;
 
@@ -251,10 +257,11 @@ e_eFSS_COREHL_RES eFSS_COREHL_GetBuffNStor(t_eFSS_COREHL_Ctx* const p_ptCtx, t_e
 
                     if( e_eFSS_COREHL_RES_OK == l_eRes )
                     {
+                        /* The upper layer will use only the buffer 1 as main buffer, buffer 2 is reserved and used
+                           internaly as support buffer */
                         p_ptBuff->puBuf = l_tBuff1.puBuf;
                         p_ptBuff->uBufL = l_tBuff1.uBufL - EFSS_COREHL_PAGEMIN_L;
                     }
-
                 }
             }
         }
