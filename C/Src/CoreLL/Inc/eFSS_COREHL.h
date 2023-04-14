@@ -88,7 +88,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_InitCtx(t_eFSS_COREHL_Ctx* const p_ptCtx, const t_
  * @return      e_eFSS_COREHL_RES_BADPOINTER    - In case of bad pointer passed to the function
  *              e_eFSS_COREHL_RES_OK            - Operation ended correctly
  */
-e_eFSS_COREHL_RES eFSS_COREHL_IsInit(t_eFSS_COREHL_Ctx* const p_ptCtx, bool_t* const p_pbIsInit);
+e_eFSS_COREHL_RES eFSS_COREHL_IsInit(const t_eFSS_COREHL_Ctx* p_ptCtx, bool_t* const p_pbIsInit);
 
 /**
  * @brief       Get storage settings used during init
@@ -153,11 +153,12 @@ e_eFSS_COREHL_RES eFSS_COREHL_LoadPageInBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, c
                                              uint8_t* const p_puSubTypeRead);
 
 /**
- * @brief       Flush the internal buffer in to the storage area.
+ * @brief       Flush the internal buffer in to the storage area. After this operation the used buffer will contain
+ *              the same values as before, except for the private metadata
  *
  * @param[in]   p_ptCtx           - High Level Core context
  * @param[in]   p_uPIdx           - uint32_t index rappresenting the page that we want to flush in storage
- * @param[in]   p_uSubTypeToWrite - uint8_t value that will the written in the page as subtype
+ * @param[in]   p_uSubTypeToWrite - uint8_t value that will be written in the page as subtype metadata
  *
  * @return      e_eFSS_COREHL_RES_BADPOINTER       - In case of bad pointer passed to the function
  *		        e_eFSS_COREHL_RES_BADPARAM         - In case of an invalid parameter passed to the function
@@ -174,15 +175,15 @@ e_eFSS_COREHL_RES eFSS_COREHL_FlushBuffInPage(t_eFSS_COREHL_Ctx* const p_ptCtx, 
                                               const uint8_t p_uSubTypeToWrite);
 
 /**
- * @brief       Calculate the Crc of the data present in the internal buffer. It's not necessary to calculate the CRC
- *              value of the whole pages, we can choose to calculate the CRC of a portion of the page. The page subtype
- *              and other private metadata are excluded from this calculation, infact the mex size of the calc can be
- *              as big as internal buffer len.
+ * @brief       Calculate the Crc of the data present in the buffer. It's not necessary to calculate the CRC
+ *              value of the whole buffer, we can choose to calculate the CRC of a portion of the buffer. In this
+ *              calculation private metadata is not included. And so the max Length is the same reported by the
+ *              eFSS_COREHL_GetBuff function
  *
  * @param[in]   p_ptCtx       - High Level Core context
  * @param[in]   p_uCrcSeed    - uint32_t rappresenting the seed we want to use in the calc
  * @param[in]   p_uLenCalc    - uint32_t rappresenting the lenght we want to calc. This value cannot be bigger than the
- *                              internal buffer page size
+ *                              internal buffer page size reported by eFSS_COREHL_GetBuff
  * @param[out]  p_puCrc       - Pointer to a uint32_t variable where the CRC calculated will be placed
  *
  * @return      e_eFSS_COREHL_RES_BADPOINTER       - In case of bad pointer passed to the function
@@ -197,6 +198,9 @@ e_eFSS_COREHL_RES eFSS_COREHL_CalcCrcInBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, co
 
 /**
  * @brief       Flush the internal buffer in to the storage area and generate a backup copy in another page.
+ *              Flushed original page and flushed backup pages will have different subtype that we can choose.
+ *              After this operation the internal buffer will mantains it's original values, except for the private
+ *              metadata
  *
  * @param[in]   p_ptCtx    - High Level Core context
  * @param[in]   p_uOriIdx  - Page index of the original data
@@ -223,11 +227,11 @@ e_eFSS_COREHL_RES eFSS_COREHL_FlushBuffInPageNBkp(t_eFSS_COREHL_Ctx* const p_ptC
  * @brief       Verify the validity of the page present in p_uOriIdx and of it's backup present in p_uBkpIdx.
  *              If everithing goes well the original page is loaded in to the internal buffer, and any corruption is
  *              fixed.
- *              This function use this decision maps in order to load original page and verify it's backup:
- *              1 - If p_uOriIdx and p_uBkpIdx are valid, verify if they are equals. If not copy p_uOriIdx
- *                  in p_uBkpIdx (except for the page subtype offcourse)
- *              2 - If p_uOriIdx is not valid copy p_uBkpIdx in p_uOriIdx
- *              3 - If p_uBkpIdx is not valid copy p_uOriIdx in p_uBkpIdx
+ *              This function use this decision map in order to load original page and verify it's backup:
+ *              1 - If p_uOriIdx and p_uBkpIdx are valid, verify if they are equals (except for the priv metadata and
+ *                  page subtype). If not copy p_uOriIdx in p_uBkpIdx (except for the page subtype offcourse)
+ *              2 - If p_uOriIdx is not valid copy p_uBkpIdx in p_uOriIdx (except for the page subtype offcourse)
+ *              3 - If p_uBkpIdx is not valid copy p_uOriIdx in p_uBkpIdx (except for the page subtype offcourse)
  *              4 - If p_uOriIdx and p_uBkpIdx are not valid we cann not do nothing
  *              Note: page validity is checkd against subtype also.
  *
@@ -248,7 +252,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_FlushBuffInPageNBkp(t_eFSS_COREHL_Ctx* const p_ptC
  *              e_eFSS_COREHL_RES_CLBCKERASEERR     - Error reported from the callback
  *              e_eFSS_COREHL_RES_CLBCKWRITEERR     - Error reported from the callback
  *              e_eFSS_COREHL_RES_WRITENOMATCHREAD  - For some unknow reason data write dosent match data readed
- *              e_eFSS_COREHL_RES_OK_BKP_RCVRD      - operation ended successfully recovering a backup or an origin
+ *              e_eFSS_COREHL_RES_OK_BKP_RCVRD      - Operation ended successfully recovering a backup or an origin
  *                                                    page
  *              e_eFSS_COREHL_RES_OK                - Operation ended successfully, page are correct
  */
@@ -258,13 +262,14 @@ e_eFSS_COREHL_RES eFSS_COREHL_LoadPageInBuffNRipBkp(t_eFSS_COREHL_Ctx* const p_p
 
 /**
  * @brief       Check if the data present in to the internal buffer is equals to an another page. Keep in mind that
- *              subtype are not compared, the comparsion is only done using raw data. Th previusly present buffer
- *              is not modified after this call.
+ *              subtype and others private metadata are not compared, the comparsion is only done using raw data.
+ *              Th previusly present data in buffer is not modified after this call.
+ *              Keep in mind also that the comparsion works only if the pointed page is a valid page.
  *
  * @param[in]   p_ptCtx         - High Level Core context
  * @param[in]   p_uPIdx         - uint32_t index rappresenting the page that we want to compare
- * @param[out]  p_pbIsEquals    - pointer to a bool_t that will be filled with true if the intenral buffer is equals to
- *                                the data presnet in the page p_uPIdx
+ * @param[out]  p_pbIsEquals    - pointer to a bool_t that will be filled with true if the internal buffer is equals to
+ *                                the data present in the valid page pointed by p_uPIdx
  *
  * @return      e_eFSS_COREHL_RES_BADPOINTER      - In case of bad pointer passed to the function
  *		        e_eFSS_COREHL_RES_BADPARAM        - In case of an invalid parameter passed to the function

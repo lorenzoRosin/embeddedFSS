@@ -747,7 +747,8 @@ static bool_t eFSS_CORELL_IsStatusStillCoherent(const t_eFSS_CORELL_Ctx* p_ptCtx
         ( NULL == p_ptCtx->tCtxCb.ptCtxWrite ) || ( NULL == p_ptCtx->tCtxCb.fWrite ) ||
         ( NULL == p_ptCtx->tCtxCb.ptCtxRead  ) || ( NULL == p_ptCtx->tCtxCb.fRead  ) ||
         ( NULL == p_ptCtx->tCtxCb.ptCtxCrc32 ) || ( NULL == p_ptCtx->tCtxCb.fCrc32 ) ||
-        ( NULL == p_ptCtx->tBuff1.puBuf )      || ( NULL == p_ptCtx->tBuff2.puBuf ) )
+        ( NULL == p_ptCtx->tBuff1.puBuf )      || ( NULL == p_ptCtx->tBuff2.puBuf )  ||
+        ( p_ptCtx->tBuff2.puBuf == p_ptCtx->tBuff1.puBuf ) )
     {
         l_eRes = false;
     }

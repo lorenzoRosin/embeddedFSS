@@ -91,7 +91,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_InitCtx(t_eFSS_COREHL_Ctx* const p_ptCtx, const t_
     return l_eRes;
 }
 
-e_eFSS_COREHL_RES eFSS_COREHL_IsInit(t_eFSS_COREHL_Ctx* const p_ptCtx, bool_t* const p_pbIsInit)
+e_eFSS_COREHL_RES eFSS_COREHL_IsInit(const t_eFSS_COREHL_Ctx* p_ptCtx, bool_t* const p_pbIsInit)
 {
     /* Return local var */
     e_eFSS_COREHL_RES l_eRes;
