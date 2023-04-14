@@ -270,6 +270,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_LoadPageInBuffNRipBkp(t_eFSS_COREHL_Ctx* const p_p
  * @param[in]   p_uPIdx         - uint32_t index rappresenting the page that we want to compare
  * @param[out]  p_pbIsEquals    - pointer to a bool_t that will be filled with true if the internal buffer is equals to
  *                                the data present in the valid page pointed by p_uPIdx
+ * @param[out]  p_puSubTypePage - pointer to a uint8_t where we will store the subtype readed from the compared page
  *
  * @return      e_eFSS_COREHL_RES_BADPOINTER      - In case of bad pointer passed to the function
  *		        e_eFSS_COREHL_RES_BADPARAM        - In case of an invalid parameter passed to the function
@@ -282,7 +283,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_LoadPageInBuffNRipBkp(t_eFSS_COREHL_Ctx* const p_p
  *              e_eFSS_COREHL_RES_OK              - Operation ended correctly
  */
 e_eFSS_COREHL_RES eFSS_COREHL_IsBuffEqualToPage(t_eFSS_COREHL_Ctx* const p_ptCtx, const uint32_t p_uPIdx,
-                                                bool_t* const p_pbIsEquals);
+                                                bool_t* const p_pbIsEquals, uint8_t* const p_puSubTypePage);
 
 
 

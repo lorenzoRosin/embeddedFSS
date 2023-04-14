@@ -943,7 +943,8 @@ e_eFSS_LOGC_RES eFSS_LOGC_FlushBuffIfNotEquals(t_eFSS_LOGC_Ctx* const p_ptCtx, c
                             if( e_eFSS_LOGC_RES_OK == l_eRes )
                             {
                                 l_bAreEquals = false;
-                                l_eResHL = eFSS_COREHL_IsBuffEqualToPage(&p_ptCtx->tCOREHLCtx, p_uIdx, &l_bAreEquals);
+                                l_eResHL = eFSS_COREHL_IsBuffEqualToPage(&p_ptCtx->tCOREHLCtx, p_uIdx, &l_bAreEquals,
+                                                                         NULL);
                                 l_eRes = eFSS_LOGC_HLtoLOGCRes(l_eResHL);
 
                                 if( e_eFSS_LOGC_RES_OK == l_eRes )

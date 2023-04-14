@@ -758,7 +758,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_LoadPageInBuffNRipBkp(t_eFSS_COREHL_Ctx* const p_p
 }
 
 e_eFSS_COREHL_RES eFSS_COREHL_IsBuffEqualToPage(t_eFSS_COREHL_Ctx* const p_ptCtx, const uint32_t p_uPIdx,
-                                                bool_t* const p_pbIsEquals)
+                                                bool_t* const p_pbIsEquals, uint8_t* const p_puSubTypePage)
 {
     /* Return local var */
     e_eFSS_COREHL_RES l_eRes;
@@ -769,7 +769,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_IsBuffEqualToPage(t_eFSS_COREHL_Ctx* const p_ptCtx
     t_eFSS_CORELL_StorBuf l_tBuff1;
     t_eFSS_CORELL_StorBuf l_tBuff2;
 
-    if( ( NULL == p_ptCtx ) || ( NULL == p_pbIsEquals ) )
+    if( ( NULL == p_ptCtx ) || ( NULL == p_pbIsEquals ) || ( NULL == p_puSubTypePage ) )
     {
         l_eRes = e_eFSS_COREHL_RES_BADPOINTER;
     }

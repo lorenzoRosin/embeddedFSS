@@ -508,7 +508,7 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_CopyOriInBkpIfNotEquals(t_eFSS_BLOBC_Ctx* const p_pt
                         l_uCurIdx = 0u;
 
                         /* Start cloning if needed process */
-                        while( ( l_uCurIdx < l_uLastPageIdx ) && 
+                        while( ( l_uCurIdx < l_uLastPageIdx ) &&
                                ( ( e_eFSS_BLOBC_RES_OK == l_eRes ) || ( e_eFSS_BLOBC_RES_OK_BKP_RCVRD == l_eRes ) ) )
                         {
                             /* Load the page in to the internal buffer */
@@ -529,7 +529,8 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_CopyOriInBkpIfNotEquals(t_eFSS_BLOBC_Ctx* const p_pt
                                     l_bIsEquals = false;
                                     l_eResHL = eFSS_COREHL_IsBuffEqualToPage(&p_ptCtx->tCOREHLCtx,
                                                                              (l_uLastPageIdx + l_uCurIdx),
-                                                                             &l_bIsEquals);
+                                                                             &l_bIsEquals,
+                                                                             NULL);
                                     l_eRes = eFSS_BLOBC_HLtoBLOBCRes(l_eResHL);
 
                                     if( e_eFSS_BLOBC_RES_OK == l_eRes )
