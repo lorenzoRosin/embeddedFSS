@@ -910,10 +910,11 @@ static bool_t eFSS_COREHL_IsStatusStillCoherent(t_eFSS_COREHL_Ctx* const p_ptCtx
     bool_t l_bRes;
     e_eFSS_CORELL_RES l_eResLL;
 
-    /* Calc local variable */
+    /* Local variable for storage */
     t_eFSS_CORELL_StorBuf l_tBuff1;
     t_eFSS_CORELL_StorBuf l_tBuff2;
 
+    /* We only need to verify to have enough space in the buffer */
     l_eResLL = eFSS_CORELL_GetBuff(&p_ptCtx->tCORELLCtx, &l_tBuff1, &l_tBuff2);
 
     if( e_eFSS_CORELL_RES_OK != l_eResLL )
