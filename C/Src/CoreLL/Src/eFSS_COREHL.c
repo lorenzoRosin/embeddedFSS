@@ -464,9 +464,11 @@ e_eFSS_COREHL_RES eFSS_COREHL_FlushBuffInPageNBkp(t_eFSS_COREHL_Ctx* const p_ptC
     /* Return local var */
     e_eFSS_COREHL_RES l_eRes;
     e_eFSS_CORELL_RES l_eResLL;
+
+    /* Local var for init */
     bool_t l_bIsInit;
 
-    /* Calc local variable */
+    /* Local variable for storage */
     t_eFSS_CORELL_StorBuf l_tBuff1;
     t_eFSS_CORELL_StorBuf l_tBuff2;
 
