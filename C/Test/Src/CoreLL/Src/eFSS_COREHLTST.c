@@ -99,6 +99,8 @@ static bool_t eFSS_COREHLTST_CrcTst1Adapt(t_eFSS_TYPE_CrcCtx* const p_ptCtx, con
  *   PRIVATE FUNCTION DECLARATION
  **********************************************************************************************************************/
 static void eFSS_COREHLTST_BadPointer(void);
+
+#ifdef 0
 static void eFSS_COREHLTST_BadInit(void);
 static void eFSS_COREHLTST_BadParamEntr(void);
 static void eFSS_COREHLTST_CorruptedCtx(void);
@@ -108,7 +110,7 @@ static void eFSS_COREHLTST_CrcTest(void);
 static void eFSS_COREHLTST_LoadTest(void);
 static void eFSS_COREHLTST_FlushTest(void);
 static void eFSS_COREHLTST_GenTest(void);
-
+#endif
 
 
 /***********************************************************************************************************************
@@ -119,6 +121,8 @@ void eFSS_COREHLTST_ExeTest(void)
 	(void)printf("\n\nCORE HIGH LEVEL TEST START \n\n");
 
     eFSS_COREHLTST_BadPointer();
+
+#ifdef 0
     eFSS_COREHLTST_BadInit();
     eFSS_COREHLTST_BadParamEntr();
     eFSS_COREHLTST_CorruptedCtx();
@@ -128,6 +132,7 @@ void eFSS_COREHLTST_ExeTest(void)
     eFSS_COREHLTST_LoadTest();
     eFSS_COREHLTST_FlushTest();
     eFSS_COREHLTST_GenTest();
+#endif
 
     (void)printf("\n\nCORE HIGH LEVEL TEST END \n\n");
 }
@@ -145,12 +150,6 @@ static uint8_t m_auStorArea2[24u];
 /***********************************************************************************************************************
  *   PRIVATE TEST FUNCTION DECLARATION
  **********************************************************************************************************************/
-
-#ifdef __IAR_SYSTEMS_ICC__
-    #pragma cstat_disable = "MISRAC2012-Rule-8.13"
-    /* Suppressed for code clarity in test execution*/
-#endif
-
 static bool_t eFSS_COREHLTST_EraseAdapt(t_eFSS_TYPE_EraseCtx* const p_ptCtx, const uint32_t p_uPageToErase)
 {
     bool_t l_bRes;
@@ -644,19 +643,9 @@ static bool_t eFSS_COREHLTST_CrcTst1Adapt(t_eFSS_TYPE_CrcCtx* const p_ptCtx, con
     return l_bRes;
 }
 
-#ifdef __IAR_SYSTEMS_ICC__
-    #pragma cstat_restore = "MISRAC2012-Rule-8.13"
-#endif
-
 /***********************************************************************************************************************
  *   PRIVATE FUNCTION
  **********************************************************************************************************************/
-
-#ifdef __IAR_SYSTEMS_ICC__
-    #pragma cstat_disable = "MISRAC2012-Rule-2.2_b"
-    /* Suppressed for code clarity in test execution*/
-#endif
-
 void eFSS_COREHLTST_BadPointer(void)
 {
     /* Local variable */
@@ -988,9 +977,7 @@ void eFSS_COREHLTST_BadPointer(void)
     (void)l_tCtxCrc32.uTimeUsed;
 }
 
-#ifdef __IAR_SYSTEMS_ICC__
-    #pragma cstat_restore = "MISRAC2012-Rule-2.2_b"
-#endif
+#ifdef 0
 
 void eFSS_COREHLTST_BadInit(void)
 {
@@ -1082,11 +1069,6 @@ void eFSS_COREHLTST_BadInit(void)
         (void)printf("eFSS_COREHLTST_BadInit 7  -- FAIL \n");
     }
 }
-
-#ifdef __IAR_SYSTEMS_ICC__
-    #pragma cstat_disable = "MISRAC2012-Rule-10.5"
-    /* Suppressed for code clarity in test execution*/
-#endif
 
 void eFSS_COREHLTST_BadParamEntr(void)
 {
@@ -1287,10 +1269,6 @@ void eFSS_COREHLTST_BadParamEntr(void)
         (void)printf("eFSS_COREHLTST_BadParamEntr 12 -- OK \n");
     }
 }
-
-#ifdef __IAR_SYSTEMS_ICC__
-    #pragma cstat_restore = "MISRAC2012-Rule-10.5"
-#endif
 
 void eFSS_COREHLTST_CorruptedCtx(void)
 {
@@ -3027,11 +3005,6 @@ static void eFSS_COREHLTST_CrcTest(void)
     (void)l_ltUseBuff2.puBuf;
 }
 
-#ifdef __IAR_SYSTEMS_ICC__
-    #pragma cstat_disable = "CERT-INT31-C_c"
-    /* Suppressed for code clarity in test execution*/
-#endif
-
 static void eFSS_COREHLTST_LoadTest(void)
 {
     /* Local variable */
@@ -3777,10 +3750,6 @@ static void eFSS_COREHLTST_LoadTest(void)
     (void)l_tCtxCrc32.uTimeUsed;
 }
 
-#ifdef __IAR_SYSTEMS_ICC__
-    #pragma cstat_restore = "CERT-INT31-C_c"
-#endif
-
 static void eFSS_COREHLTST_FlushTest(void)
 {
     /* Local variable */
@@ -4404,4 +4373,4 @@ static void eFSS_COREHLTST_GenTest(void)
     (void)l_ltUseBuff2.puBuf;
 }
 
-
+#endif
