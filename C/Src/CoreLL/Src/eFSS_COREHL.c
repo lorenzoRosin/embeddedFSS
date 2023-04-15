@@ -763,9 +763,11 @@ e_eFSS_COREHL_RES eFSS_COREHL_IsBuffEqualToPage(t_eFSS_COREHL_Ctx* const p_ptCtx
     /* Return local var */
     e_eFSS_COREHL_RES l_eRes;
     e_eFSS_CORELL_RES l_eResLL;
+
+    /* Local var for init */
     bool_t l_bIsInit;
 
-    /* Calc local variable */
+    /* Local variable for storage */
     t_eFSS_CORELL_StorBuf l_tBuff1;
     t_eFSS_CORELL_StorBuf l_tBuff2;
 
@@ -806,6 +808,10 @@ e_eFSS_COREHL_RES eFSS_COREHL_IsBuffEqualToPage(t_eFSS_COREHL_Ctx* const p_ptCtx
 
                         if( e_eFSS_COREHL_RES_OK == l_eRes )
                         {
+                            /* Copy the subtype */
+                            *p_puSubTypePage = l_tBuff2.puBuf[ l_tBuff2.uBufL - EFSS_COREHL_PAGEMIN_L ];
+
+                            /* Verify if they are equals, exclude the subtype from comparsion */
                             if( 0 == memcmp(l_tBuff1.puBuf, l_tBuff2.puBuf,
                                             ( l_tBuff2.uBufL - EFSS_COREHL_PAGEMIN_L ) ) )
                             {
