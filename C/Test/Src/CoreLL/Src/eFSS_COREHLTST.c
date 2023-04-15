@@ -653,16 +653,18 @@ void eFSS_COREHLTST_BadPointer(void)
     t_eFSS_TYPE_CbStorCtx l_tCtxCb;
     t_eFSS_TYPE_StorSet l_tStorSet;
     uint8_t l_uStorType;
-    uint8_t l_auStor[24u];
+    uint8_t l_auStor[48u];
     t_eFSS_TYPE_EraseCtx  l_tCtxErase;
 	t_eFSS_TYPE_WriteCtx  l_tCtxWrite;
 	t_eFSS_TYPE_ReadCtx   l_tCtxRead;
 	t_eFSS_TYPE_CrcCtx    l_tCtxCrc32;
     bool_t l_bIsInit;
     t_eFSS_TYPE_StorSet l_tGetStorSet;
-    t_eFSS_COREHL_StorBuf l_ltUseBuff1;
-    t_eFSS_COREHL_StorBuf l_ltUseBuff2;
+    t_eFSS_COREHL_StorBuf l_ltUseBuff;
     uint32_t l_uCrcGetted;
+    uint8_t l_uSubTypeRead;
+    uint8_t l_uSubTypeWrite;
+    bool_t l_bIsEquals;
 
     /* Misra complaiant */
     l_tCtxErase.eLastEr = e_eFSS_COREHL_RES_OK;
@@ -691,6 +693,9 @@ void eFSS_COREHLTST_BadPointer(void)
     l_tStorSet.uPageVersion = 1u;
 
     l_uStorType = 1u;
+    l_uSubTypeRead = 0u;
+    l_uSubTypeWrite = 0u;
+    l_bIsEquals = 0u;
 
     /* Function */
     if( e_eFSS_COREHL_RES_BADPOINTER == eFSS_COREHL_InitCtx(NULL, l_tCtxCb, l_tStorSet, l_uStorType, l_auStor, sizeof(l_auStor) ) )
@@ -847,7 +852,7 @@ void eFSS_COREHLTST_BadPointer(void)
     }
 
     /* Function */
-    if( e_eFSS_COREHL_RES_BADPOINTER == eFSS_COREHL_GetStorSett(&l_tCtx, NULL) )
+    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_uStorType, l_auStor, sizeof(l_auStor) ) )
     {
         (void)printf("eFSS_COREHLTST_BadPointer 14 -- OK \n");
     }
@@ -857,17 +862,19 @@ void eFSS_COREHLTST_BadPointer(void)
     }
 
     /* Function */
-    if( e_eFSS_COREHL_RES_BADPOINTER == eFSS_COREHL_GetBuff(NULL, &l_ltUseBuff1, &l_ltUseBuff2) )
+    if( e_eFSS_COREHL_RES_BADPOINTER == eFSS_COREHL_GetStorSett(&l_tCtx, NULL) )
     {
         (void)printf("eFSS_COREHLTST_BadPointer 15 -- OK \n");
+        (void)memset(&l_tCtx, 0, sizeof(l_tCtx));
     }
     else
     {
         (void)printf("eFSS_COREHLTST_BadPointer 15 -- FAIL \n");
+        (void)memset(&l_tCtx, 0, sizeof(l_tCtx));
     }
 
     /* Function */
-    if( e_eFSS_COREHL_RES_BADPOINTER == eFSS_COREHL_GetBuff(&l_tCtx, NULL, &l_ltUseBuff2) )
+    if( e_eFSS_COREHL_RES_BADPOINTER == eFSS_COREHL_GetBuff(NULL, &l_ltUseBuff) )
     {
         (void)printf("eFSS_COREHLTST_BadPointer 16 -- OK \n");
     }
@@ -877,7 +884,7 @@ void eFSS_COREHLTST_BadPointer(void)
     }
 
     /* Function */
-    if( e_eFSS_COREHL_RES_BADPOINTER == eFSS_COREHL_GetBuff(&l_tCtx, &l_ltUseBuff1, NULL) )
+    if( e_eFSS_COREHL_RES_BADPOINTER == eFSS_COREHL_GetBuff(&l_tCtx, NULL) )
     {
         (void)printf("eFSS_COREHLTST_BadPointer 17 -- OK \n");
     }
@@ -887,7 +894,7 @@ void eFSS_COREHLTST_BadPointer(void)
     }
 
     /* Function */
-    if( e_eFSS_COREHL_RES_BADPOINTER == eFSS_COREHL_GetBuffNStor(NULL, &l_ltUseBuff1, &l_ltUseBuff2, &l_tGetStorSet) )
+    if( e_eFSS_COREHL_RES_BADPOINTER == eFSS_COREHL_GetBuffNStor(NULL, &l_ltUseBuff, &l_tGetStorSet) )
     {
         (void)printf("eFSS_COREHLTST_BadPointer 18 -- OK \n");
     }
@@ -897,7 +904,7 @@ void eFSS_COREHLTST_BadPointer(void)
     }
 
     /* Function */
-    if( e_eFSS_COREHL_RES_BADPOINTER == eFSS_COREHL_GetBuffNStor(&l_tCtx, NULL, &l_ltUseBuff2, &l_tGetStorSet) )
+    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_uStorType, l_auStor, sizeof(l_auStor) ) )
     {
         (void)printf("eFSS_COREHLTST_BadPointer 19 -- OK \n");
     }
@@ -907,17 +914,19 @@ void eFSS_COREHLTST_BadPointer(void)
     }
 
     /* Function */
-    if( e_eFSS_COREHL_RES_BADPOINTER == eFSS_COREHL_GetBuffNStor(&l_tCtx, &l_ltUseBuff1, NULL, &l_tGetStorSet) )
+    if( e_eFSS_COREHL_RES_BADPOINTER == eFSS_COREHL_GetBuffNStor(&l_tCtx, NULL, &l_tGetStorSet) )
     {
         (void)printf("eFSS_COREHLTST_BadPointer 20 -- OK \n");
+        (void)memset(&l_tCtx, 0, sizeof(l_tCtx));
     }
     else
     {
         (void)printf("eFSS_COREHLTST_BadPointer 20 -- FAIL \n");
+        (void)memset(&l_tCtx, 0, sizeof(l_tCtx));
     }
 
     /* Function */
-    if( e_eFSS_COREHL_RES_BADPOINTER == eFSS_COREHL_GetBuffNStor(&l_tCtx, &l_ltUseBuff1, &l_ltUseBuff2, NULL) )
+    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_uStorType, l_auStor, sizeof(l_auStor) ) )
     {
         (void)printf("eFSS_COREHLTST_BadPointer 21 -- OK \n");
     }
@@ -927,17 +936,19 @@ void eFSS_COREHLTST_BadPointer(void)
     }
 
     /* Function */
-    if( e_eFSS_COREHL_RES_BADPOINTER == eFSS_COREHL_LoadPageInBuff(NULL, e_eFSS_COREHL_BUFFTYPE_1, 0u) )
+    if( e_eFSS_COREHL_RES_BADPOINTER == eFSS_COREHL_GetBuffNStor(&l_tCtx, &l_ltUseBuff, NULL) )
     {
         (void)printf("eFSS_COREHLTST_BadPointer 22 -- OK \n");
+        (void)memset(&l_tCtx, 0, sizeof(l_tCtx));
     }
     else
     {
         (void)printf("eFSS_COREHLTST_BadPointer 22 -- FAIL \n");
+        (void)memset(&l_tCtx, 0, sizeof(l_tCtx));
     }
 
     /* Function */
-    if( e_eFSS_COREHL_RES_BADPOINTER == eFSS_COREHL_FlushBuffInPage(NULL, e_eFSS_COREHL_BUFFTYPE_1, 0u) )
+    if( e_eFSS_COREHL_RES_BADPOINTER == eFSS_COREHL_LoadPageInBuff(NULL, 0u, 0u) )
     {
         (void)printf("eFSS_COREHLTST_BadPointer 23 -- OK \n");
     }
@@ -947,7 +958,7 @@ void eFSS_COREHLTST_BadPointer(void)
     }
 
     /* Function */
-    if( e_eFSS_COREHL_RES_BADPOINTER == eFSS_COREHL_CalcCrcInBuff(NULL, e_eFSS_COREHL_BUFFTYPE_1, 0u, 1u, &l_uCrcGetted) )
+    if( e_eFSS_COREHL_RES_BADPOINTER == eFSS_COREHL_LoadPageInBuff(NULL, 0u, &l_uSubTypeRead) )
     {
         (void)printf("eFSS_COREHLTST_BadPointer 24 -- OK \n");
     }
@@ -957,13 +968,103 @@ void eFSS_COREHLTST_BadPointer(void)
     }
 
     /* Function */
-    if( e_eFSS_COREHL_RES_BADPOINTER == eFSS_COREHL_CalcCrcInBuff(&l_tCtx, e_eFSS_COREHL_BUFFTYPE_1, 0u, 1u, NULL) )
+    if( e_eFSS_COREHL_RES_BADPOINTER == eFSS_COREHL_LoadPageInBuff(NULL, 0u, NULL) )
     {
         (void)printf("eFSS_COREHLTST_BadPointer 25 -- OK \n");
     }
     else
     {
         (void)printf("eFSS_COREHLTST_BadPointer 25 -- FAIL \n");
+    }
+
+    /* Function */
+    if( e_eFSS_COREHL_RES_BADPOINTER == eFSS_COREHL_FlushBuffInPage(NULL, 0u, l_uSubTypeWrite) )
+    {
+        (void)printf("eFSS_COREHLTST_BadPointer 26 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_COREHLTST_BadPointer 26 -- FAIL \n");
+    }
+
+    /* Function */
+    if( e_eFSS_COREHL_RES_BADPOINTER == eFSS_COREHL_CalcCrcInBuff(NULL, 0u, 1u, &l_uCrcGetted) )
+    {
+        (void)printf("eFSS_COREHLTST_BadPointer 27 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_COREHLTST_BadPointer 27 -- FAIL \n");
+    }
+
+    /* Function */
+    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_uStorType, l_auStor, sizeof(l_auStor) ) )
+    {
+        (void)printf("eFSS_COREHLTST_BadPointer 28 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_COREHLTST_BadPointer 28 -- FAIL \n");
+    }
+
+    /* Function */
+    if( e_eFSS_COREHL_RES_BADPOINTER == eFSS_COREHL_CalcCrcInBuff(&l_tCtx,  0u, 1u, NULL) )
+    {
+        (void)printf("eFSS_COREHLTST_BadPointer 29 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_COREHLTST_BadPointer 29 -- FAIL \n");
+    }
+
+    /* Function */
+    if( e_eFSS_COREHL_RES_BADPOINTER == eFSS_COREHL_FlushBuffInPageNBkp(NULL,  0u, 1u, 0u, 0u) )
+    {
+        (void)printf("eFSS_COREHLTST_BadPointer 30 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_COREHLTST_BadPointer 30 -- FAIL \n");
+    }
+
+    /* Function */
+    if( e_eFSS_COREHL_RES_BADPOINTER == eFSS_COREHL_LoadPageInBuffNRipBkp(NULL,  0u, 1u, 0u, 0u) )
+    {
+        (void)printf("eFSS_COREHLTST_BadPointer 31 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_COREHLTST_BadPointer 31 -- FAIL \n");
+    }
+
+    /* Function */
+    if( e_eFSS_COREHL_RES_BADPOINTER == eFSS_COREHL_IsBuffEqualToPage(NULL,  0u, &l_bIsEquals, &l_uSubTypeRead) )
+    {
+        (void)printf("eFSS_COREHLTST_BadPointer 32 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_COREHLTST_BadPointer 32 -- FAIL \n");
+    }
+
+    /* Function */
+    if( e_eFSS_COREHL_RES_BADPOINTER == eFSS_COREHL_IsBuffEqualToPage(&l_tCtx,  0u, NULL, &l_uSubTypeRead) )
+    {
+        (void)printf("eFSS_COREHLTST_BadPointer 33 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_COREHLTST_BadPointer 33 -- FAIL \n");
+    }
+
+    /* Function */
+    if( e_eFSS_COREHL_RES_BADPOINTER == eFSS_COREHL_IsBuffEqualToPage(&l_tCtx,  0u, &l_bIsEquals, NULL) )
+    {
+        (void)printf("eFSS_COREHLTST_BadPointer 34 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_COREHLTST_BadPointer 34 -- FAIL \n");
     }
 
     /* Misra complaiant */
@@ -985,9 +1086,15 @@ void eFSS_COREHLTST_BadInit(void)
     t_eFSS_COREHL_Ctx l_tCtx;
     bool_t l_bIsInit;
     t_eFSS_TYPE_StorSet l_tGetStorSet;
-    t_eFSS_COREHL_StorBuf l_ltUseBuff1;
-    t_eFSS_COREHL_StorBuf l_ltUseBuff2;
+    t_eFSS_COREHL_StorBuf l_ltUseBuff;
     uint32_t l_uCrcGetted;
+    uint8_t l_uSubTypeRead;
+    uint8_t l_uSubTypeWrite;
+    bool_t l_bIsEquals;
+
+    l_uSubTypeRead = 0u;
+    l_uSubTypeWrite = 0u;
+    l_bIsEquals = 0u;
 
     /* Init the remainings var */
     (void)memset(&l_tCtx, 0, sizeof(l_tCtx));
@@ -1003,7 +1110,7 @@ void eFSS_COREHLTST_BadInit(void)
     }
 
     /* Function */
-    if( e_eFSS_COREHL_RES_NOINITLIB == eFSS_COREHL_GetBuff(&l_tCtx, &l_ltUseBuff1, &l_ltUseBuff2) )
+    if( e_eFSS_COREHL_RES_NOINITLIB == eFSS_COREHL_GetBuff(&l_tCtx, &l_ltUseBuff, &l_ltUseBuff2) )
     {
         (void)printf("eFSS_COREHLTST_BadInit 2  -- OK \n");
     }
@@ -1013,7 +1120,7 @@ void eFSS_COREHLTST_BadInit(void)
     }
 
     /* Function */
-    if( e_eFSS_COREHL_RES_NOINITLIB == eFSS_COREHL_GetBuffNStor(&l_tCtx, &l_ltUseBuff1, &l_ltUseBuff2, &l_tGetStorSet) )
+    if( e_eFSS_COREHL_RES_NOINITLIB == eFSS_COREHL_GetBuffNStor(&l_tCtx, &l_ltUseBuff, &l_ltUseBuff2, &l_tGetStorSet) )
     {
         (void)printf("eFSS_COREHLTST_BadInit 3  -- OK \n");
     }
@@ -1083,6 +1190,9 @@ void eFSS_COREHLTST_BadParamEntr(void)
 	t_eFSS_TYPE_ReadCtx   l_tCtxRead;
 	t_eFSS_TYPE_CrcCtx    l_tCtxCrc32;
     uint32_t l_uCrcGetted;
+    uint8_t l_uSubTypeRead;
+    uint8_t l_uSubTypeWrite;
+    bool_t l_bIsEquals;
 
     /* Init callback var */
     l_tCtxCb.ptCtxErase = &l_tCtxErase;
@@ -1111,6 +1221,9 @@ void eFSS_COREHLTST_BadParamEntr(void)
     l_tStorSet.uPageVersion = 1u;
 
     l_uStorType = 1u;
+    l_uSubTypeRead = 0u;
+    l_uSubTypeWrite = 0u;
+    l_bIsEquals = 0u;
 
     /* Function */
     l_tStorSet.uPagesLen = 25u;
@@ -1283,9 +1396,11 @@ void eFSS_COREHLTST_CorruptedCtx(void)
 	t_eFSS_TYPE_ReadCtx   l_tCtxRead;
 	t_eFSS_TYPE_CrcCtx    l_tCtxCrc32;
     t_eFSS_TYPE_StorSet l_tGetStorSet;
-    t_eFSS_COREHL_StorBuf l_ltUseBuff1;
-    t_eFSS_COREHL_StorBuf l_ltUseBuff2;
+    t_eFSS_COREHL_StorBuf l_ltUseBuff;
     uint32_t l_uCrcGetted;
+    uint8_t l_uSubTypeRead;
+    uint8_t l_uSubTypeWrite;
+    bool_t l_bIsEquals;
 
     /* Init callback var */
     l_tCtxCb.ptCtxErase = &l_tCtxErase;
@@ -1303,6 +1418,9 @@ void eFSS_COREHLTST_CorruptedCtx(void)
     l_tStorSet.uRWERetry = 2u;
     l_tStorSet.uPageVersion = 1u;
     l_uStorType = 1u;
+    l_uSubTypeRead = 0u;
+    l_uSubTypeWrite = 0u;
+    l_bIsEquals = 0u;
 
     /* Function */
     if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_uStorType, l_auStor, sizeof(l_auStor) ) )
@@ -1657,7 +1775,7 @@ void eFSS_COREHLTST_CorruptedCtx(void)
 
     /* Function */
     l_tCtx.tStorSett.uPagesLen = l_tCtx.tBuff1.uBufL + 1u;
-    if( e_eFSS_COREHL_RES_CORRUPTCTX == eFSS_COREHL_GetBuff(&l_tCtx, &l_ltUseBuff1, &l_ltUseBuff2) )
+    if( e_eFSS_COREHL_RES_CORRUPTCTX == eFSS_COREHL_GetBuff(&l_tCtx, &l_ltUseBuff, &l_ltUseBuff2) )
     {
         (void)printf("eFSS_COREHLTST_CorruptedCtx 33 -- OK \n");
     }
@@ -1678,7 +1796,7 @@ void eFSS_COREHLTST_CorruptedCtx(void)
 
     /* Function */
     l_tCtx.tStorSett.uPagesLen = l_tCtx.tBuff1.uBufL + 1u;
-    if( e_eFSS_COREHL_RES_CORRUPTCTX == eFSS_COREHL_GetBuffNStor(&l_tCtx, &l_ltUseBuff1, &l_ltUseBuff2, &l_tGetStorSet) )
+    if( e_eFSS_COREHL_RES_CORRUPTCTX == eFSS_COREHL_GetBuffNStor(&l_tCtx, &l_ltUseBuff, &l_ltUseBuff2, &l_tGetStorSet) )
     {
         (void)printf("eFSS_COREHLTST_CorruptedCtx 35 -- OK \n");
     }
@@ -1797,8 +1915,10 @@ void eFSS_COREHLTST_Basic(void)
 	t_eFSS_TYPE_CrcCtx    l_tCtxCrc32;
     bool_t l_bIsInit;
     t_eFSS_TYPE_StorSet l_tGetStorSet;
-    t_eFSS_COREHL_StorBuf l_ltUseBuff1;
-    t_eFSS_COREHL_StorBuf l_ltUseBuff2;
+    t_eFSS_COREHL_StorBuf l_ltUseBuff;
+    uint8_t l_uSubTypeRead;
+    uint8_t l_uSubTypeWrite;
+    bool_t l_bIsEquals;
 
     /* Init callback var */
     l_tCtxCb.ptCtxErase = &l_tCtxErase;
@@ -1826,6 +1946,9 @@ void eFSS_COREHLTST_Basic(void)
     l_tStorSet.uRWERetry = 3u;
     l_tStorSet.uPageVersion = 1u;
     l_uStorType = 1u;
+    l_uSubTypeRead = 0u;
+    l_uSubTypeWrite = 0u;
+    l_bIsEquals = 0u;
 
     /* Function */
     if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_uStorType, l_auStor, sizeof(l_auStor) ) )
@@ -1875,10 +1998,10 @@ void eFSS_COREHLTST_Basic(void)
     }
 
     /* Function */
-    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_GetBuff(&l_tCtx, &l_ltUseBuff1, &l_ltUseBuff2) )
+    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_GetBuff(&l_tCtx, &l_ltUseBuff, &l_ltUseBuff2) )
     {
-        if( ( l_auStor == l_ltUseBuff1.puBuf ) && ( &l_auStor[24u] == l_ltUseBuff2.puBuf ) &&
-            ( (24u-19u) == l_ltUseBuff1.uBufL ) && ( (24u-19u) == l_ltUseBuff2.uBufL ) )
+        if( ( l_auStor == l_ltUseBuff.puBuf ) && ( &l_auStor[24u] == l_ltUseBuff2.puBuf ) &&
+            ( (24u-19u) == l_ltUseBuff.uBufL ) && ( (24u-19u) == l_ltUseBuff2.uBufL ) )
         {
             (void)printf("eFSS_COREHLTST_Basic 5  -- OK \n");
         }
@@ -1893,10 +2016,10 @@ void eFSS_COREHLTST_Basic(void)
     }
 
     /* Function */
-    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_GetBuffNStor(&l_tCtx, &l_ltUseBuff1, &l_ltUseBuff2, &l_tGetStorSet) )
+    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_GetBuffNStor(&l_tCtx, &l_ltUseBuff, &l_ltUseBuff2, &l_tGetStorSet) )
     {
-        if( ( l_auStor == l_ltUseBuff1.puBuf ) && ( &l_auStor[24u] == l_ltUseBuff2.puBuf ) &&
-            ( (24u-19u) == l_ltUseBuff1.uBufL ) && ( (24u-19u) == l_ltUseBuff2.uBufL ) )
+        if( ( l_auStor == l_ltUseBuff.puBuf ) && ( &l_auStor[24u] == l_ltUseBuff2.puBuf ) &&
+            ( (24u-19u) == l_ltUseBuff.uBufL ) && ( (24u-19u) == l_ltUseBuff2.uBufL ) )
         {
             (void)printf("eFSS_COREHLTST_Basic 6  -- OK \n");
         }
@@ -1911,7 +2034,7 @@ void eFSS_COREHLTST_Basic(void)
     }
 
     /* Function */
-    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_GetBuffNStor(&l_tCtx, &l_ltUseBuff1, &l_ltUseBuff2, &l_tGetStorSet) )
+    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_GetBuffNStor(&l_tCtx, &l_ltUseBuff, &l_ltUseBuff2, &l_tGetStorSet) )
     {
         if( ( 1u == l_tGetStorSet.uTotPages ) && ( 24u == l_tGetStorSet.uPagesLen ) &&
             ( 3u == l_tGetStorSet.uRWERetry ) && ( 1u == l_tGetStorSet.uPageVersion ) )
@@ -1962,9 +2085,11 @@ void eFSS_COREHLTST_BadClBckNRetry(void)
 	t_eFSS_TYPE_CrcCtx    l_tCtxCrc32;
     bool_t l_bIsInit;
     t_eFSS_TYPE_StorSet l_tGetStorSet;
-    t_eFSS_COREHL_StorBuf l_ltUseBuff1;
-    t_eFSS_COREHL_StorBuf l_ltUseBuff2;
+    t_eFSS_COREHL_StorBuf l_ltUseBuff;
     uint32_t l_uCrcGetted;
+    uint8_t l_uSubTypeRead;
+    uint8_t l_uSubTypeWrite;
+    bool_t l_bIsEquals;
 
     /* Init callback var */
     l_tCtxCb.ptCtxErase = &l_tCtxErase;
@@ -1992,6 +2117,9 @@ void eFSS_COREHLTST_BadClBckNRetry(void)
     l_tStorSet.uRWERetry = 3u;
     l_tStorSet.uPageVersion = 1u;
     l_uStorType = 1u;
+    l_uSubTypeRead = 0u;
+    l_uSubTypeWrite = 0u;
+    l_bIsEquals = 0u;
 
     /* ------------------------------------------------------------------------------------------ TEST READ CALL BACK */
     /* Function */
@@ -2022,10 +2150,10 @@ void eFSS_COREHLTST_BadClBckNRetry(void)
     }
 
     /* Function */
-    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_GetBuffNStor(&l_tCtx, &l_ltUseBuff1, &l_ltUseBuff2, &l_tGetStorSet) )
+    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_GetBuffNStor(&l_tCtx, &l_ltUseBuff, &l_ltUseBuff2, &l_tGetStorSet) )
     {
-        if( ( l_auStor == l_ltUseBuff1.puBuf ) && ( &l_auStor[24u] == l_ltUseBuff2.puBuf ) &&
-            ( (24u-19u) == l_ltUseBuff1.uBufL ) && ( (24u-19u) == l_ltUseBuff2.uBufL ) )
+        if( ( l_auStor == l_ltUseBuff.puBuf ) && ( &l_auStor[24u] == l_ltUseBuff2.puBuf ) &&
+            ( (24u-19u) == l_ltUseBuff.uBufL ) && ( (24u-19u) == l_ltUseBuff2.uBufL ) )
         {
             (void)printf("eFSS_COREHLTST_BadClBckNRetry 3  -- OK \n");
         }
@@ -2115,7 +2243,7 @@ void eFSS_COREHLTST_BadClBckNRetry(void)
     }
 
     /* Function */
-    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_GetBuff(&l_tCtx, &l_ltUseBuff1, &l_ltUseBuff2) )
+    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_GetBuff(&l_tCtx, &l_ltUseBuff, &l_ltUseBuff2) )
     {
         (void)printf("eFSS_COREHLTST_BadClBckNRetry 8  -- OK \n");
     }
@@ -2198,7 +2326,7 @@ void eFSS_COREHLTST_BadClBckNRetry(void)
     }
 
     /* Function */
-    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_GetBuff(&l_tCtx, &l_ltUseBuff1, &l_ltUseBuff2) )
+    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_GetBuff(&l_tCtx, &l_ltUseBuff, &l_ltUseBuff2) )
     {
         (void)printf("eFSS_COREHLTST_BadClBckNRetry 12 -- OK \n");
     }
@@ -2262,7 +2390,7 @@ void eFSS_COREHLTST_BadClBckNRetry(void)
     }
 
     /* Function */
-    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_GetBuff(&l_tCtx, &l_ltUseBuff1, &l_ltUseBuff2) )
+    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_GetBuff(&l_tCtx, &l_ltUseBuff, &l_ltUseBuff2) )
     {
         (void)printf("eFSS_COREHLTST_BadClBckNRetry 15 -- OK \n");
     }
@@ -2366,7 +2494,7 @@ void eFSS_COREHLTST_BadClBckNRetry(void)
     }
 
     /* Function */
-    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_GetBuff(&l_tCtx, &l_ltUseBuff1, &l_ltUseBuff2) )
+    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_GetBuff(&l_tCtx, &l_ltUseBuff, &l_ltUseBuff2) )
     {
         (void)printf("eFSS_COREHLTST_BadClBckNRetry 19 -- OK \n");
     }
@@ -2435,7 +2563,7 @@ void eFSS_COREHLTST_BadClBckNRetry(void)
     }
 
     /* Function */
-    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_GetBuff(&l_tCtx, &l_ltUseBuff1, &l_ltUseBuff2) )
+    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_GetBuff(&l_tCtx, &l_ltUseBuff, &l_ltUseBuff2) )
     {
         (void)printf("eFSS_COREHLTST_BadClBckNRetry 22 -- OK \n");
     }
@@ -2504,7 +2632,7 @@ void eFSS_COREHLTST_BadClBckNRetry(void)
     }
 
     /* Function */
-    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_GetBuff(&l_tCtx, &l_ltUseBuff1, &l_ltUseBuff2) )
+    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_GetBuff(&l_tCtx, &l_ltUseBuff, &l_ltUseBuff2) )
     {
         (void)printf("eFSS_COREHLTST_BadClBckNRetry 25 -- OK \n");
     }
@@ -2561,9 +2689,11 @@ static void eFSS_COREHLTST_CrcTest(void)
 	t_eFSS_TYPE_WriteCtx  l_tCtxWrite;
 	t_eFSS_TYPE_ReadCtx   l_tCtxRead;
 	t_eFSS_TYPE_CrcCtx    l_tCtxCrc32;
-    t_eFSS_COREHL_StorBuf l_ltUseBuff1;
-    t_eFSS_COREHL_StorBuf l_ltUseBuff2;
+    t_eFSS_COREHL_StorBuf l_ltUseBuff;
     uint32_t l_uCrcGetted;
+    uint8_t l_uSubTypeRead;
+    uint8_t l_uSubTypeWrite;
+    bool_t l_bIsEquals;
 
     /* Init callback var */
     l_tCtxCb.ptCtxErase = &l_tCtxErase;
@@ -2581,6 +2711,9 @@ static void eFSS_COREHLTST_CrcTest(void)
     l_tStorSet.uRWERetry = 3u;
     l_tStorSet.uPageVersion = 1u;
     l_uStorType = 1u;
+    l_uSubTypeRead = 0u;
+    l_uSubTypeWrite = 0u;
+    l_bIsEquals = 0u;
 
     /* ------------------------------------------------------------------------------------------- TEST CRC CALL BACK */
     /* Function */
@@ -2608,7 +2741,7 @@ static void eFSS_COREHLTST_CrcTest(void)
     }
 
     /* Function */
-    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_GetBuff(&l_tCtx, &l_ltUseBuff1, &l_ltUseBuff2) )
+    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_GetBuff(&l_tCtx, &l_ltUseBuff, &l_ltUseBuff2) )
     {
         (void)printf("eFSS_COREHLTST_CrcTest 2 -- OK \n");
     }
@@ -2618,11 +2751,11 @@ static void eFSS_COREHLTST_CrcTest(void)
     }
 
     /* Setup buffer */
-    l_ltUseBuff1.puBuf[0u] = 0x01u;
-    l_ltUseBuff1.puBuf[1u] = 0x00u;
-    l_ltUseBuff1.puBuf[2u] = 0x00u;
-    l_ltUseBuff1.puBuf[3u] = 0x00u;
-    l_ltUseBuff1.puBuf[4u] = 0x00u;
+    l_ltUseBuff.puBuf[0u] = 0x01u;
+    l_ltUseBuff.puBuf[1u] = 0x00u;
+    l_ltUseBuff.puBuf[2u] = 0x00u;
+    l_ltUseBuff.puBuf[3u] = 0x00u;
+    l_ltUseBuff.puBuf[4u] = 0x00u;
 
     l_ltUseBuff2.puBuf[0u] = 0x02u;
     l_ltUseBuff2.puBuf[1u] = 0x00u;
@@ -2639,11 +2772,11 @@ static void eFSS_COREHLTST_CrcTest(void)
     l_tCtxRead.eLastEr = e_eFSS_COREHL_RES_OK;
     l_tCtxCrc32.uTimeUsed = 0u;
     l_tCtxCrc32.eLastEr = e_eFSS_COREHL_RES_OK;
-    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_CalcCrcInBuff(&l_tCtx, e_eFSS_COREHL_BUFFTYPE_1, 0u, l_ltUseBuff1.uBufL, &l_uCrcGetted) )
+    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_CalcCrcInBuff(&l_tCtx, e_eFSS_COREHL_BUFFTYPE_1, 0u, l_ltUseBuff.uBufL, &l_uCrcGetted) )
     {
         if( ( 1u == l_tCtxCrc32.uTimeUsed ) && ( e_eFSS_COREHL_RES_OK == l_tCtxCrc32.eLastEr ) )
         {
-            if( 5u == l_ltUseBuff1.uBufL )
+            if( 5u == l_ltUseBuff.uBufL )
             {
                 if( 1u == l_uCrcGetted )
                 {
@@ -2679,11 +2812,11 @@ static void eFSS_COREHLTST_CrcTest(void)
     l_tCtxCrc32.uTimeUsed = 0u;
     l_tCtxCrc32.eLastEr = e_eFSS_COREHL_RES_OK;
 
-    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_CalcCrcInBuff(&l_tCtx, e_eFSS_COREHL_BUFFTYPE_2, 0u, l_ltUseBuff1.uBufL, &l_uCrcGetted) )
+    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_CalcCrcInBuff(&l_tCtx, e_eFSS_COREHL_BUFFTYPE_2, 0u, l_ltUseBuff.uBufL, &l_uCrcGetted) )
     {
         if( ( 1u == l_tCtxCrc32.uTimeUsed ) && ( e_eFSS_COREHL_RES_OK == l_tCtxCrc32.eLastEr ) )
         {
-            if( 5u == l_ltUseBuff1.uBufL )
+            if( 5u == l_ltUseBuff.uBufL )
             {
                 if( 2u == l_uCrcGetted )
                 {
@@ -2718,11 +2851,11 @@ static void eFSS_COREHLTST_CrcTest(void)
     l_tCtxRead.eLastEr = e_eFSS_COREHL_RES_OK;
     l_tCtxCrc32.uTimeUsed = 0u;
     l_tCtxCrc32.eLastEr = e_eFSS_COREHL_RES_OK;
-    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_CalcCrcInBuff(&l_tCtx, e_eFSS_COREHL_BUFFTYPE_1, 0x10u, l_ltUseBuff1.uBufL, &l_uCrcGetted) )
+    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_CalcCrcInBuff(&l_tCtx, e_eFSS_COREHL_BUFFTYPE_1, 0x10u, l_ltUseBuff.uBufL, &l_uCrcGetted) )
     {
         if( ( 1u == l_tCtxCrc32.uTimeUsed ) && ( e_eFSS_COREHL_RES_OK == l_tCtxCrc32.eLastEr ) )
         {
-            if( 5u == l_ltUseBuff1.uBufL )
+            if( 5u == l_ltUseBuff.uBufL )
             {
                 if( 0x11u == l_uCrcGetted )
                 {
@@ -2758,11 +2891,11 @@ static void eFSS_COREHLTST_CrcTest(void)
     l_tCtxCrc32.uTimeUsed = 0u;
     l_tCtxCrc32.eLastEr = e_eFSS_COREHL_RES_OK;
 
-    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_CalcCrcInBuff(&l_tCtx, e_eFSS_COREHL_BUFFTYPE_2, 0x10u, l_ltUseBuff1.uBufL, &l_uCrcGetted) )
+    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_CalcCrcInBuff(&l_tCtx, e_eFSS_COREHL_BUFFTYPE_2, 0x10u, l_ltUseBuff.uBufL, &l_uCrcGetted) )
     {
         if( ( 1u == l_tCtxCrc32.uTimeUsed ) && ( e_eFSS_COREHL_RES_OK == l_tCtxCrc32.eLastEr ) )
         {
-            if( 5u == l_ltUseBuff1.uBufL )
+            if( 5u == l_ltUseBuff.uBufL )
             {
                 if( 0x12u == l_uCrcGetted )
                 {
@@ -2789,11 +2922,11 @@ static void eFSS_COREHLTST_CrcTest(void)
     }
 
     /* Setup buffer */
-    l_ltUseBuff1.puBuf[0u] = 0x01u;
-    l_ltUseBuff1.puBuf[1u] = 0x02u;
-    l_ltUseBuff1.puBuf[2u] = 0x03u;
-    l_ltUseBuff1.puBuf[3u] = 0x04u;
-    l_ltUseBuff1.puBuf[4u] = 0x05u;
+    l_ltUseBuff.puBuf[0u] = 0x01u;
+    l_ltUseBuff.puBuf[1u] = 0x02u;
+    l_ltUseBuff.puBuf[2u] = 0x03u;
+    l_ltUseBuff.puBuf[3u] = 0x04u;
+    l_ltUseBuff.puBuf[4u] = 0x05u;
 
     l_ltUseBuff2.puBuf[0u] = 0x11u;
     l_ltUseBuff2.puBuf[1u] = 0x12u;
@@ -2810,11 +2943,11 @@ static void eFSS_COREHLTST_CrcTest(void)
     l_tCtxRead.eLastEr = e_eFSS_COREHL_RES_OK;
     l_tCtxCrc32.uTimeUsed = 0u;
     l_tCtxCrc32.eLastEr = e_eFSS_COREHL_RES_OK;
-    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_CalcCrcInBuff(&l_tCtx, e_eFSS_COREHL_BUFFTYPE_1, 0u, l_ltUseBuff1.uBufL, &l_uCrcGetted) )
+    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_CalcCrcInBuff(&l_tCtx, e_eFSS_COREHL_BUFFTYPE_1, 0u, l_ltUseBuff.uBufL, &l_uCrcGetted) )
     {
         if( ( 1u == l_tCtxCrc32.uTimeUsed ) && ( e_eFSS_COREHL_RES_OK == l_tCtxCrc32.eLastEr ) )
         {
-            if( 5u == l_ltUseBuff1.uBufL )
+            if( 5u == l_ltUseBuff.uBufL )
             {
                 if( 0x0Fu == l_uCrcGetted )
                 {
@@ -2850,11 +2983,11 @@ static void eFSS_COREHLTST_CrcTest(void)
     l_tCtxCrc32.uTimeUsed = 0u;
     l_tCtxCrc32.eLastEr = e_eFSS_COREHL_RES_OK;
 
-    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_CalcCrcInBuff(&l_tCtx, e_eFSS_COREHL_BUFFTYPE_2, 0u, l_ltUseBuff1.uBufL, &l_uCrcGetted) )
+    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_CalcCrcInBuff(&l_tCtx, e_eFSS_COREHL_BUFFTYPE_2, 0u, l_ltUseBuff.uBufL, &l_uCrcGetted) )
     {
         if( ( 1u == l_tCtxCrc32.uTimeUsed ) && ( e_eFSS_COREHL_RES_OK == l_tCtxCrc32.eLastEr ) )
         {
-            if( 5u == l_ltUseBuff1.uBufL )
+            if( 5u == l_ltUseBuff.uBufL )
             {
                 if( 0x5Fu == l_uCrcGetted )
                 {
@@ -2881,11 +3014,11 @@ static void eFSS_COREHLTST_CrcTest(void)
     }
 
     /* Setup buffer */
-    l_ltUseBuff1.puBuf[0u] = 0x01u;
-    l_ltUseBuff1.puBuf[1u] = 0x02u;
-    l_ltUseBuff1.puBuf[2u] = 0x03u;
-    l_ltUseBuff1.puBuf[3u] = 0x04u;
-    l_ltUseBuff1.puBuf[4u] = 0x05u;
+    l_ltUseBuff.puBuf[0u] = 0x01u;
+    l_ltUseBuff.puBuf[1u] = 0x02u;
+    l_ltUseBuff.puBuf[2u] = 0x03u;
+    l_ltUseBuff.puBuf[3u] = 0x04u;
+    l_ltUseBuff.puBuf[4u] = 0x05u;
 
     l_ltUseBuff2.puBuf[0u] = 0x11u;
     l_ltUseBuff2.puBuf[1u] = 0x12u;
@@ -2906,7 +3039,7 @@ static void eFSS_COREHLTST_CrcTest(void)
     {
         if( ( 1u == l_tCtxCrc32.uTimeUsed ) && ( e_eFSS_COREHL_RES_OK == l_tCtxCrc32.eLastEr ) )
         {
-            if( 5u == l_ltUseBuff1.uBufL )
+            if( 5u == l_ltUseBuff.uBufL )
             {
                 if( 0x03u == l_uCrcGetted )
                 {
@@ -2933,11 +3066,11 @@ static void eFSS_COREHLTST_CrcTest(void)
     }
 
     /* Setup buffer */
-    l_ltUseBuff1.puBuf[0u] = 0x01u;
-    l_ltUseBuff1.puBuf[1u] = 0x02u;
-    l_ltUseBuff1.puBuf[2u] = 0x03u;
-    l_ltUseBuff1.puBuf[3u] = 0x04u;
-    l_ltUseBuff1.puBuf[4u] = 0x05u;
+    l_ltUseBuff.puBuf[0u] = 0x01u;
+    l_ltUseBuff.puBuf[1u] = 0x02u;
+    l_ltUseBuff.puBuf[2u] = 0x03u;
+    l_ltUseBuff.puBuf[3u] = 0x04u;
+    l_ltUseBuff.puBuf[4u] = 0x05u;
 
     l_ltUseBuff2.puBuf[0u] = 0x11u;
     l_ltUseBuff2.puBuf[1u] = 0x12u;
@@ -2958,7 +3091,7 @@ static void eFSS_COREHLTST_CrcTest(void)
     {
         if( ( 1u == l_tCtxCrc32.uTimeUsed ) && ( e_eFSS_COREHL_RES_OK == l_tCtxCrc32.eLastEr ) )
         {
-            if( 5u == l_ltUseBuff1.uBufL )
+            if( 5u == l_ltUseBuff.uBufL )
             {
                 if( 0x01u == l_uCrcGetted )
                 {
@@ -3017,8 +3150,10 @@ static void eFSS_COREHLTST_LoadTest(void)
 	t_eFSS_TYPE_WriteCtx  l_tCtxWrite;
 	t_eFSS_TYPE_ReadCtx   l_tCtxRead;
 	t_eFSS_TYPE_CrcCtx    l_tCtxCrc32;
-    t_eFSS_COREHL_StorBuf l_ltUseBuff1;
-    t_eFSS_COREHL_StorBuf l_ltUseBuff2;
+    t_eFSS_COREHL_StorBuf l_ltUseBuff;
+    uint8_t l_uSubTypeRead;
+    uint8_t l_uSubTypeWrite;
+    bool_t l_bIsEquals;
 
     /* Init callback var */
     l_tCtxCb.ptCtxErase = &l_tCtxErase;
@@ -3036,6 +3171,9 @@ static void eFSS_COREHLTST_LoadTest(void)
     l_tStorSet.uRWERetry = 3u;
     l_tStorSet.uPageVersion = 1u;
     l_uStorType = 1u;
+    l_uSubTypeRead = 0u;
+    l_uSubTypeWrite = 0u;
+    l_bIsEquals = 0u;
 
     /* ------------------------------------------------------------------------------------------- TEST CRC CALL BACK */
     /* Function */
@@ -3063,7 +3201,7 @@ static void eFSS_COREHLTST_LoadTest(void)
     }
 
     /* Function */
-    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_GetBuff(&l_tCtx, &l_ltUseBuff1, &l_ltUseBuff2) )
+    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_GetBuff(&l_tCtx, &l_ltUseBuff, &l_ltUseBuff2) )
     {
         (void)printf("eFSS_COREHLTST_LoadTest 2  -- OK \n");
     }
@@ -3077,11 +3215,11 @@ static void eFSS_COREHLTST_LoadTest(void)
     (void)memset(m_auStorArea2, 0xFF, sizeof(m_auStorArea2));
 
     /* Setup buffer */
-    l_ltUseBuff1.puBuf[0u] = 0x01u;
-    l_ltUseBuff1.puBuf[1u] = 0x02u;
-    l_ltUseBuff1.puBuf[2u] = 0x03u;
-    l_ltUseBuff1.puBuf[3u] = 0x04u;
-    l_ltUseBuff1.puBuf[4u] = 0x05u;
+    l_ltUseBuff.puBuf[0u] = 0x01u;
+    l_ltUseBuff.puBuf[1u] = 0x02u;
+    l_ltUseBuff.puBuf[2u] = 0x03u;
+    l_ltUseBuff.puBuf[3u] = 0x04u;
+    l_ltUseBuff.puBuf[4u] = 0x05u;
 
     l_ltUseBuff2.puBuf[0u] = 0x11u;
     l_ltUseBuff2.puBuf[1u] = 0x12u;
@@ -3091,8 +3229,8 @@ static void eFSS_COREHLTST_LoadTest(void)
 
     if( e_eFSS_COREHL_RES_NOTVALIDPAGE == eFSS_COREHL_LoadPageInBuff(&l_tCtx, e_eFSS_COREHL_BUFFTYPE_1, 0u) )
     {
-        if( ( 0u == l_ltUseBuff1.puBuf[0u] ) && ( 0u == l_ltUseBuff1.puBuf[1u] ) && ( 0u == l_ltUseBuff1.puBuf[2u] ) &&
-             ( 0u == l_ltUseBuff1.puBuf[3u] ) && ( 0u == l_ltUseBuff1.puBuf[4u] ))
+        if( ( 0u == l_ltUseBuff.puBuf[0u] ) && ( 0u == l_ltUseBuff.puBuf[1u] ) && ( 0u == l_ltUseBuff.puBuf[2u] ) &&
+             ( 0u == l_ltUseBuff.puBuf[3u] ) && ( 0u == l_ltUseBuff.puBuf[4u] ))
         {
             (void)printf("eFSS_COREHLTST_LoadTest 3  -- OK \n");
         }
@@ -3125,8 +3263,8 @@ static void eFSS_COREHLTST_LoadTest(void)
 
     if( e_eFSS_COREHL_RES_NOTVALIDPAGE == eFSS_COREHL_LoadPageInBuff(&l_tCtx, e_eFSS_COREHL_BUFFTYPE_1, 1u) )
     {
-        if( ( 0xFFu == l_ltUseBuff1.puBuf[0u] ) && ( 0xFFu == l_ltUseBuff1.puBuf[1u] ) && ( 0xFFu == l_ltUseBuff1.puBuf[2u] ) &&
-             ( 0xFFu == l_ltUseBuff1.puBuf[3u] ) && ( 0xFFu == l_ltUseBuff1.puBuf[4u] ))
+        if( ( 0xFFu == l_ltUseBuff.puBuf[0u] ) && ( 0xFFu == l_ltUseBuff.puBuf[1u] ) && ( 0xFFu == l_ltUseBuff.puBuf[2u] ) &&
+             ( 0xFFu == l_ltUseBuff.puBuf[3u] ) && ( 0xFFu == l_ltUseBuff.puBuf[4u] ))
         {
             (void)printf("eFSS_COREHLTST_LoadTest 5  -- OK \n");
         }
@@ -3171,11 +3309,11 @@ static void eFSS_COREHLTST_LoadTest(void)
     m_auStorArea2[23u] = 0x00u;
 
     /* Setup buffer */
-    l_ltUseBuff1.puBuf[0u] = 0x01u;
-    l_ltUseBuff1.puBuf[1u] = 0x02u;
-    l_ltUseBuff1.puBuf[2u] = 0x03u;
-    l_ltUseBuff1.puBuf[3u] = 0x04u;
-    l_ltUseBuff1.puBuf[4u] = 0x05u;
+    l_ltUseBuff.puBuf[0u] = 0x01u;
+    l_ltUseBuff.puBuf[1u] = 0x02u;
+    l_ltUseBuff.puBuf[2u] = 0x03u;
+    l_ltUseBuff.puBuf[3u] = 0x04u;
+    l_ltUseBuff.puBuf[4u] = 0x05u;
 
     l_ltUseBuff2.puBuf[0u] = 0x11u;
     l_ltUseBuff2.puBuf[1u] = 0x12u;
@@ -3185,8 +3323,8 @@ static void eFSS_COREHLTST_LoadTest(void)
 
     if( e_eFSS_COREHL_RES_NOTVALIDPAGE == eFSS_COREHL_LoadPageInBuff(&l_tCtx, e_eFSS_COREHL_BUFFTYPE_1, 0u) )
     {
-        if( ( 0u == l_ltUseBuff1.puBuf[0u] ) && ( 0u == l_ltUseBuff1.puBuf[1u] ) && ( 0u == l_ltUseBuff1.puBuf[2u] ) &&
-             ( 0u == l_ltUseBuff1.puBuf[3u] ) && ( 0u == l_ltUseBuff1.puBuf[4u] ))
+        if( ( 0u == l_ltUseBuff.puBuf[0u] ) && ( 0u == l_ltUseBuff.puBuf[1u] ) && ( 0u == l_ltUseBuff.puBuf[2u] ) &&
+             ( 0u == l_ltUseBuff.puBuf[3u] ) && ( 0u == l_ltUseBuff.puBuf[4u] ))
         {
             (void)printf("eFSS_COREHLTST_LoadTest 7  -- OK \n");
         }
@@ -3219,8 +3357,8 @@ static void eFSS_COREHLTST_LoadTest(void)
 
     if( e_eFSS_COREHL_RES_NOTVALIDPAGE == eFSS_COREHL_LoadPageInBuff(&l_tCtx, e_eFSS_COREHL_BUFFTYPE_1, 1u) )
     {
-        if( ( 0x10u == l_ltUseBuff1.puBuf[0u] ) && ( 0x10u == l_ltUseBuff1.puBuf[1u] ) && ( 0x10u == l_ltUseBuff1.puBuf[2u] ) &&
-             ( 0x10u == l_ltUseBuff1.puBuf[3u] ) && ( 0x10u == l_ltUseBuff1.puBuf[4u] ))
+        if( ( 0x10u == l_ltUseBuff.puBuf[0u] ) && ( 0x10u == l_ltUseBuff.puBuf[1u] ) && ( 0x10u == l_ltUseBuff.puBuf[2u] ) &&
+             ( 0x10u == l_ltUseBuff.puBuf[3u] ) && ( 0x10u == l_ltUseBuff.puBuf[4u] ))
         {
             (void)printf("eFSS_COREHLTST_LoadTest 9  -- OK \n");
         }
@@ -3273,11 +3411,11 @@ static void eFSS_COREHLTST_LoadTest(void)
     m_auStorArea2[23u] = 0x00u;
 
     /* Setup buffer */
-    l_ltUseBuff1.puBuf[0u] = 0x01u;
-    l_ltUseBuff1.puBuf[1u] = 0x02u;
-    l_ltUseBuff1.puBuf[2u] = 0x03u;
-    l_ltUseBuff1.puBuf[3u] = 0x04u;
-    l_ltUseBuff1.puBuf[4u] = 0x05u;
+    l_ltUseBuff.puBuf[0u] = 0x01u;
+    l_ltUseBuff.puBuf[1u] = 0x02u;
+    l_ltUseBuff.puBuf[2u] = 0x03u;
+    l_ltUseBuff.puBuf[3u] = 0x04u;
+    l_ltUseBuff.puBuf[4u] = 0x05u;
 
     l_ltUseBuff2.puBuf[0u] = 0x11u;
     l_ltUseBuff2.puBuf[1u] = 0x12u;
@@ -3287,8 +3425,8 @@ static void eFSS_COREHLTST_LoadTest(void)
 
     if( e_eFSS_COREHL_RES_NOTVALIDPAGE == eFSS_COREHL_LoadPageInBuff(&l_tCtx, e_eFSS_COREHL_BUFFTYPE_1, 0u) )
     {
-        if( ( 0u == l_ltUseBuff1.puBuf[0u] ) && ( 0u == l_ltUseBuff1.puBuf[1u] ) && ( 0u == l_ltUseBuff1.puBuf[2u] ) &&
-             ( 0u == l_ltUseBuff1.puBuf[3u] ) && ( 0u == l_ltUseBuff1.puBuf[4u] ))
+        if( ( 0u == l_ltUseBuff.puBuf[0u] ) && ( 0u == l_ltUseBuff.puBuf[1u] ) && ( 0u == l_ltUseBuff.puBuf[2u] ) &&
+             ( 0u == l_ltUseBuff.puBuf[3u] ) && ( 0u == l_ltUseBuff.puBuf[4u] ))
         {
             (void)printf("eFSS_COREHLTST_LoadTest 11 -- OK \n");
         }
@@ -3349,11 +3487,11 @@ static void eFSS_COREHLTST_LoadTest(void)
     m_auStorArea2[23u] = 0x00u;
 
     /* Setup buffer */
-    l_ltUseBuff1.puBuf[0u] = 0x01u;
-    l_ltUseBuff1.puBuf[1u] = 0x02u;
-    l_ltUseBuff1.puBuf[2u] = 0x03u;
-    l_ltUseBuff1.puBuf[3u] = 0x04u;
-    l_ltUseBuff1.puBuf[4u] = 0x05u;
+    l_ltUseBuff.puBuf[0u] = 0x01u;
+    l_ltUseBuff.puBuf[1u] = 0x02u;
+    l_ltUseBuff.puBuf[2u] = 0x03u;
+    l_ltUseBuff.puBuf[3u] = 0x04u;
+    l_ltUseBuff.puBuf[4u] = 0x05u;
 
     l_ltUseBuff2.puBuf[0u] = 0x11u;
     l_ltUseBuff2.puBuf[1u] = 0x12u;
@@ -3363,8 +3501,8 @@ static void eFSS_COREHLTST_LoadTest(void)
 
     if( e_eFSS_COREHL_RES_NOTVALIDPAGE == eFSS_COREHL_LoadPageInBuff(&l_tCtx, e_eFSS_COREHL_BUFFTYPE_1, 0u) )
     {
-        if( ( 0u == l_ltUseBuff1.puBuf[0u] ) && ( 0u == l_ltUseBuff1.puBuf[1u] ) && ( 0u == l_ltUseBuff1.puBuf[2u] ) &&
-             ( 0u == l_ltUseBuff1.puBuf[3u] ) && ( 0u == l_ltUseBuff1.puBuf[4u] ))
+        if( ( 0u == l_ltUseBuff.puBuf[0u] ) && ( 0u == l_ltUseBuff.puBuf[1u] ) && ( 0u == l_ltUseBuff.puBuf[2u] ) &&
+             ( 0u == l_ltUseBuff.puBuf[3u] ) && ( 0u == l_ltUseBuff.puBuf[4u] ))
         {
             (void)printf("eFSS_COREHLTST_LoadTest 13 -- OK \n");
         }
@@ -3429,11 +3567,11 @@ static void eFSS_COREHLTST_LoadTest(void)
     m_auStorArea2[23u] = 0x00u;
 
     /* Setup buffer */
-    l_ltUseBuff1.puBuf[0u] = 0x01u;
-    l_ltUseBuff1.puBuf[1u] = 0x02u;
-    l_ltUseBuff1.puBuf[2u] = 0x03u;
-    l_ltUseBuff1.puBuf[3u] = 0x04u;
-    l_ltUseBuff1.puBuf[4u] = 0x05u;
+    l_ltUseBuff.puBuf[0u] = 0x01u;
+    l_ltUseBuff.puBuf[1u] = 0x02u;
+    l_ltUseBuff.puBuf[2u] = 0x03u;
+    l_ltUseBuff.puBuf[3u] = 0x04u;
+    l_ltUseBuff.puBuf[4u] = 0x05u;
 
     l_ltUseBuff2.puBuf[0u] = 0x11u;
     l_ltUseBuff2.puBuf[1u] = 0x12u;
@@ -3443,8 +3581,8 @@ static void eFSS_COREHLTST_LoadTest(void)
 
     if( e_eFSS_COREHL_RES_NOTVALIDPAGE == eFSS_COREHL_LoadPageInBuff(&l_tCtx, e_eFSS_COREHL_BUFFTYPE_1, 0u) )
     {
-        if( ( 0u == l_ltUseBuff1.puBuf[0u] ) && ( 0u == l_ltUseBuff1.puBuf[1u] ) && ( 0u == l_ltUseBuff1.puBuf[2u] ) &&
-             ( 0u == l_ltUseBuff1.puBuf[3u] ) && ( 0u == l_ltUseBuff1.puBuf[4u] ))
+        if( ( 0u == l_ltUseBuff.puBuf[0u] ) && ( 0u == l_ltUseBuff.puBuf[1u] ) && ( 0u == l_ltUseBuff.puBuf[2u] ) &&
+             ( 0u == l_ltUseBuff.puBuf[3u] ) && ( 0u == l_ltUseBuff.puBuf[4u] ))
         {
             (void)printf("eFSS_COREHLTST_LoadTest 15 -- OK \n");
         }
@@ -3511,11 +3649,11 @@ static void eFSS_COREHLTST_LoadTest(void)
     m_auStorArea2[23u] = 0x00u;
 
     /* Setup buffer */
-    l_ltUseBuff1.puBuf[0u] = 0x01u;
-    l_ltUseBuff1.puBuf[1u] = 0x02u;
-    l_ltUseBuff1.puBuf[2u] = 0x03u;
-    l_ltUseBuff1.puBuf[3u] = 0x04u;
-    l_ltUseBuff1.puBuf[4u] = 0x05u;
+    l_ltUseBuff.puBuf[0u] = 0x01u;
+    l_ltUseBuff.puBuf[1u] = 0x02u;
+    l_ltUseBuff.puBuf[2u] = 0x03u;
+    l_ltUseBuff.puBuf[3u] = 0x04u;
+    l_ltUseBuff.puBuf[4u] = 0x05u;
 
     l_ltUseBuff2.puBuf[0u] = 0x11u;
     l_ltUseBuff2.puBuf[1u] = 0x12u;
@@ -3525,8 +3663,8 @@ static void eFSS_COREHLTST_LoadTest(void)
 
     if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_LoadPageInBuff(&l_tCtx, e_eFSS_COREHL_BUFFTYPE_1, 0u) )
     {
-        if( ( 0u == l_ltUseBuff1.puBuf[0u] ) && ( 0u == l_ltUseBuff1.puBuf[1u] ) && ( 0u == l_ltUseBuff1.puBuf[2u] ) &&
-             ( 0u == l_ltUseBuff1.puBuf[3u] ) && ( 0u == l_ltUseBuff1.puBuf[4u] ))
+        if( ( 0u == l_ltUseBuff.puBuf[0u] ) && ( 0u == l_ltUseBuff.puBuf[1u] ) && ( 0u == l_ltUseBuff.puBuf[2u] ) &&
+             ( 0u == l_ltUseBuff.puBuf[3u] ) && ( 0u == l_ltUseBuff.puBuf[4u] ))
         {
             (void)printf("eFSS_COREHLTST_LoadTest 17 -- OK \n");
         }
@@ -3602,11 +3740,11 @@ static void eFSS_COREHLTST_LoadTest(void)
     m_auStorArea2[23u] = 0x00u;
 
     /* Setup buffer */
-    l_ltUseBuff1.puBuf[0u] = 0x01u;
-    l_ltUseBuff1.puBuf[1u] = 0x02u;
-    l_ltUseBuff1.puBuf[2u] = 0x03u;
-    l_ltUseBuff1.puBuf[3u] = 0x04u;
-    l_ltUseBuff1.puBuf[4u] = 0x05u;
+    l_ltUseBuff.puBuf[0u] = 0x01u;
+    l_ltUseBuff.puBuf[1u] = 0x02u;
+    l_ltUseBuff.puBuf[2u] = 0x03u;
+    l_ltUseBuff.puBuf[3u] = 0x04u;
+    l_ltUseBuff.puBuf[4u] = 0x05u;
 
     l_ltUseBuff2.puBuf[0u] = 0x11u;
     l_ltUseBuff2.puBuf[1u] = 0x12u;
@@ -3616,8 +3754,8 @@ static void eFSS_COREHLTST_LoadTest(void)
 
     if( e_eFSS_COREHL_RES_NOTVALIDPAGE == eFSS_COREHL_LoadPageInBuff(&l_tCtx, e_eFSS_COREHL_BUFFTYPE_1, 0u) )
     {
-        if( ( 0u == l_ltUseBuff1.puBuf[0u] ) && ( 0u == l_ltUseBuff1.puBuf[1u] ) && ( 0u == l_ltUseBuff1.puBuf[2u] ) &&
-             ( 0u == l_ltUseBuff1.puBuf[3u] ) && ( 0u == l_ltUseBuff1.puBuf[4u] ))
+        if( ( 0u == l_ltUseBuff.puBuf[0u] ) && ( 0u == l_ltUseBuff.puBuf[1u] ) && ( 0u == l_ltUseBuff.puBuf[2u] ) &&
+             ( 0u == l_ltUseBuff.puBuf[3u] ) && ( 0u == l_ltUseBuff.puBuf[4u] ))
         {
             (void)printf("eFSS_COREHLTST_LoadTest 19 -- OK \n");
         }
@@ -3693,11 +3831,11 @@ static void eFSS_COREHLTST_LoadTest(void)
     m_auStorArea2[23u] = 0x00u;
 
     /* Setup buffer */
-    l_ltUseBuff1.puBuf[0u] = 0x01u;
-    l_ltUseBuff1.puBuf[1u] = 0x02u;
-    l_ltUseBuff1.puBuf[2u] = 0x03u;
-    l_ltUseBuff1.puBuf[3u] = 0x04u;
-    l_ltUseBuff1.puBuf[4u] = 0x05u;
+    l_ltUseBuff.puBuf[0u] = 0x01u;
+    l_ltUseBuff.puBuf[1u] = 0x02u;
+    l_ltUseBuff.puBuf[2u] = 0x03u;
+    l_ltUseBuff.puBuf[3u] = 0x04u;
+    l_ltUseBuff.puBuf[4u] = 0x05u;
 
     l_ltUseBuff2.puBuf[0u] = 0x11u;
     l_ltUseBuff2.puBuf[1u] = 0x12u;
@@ -3707,8 +3845,8 @@ static void eFSS_COREHLTST_LoadTest(void)
 
     if( e_eFSS_COREHL_RES_NEWVERSIONFOUND == eFSS_COREHL_LoadPageInBuff(&l_tCtx, e_eFSS_COREHL_BUFFTYPE_1, 0u) )
     {
-        if( ( 0u == l_ltUseBuff1.puBuf[0u] ) && ( 0u == l_ltUseBuff1.puBuf[1u] ) && ( 0u == l_ltUseBuff1.puBuf[2u] ) &&
-             ( 0u == l_ltUseBuff1.puBuf[3u] ) && ( 0u == l_ltUseBuff1.puBuf[4u] ))
+        if( ( 0u == l_ltUseBuff.puBuf[0u] ) && ( 0u == l_ltUseBuff.puBuf[1u] ) && ( 0u == l_ltUseBuff.puBuf[2u] ) &&
+             ( 0u == l_ltUseBuff.puBuf[3u] ) && ( 0u == l_ltUseBuff.puBuf[4u] ))
         {
             (void)printf("eFSS_COREHLTST_LoadTest 21 -- OK \n");
         }
@@ -3762,8 +3900,10 @@ static void eFSS_COREHLTST_FlushTest(void)
 	t_eFSS_TYPE_WriteCtx  l_tCtxWrite;
 	t_eFSS_TYPE_ReadCtx   l_tCtxRead;
 	t_eFSS_TYPE_CrcCtx    l_tCtxCrc32;
-    t_eFSS_COREHL_StorBuf l_ltUseBuff1;
-    t_eFSS_COREHL_StorBuf l_ltUseBuff2;
+    t_eFSS_COREHL_StorBuf l_ltUseBuff;
+    uint8_t l_uSubTypeRead;
+    uint8_t l_uSubTypeWrite;
+    bool_t l_bIsEquals;
 
     /* Init callback var */
     l_tCtxCb.ptCtxErase = &l_tCtxErase;
@@ -3781,6 +3921,9 @@ static void eFSS_COREHLTST_FlushTest(void)
     l_tStorSet.uRWERetry = 3u;
     l_tStorSet.uPageVersion = 1u;
     l_uStorType = 1u;
+    l_uSubTypeRead = 0u;
+    l_uSubTypeWrite = 0u;
+    l_bIsEquals = 0u;
 
     /* ------------------------------------------------------------------------------------------- TEST CRC CALL BACK */
     /* Function */
@@ -3808,7 +3951,7 @@ static void eFSS_COREHLTST_FlushTest(void)
     }
 
     /* Function */
-    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_GetBuff(&l_tCtx, &l_ltUseBuff1, &l_ltUseBuff2) )
+    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_GetBuff(&l_tCtx, &l_ltUseBuff, &l_ltUseBuff2) )
     {
         (void)printf("eFSS_COREHLTST_FlushTest 2  -- OK \n");
     }
@@ -3822,11 +3965,11 @@ static void eFSS_COREHLTST_FlushTest(void)
     (void)memset(m_auStorArea2, 0xFF, sizeof(m_auStorArea2));
 
     /* Setup buffer */
-    l_ltUseBuff1.puBuf[0u] = 0x01u;
-    l_ltUseBuff1.puBuf[1u] = 0x02u;
-    l_ltUseBuff1.puBuf[2u] = 0x03u;
-    l_ltUseBuff1.puBuf[3u] = 0x04u;
-    l_ltUseBuff1.puBuf[4u] = 0x05u;
+    l_ltUseBuff.puBuf[0u] = 0x01u;
+    l_ltUseBuff.puBuf[1u] = 0x02u;
+    l_ltUseBuff.puBuf[2u] = 0x03u;
+    l_ltUseBuff.puBuf[3u] = 0x04u;
+    l_ltUseBuff.puBuf[4u] = 0x05u;
 
     l_ltUseBuff2.puBuf[0u] = 0x11u;
     l_ltUseBuff2.puBuf[1u] = 0x12u;
@@ -3855,8 +3998,8 @@ static void eFSS_COREHLTST_FlushTest(void)
             ( 0xFFu== m_auStorArea2[20u] ) && ( 0xFFu== m_auStorArea2[21u] ) && ( 0xFFu== m_auStorArea2[22u] ) &&
             ( 0xFFu== m_auStorArea2[23u] ) )
         {
-            if( ( 0x01u== l_ltUseBuff1.puBuf[0u] )  && ( 0x02u== l_ltUseBuff1.puBuf[1u] )  && ( 0x03u== l_ltUseBuff1.puBuf[2u] ) &&
-                ( 0x04u== l_ltUseBuff1.puBuf[3u] )  && ( 0x05u== l_ltUseBuff1.puBuf[4u] )  &&
+            if( ( 0x01u== l_ltUseBuff.puBuf[0u] )  && ( 0x02u== l_ltUseBuff.puBuf[1u] )  && ( 0x03u== l_ltUseBuff.puBuf[2u] ) &&
+                ( 0x04u== l_ltUseBuff.puBuf[3u] )  && ( 0x05u== l_ltUseBuff.puBuf[4u] )  &&
                 ( 0x01u== l_ltUseBuff2.puBuf[0u] )  && ( 0x02u== l_ltUseBuff2.puBuf[1u] )  && ( 0x03u== l_ltUseBuff2.puBuf[2u] ) &&
                 ( 0x04u== l_ltUseBuff2.puBuf[3u] )  && ( 0x05u== l_ltUseBuff2.puBuf[4u] ) )
             {
@@ -3882,11 +4025,11 @@ static void eFSS_COREHLTST_FlushTest(void)
     (void)memset(m_auStorArea2, 0xFF, sizeof(m_auStorArea2));
 
     /* Setup buffer */
-    l_ltUseBuff1.puBuf[0u] = 0x01u;
-    l_ltUseBuff1.puBuf[1u] = 0x02u;
-    l_ltUseBuff1.puBuf[2u] = 0x03u;
-    l_ltUseBuff1.puBuf[3u] = 0x04u;
-    l_ltUseBuff1.puBuf[4u] = 0x05u;
+    l_ltUseBuff.puBuf[0u] = 0x01u;
+    l_ltUseBuff.puBuf[1u] = 0x02u;
+    l_ltUseBuff.puBuf[2u] = 0x03u;
+    l_ltUseBuff.puBuf[3u] = 0x04u;
+    l_ltUseBuff.puBuf[4u] = 0x05u;
 
     l_ltUseBuff2.puBuf[0u] = 0x11u;
     l_ltUseBuff2.puBuf[1u] = 0x12u;
@@ -3915,8 +4058,8 @@ static void eFSS_COREHLTST_FlushTest(void)
             ( 0x00u== m_auStorArea1[20u] ) && ( 0x00u== m_auStorArea1[21u] ) && ( 0x00u== m_auStorArea1[22u] ) &&
             ( 0x00u== m_auStorArea1[23u] ) )
         {
-            if( ( 0x01u== l_ltUseBuff1.puBuf[0u] )  && ( 0x02u== l_ltUseBuff1.puBuf[1u] )  && ( 0x03u== l_ltUseBuff1.puBuf[2u] ) &&
-                ( 0x04u== l_ltUseBuff1.puBuf[3u] )  && ( 0x05u== l_ltUseBuff1.puBuf[4u] )  &&
+            if( ( 0x01u== l_ltUseBuff.puBuf[0u] )  && ( 0x02u== l_ltUseBuff.puBuf[1u] )  && ( 0x03u== l_ltUseBuff.puBuf[2u] ) &&
+                ( 0x04u== l_ltUseBuff.puBuf[3u] )  && ( 0x05u== l_ltUseBuff.puBuf[4u] )  &&
                 ( 0x01u== l_ltUseBuff2.puBuf[0u] )  && ( 0x02u== l_ltUseBuff2.puBuf[1u] )  && ( 0x03u== l_ltUseBuff2.puBuf[2u] ) &&
                 ( 0x04u== l_ltUseBuff2.puBuf[3u] )  && ( 0x05u== l_ltUseBuff2.puBuf[4u] ) )
             {
@@ -3942,11 +4085,11 @@ static void eFSS_COREHLTST_FlushTest(void)
     (void)memset(m_auStorArea2, 0xFF, sizeof(m_auStorArea2));
 
     /* Setup buffer */
-    l_ltUseBuff1.puBuf[0u] = 0x11u;
-    l_ltUseBuff1.puBuf[1u] = 0x12u;
-    l_ltUseBuff1.puBuf[2u] = 0x13u;
-    l_ltUseBuff1.puBuf[3u] = 0x14u;
-    l_ltUseBuff1.puBuf[4u] = 0x15u;
+    l_ltUseBuff.puBuf[0u] = 0x11u;
+    l_ltUseBuff.puBuf[1u] = 0x12u;
+    l_ltUseBuff.puBuf[2u] = 0x13u;
+    l_ltUseBuff.puBuf[3u] = 0x14u;
+    l_ltUseBuff.puBuf[4u] = 0x15u;
 
     l_ltUseBuff2.puBuf[0u] = 0x01u;
     l_ltUseBuff2.puBuf[1u] = 0x02u;
@@ -3975,8 +4118,8 @@ static void eFSS_COREHLTST_FlushTest(void)
             ( 0xFFu== m_auStorArea2[20u] ) && ( 0xFFu== m_auStorArea2[21u] ) && ( 0xFFu== m_auStorArea2[22u] ) &&
             ( 0xFFu== m_auStorArea2[23u] ) )
         {
-            if( ( 0x01u== l_ltUseBuff1.puBuf[0u] )  && ( 0x02u== l_ltUseBuff1.puBuf[1u] )  && ( 0x03u== l_ltUseBuff1.puBuf[2u] ) &&
-                ( 0x04u== l_ltUseBuff1.puBuf[3u] )  && ( 0x05u== l_ltUseBuff1.puBuf[4u] )  &&
+            if( ( 0x01u== l_ltUseBuff.puBuf[0u] )  && ( 0x02u== l_ltUseBuff.puBuf[1u] )  && ( 0x03u== l_ltUseBuff.puBuf[2u] ) &&
+                ( 0x04u== l_ltUseBuff.puBuf[3u] )  && ( 0x05u== l_ltUseBuff.puBuf[4u] )  &&
                 ( 0x01u== l_ltUseBuff2.puBuf[0u] )  && ( 0x02u== l_ltUseBuff2.puBuf[1u] )  && ( 0x03u== l_ltUseBuff2.puBuf[2u] ) &&
                 ( 0x04u== l_ltUseBuff2.puBuf[3u] )  && ( 0x05u== l_ltUseBuff2.puBuf[4u] ) )
             {
@@ -4002,11 +4145,11 @@ static void eFSS_COREHLTST_FlushTest(void)
     (void)memset(m_auStorArea2, 0xFF, sizeof(m_auStorArea2));
 
     /* Setup buffer */
-    l_ltUseBuff1.puBuf[0u] = 0x11u;
-    l_ltUseBuff1.puBuf[1u] = 0x12u;
-    l_ltUseBuff1.puBuf[2u] = 0x13u;
-    l_ltUseBuff1.puBuf[3u] = 0x14u;
-    l_ltUseBuff1.puBuf[4u] = 0x15u;
+    l_ltUseBuff.puBuf[0u] = 0x11u;
+    l_ltUseBuff.puBuf[1u] = 0x12u;
+    l_ltUseBuff.puBuf[2u] = 0x13u;
+    l_ltUseBuff.puBuf[3u] = 0x14u;
+    l_ltUseBuff.puBuf[4u] = 0x15u;
 
     l_ltUseBuff2.puBuf[0u] = 0x01u;
     l_ltUseBuff2.puBuf[1u] = 0x02u;
@@ -4035,8 +4178,8 @@ static void eFSS_COREHLTST_FlushTest(void)
             ( 0x00u== m_auStorArea1[20u] ) && ( 0x00u== m_auStorArea1[21u] ) && ( 0x00u== m_auStorArea1[22u] ) &&
             ( 0x00u== m_auStorArea1[23u] ) )
         {
-            if( ( 0x01u== l_ltUseBuff1.puBuf[0u] )  && ( 0x02u== l_ltUseBuff1.puBuf[1u] )  && ( 0x03u== l_ltUseBuff1.puBuf[2u] ) &&
-                ( 0x04u== l_ltUseBuff1.puBuf[3u] )  && ( 0x05u== l_ltUseBuff1.puBuf[4u] )  &&
+            if( ( 0x01u== l_ltUseBuff.puBuf[0u] )  && ( 0x02u== l_ltUseBuff.puBuf[1u] )  && ( 0x03u== l_ltUseBuff.puBuf[2u] ) &&
+                ( 0x04u== l_ltUseBuff.puBuf[3u] )  && ( 0x05u== l_ltUseBuff.puBuf[4u] )  &&
                 ( 0x01u== l_ltUseBuff2.puBuf[0u] )  && ( 0x02u== l_ltUseBuff2.puBuf[1u] )  && ( 0x03u== l_ltUseBuff2.puBuf[2u] ) &&
                 ( 0x04u== l_ltUseBuff2.puBuf[3u] )  && ( 0x05u== l_ltUseBuff2.puBuf[4u] ) )
             {
@@ -4082,7 +4225,7 @@ static void eFSS_COREHLTST_FlushTest(void)
     }
 
     /* Function */
-    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_GetBuff(&l_tCtx, &l_ltUseBuff1, &l_ltUseBuff2) )
+    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_GetBuff(&l_tCtx, &l_ltUseBuff, &l_ltUseBuff2) )
     {
         (void)printf("eFSS_COREHLTST_FlushTest 8  -- OK \n");
     }
@@ -4096,11 +4239,11 @@ static void eFSS_COREHLTST_FlushTest(void)
     (void)memset(m_auStorArea2, 0xFF, sizeof(m_auStorArea2));
 
     /* Setup buffer */
-    l_ltUseBuff1.puBuf[0u] = 0x01u;
-    l_ltUseBuff1.puBuf[1u] = 0x02u;
-    l_ltUseBuff1.puBuf[2u] = 0x03u;
-    l_ltUseBuff1.puBuf[3u] = 0x04u;
-    l_ltUseBuff1.puBuf[4u] = 0x05u;
+    l_ltUseBuff.puBuf[0u] = 0x01u;
+    l_ltUseBuff.puBuf[1u] = 0x02u;
+    l_ltUseBuff.puBuf[2u] = 0x03u;
+    l_ltUseBuff.puBuf[3u] = 0x04u;
+    l_ltUseBuff.puBuf[4u] = 0x05u;
 
     l_ltUseBuff2.puBuf[0u] = 0x11u;
     l_ltUseBuff2.puBuf[1u] = 0x12u;
@@ -4122,11 +4265,11 @@ static void eFSS_COREHLTST_FlushTest(void)
     (void)memset(m_auStorArea2, 0xFF, sizeof(m_auStorArea2));
 
     /* Setup buffer */
-    l_ltUseBuff1.puBuf[0u] = 0x01u;
-    l_ltUseBuff1.puBuf[1u] = 0x02u;
-    l_ltUseBuff1.puBuf[2u] = 0x03u;
-    l_ltUseBuff1.puBuf[3u] = 0x04u;
-    l_ltUseBuff1.puBuf[4u] = 0x05u;
+    l_ltUseBuff.puBuf[0u] = 0x01u;
+    l_ltUseBuff.puBuf[1u] = 0x02u;
+    l_ltUseBuff.puBuf[2u] = 0x03u;
+    l_ltUseBuff.puBuf[3u] = 0x04u;
+    l_ltUseBuff.puBuf[4u] = 0x05u;
 
     l_ltUseBuff2.puBuf[0u] = 0x11u;
     l_ltUseBuff2.puBuf[1u] = 0x12u;
@@ -4148,11 +4291,11 @@ static void eFSS_COREHLTST_FlushTest(void)
     (void)memset(m_auStorArea2, 0xFF, sizeof(m_auStorArea2));
 
     /* Setup buffer */
-    l_ltUseBuff1.puBuf[0u] = 0x01u;
-    l_ltUseBuff1.puBuf[1u] = 0x02u;
-    l_ltUseBuff1.puBuf[2u] = 0x03u;
-    l_ltUseBuff1.puBuf[3u] = 0x04u;
-    l_ltUseBuff1.puBuf[4u] = 0x05u;
+    l_ltUseBuff.puBuf[0u] = 0x01u;
+    l_ltUseBuff.puBuf[1u] = 0x02u;
+    l_ltUseBuff.puBuf[2u] = 0x03u;
+    l_ltUseBuff.puBuf[3u] = 0x04u;
+    l_ltUseBuff.puBuf[4u] = 0x05u;
 
     l_ltUseBuff2.puBuf[0u] = 0x11u;
     l_ltUseBuff2.puBuf[1u] = 0x12u;
@@ -4174,11 +4317,11 @@ static void eFSS_COREHLTST_FlushTest(void)
     (void)memset(m_auStorArea2, 0xFF, sizeof(m_auStorArea2));
 
     /* Setup buffer */
-    l_ltUseBuff1.puBuf[0u] = 0x01u;
-    l_ltUseBuff1.puBuf[1u] = 0x02u;
-    l_ltUseBuff1.puBuf[2u] = 0x03u;
-    l_ltUseBuff1.puBuf[3u] = 0x04u;
-    l_ltUseBuff1.puBuf[4u] = 0x05u;
+    l_ltUseBuff.puBuf[0u] = 0x01u;
+    l_ltUseBuff.puBuf[1u] = 0x02u;
+    l_ltUseBuff.puBuf[2u] = 0x03u;
+    l_ltUseBuff.puBuf[3u] = 0x04u;
+    l_ltUseBuff.puBuf[4u] = 0x05u;
 
     l_ltUseBuff2.puBuf[0u] = 0x11u;
     l_ltUseBuff2.puBuf[1u] = 0x12u;
@@ -4204,7 +4347,7 @@ static void eFSS_COREHLTST_FlushTest(void)
     (void)l_tCtxRead.uTimeUsed;
     (void)l_tCtxCrc32.eLastEr;
     (void)l_tCtxCrc32.uTimeUsed;
-    (void)l_ltUseBuff1.puBuf;
+    (void)l_ltUseBuff.puBuf;
     (void)l_ltUseBuff2.puBuf;
 }
 
@@ -4220,8 +4363,10 @@ static void eFSS_COREHLTST_GenTest(void)
 	t_eFSS_TYPE_WriteCtx  l_tCtxWrite;
 	t_eFSS_TYPE_ReadCtx   l_tCtxRead;
 	t_eFSS_TYPE_CrcCtx    l_tCtxCrc32;
-    t_eFSS_COREHL_StorBuf l_ltUseBuff1;
-    t_eFSS_COREHL_StorBuf l_ltUseBuff2;
+    t_eFSS_COREHL_StorBuf l_ltUseBuff;
+    uint8_t l_uSubTypeRead;
+    uint8_t l_uSubTypeWrite;
+    bool_t l_bIsEquals;
 
     /* Init callback var */
     l_tCtxCb.ptCtxErase = &l_tCtxErase;
@@ -4239,6 +4384,9 @@ static void eFSS_COREHLTST_GenTest(void)
     l_tStorSet.uRWERetry = 3u;
     l_tStorSet.uPageVersion = 1u;
     l_uStorType = 1u;
+    l_uSubTypeRead = 0u;
+    l_uSubTypeWrite = 0u;
+    l_bIsEquals = 0u;
 
     /* ------------------------------------------------------------------------------------------- TEST CRC CALL BACK */
     /* Function */
@@ -4266,7 +4414,7 @@ static void eFSS_COREHLTST_GenTest(void)
     }
 
     /* Function */
-    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_GetBuff(&l_tCtx, &l_ltUseBuff1, &l_ltUseBuff2) )
+    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_GetBuff(&l_tCtx, &l_ltUseBuff, &l_ltUseBuff2) )
     {
         (void)printf("eFSS_COREHLTST_GenTest 2  -- OK \n");
     }
@@ -4280,11 +4428,11 @@ static void eFSS_COREHLTST_GenTest(void)
     (void)memset(m_auStorArea2, 0xFF, sizeof(m_auStorArea2));
 
     /* Setup buffer */
-    l_ltUseBuff1.puBuf[0u] = 0x01u;
-    l_ltUseBuff1.puBuf[1u] = 0x02u;
-    l_ltUseBuff1.puBuf[2u] = 0x03u;
-    l_ltUseBuff1.puBuf[3u] = 0x04u;
-    l_ltUseBuff1.puBuf[4u] = 0x05u;
+    l_ltUseBuff.puBuf[0u] = 0x01u;
+    l_ltUseBuff.puBuf[1u] = 0x02u;
+    l_ltUseBuff.puBuf[2u] = 0x03u;
+    l_ltUseBuff.puBuf[3u] = 0x04u;
+    l_ltUseBuff.puBuf[4u] = 0x05u;
 
     l_ltUseBuff2.puBuf[0u] = 0x11u;
     l_ltUseBuff2.puBuf[1u] = 0x12u;
@@ -4323,11 +4471,11 @@ static void eFSS_COREHLTST_GenTest(void)
     (void)memset(m_auStorArea2, 0xFF, sizeof(m_auStorArea2));
 
     /* Setup buffer */
-    l_ltUseBuff1.puBuf[0u] = 0x01u;
-    l_ltUseBuff1.puBuf[1u] = 0x02u;
-    l_ltUseBuff1.puBuf[2u] = 0x03u;
-    l_ltUseBuff1.puBuf[3u] = 0x04u;
-    l_ltUseBuff1.puBuf[4u] = 0x05u;
+    l_ltUseBuff.puBuf[0u] = 0x01u;
+    l_ltUseBuff.puBuf[1u] = 0x02u;
+    l_ltUseBuff.puBuf[2u] = 0x03u;
+    l_ltUseBuff.puBuf[3u] = 0x04u;
+    l_ltUseBuff.puBuf[4u] = 0x05u;
 
     l_ltUseBuff2.puBuf[0u] = 0x11u;
     l_ltUseBuff2.puBuf[1u] = 0x12u;
@@ -4346,8 +4494,8 @@ static void eFSS_COREHLTST_GenTest(void)
 
     if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_LoadPageInBuff(&l_tCtx, e_eFSS_COREHL_BUFFTYPE_1, 1u) )
     {
-        if( ( 0x11u== l_ltUseBuff1.puBuf[0u] ) && ( 0x12u== l_ltUseBuff1.puBuf[1u] ) && ( 0x13u== l_ltUseBuff1.puBuf[2u] ) &&
-            ( 0x14u== l_ltUseBuff1.puBuf[3u] ) && ( 0x15u== l_ltUseBuff1.puBuf[4u] ))
+        if( ( 0x11u== l_ltUseBuff.puBuf[0u] ) && ( 0x12u== l_ltUseBuff.puBuf[1u] ) && ( 0x13u== l_ltUseBuff.puBuf[2u] ) &&
+            ( 0x14u== l_ltUseBuff.puBuf[3u] ) && ( 0x15u== l_ltUseBuff.puBuf[4u] ))
         {
             (void)printf("eFSS_COREHLTST_GenTest 6  -- OK \n");
         }
