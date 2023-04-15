@@ -553,9 +553,11 @@ e_eFSS_COREHL_RES eFSS_COREHL_LoadPageInBuffNRipBkp(t_eFSS_COREHL_Ctx* const p_p
     /* Return local var */
     e_eFSS_COREHL_RES l_eRes;
     e_eFSS_CORELL_RES l_eResLL;
+
+    /* Local var for init */
     bool_t l_bIsInit;
 
-    /* Calc local variable */
+    /* Local variable for storage */
     t_eFSS_CORELL_StorBuf l_tBuff1;
     t_eFSS_CORELL_StorBuf l_tBuff2;
 
@@ -690,7 +692,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_LoadPageInBuffNRipBkp(t_eFSS_COREHL_Ctx* const p_p
                                     }
                                     else if( ( false == l_bIsOriVal ) && ( true == l_bIsBkpVal ) )
                                     {
-                                        /* Original page is not valid, ripristinate it from the backup one */
+                                        /* Original page is not valid, ripristinate it from the backup area */
                                         l_tBuff2.puBuf[ l_tBuff2.uBufL - EFSS_COREHL_PAGEMIN_L ] = p_uOriSubT;
 
                                         l_eResLL = eFSS_CORELL_FlushBuffInPage(&p_ptCtx->tCORELLCtx,
@@ -714,7 +716,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_LoadPageInBuffNRipBkp(t_eFSS_COREHL_Ctx* const p_p
                                     }
                                     else if( ( true == l_bIsOriVal ) && ( false == l_bIsBkpVal ) )
                                     {
-                                        /* Backup is not valid, ripristinate it from the origin one */
+                                        /* Backup is not valid, ripristinate it from the origin area */
                                         l_tBuff1.puBuf[ l_tBuff1.uBufL - EFSS_COREHL_PAGEMIN_L ] = p_uBkpSubT;
 
                                         l_eResLL = eFSS_CORELL_FlushBuffInPage(&p_ptCtx->tCORELLCtx,
@@ -736,7 +738,7 @@ e_eFSS_COREHL_RES eFSS_COREHL_LoadPageInBuffNRipBkp(t_eFSS_COREHL_Ctx* const p_p
                                     {
                                         if( ( true == l_bIsOriNew ) || ( true == l_bIsBkpNew ) )
                                         {
-                                            /* No valid page found, but ptobably we have a new storage version */
+                                            /* No valid page found, but probably we have a new storage version */
                                             l_eRes = e_eFSS_COREHL_RES_NEWVERSIONFOUND;
                                         }
                                         else
