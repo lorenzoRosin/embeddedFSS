@@ -99,11 +99,11 @@ static bool_t eFSS_COREHLTST_CrcTst1Adapt(t_eFSS_TYPE_CrcCtx* const p_ptCtx, con
  *   PRIVATE FUNCTION DECLARATION
  **********************************************************************************************************************/
 static void eFSS_COREHLTST_BadPointer(void);
-
-#ifdef 0
 static void eFSS_COREHLTST_BadInit(void);
 static void eFSS_COREHLTST_BadParamEntr(void);
 static void eFSS_COREHLTST_CorruptedCtx(void);
+
+#ifdef 0
 static void eFSS_COREHLTST_Basic(void);
 static void eFSS_COREHLTST_BadClBckNRetry(void);
 static void eFSS_COREHLTST_CrcTest(void);
@@ -120,12 +120,12 @@ void eFSS_COREHLTST_ExeTest(void)
 {
 	(void)printf("\n\nCORE HIGH LEVEL TEST START \n\n");
 
-    eFSS_COREHLTST_BadPointer();
+    // eFSS_COREHLTST_BadPointer();
+    // eFSS_COREHLTST_BadInit();
+    // eFSS_COREHLTST_BadParamEntr();
+    eFSS_COREHLTST_CorruptedCtx();
 
 #ifdef 0
-    eFSS_COREHLTST_BadInit();
-    eFSS_COREHLTST_BadParamEntr();
-    eFSS_COREHLTST_CorruptedCtx();
     eFSS_COREHLTST_Basic();
     eFSS_COREHLTST_BadClBckNRetry();
     eFSS_COREHLTST_CrcTest();
@@ -1078,8 +1078,6 @@ void eFSS_COREHLTST_BadPointer(void)
     (void)l_tCtxCrc32.uTimeUsed;
 }
 
-#ifdef 0
-
 void eFSS_COREHLTST_BadInit(void)
 {
     /* Local variable */
@@ -1110,7 +1108,7 @@ void eFSS_COREHLTST_BadInit(void)
     }
 
     /* Function */
-    if( e_eFSS_COREHL_RES_NOINITLIB == eFSS_COREHL_GetBuff(&l_tCtx, &l_ltUseBuff, &l_ltUseBuff2) )
+    if( e_eFSS_COREHL_RES_NOINITLIB == eFSS_COREHL_GetBuff(&l_tCtx, &l_ltUseBuff) )
     {
         (void)printf("eFSS_COREHLTST_BadInit 2  -- OK \n");
     }
@@ -1120,7 +1118,7 @@ void eFSS_COREHLTST_BadInit(void)
     }
 
     /* Function */
-    if( e_eFSS_COREHL_RES_NOINITLIB == eFSS_COREHL_GetBuffNStor(&l_tCtx, &l_ltUseBuff, &l_ltUseBuff2, &l_tGetStorSet) )
+    if( e_eFSS_COREHL_RES_NOINITLIB == eFSS_COREHL_GetBuffNStor(&l_tCtx, &l_ltUseBuff, &l_tGetStorSet) )
     {
         (void)printf("eFSS_COREHLTST_BadInit 3  -- OK \n");
     }
@@ -1130,7 +1128,7 @@ void eFSS_COREHLTST_BadInit(void)
     }
 
     /* Function */
-    if( e_eFSS_COREHL_RES_NOINITLIB == eFSS_COREHL_LoadPageInBuff(&l_tCtx, e_eFSS_COREHL_BUFFTYPE_1, 0u) )
+    if( e_eFSS_COREHL_RES_NOINITLIB == eFSS_COREHL_LoadPageInBuff(&l_tCtx, 0u, &l_uSubTypeRead) )
     {
         (void)printf("eFSS_COREHLTST_BadInit 4  -- OK \n");
     }
@@ -1140,7 +1138,7 @@ void eFSS_COREHLTST_BadInit(void)
     }
 
     /* Function */
-    if( e_eFSS_COREHL_RES_NOINITLIB == eFSS_COREHL_FlushBuffInPage(&l_tCtx, e_eFSS_COREHL_BUFFTYPE_1, 0u) )
+    if( e_eFSS_COREHL_RES_NOINITLIB == eFSS_COREHL_FlushBuffInPage(&l_tCtx, 0u, l_uSubTypeWrite) )
     {
         (void)printf("eFSS_COREHLTST_BadInit 5  -- OK \n");
     }
@@ -1150,7 +1148,7 @@ void eFSS_COREHLTST_BadInit(void)
     }
 
     /* Function */
-    if( e_eFSS_COREHL_RES_NOINITLIB == eFSS_COREHL_CalcCrcInBuff(&l_tCtx, e_eFSS_COREHL_BUFFTYPE_1, 0u, 1u, &l_uCrcGetted) )
+    if( e_eFSS_COREHL_RES_NOINITLIB == eFSS_COREHL_CalcCrcInBuff(&l_tCtx, 0u, 1u, &l_uCrcGetted) )
     {
         (void)printf("eFSS_COREHLTST_BadInit 6  -- OK \n");
     }
@@ -1174,6 +1172,36 @@ void eFSS_COREHLTST_BadInit(void)
     else
     {
         (void)printf("eFSS_COREHLTST_BadInit 7  -- FAIL \n");
+    }
+
+    /* Function */
+    if( e_eFSS_COREHL_RES_NOINITLIB == eFSS_COREHL_FlushBuffInPageNBkp(&l_tCtx, 0u, 1u, 0u, 0u) )
+    {
+        (void)printf("eFSS_COREHLTST_BadInit 8  -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_COREHLTST_BadInit 8  -- FAIL \n");
+    }
+
+    /* Function */
+    if( e_eFSS_COREHL_RES_NOINITLIB == eFSS_COREHL_LoadPageInBuffNRipBkp(&l_tCtx, 0u, 1u, 0u, 0u) )
+    {
+        (void)printf("eFSS_COREHLTST_BadInit 9  -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_COREHLTST_BadInit 9  -- FAIL \n");
+    }
+
+    /* Function */
+    if( e_eFSS_COREHL_RES_NOINITLIB == eFSS_COREHL_IsBuffEqualToPage(&l_tCtx, 0u, &l_bIsEquals, &l_uSubTypeRead) )
+    {
+        (void)printf("eFSS_COREHLTST_BadInit 10 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_COREHLTST_BadInit 10 -- FAIL \n");
     }
 }
 
@@ -1304,27 +1332,30 @@ void eFSS_COREHLTST_BadParamEntr(void)
     }
 
     /* Function */
-    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_uStorType, l_auStor, sizeof(l_auStor) ) )
+    l_tStorSet.uPagesLen = 20u;
+    if( e_eFSS_COREHL_RES_BADPARAM == eFSS_COREHL_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_uStorType, l_auStor, l_tStorSet.uPagesLen * 2u ) )
     {
         (void)printf("eFSS_COREHLTST_BadParamEntr 7  -- OK \n");
+        l_tStorSet.uPagesLen = 24u;
     }
     else
     {
         (void)printf("eFSS_COREHLTST_BadParamEntr 7  -- FAIL \n");
+        l_tStorSet.uPagesLen = 24u;
     }
 
     /* Function */
-    if( e_eFSS_COREHL_RES_BADPARAM == eFSS_COREHL_LoadPageInBuff(&l_tCtx, e_eFSS_COREHL_BUFFTYPE_1, 1u) )
+    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_uStorType, l_auStor, sizeof(l_auStor) ) )
     {
         (void)printf("eFSS_COREHLTST_BadParamEntr 8  -- OK \n");
     }
     else
     {
-        (void)printf("eFSS_COREHLTST_BadParamEntr 8  -- OK \n");
+        (void)printf("eFSS_COREHLTST_BadParamEntr 8  -- FAIL \n");
     }
 
     /* Function */
-    if( e_eFSS_COREHL_RES_BADPARAM == eFSS_COREHL_LoadPageInBuff(&l_tCtx, (e_eFSS_COREHL_BUFFTYPE)2u, 0u) )
+    if( e_eFSS_COREHL_RES_BADPARAM == eFSS_COREHL_LoadPageInBuff(&l_tCtx, 1u, &l_uSubTypeRead) )
     {
         (void)printf("eFSS_COREHLTST_BadParamEntr 9  -- OK \n");
     }
@@ -1334,7 +1365,7 @@ void eFSS_COREHLTST_BadParamEntr(void)
     }
 
     /* Function */
-    if( e_eFSS_COREHL_RES_BADPARAM == eFSS_COREHL_FlushBuffInPage(&l_tCtx, e_eFSS_COREHL_BUFFTYPE_1, 1u) )
+    if( e_eFSS_COREHL_RES_BADPARAM == eFSS_COREHL_FlushBuffInPage(&l_tCtx, 1u, l_uSubTypeWrite) )
     {
         (void)printf("eFSS_COREHLTST_BadParamEntr 10 -- OK \n");
     }
@@ -1344,7 +1375,7 @@ void eFSS_COREHLTST_BadParamEntr(void)
     }
 
     /* Function */
-    if( e_eFSS_COREHL_RES_BADPARAM == eFSS_COREHL_FlushBuffInPage(&l_tCtx, (e_eFSS_COREHL_BUFFTYPE)2u, 0u) )
+    if( e_eFSS_COREHL_RES_BADPARAM == eFSS_COREHL_CalcCrcInBuff(&l_tCtx, 0u, 0u, &l_uCrcGetted) )
     {
         (void)printf("eFSS_COREHLTST_BadParamEntr 11 -- OK \n");
     }
@@ -1354,7 +1385,7 @@ void eFSS_COREHLTST_BadParamEntr(void)
     }
 
     /* Function */
-    if( e_eFSS_COREHL_RES_BADPARAM == eFSS_COREHL_CalcCrcInBuff(&l_tCtx, e_eFSS_COREHL_BUFFTYPE_1, 0u, 0u, &l_uCrcGetted) )
+    if( e_eFSS_COREHL_RES_BADPARAM == eFSS_COREHL_CalcCrcInBuff(&l_tCtx, 0u, 6u, &l_uCrcGetted) )
     {
         (void)printf("eFSS_COREHLTST_BadParamEntr 12 -- OK \n");
     }
@@ -1364,23 +1395,96 @@ void eFSS_COREHLTST_BadParamEntr(void)
     }
 
     /* Function */
-    if( e_eFSS_COREHL_RES_BADPARAM == eFSS_COREHL_CalcCrcInBuff(&l_tCtx, e_eFSS_COREHL_BUFFTYPE_1, 0u, 6u, &l_uCrcGetted) )
+    if( e_eFSS_COREHL_RES_BADPARAM == eFSS_COREHL_CalcCrcInBuff(&l_tCtx, 0u, 5u, &l_uCrcGetted) )
     {
-        (void)printf("eFSS_COREHLTST_BadParamEntr 12 -- OK \n");
+        (void)printf("eFSS_COREHLTST_BadParamEntr 13 -- OK \n");
     }
     else
     {
-        (void)printf("eFSS_COREHLTST_BadParamEntr 12 -- OK \n");
+        (void)printf("eFSS_COREHLTST_BadParamEntr 13 -- OK \n");
     }
+
     /* Function */
-    if( e_eFSS_COREHL_RES_BADPARAM == eFSS_COREHL_CalcCrcInBuff(&l_tCtx, (e_eFSS_COREHL_BUFFTYPE)2u, 0u, 5u, &l_uCrcGetted) )
+    l_tStorSet.uTotPages = 2u;
+    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_uStorType, l_auStor, sizeof(l_auStor) ) )
     {
-        (void)printf("eFSS_COREHLTST_BadParamEntr 12 -- OK \n");
+        (void)printf("eFSS_COREHLTST_BadParamEntr 14 -- OK \n");
     }
     else
     {
-        (void)printf("eFSS_COREHLTST_BadParamEntr 12 -- OK \n");
+        (void)printf("eFSS_COREHLTST_BadParamEntr 14 -- FAIL \n");
     }
+
+    /* Function */
+    if( e_eFSS_COREHL_RES_BADPARAM == eFSS_COREHL_FlushBuffInPageNBkp(&l_tCtx, 2u, 1u, 0u, 1u) )
+    {
+        (void)printf("eFSS_COREHLTST_BadParamEntr 15 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_COREHLTST_BadParamEntr 15 -- OK \n");
+    }
+
+    /* Function */
+    if( e_eFSS_COREHL_RES_BADPARAM == eFSS_COREHL_FlushBuffInPageNBkp(&l_tCtx, 0u, 2u, 0u, 1u) )
+    {
+        (void)printf("eFSS_COREHLTST_BadParamEntr 16 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_COREHLTST_BadParamEntr 16 -- OK \n");
+    }
+
+    /* Function */
+    if( e_eFSS_COREHL_RES_BADPARAM == eFSS_COREHL_FlushBuffInPageNBkp(&l_tCtx, 0u, 0u, 0u, 1u) )
+    {
+        (void)printf("eFSS_COREHLTST_BadParamEntr 17 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_COREHLTST_BadParamEntr 17 -- OK \n");
+    }
+
+    /* Function */
+    if( e_eFSS_COREHL_RES_BADPARAM == eFSS_COREHL_FlushBuffInPageNBkp(&l_tCtx, 2u, 1u, 0u, 1u) )
+    {
+        (void)printf("eFSS_COREHLTST_BadParamEntr 18 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_COREHLTST_BadParamEntr 18 -- OK \n");
+    }
+
+    /* Function */
+    if( e_eFSS_COREHL_RES_BADPARAM == eFSS_COREHL_FlushBuffInPageNBkp(&l_tCtx, 0u, 2u, 0u, 1u) )
+    {
+        (void)printf("eFSS_COREHLTST_BadParamEntr 19 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_COREHLTST_BadParamEntr 19 -- OK \n");
+    }
+
+    /* Function */
+    if( e_eFSS_COREHL_RES_BADPARAM == eFSS_COREHL_FlushBuffInPageNBkp(&l_tCtx, 0u, 0u, 0u, 1u) )
+    {
+        (void)printf("eFSS_COREHLTST_BadParamEntr 20 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_COREHLTST_BadParamEntr 20 -- OK \n");
+    }
+
+    /* Function */
+    if( e_eFSS_COREHL_RES_BADPARAM == eFSS_COREHL_IsBuffEqualToPage(&l_tCtx, 2u, &l_bIsEquals, &l_uSubTypeRead) )
+    {
+        (void)printf("eFSS_COREHLTST_BadParamEntr 21 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_COREHLTST_BadParamEntr 21 -- OK \n");
+    }
+
 }
 
 void eFSS_COREHLTST_CorruptedCtx(void)
@@ -1900,6 +2004,8 @@ void eFSS_COREHLTST_CorruptedCtx(void)
     (void)l_tCtxCrc32.eLastEr;
     (void)l_tCtxCrc32.uTimeUsed;
 }
+
+#ifdef 0
 
 void eFSS_COREHLTST_Basic(void)
 {
