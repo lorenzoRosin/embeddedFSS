@@ -2851,37 +2851,6 @@ void eFSS_COREHLTST_BadClBckNRetry(void)
         (void)printf("eFSS_COREHLTST_BadClBckNRetry 23 -- FAIL \n");
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     /* Function */
     l_tCtxCb.fErase = &eFSS_COREHLTST_EraseAdapt;
     l_tCtxCb.fWrite = &eFSS_COREHLTST_WriteErrAdapt;
@@ -3020,64 +2989,6 @@ void eFSS_COREHLTST_BadClBckNRetry(void)
         (void)printf("eFSS_COREHLTST_BadClBckNRetry 29 -- FAIL \n");
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     /* Function */
     l_tCtxCb.fErase = &eFSS_COREHLTST_EraseAdapt;
     l_tCtxCb.fWrite = &eFSS_COREHLTST_WriteAdapt;
@@ -3124,7 +3035,7 @@ void eFSS_COREHLTST_BadClBckNRetry(void)
 
     if( e_eFSS_COREHL_RES_CLBCKREADERR == eFSS_COREHL_IsBuffEqualToPage(&l_tCtx, 0u, &l_bIsEquals, &l_uSubTypeRead) )
     {
-        if( ( 1u == l_tCtxCrc32.uTimeUsed ) &&  ( e_eFSS_COREHL_RES_OK == l_tCtxCrc32.eLastEr ) &&
+        if( ( 0u == l_tCtxCrc32.uTimeUsed ) &&  ( e_eFSS_COREHL_RES_OK == l_tCtxCrc32.eLastEr ) &&
             ( 0u == l_tCtxErase.uTimeUsed ) &&  ( e_eFSS_COREHL_RES_OK == l_tCtxErase.eLastEr ) &&
             ( 0u == l_tCtxWrite.uTimeUsed )  && ( e_eFSS_COREHL_RES_OK == l_tCtxWrite.eLastEr ) )
         {
