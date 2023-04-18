@@ -5753,6 +5753,7 @@ static void eFSS_COREHLTST_LoadBkupTest(void)
     l_ltUseBuff2.uBufL = l_ltUseBuff.uBufL  + 1u;
     l_ltUseBuff2.puBuf = &l_auStor[24];
 
+    /* --------------------------------------------- All OK no backup generation */
     /* Setup storage area */
     l_uSubTypeRead = 0u;
 
@@ -5801,7 +5802,7 @@ static void eFSS_COREHLTST_LoadBkupTest(void)
     m_auStorArea2[22u] = 0x00u; /* CRC */
     m_auStorArea2[23u] = 0x00u; /* CRC */
 
-    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_LoadPageInBuff(&l_tCtx, 0u, &l_uSubTypeRead) )
+    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_LoadPageInBuffNRipBkp(&l_tCtx, 0u, 1u, 0x03, 0x04) )
     {
         if( ( 0u == l_ltUseBuff.puBuf[0u] ) && ( 0u == l_ltUseBuff.puBuf[1u] ) && ( 0u == l_ltUseBuff.puBuf[2u] ) &&
              ( 0u == l_ltUseBuff.puBuf[3u] ) && ( 3u == l_uSubTypeRead ))
