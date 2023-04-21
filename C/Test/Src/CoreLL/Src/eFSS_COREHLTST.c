@@ -117,11 +117,9 @@ static void eFSS_COREHLTST_LoadTest(void);
 static void eFSS_COREHLTST_FlushTest(void);
 static void eFSS_COREHLTST_Compare(void);
 static void eFSS_COREHLTST_LoadBkupTest(void);
-
-#ifdef 0
 static void eFSS_COREHLTST_FlushBkupTest(void);
 static void eFSS_COREHLTST_GenTest(void);
-#endif
+
 
 
 /***********************************************************************************************************************
@@ -141,13 +139,9 @@ void eFSS_COREHLTST_ExeTest(void)
     // eFSS_COREHLTST_LoadTest();
     // eFSS_COREHLTST_FlushTest();
     // eFSS_COREHLTST_Compare();
-
-    eFSS_COREHLTST_LoadBkupTest();
-
-#ifdef 0
-    eFSS_COREHLTST_FlushBkupTest();
+    // eFSS_COREHLTST_LoadBkupTest();
+    // eFSS_COREHLTST_FlushBkupTest();
     eFSS_COREHLTST_GenTest();
-#endif
 
     (void)printf("\n\nCORE HIGH LEVEL TEST END \n\n");
 }
@@ -5755,16 +5749,181 @@ static void eFSS_COREHLTST_LoadBkupTest(void)
 
     /* --------------------------------------------- All OK no backup generation */
     /* Setup storage area */
-    l_uSubTypeRead = 0u;
+    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
+    m_auStorArea1[4u]  = 0x03u; /* Page SUBTYPE */
+    m_auStorArea1[5u]  = 0x00u; /* Page index */
+    m_auStorArea1[6u]  = 0x00u; /* Page index */
+    m_auStorArea1[7u]  = 0x00u; /* Page index */
+    m_auStorArea1[8u]  = 0x00u; /* Page index */
+    m_auStorArea1[9u]  = 0x01u; /* Page type */
+    m_auStorArea1[10u] = 0x01u; /* Page version */
+    m_auStorArea1[11u] = 0x00u; /* Page version */
+    m_auStorArea1[12u] = 0x02u; /* Total page */
+    m_auStorArea1[13u] = 0x00u; /* Total page */
+    m_auStorArea1[14u] = 0x00u; /* Total page */
+    m_auStorArea1[15u] = 0x00u; /* Total page */
+    m_auStorArea1[16u] = 0xA5u; /* Magic number */
+    m_auStorArea1[17u] = 0xA5u; /* Magic number */
+    m_auStorArea1[18u] = 0xA5u; /* Magic number */
+    m_auStorArea1[19u] = 0xA5u; /* Magic number */
+    m_auStorArea1[20u] = 0x9Au; /* CRC */
+    m_auStorArea1[21u] = 0x02u; /* CRC */
+    m_auStorArea1[22u] = 0x00u; /* CRC */
+    m_auStorArea1[23u] = 0x00u; /* CRC */
+
+    (void)memset(m_auStorArea2, 0, sizeof(m_auStorArea2));
+    m_auStorArea2[4u]  = 0x04u; /* Page SUBTYPE */
+    m_auStorArea2[5u]  = 0x01u; /* Page index */
+    m_auStorArea2[6u]  = 0x00u; /* Page index */
+    m_auStorArea2[7u]  = 0x00u; /* Page index */
+    m_auStorArea2[8u]  = 0x00u; /* Page index */
+    m_auStorArea2[9u]  = 0x01u; /* Page type */
+    m_auStorArea2[10u] = 0x01u; /* Page version */
+    m_auStorArea2[11u] = 0x00u; /* Page version */
+    m_auStorArea2[12u] = 0x02u; /* Total page */
+    m_auStorArea2[13u] = 0x00u; /* Total page */
+    m_auStorArea2[14u] = 0x00u; /* Total page */
+    m_auStorArea2[15u] = 0x00u; /* Total page */
+    m_auStorArea2[16u] = 0xA5u; /* Magic number */
+    m_auStorArea2[17u] = 0xA5u; /* Magic number */
+    m_auStorArea2[18u] = 0xA5u; /* Magic number */
+    m_auStorArea2[19u] = 0xA5u; /* Magic number */
+    m_auStorArea2[20u] = 0x9Cu; /* CRC */
+    m_auStorArea2[21u] = 0x02u; /* CRC */
+    m_auStorArea2[22u] = 0x00u; /* CRC */
+    m_auStorArea2[23u] = 0x00u; /* CRC */
+
+    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_LoadPageInBuffNRipBkp(&l_tCtx, 0u, 1u, 0x03, 0x04) )
+    {
+        if( ( 0x00u == l_ltUseBuff.puBuf[0u] )  && ( 0x00u == l_ltUseBuff.puBuf[1u] ) && ( 0x00u == l_ltUseBuff.puBuf[2u] ) &&
+            ( 0x00u == l_ltUseBuff.puBuf[3u] )  && ( 0x03u == l_ltUseBuff.puBuf[4u] )  &&
+            ( 0x00u == l_ltUseBuff2.puBuf[0u] ) && ( 0x00u == l_ltUseBuff2.puBuf[1u] ) && ( 0x00u == l_ltUseBuff2.puBuf[2u] ) &&
+            ( 0x00u == l_ltUseBuff2.puBuf[3u] ) && ( 0x04u == l_ltUseBuff2.puBuf[4u] ) )
+        {
+            (void)printf("eFSS_COREHLTST_LoadBkupTest 3  -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_COREHLTST_LoadBkupTest 3  -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_COREHLTST_LoadBkupTest 3  -- FAIL \n");
+    }
+
+    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_LoadPageInBuffNRipBkp(&l_tCtx, 1u, 0u, 0x04, 0x03) )
+    {
+        if( ( 0x00u == l_ltUseBuff.puBuf[0u] )  && ( 0x00u == l_ltUseBuff.puBuf[1u] ) && ( 0x00u == l_ltUseBuff.puBuf[2u] ) &&
+            ( 0x00u == l_ltUseBuff.puBuf[3u] )  && ( 0x04u == l_ltUseBuff.puBuf[4u] )  &&
+            ( 0x00u == l_ltUseBuff2.puBuf[0u] ) && ( 0x00u == l_ltUseBuff2.puBuf[1u] ) && ( 0x00u == l_ltUseBuff2.puBuf[2u] ) &&
+            ( 0x00u == l_ltUseBuff2.puBuf[3u] ) && ( 0x03u == l_ltUseBuff2.puBuf[4u] ) )
+        {
+            (void)printf("eFSS_COREHLTST_LoadBkupTest 4  -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_COREHLTST_LoadBkupTest 4  -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_COREHLTST_LoadBkupTest 4  -- FAIL \n");
+    }
+
+
+    /* --------------------------------------------- All OK no backup generation */
+    /* Setup storage area */
+    (void)memset(m_auStorArea1, 1, sizeof(m_auStorArea1));
+    m_auStorArea1[4u]  = 0x03u; /* Page SUBTYPE */
+    m_auStorArea1[5u]  = 0x00u; /* Page index */
+    m_auStorArea1[6u]  = 0x00u; /* Page index */
+    m_auStorArea1[7u]  = 0x00u; /* Page index */
+    m_auStorArea1[8u]  = 0x00u; /* Page index */
+    m_auStorArea1[9u]  = 0x01u; /* Page type */
+    m_auStorArea1[10u] = 0x01u; /* Page version */
+    m_auStorArea1[11u] = 0x00u; /* Page version */
+    m_auStorArea1[12u] = 0x02u; /* Total page */
+    m_auStorArea1[13u] = 0x00u; /* Total page */
+    m_auStorArea1[14u] = 0x00u; /* Total page */
+    m_auStorArea1[15u] = 0x00u; /* Total page */
+    m_auStorArea1[16u] = 0xA5u; /* Magic number */
+    m_auStorArea1[17u] = 0xA5u; /* Magic number */
+    m_auStorArea1[18u] = 0xA5u; /* Magic number */
+    m_auStorArea1[19u] = 0xA5u; /* Magic number */
+    m_auStorArea1[20u] = 0x9Eu; /* CRC */
+    m_auStorArea1[21u] = 0x02u; /* CRC */
+    m_auStorArea1[22u] = 0x00u; /* CRC */
+    m_auStorArea1[23u] = 0x00u; /* CRC */
+
+    (void)memset(m_auStorArea2, 1, sizeof(m_auStorArea2));
+    m_auStorArea2[4u]  = 0x04u; /* Page SUBTYPE */
+    m_auStorArea2[5u]  = 0x01u; /* Page index */
+    m_auStorArea2[6u]  = 0x00u; /* Page index */
+    m_auStorArea2[7u]  = 0x00u; /* Page index */
+    m_auStorArea2[8u]  = 0x00u; /* Page index */
+    m_auStorArea2[9u]  = 0x01u; /* Page type */
+    m_auStorArea2[10u] = 0x01u; /* Page version */
+    m_auStorArea2[11u] = 0x00u; /* Page version */
+    m_auStorArea2[12u] = 0x02u; /* Total page */
+    m_auStorArea2[13u] = 0x00u; /* Total page */
+    m_auStorArea2[14u] = 0x00u; /* Total page */
+    m_auStorArea2[15u] = 0x00u; /* Total page */
+    m_auStorArea2[16u] = 0xA5u; /* Magic number */
+    m_auStorArea2[17u] = 0xA5u; /* Magic number */
+    m_auStorArea2[18u] = 0xA5u; /* Magic number */
+    m_auStorArea2[19u] = 0xA5u; /* Magic number */
+    m_auStorArea2[20u] = 0xA0u; /* CRC */
+    m_auStorArea2[21u] = 0x02u; /* CRC */
+    m_auStorArea2[22u] = 0x00u; /* CRC */
+    m_auStorArea2[23u] = 0x00u; /* CRC */
+
+    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_LoadPageInBuffNRipBkp(&l_tCtx, 0u, 1u, 0x03, 0x04) )
+    {
+        if( ( 0x01u == l_ltUseBuff.puBuf[0u] )  && ( 0x01u == l_ltUseBuff.puBuf[1u] ) && ( 0x01u == l_ltUseBuff.puBuf[2u] ) &&
+            ( 0x01u == l_ltUseBuff.puBuf[3u] )  && ( 0x03u == l_ltUseBuff.puBuf[4u] )  &&
+            ( 0x01u == l_ltUseBuff2.puBuf[0u] ) && ( 0x01u == l_ltUseBuff2.puBuf[1u] ) && ( 0x01u == l_ltUseBuff2.puBuf[2u] ) &&
+            ( 0x01u == l_ltUseBuff2.puBuf[3u] ) && ( 0x04u == l_ltUseBuff2.puBuf[4u] ) )
+        {
+            (void)printf("eFSS_COREHLTST_LoadBkupTest 5  -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_COREHLTST_LoadBkupTest 5  -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_COREHLTST_LoadBkupTest 5  -- FAIL \n");
+    }
+
+    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_LoadPageInBuffNRipBkp(&l_tCtx, 1u, 0u, 0x04, 0x03) )
+    {
+        if( ( 0x01u == l_ltUseBuff.puBuf[0u] )  && ( 0x01u == l_ltUseBuff.puBuf[1u] ) && ( 0x01u == l_ltUseBuff.puBuf[2u] ) &&
+            ( 0x01u == l_ltUseBuff.puBuf[3u] )  && ( 0x04u == l_ltUseBuff.puBuf[4u] )  &&
+            ( 0x01u == l_ltUseBuff2.puBuf[0u] ) && ( 0x01u == l_ltUseBuff2.puBuf[1u] ) && ( 0x01u == l_ltUseBuff2.puBuf[2u] ) &&
+            ( 0x01u == l_ltUseBuff2.puBuf[3u] ) && ( 0x03u == l_ltUseBuff2.puBuf[4u] ) )
+        {
+            (void)printf("eFSS_COREHLTST_LoadBkupTest 6  -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_COREHLTST_LoadBkupTest 6  -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_COREHLTST_LoadBkupTest 6  -- FAIL \n");
+    }
 
     /* Setup storage area */
     (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    m_auStorArea1[4u] = 0x03u;  /* Page SUBTYPE */
-    m_auStorArea1[5u] = 0x00u;  /* Page index */
-    m_auStorArea1[6u] = 0x00u;  /* Page index */
-    m_auStorArea1[7u] = 0x00u;  /* Page index */
-    m_auStorArea1[8u] = 0x00u;  /* Page index */
-    m_auStorArea1[9u] = 0x01u;  /* Page type */
+    m_auStorArea1[4u]  = 0x03u;  /* Page SUBTYPE */
+    m_auStorArea1[5u]  = 0x00u;  /* Page index */
+    m_auStorArea1[6u]  = 0x00u;  /* Page index */
+    m_auStorArea1[7u]  = 0x00u;  /* Page index */
+    m_auStorArea1[8u]  = 0x00u;  /* Page index */
+    m_auStorArea1[9u]  = 0x01u;  /* Page type */
     m_auStorArea1[10u] = 0x01u; /* Page version */
     m_auStorArea1[11u] = 0x00u; /* Page version */
     m_auStorArea1[12u] = 0x02u; /* Total page */
@@ -5781,12 +5940,12 @@ static void eFSS_COREHLTST_LoadBkupTest(void)
     m_auStorArea1[23u] = 0x00u; /* CRC */
 
     (void)memset(m_auStorArea2, 0x10, sizeof(m_auStorArea2));
-    m_auStorArea2[4u] = 0x04u;  /* Page SUBTYPE */
-    m_auStorArea2[5u] = 0x01u;  /* Page index */
-    m_auStorArea2[6u] = 0x00u;  /* Page index */
-    m_auStorArea2[7u] = 0x00u;  /* Page index */
-    m_auStorArea2[8u] = 0x00u;  /* Page index */
-    m_auStorArea2[9u] = 0x01u;  /* Page type */
+    m_auStorArea2[4u]  = 0x04u;  /* Page SUBTYPE */
+    m_auStorArea2[5u]  = 0x01u;  /* Page index */
+    m_auStorArea2[6u]  = 0x00u;  /* Page index */
+    m_auStorArea2[7u]  = 0x00u;  /* Page index */
+    m_auStorArea2[8u]  = 0x00u;  /* Page index */
+    m_auStorArea2[9u]  = 0x01u;  /* Page type */
     m_auStorArea2[10u] = 0x01u; /* Page version */
     m_auStorArea2[11u] = 0x00u; /* Page version */
     m_auStorArea2[12u] = 0x02u; /* Total page */
@@ -5802,38 +5961,760 @@ static void eFSS_COREHLTST_LoadBkupTest(void)
     m_auStorArea2[22u] = 0x00u; /* CRC */
     m_auStorArea2[23u] = 0x00u; /* CRC */
 
-    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_LoadPageInBuffNRipBkp(&l_tCtx, 0u, 1u, 0x03, 0x04) )
+    if( e_eFSS_COREHL_RES_OK_BKP_RCVRD == eFSS_COREHL_LoadPageInBuffNRipBkp(&l_tCtx, 0u, 1u, 0x03, 0x04) )
     {
-        if( ( 0u == l_ltUseBuff.puBuf[0u] ) && ( 0u == l_ltUseBuff.puBuf[1u] ) && ( 0u == l_ltUseBuff.puBuf[2u] ) &&
-             ( 0u == l_ltUseBuff.puBuf[3u] ) && ( 3u == l_uSubTypeRead ))
+        if( ( 0x00u == l_ltUseBuff.puBuf[0u] )  && ( 0x00u == l_ltUseBuff.puBuf[1u] ) && ( 0x00u == l_ltUseBuff.puBuf[2u] ) &&
+            ( 0x00u == l_ltUseBuff.puBuf[3u] )  && ( 0x03u == l_ltUseBuff.puBuf[4u] )  &&
+            ( 0x00u == l_ltUseBuff2.puBuf[0u] ) && ( 0x00u == l_ltUseBuff2.puBuf[1u] ) && ( 0x00u == l_ltUseBuff2.puBuf[2u] ) &&
+            ( 0x00u == l_ltUseBuff2.puBuf[3u] ) && ( 0x04u == l_ltUseBuff2.puBuf[4u] ) &&
+            ( 0x00u == m_auStorArea1[0u] )  && ( 0x00u == m_auStorArea1[1u] ) && ( 0x00u == m_auStorArea1[2u] ) &&
+            ( 0x00u == m_auStorArea1[3u] )  && ( 0x03u == m_auStorArea1[4u] ) && ( 0x00u == m_auStorArea1[5u] ) &&
+            ( 0x9Au == m_auStorArea1[20u] )  && ( 0x02u == m_auStorArea1[21u] ) && ( 0x00u == m_auStorArea1[22u] ) &&
+            ( 0x00u == m_auStorArea1[23u] ) &&
+            ( 0x00u == m_auStorArea2[0u] )  && ( 0x00u == m_auStorArea2[1u] ) && ( 0x00u == m_auStorArea2[2u] ) &&
+            ( 0x00u == m_auStorArea2[3u] )  && ( 0x04u == m_auStorArea2[4u] ) && ( 0x01u == m_auStorArea2[5u] ) &&
+            ( 0x9Cu == m_auStorArea2[20u] )  && ( 0x02u == m_auStorArea2[21u] ) && ( 0x00u == m_auStorArea2[22u] ) &&
+            ( 0x00u == m_auStorArea2[23u] ) )
         {
-            (void)printf("eFSS_COREHLTST_LoadBkupTest 3  -- OK \n");
+            (void)printf("eFSS_COREHLTST_LoadBkupTest 7  -- OK \n");
         }
         else
         {
-            (void)printf("eFSS_COREHLTST_LoadBkupTest 3  -- FAIL \n");
+            (void)printf("eFSS_COREHLTST_LoadBkupTest 7  -- FAIL \n");
         }
     }
     else
     {
-        (void)printf("eFSS_COREHLTST_LoadBkupTest 3  -- FAIL \n");
+        (void)printf("eFSS_COREHLTST_LoadBkupTest 7  -- FAIL \n");
     }
 
-    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_LoadPageInBuff(&l_tCtx, 1u, &l_uSubTypeRead) )
+    /* Setup storage area */
+    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
+    m_auStorArea1[4u]  = 0x03u;  /* Page SUBTYPE */
+    m_auStorArea1[5u]  = 0x00u;  /* Page index */
+    m_auStorArea1[6u]  = 0x00u;  /* Page index */
+    m_auStorArea1[7u]  = 0x00u;  /* Page index */
+    m_auStorArea1[8u]  = 0x00u;  /* Page index */
+    m_auStorArea1[9u]  = 0x01u;  /* Page type */
+    m_auStorArea1[10u] = 0x01u; /* Page version */
+    m_auStorArea1[11u] = 0x00u; /* Page version */
+    m_auStorArea1[12u] = 0x02u; /* Total page */
+    m_auStorArea1[13u] = 0x00u; /* Total page */
+    m_auStorArea1[14u] = 0x00u; /* Total page */
+    m_auStorArea1[15u] = 0x00u; /* Total page */
+    m_auStorArea1[16u] = 0xA5u; /* Magic number */
+    m_auStorArea1[17u] = 0xA5u; /* Magic number */
+    m_auStorArea1[18u] = 0xA5u; /* Magic number */
+    m_auStorArea1[19u] = 0xA5u; /* Magic number */
+    m_auStorArea1[20u] = 0x9Au; /* CRC */
+    m_auStorArea1[21u] = 0x02u; /* CRC */
+    m_auStorArea1[22u] = 0x00u; /* CRC */
+    m_auStorArea1[23u] = 0x00u; /* CRC */
+
+    (void)memset(m_auStorArea2, 0x10, sizeof(m_auStorArea2));
+    m_auStorArea2[4u]  = 0x04u;  /* Page SUBTYPE */
+    m_auStorArea2[5u]  = 0x01u;  /* Page index */
+    m_auStorArea2[6u]  = 0x00u;  /* Page index */
+    m_auStorArea2[7u]  = 0x00u;  /* Page index */
+    m_auStorArea2[8u]  = 0x00u;  /* Page index */
+    m_auStorArea2[9u]  = 0x01u;  /* Page type */
+    m_auStorArea2[10u] = 0x01u; /* Page version */
+    m_auStorArea2[11u] = 0x00u; /* Page version */
+    m_auStorArea2[12u] = 0x02u; /* Total page */
+    m_auStorArea2[13u] = 0x00u; /* Total page */
+    m_auStorArea2[14u] = 0x00u; /* Total page */
+    m_auStorArea2[15u] = 0x00u; /* Total page */
+    m_auStorArea2[16u] = 0xA5u; /* Magic number */
+    m_auStorArea2[17u] = 0xA5u; /* Magic number */
+    m_auStorArea2[18u] = 0xA5u; /* Magic number */
+    m_auStorArea2[19u] = 0xA5u; /* Magic number */
+    m_auStorArea2[20u] = 0xDCu; /* CRC */
+    m_auStorArea2[21u] = 0x02u; /* CRC */
+    m_auStorArea2[22u] = 0x00u; /* CRC */
+    m_auStorArea2[23u] = 0x00u; /* CRC */
+
+    if( e_eFSS_COREHL_RES_OK_BKP_RCVRD == eFSS_COREHL_LoadPageInBuffNRipBkp(&l_tCtx, 1u, 0u, 0x04, 0x03) )
     {
-        if( ( 0x10 == l_ltUseBuff.puBuf[0u] ) && ( 0x10 == l_ltUseBuff.puBuf[1u] ) && ( 0x10 == l_ltUseBuff.puBuf[2u] ) &&
-             ( 0x10 == l_ltUseBuff.puBuf[3u] ) && ( 4u == l_uSubTypeRead ))
+        if( ( 0x10 == l_ltUseBuff.puBuf[0u] )  && ( 0x10 == l_ltUseBuff.puBuf[1u] ) && ( 0x10 == l_ltUseBuff.puBuf[2u] ) &&
+            ( 0x10 == l_ltUseBuff.puBuf[3u] )  && ( 0x04u == l_ltUseBuff.puBuf[4u] )  &&
+            ( 0x10 == l_ltUseBuff2.puBuf[0u] ) && ( 0x10 == l_ltUseBuff2.puBuf[1u] ) && ( 0x10 == l_ltUseBuff2.puBuf[2u] ) &&
+            ( 0x10 == l_ltUseBuff2.puBuf[3u] ) && ( 0x03u == l_ltUseBuff2.puBuf[4u] ) &&
+            ( 0x10 == m_auStorArea1[0u] )  && ( 0x10 == m_auStorArea1[1u] ) && ( 0x10 == m_auStorArea1[2u] ) &&
+            ( 0x10 == m_auStorArea1[3u] )  && ( 0x03u == m_auStorArea1[4u] ) && ( 0x00u == m_auStorArea1[5u] ) &&
+            ( 0xDAu == m_auStorArea1[20u] )  && ( 0x02u == m_auStorArea1[21u] ) && ( 0x00u == m_auStorArea1[22u] ) &&
+            ( 0x00u == m_auStorArea1[23u] ) &&
+            ( 0x10 == m_auStorArea2[0u] )  && ( 0x10 == m_auStorArea2[1u] ) && ( 0x10 == m_auStorArea2[2u] ) &&
+            ( 0x10 == m_auStorArea2[3u] )  && ( 0x04u == m_auStorArea2[4u] ) && ( 0x01u == m_auStorArea2[5u] ) &&
+            ( 0xDCu == m_auStorArea2[20u] )  && ( 0x02u == m_auStorArea2[21u] ) && ( 0x00u == m_auStorArea2[22u] ) &&
+            ( 0x00u == m_auStorArea2[23u] ) )
         {
-            (void)printf("eFSS_COREHLTST_LoadBkupTest 4  -- OK \n");
+            (void)printf("eFSS_COREHLTST_LoadBkupTest 8  -- OK \n");
         }
         else
         {
-            (void)printf("eFSS_COREHLTST_LoadBkupTest 4  -- FAIL \n");
+            (void)printf("eFSS_COREHLTST_LoadBkupTest 8  -- FAIL \n");
         }
     }
     else
     {
-        (void)printf("eFSS_COREHLTST_LoadBkupTest 4  -- FAIL \n");
+        (void)printf("eFSS_COREHLTST_LoadBkupTest 8  -- FAIL \n");
+    }
+
+    /* Original corrupted, backup correct */
+    /* Setup storage area */
+    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
+    m_auStorArea1[4u]  = 0x03u; /* Page SUBTYPE */
+    m_auStorArea1[5u]  = 0x00u; /* Page index */
+    m_auStorArea1[6u]  = 0x00u; /* Page index */
+    m_auStorArea1[7u]  = 0x00u; /* Page index */
+    m_auStorArea1[8u]  = 0x00u; /* Page index */
+    m_auStorArea1[9u]  = 0x01u; /* Page type */
+    m_auStorArea1[10u] = 0x01u; /* Page version */
+    m_auStorArea1[11u] = 0x00u; /* Page version */
+    m_auStorArea1[12u] = 0x02u; /* Total page */
+    m_auStorArea1[13u] = 0x00u; /* Total page */
+    m_auStorArea1[14u] = 0x00u; /* Total page */
+    m_auStorArea1[15u] = 0x00u; /* Total page */
+    m_auStorArea1[16u] = 0xA5u; /* Magic number */
+    m_auStorArea1[17u] = 0xA5u; /* Magic number */
+    m_auStorArea1[18u] = 0xA5u; /* Magic number */
+    m_auStorArea1[19u] = 0xA5u; /* Magic number */
+    m_auStorArea1[20u] = 0xFFu; /* CRC */ /* Correct = 0x9Au */
+    m_auStorArea1[21u] = 0xFFu; /* CRC */ /* Correct = 0x02u */
+    m_auStorArea1[22u] = 0xFFu; /* CRC */ /* Correct = 0x00u */
+    m_auStorArea1[23u] = 0xFFu; /* CRC */ /* Correct = 0x00u */
+
+    (void)memset(m_auStorArea2, 0x10, sizeof(m_auStorArea2));
+    m_auStorArea2[4u]  = 0x04u; /* Page SUBTYPE */
+    m_auStorArea2[5u]  = 0x01u; /* Page index */
+    m_auStorArea2[6u]  = 0x00u; /* Page index */
+    m_auStorArea2[7u]  = 0x00u; /* Page index */
+    m_auStorArea2[8u]  = 0x00u; /* Page index */
+    m_auStorArea2[9u]  = 0x01u; /* Page type */
+    m_auStorArea2[10u] = 0x01u; /* Page version */
+    m_auStorArea2[11u] = 0x00u; /* Page version */
+    m_auStorArea2[12u] = 0x02u; /* Total page */
+    m_auStorArea2[13u] = 0x00u; /* Total page */
+    m_auStorArea2[14u] = 0x00u; /* Total page */
+    m_auStorArea2[15u] = 0x00u; /* Total page */
+    m_auStorArea2[16u] = 0xA5u; /* Magic number */
+    m_auStorArea2[17u] = 0xA5u; /* Magic number */
+    m_auStorArea2[18u] = 0xA5u; /* Magic number */
+    m_auStorArea2[19u] = 0xA5u; /* Magic number */
+    m_auStorArea2[20u] = 0xDCu; /* CRC */
+    m_auStorArea2[21u] = 0x02u; /* CRC */
+    m_auStorArea2[22u] = 0x00u; /* CRC */
+    m_auStorArea2[23u] = 0x00u; /* CRC */
+
+    if( e_eFSS_COREHL_RES_OK_BKP_RCVRD == eFSS_COREHL_LoadPageInBuffNRipBkp(&l_tCtx, 0u, 1u, 0x03, 0x04) )
+    {
+        if( ( 0x10u == l_ltUseBuff.puBuf[0u] )  && ( 0x10u == l_ltUseBuff.puBuf[1u] ) && ( 0x10u == l_ltUseBuff.puBuf[2u] ) &&
+            ( 0x10u == l_ltUseBuff.puBuf[3u] )  && ( 0x03u == l_ltUseBuff.puBuf[4u] )  &&
+            ( 0x10u == l_ltUseBuff2.puBuf[0u] ) && ( 0x10u == l_ltUseBuff2.puBuf[1u] ) && ( 0x10u == l_ltUseBuff2.puBuf[2u] ) &&
+            ( 0x10u == l_ltUseBuff2.puBuf[3u] ) && ( 0x04u == l_ltUseBuff2.puBuf[4u] ) &&
+            ( 0x10u == m_auStorArea1[0u] )  && ( 0x10u == m_auStorArea1[1u] ) && ( 0x10u == m_auStorArea1[2u] ) &&
+            ( 0x10u == m_auStorArea1[3u] )  && ( 0x03u == m_auStorArea1[4u] ) && ( 0x00u == m_auStorArea1[5u] ) &&
+            ( 0xDAu == m_auStorArea1[20u] )  && ( 0x02u == m_auStorArea1[21u] ) && ( 0x00u == m_auStorArea1[22u] ) &&
+            ( 0x00u == m_auStorArea1[23u] ) &&
+            ( 0x10u == m_auStorArea2[0u] )  && ( 0x10u == m_auStorArea2[1u] ) && ( 0x10u == m_auStorArea2[2u] ) &&
+            ( 0x10u == m_auStorArea2[3u] )  && ( 0x04u == m_auStorArea2[4u] ) && ( 0x01u == m_auStorArea2[5u] ) &&
+            ( 0xDCu == m_auStorArea2[20u] )  && ( 0x02u == m_auStorArea2[21u] ) && ( 0x00u == m_auStorArea2[22u] ) &&
+            ( 0x00u == m_auStorArea2[23u] ) )
+        {
+            (void)printf("eFSS_COREHLTST_LoadBkupTest 9  -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_COREHLTST_LoadBkupTest 9  -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_COREHLTST_LoadBkupTest 9  -- FAIL \n");
+    }
+
+    /* Original corrupted, backup correct */
+    /* Setup storage area */
+    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
+    m_auStorArea1[4u]  = 0x03u; /* Page SUBTYPE */
+    m_auStorArea1[5u]  = 0x00u; /* Page index */
+    m_auStorArea1[6u]  = 0x00u; /* Page index */
+    m_auStorArea1[7u]  = 0x00u; /* Page index */
+    m_auStorArea1[8u]  = 0x00u; /* Page index */
+    m_auStorArea1[9u]  = 0x01u; /* Page type */
+    m_auStorArea1[10u] = 0x01u; /* Page version */
+    m_auStorArea1[11u] = 0x00u; /* Page version */
+    m_auStorArea1[12u] = 0x02u; /* Total page */
+    m_auStorArea1[13u] = 0x00u; /* Total page */
+    m_auStorArea1[14u] = 0x00u; /* Total page */
+    m_auStorArea1[15u] = 0x00u; /* Total page */
+    m_auStorArea1[16u] = 0xA5u; /* Magic number */
+    m_auStorArea1[17u] = 0xA5u; /* Magic number */
+    m_auStorArea1[18u] = 0xA5u; /* Magic number */
+    m_auStorArea1[19u] = 0xA5u; /* Magic number */
+    m_auStorArea1[20u] = 0x9Au; /* CRC */
+    m_auStorArea1[21u] = 0x02u; /* CRC */
+    m_auStorArea1[22u] = 0x00u; /* CRC */
+    m_auStorArea1[23u] = 0x00u; /* CRC */
+
+    (void)memset(m_auStorArea2, 0x10, sizeof(m_auStorArea2));
+    m_auStorArea2[4u]  = 0x04u; /* Page SUBTYPE */
+    m_auStorArea2[5u]  = 0x01u; /* Page index */
+    m_auStorArea2[6u]  = 0x00u; /* Page index */
+    m_auStorArea2[7u]  = 0x00u; /* Page index */
+    m_auStorArea2[8u]  = 0x00u; /* Page index */
+    m_auStorArea2[9u]  = 0x01u; /* Page type */
+    m_auStorArea2[10u] = 0x01u; /* Page version */
+    m_auStorArea2[11u] = 0x00u; /* Page version */
+    m_auStorArea2[12u] = 0x02u; /* Total page */
+    m_auStorArea2[13u] = 0x00u; /* Total page */
+    m_auStorArea2[14u] = 0x00u; /* Total page */
+    m_auStorArea2[15u] = 0x00u; /* Total page */
+    m_auStorArea2[16u] = 0xA5u; /* Magic number */
+    m_auStorArea2[17u] = 0xA5u; /* Magic number */
+    m_auStorArea2[18u] = 0xA5u; /* Magic number */
+    m_auStorArea2[19u] = 0xA5u; /* Magic number */
+    m_auStorArea2[20u] = 0xDCu; /* CRC */
+    m_auStorArea2[21u] = 0x02u; /* CRC */
+    m_auStorArea2[22u] = 0x00u; /* CRC */
+    m_auStorArea2[23u] = 0x00u; /* CRC */
+
+    if( e_eFSS_COREHL_RES_OK_BKP_RCVRD == eFSS_COREHL_LoadPageInBuffNRipBkp(&l_tCtx, 1u, 0u, 0xFF, 0x03) )
+    {
+        if( ( 0x00u == l_ltUseBuff.puBuf[0u] )  && ( 0x00u == l_ltUseBuff.puBuf[1u] ) && ( 0x00u == l_ltUseBuff.puBuf[2u] ) &&
+            ( 0x00u == l_ltUseBuff.puBuf[3u] )  && ( 0xFFu == l_ltUseBuff.puBuf[4u] )  &&
+            ( 0x00u == l_ltUseBuff2.puBuf[0u] ) && ( 0x00u == l_ltUseBuff2.puBuf[1u] ) && ( 0x00u == l_ltUseBuff2.puBuf[2u] ) &&
+            ( 0x00u == l_ltUseBuff2.puBuf[3u] ) && ( 0x03u == l_ltUseBuff2.puBuf[4u] ) &&
+            ( 0x00u == m_auStorArea1[0u] )  && ( 0x00u == m_auStorArea1[1u] ) && ( 0x00u == m_auStorArea1[2u] ) &&
+            ( 0x00u == m_auStorArea1[3u] )  && ( 0x03u == m_auStorArea1[4u] ) && ( 0x00u == m_auStorArea1[5u] ) &&
+            ( 0x9Au == m_auStorArea1[20u] )  && ( 0x02u == m_auStorArea1[21u] ) && ( 0x00u == m_auStorArea1[22u] ) &&
+            ( 0x00u == m_auStorArea1[23u] )  &&
+            ( 0x00u == m_auStorArea2[0u] )   && ( 0x00u == m_auStorArea2[1u] ) && ( 0x00u == m_auStorArea2[2u] ) &&
+            ( 0x00u == m_auStorArea2[3u] )   && ( 0xFFu == m_auStorArea2[4u] ) && ( 0x01u == m_auStorArea2[5u] ) &&
+            ( 0x97u == m_auStorArea2[20u] )  && ( 0x03u == m_auStorArea2[21u] ) && ( 0x00u == m_auStorArea2[22u] ) &&
+            ( 0x00u == m_auStorArea2[23u] ) )
+        {
+            (void)printf("eFSS_COREHLTST_LoadBkupTest 10 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_COREHLTST_LoadBkupTest 10 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_COREHLTST_LoadBkupTest 10 -- FAIL \n");
+    }
+
+    /* Backup corrupted, original correct */
+    /* Setup storage area */
+    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
+    m_auStorArea1[4u]  = 0x03u; /* Page SUBTYPE */
+    m_auStorArea1[5u]  = 0x00u; /* Page index */
+    m_auStorArea1[6u]  = 0x00u; /* Page index */
+    m_auStorArea1[7u]  = 0x00u; /* Page index */
+    m_auStorArea1[8u]  = 0x00u; /* Page index */
+    m_auStorArea1[9u]  = 0x01u; /* Page type */
+    m_auStorArea1[10u] = 0x01u; /* Page version */
+    m_auStorArea1[11u] = 0x00u; /* Page version */
+    m_auStorArea1[12u] = 0x02u; /* Total page */
+    m_auStorArea1[13u] = 0x00u; /* Total page */
+    m_auStorArea1[14u] = 0x00u; /* Total page */
+    m_auStorArea1[15u] = 0x00u; /* Total page */
+    m_auStorArea1[16u] = 0xA5u; /* Magic number */
+    m_auStorArea1[17u] = 0xA5u; /* Magic number */
+    m_auStorArea1[18u] = 0xA5u; /* Magic number */
+    m_auStorArea1[19u] = 0xA5u; /* Magic number */
+    m_auStorArea1[20u] = 0xFFu; /* CRC */
+    m_auStorArea1[21u] = 0xFFu; /* CRC */
+    m_auStorArea1[22u] = 0xFFu; /* CRC */
+    m_auStorArea1[23u] = 0xFFu; /* CRC */
+
+    (void)memset(m_auStorArea2, 0x10, sizeof(m_auStorArea2));
+    m_auStorArea2[4u]  = 0x04u; /* Page SUBTYPE */
+    m_auStorArea2[5u]  = 0x01u; /* Page index */
+    m_auStorArea2[6u]  = 0x00u; /* Page index */
+    m_auStorArea2[7u]  = 0x00u; /* Page index */
+    m_auStorArea2[8u]  = 0x00u; /* Page index */
+    m_auStorArea2[9u]  = 0x01u; /* Page type */
+    m_auStorArea2[10u] = 0x01u; /* Page version */
+    m_auStorArea2[11u] = 0x00u; /* Page version */
+    m_auStorArea2[12u] = 0x02u; /* Total page */
+    m_auStorArea2[13u] = 0x00u; /* Total page */
+    m_auStorArea2[14u] = 0x00u; /* Total page */
+    m_auStorArea2[15u] = 0x00u; /* Total page */
+    m_auStorArea2[16u] = 0xA5u; /* Magic number */
+    m_auStorArea2[17u] = 0xA5u; /* Magic number */
+    m_auStorArea2[18u] = 0xA5u; /* Magic number */
+    m_auStorArea2[19u] = 0xA5u; /* Magic number */
+    m_auStorArea2[20u] = 0xDCu; /* CRC */
+    m_auStorArea2[21u] = 0x02u; /* CRC */
+    m_auStorArea2[22u] = 0x00u; /* CRC */
+    m_auStorArea2[23u] = 0x00u; /* CRC */
+
+    if( e_eFSS_COREHL_RES_OK_BKP_RCVRD == eFSS_COREHL_LoadPageInBuffNRipBkp(&l_tCtx, 1u, 0u, 0x04, 0x03) )
+    {
+        if( ( 0x10u == l_ltUseBuff.puBuf[0u] )  && ( 0x10u == l_ltUseBuff.puBuf[1u] ) && ( 0x10u == l_ltUseBuff.puBuf[2u] ) &&
+            ( 0x10u == l_ltUseBuff.puBuf[3u] )  && ( 0x04u == l_ltUseBuff.puBuf[4u] )  &&
+            ( 0x10u == l_ltUseBuff2.puBuf[0u] ) && ( 0x10u == l_ltUseBuff2.puBuf[1u] ) && ( 0x10u == l_ltUseBuff2.puBuf[2u] ) &&
+            ( 0x10u == l_ltUseBuff2.puBuf[3u] ) && ( 0x03u == l_ltUseBuff2.puBuf[4u] ) &&
+            ( 0x10u == m_auStorArea1[0u] )  && ( 0x10u == m_auStorArea1[1u] ) && ( 0x10u == m_auStorArea1[2u] ) &&
+            ( 0x10u == m_auStorArea1[3u] )  && ( 0x03u == m_auStorArea1[4u] ) && ( 0x00u == m_auStorArea1[5u] ) &&
+            ( 0xDAu == m_auStorArea1[20u] )  && ( 0x02u == m_auStorArea1[21u] ) && ( 0x00u == m_auStorArea1[22u] ) &&
+            ( 0x00u == m_auStorArea1[23u] ) &&
+            ( 0x10u == m_auStorArea2[0u] )  && ( 0x10u == m_auStorArea2[1u] ) && ( 0x10u == m_auStorArea2[2u] ) &&
+            ( 0x10u == m_auStorArea2[3u] )  && ( 0x04u == m_auStorArea2[4u] ) && ( 0x01u == m_auStorArea2[5u] ) &&
+            ( 0xDCu == m_auStorArea2[20u] )  && ( 0x02u == m_auStorArea2[21u] ) && ( 0x00u == m_auStorArea2[22u] ) &&
+            ( 0x00u == m_auStorArea2[23u] ) )
+        {
+            (void)printf("eFSS_COREHLTST_LoadBkupTest 11 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_COREHLTST_LoadBkupTest 11 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_COREHLTST_LoadBkupTest 11 -- FAIL \n");
+    }
+
+    /* Original corrupted, backup correct */
+    /* Setup storage area */
+    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
+    m_auStorArea1[4u]  = 0x03u; /* Page SUBTYPE */
+    m_auStorArea1[5u]  = 0x00u; /* Page index */
+    m_auStorArea1[6u]  = 0x00u; /* Page index */
+    m_auStorArea1[7u]  = 0x00u; /* Page index */
+    m_auStorArea1[8u]  = 0x00u; /* Page index */
+    m_auStorArea1[9u]  = 0x01u; /* Page type */
+    m_auStorArea1[10u] = 0x01u; /* Page version */
+    m_auStorArea1[11u] = 0x00u; /* Page version */
+    m_auStorArea1[12u] = 0x02u; /* Total page */
+    m_auStorArea1[13u] = 0x00u; /* Total page */
+    m_auStorArea1[14u] = 0x00u; /* Total page */
+    m_auStorArea1[15u] = 0x00u; /* Total page */
+    m_auStorArea1[16u] = 0xA5u; /* Magic number */
+    m_auStorArea1[17u] = 0xA5u; /* Magic number */
+    m_auStorArea1[18u] = 0xA5u; /* Magic number */
+    m_auStorArea1[19u] = 0xA5u; /* Magic number */
+    m_auStorArea1[20u] = 0x9Au; /* CRC */
+    m_auStorArea1[21u] = 0x02u; /* CRC */
+    m_auStorArea1[22u] = 0x00u; /* CRC */
+    m_auStorArea1[23u] = 0x00u; /* CRC */
+
+    (void)memset(m_auStorArea2, 0x10, sizeof(m_auStorArea2));
+    m_auStorArea2[4u]  = 0x04u; /* Page SUBTYPE */
+    m_auStorArea2[5u]  = 0x01u; /* Page index */
+    m_auStorArea2[6u]  = 0x00u; /* Page index */
+    m_auStorArea2[7u]  = 0x00u; /* Page index */
+    m_auStorArea2[8u]  = 0x00u; /* Page index */
+    m_auStorArea2[9u]  = 0x01u; /* Page type */
+    m_auStorArea2[10u] = 0x01u; /* Page version */
+    m_auStorArea2[11u] = 0x00u; /* Page version */
+    m_auStorArea2[12u] = 0x02u; /* Total page */
+    m_auStorArea2[13u] = 0x00u; /* Total page */
+    m_auStorArea2[14u] = 0x00u; /* Total page */
+    m_auStorArea2[15u] = 0x00u; /* Total page */
+    m_auStorArea2[16u] = 0xA5u; /* Magic number */
+    m_auStorArea2[17u] = 0xA5u; /* Magic number */
+    m_auStorArea2[18u] = 0xA5u; /* Magic number */
+    m_auStorArea2[19u] = 0xA5u; /* Magic number */
+    m_auStorArea2[20u] = 0xDCu; /* CRC */
+    m_auStorArea2[21u] = 0x02u; /* CRC */
+    m_auStorArea2[22u] = 0x00u; /* CRC */
+    m_auStorArea2[23u] = 0x00u; /* CRC */
+
+    if( e_eFSS_COREHL_RES_OK_BKP_RCVRD == eFSS_COREHL_LoadPageInBuffNRipBkp(&l_tCtx, 0u, 1u, 0x03, 0xFF) )
+    {
+        if( ( 0x00u == l_ltUseBuff.puBuf[0u] )  && ( 0x00u == l_ltUseBuff.puBuf[1u] ) && ( 0x00u == l_ltUseBuff.puBuf[2u] ) &&
+            ( 0x00u == l_ltUseBuff.puBuf[3u] )  && ( 0x03u == l_ltUseBuff.puBuf[4u] )  &&
+            ( 0x00u == l_ltUseBuff2.puBuf[0u] ) && ( 0x00u == l_ltUseBuff2.puBuf[1u] ) && ( 0x00u == l_ltUseBuff2.puBuf[2u] ) &&
+            ( 0x00u == l_ltUseBuff2.puBuf[3u] ) && ( 0xFFu == l_ltUseBuff2.puBuf[4u] ) &&
+            ( 0x00u == m_auStorArea1[0u] )  && ( 0x00u == m_auStorArea1[1u] ) && ( 0x00u == m_auStorArea1[2u] ) &&
+            ( 0x00u == m_auStorArea1[3u] )  && ( 0x03u == m_auStorArea1[4u] ) && ( 0x00u == m_auStorArea1[5u] ) &&
+            ( 0x9Au == m_auStorArea1[20u] )  && ( 0x02u == m_auStorArea1[21u] ) && ( 0x00u == m_auStorArea1[22u] ) &&
+            ( 0x00u == m_auStorArea1[23u] )  &&
+            ( 0x00u == m_auStorArea2[0u] )   && ( 0x00u == m_auStorArea2[1u] ) && ( 0x00u == m_auStorArea2[2u] ) &&
+            ( 0x00u == m_auStorArea2[3u] )   && ( 0xFFu == m_auStorArea2[4u] ) && ( 0x01u == m_auStorArea2[5u] ) &&
+            ( 0x97u == m_auStorArea2[20u] )  && ( 0x03u == m_auStorArea2[21u] ) && ( 0x00u == m_auStorArea2[22u] ) &&
+            ( 0x00u == m_auStorArea2[23u] ) )
+        {
+            (void)printf("eFSS_COREHLTST_LoadBkupTest 12 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_COREHLTST_LoadBkupTest 12 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_COREHLTST_LoadBkupTest 12 -- FAIL \n");
+    }
+
+    /* Nothing OK, but new  */
+    /* Setup storage area */
+    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
+    m_auStorArea1[4u]  = 0x03u; /* Page SUBTYPE */
+    m_auStorArea1[5u]  = 0x00u; /* Page index */
+    m_auStorArea1[6u]  = 0x00u; /* Page index */
+    m_auStorArea1[7u]  = 0x00u; /* Page index */
+    m_auStorArea1[8u]  = 0x00u; /* Page index */
+    m_auStorArea1[9u]  = 0x01u; /* Page type */
+    m_auStorArea1[10u] = 0x02u; /* Page version */
+    m_auStorArea1[11u] = 0x00u; /* Page version */
+    m_auStorArea1[12u] = 0x02u; /* Total page */
+    m_auStorArea1[13u] = 0x00u; /* Total page */
+    m_auStorArea1[14u] = 0x00u; /* Total page */
+    m_auStorArea1[15u] = 0x00u; /* Total page */
+    m_auStorArea1[16u] = 0xA5u; /* Magic number */
+    m_auStorArea1[17u] = 0xA5u; /* Magic number */
+    m_auStorArea1[18u] = 0xA5u; /* Magic number */
+    m_auStorArea1[19u] = 0xA5u; /* Magic number */
+    m_auStorArea1[20u] = 0x9Bu; /* CRC */
+    m_auStorArea1[21u] = 0x02u; /* CRC */
+    m_auStorArea1[22u] = 0x00u; /* CRC */
+    m_auStorArea1[23u] = 0x00u; /* CRC */
+
+    (void)memset(m_auStorArea2, 0x10, sizeof(m_auStorArea2));
+    m_auStorArea2[4u]  = 0x04u; /* Page SUBTYPE */
+    m_auStorArea2[5u]  = 0x01u; /* Page index */
+    m_auStorArea2[6u]  = 0x00u; /* Page index */
+    m_auStorArea2[7u]  = 0x00u; /* Page index */
+    m_auStorArea2[8u]  = 0x00u; /* Page index */
+    m_auStorArea2[9u]  = 0x01u; /* Page type */
+    m_auStorArea2[10u] = 0x02u; /* Page version */
+    m_auStorArea2[11u] = 0x00u; /* Page version */
+    m_auStorArea2[12u] = 0x02u; /* Total page */
+    m_auStorArea2[13u] = 0x00u; /* Total page */
+    m_auStorArea2[14u] = 0x00u; /* Total page */
+    m_auStorArea2[15u] = 0x00u; /* Total page */
+    m_auStorArea2[16u] = 0xA5u; /* Magic number */
+    m_auStorArea2[17u] = 0xA5u; /* Magic number */
+    m_auStorArea2[18u] = 0xA5u; /* Magic number */
+    m_auStorArea2[19u] = 0xA5u; /* Magic number */
+    m_auStorArea2[20u] = 0xDDu; /* CRC */
+    m_auStorArea2[21u] = 0x02u; /* CRC */
+    m_auStorArea2[22u] = 0x00u; /* CRC */
+    m_auStorArea2[23u] = 0x00u; /* CRC */
+
+    if( e_eFSS_COREHL_RES_NEWVERSIONFOUND == eFSS_COREHL_LoadPageInBuffNRipBkp(&l_tCtx, 0u, 1u, 0x03, 0x04) )
+    {
+        if( ( 0x00u == l_ltUseBuff.puBuf[0u] )  && ( 0x00u == l_ltUseBuff.puBuf[1u] ) && ( 0x00u == l_ltUseBuff.puBuf[2u] ) &&
+            ( 0x00u == l_ltUseBuff.puBuf[3u] )  && ( 0x03u == l_ltUseBuff.puBuf[4u] )  &&
+            ( 0x10u == l_ltUseBuff2.puBuf[0u] ) && ( 0x10u == l_ltUseBuff2.puBuf[1u] ) && ( 0x10u == l_ltUseBuff2.puBuf[2u] ) &&
+            ( 0x10u == l_ltUseBuff2.puBuf[3u] ) && ( 0x04u == l_ltUseBuff2.puBuf[4u] ) &&
+            ( 0x00u == m_auStorArea1[0u] )  && ( 0x00u == m_auStorArea1[1u] ) && ( 0x00u == m_auStorArea1[2u] ) &&
+            ( 0x00u == m_auStorArea1[3u] )  && ( 0x03u == m_auStorArea1[4u] ) && ( 0x00u == m_auStorArea1[5u] ) &&
+            ( 0x9Bu == m_auStorArea1[20u] )  && ( 0x02u == m_auStorArea1[21u] ) && ( 0x00u == m_auStorArea1[22u] ) &&
+            ( 0x00u == m_auStorArea1[23u] )  &&
+            ( 0x10u == m_auStorArea2[0u] )   && ( 0x10u == m_auStorArea2[1u] ) && ( 0x10u == m_auStorArea2[2u] ) &&
+            ( 0x10u == m_auStorArea2[3u] )   && ( 0x04u == m_auStorArea2[4u] ) && ( 0x01u == m_auStorArea2[5u] ) &&
+            ( 0xDDu == m_auStorArea2[20u] )  && ( 0x02u == m_auStorArea2[21u] ) && ( 0x00u == m_auStorArea2[22u] ) &&
+            ( 0x00u == m_auStorArea2[23u] ) )
+        {
+            (void)printf("eFSS_COREHLTST_LoadBkupTest 13 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_COREHLTST_LoadBkupTest 13 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_COREHLTST_LoadBkupTest 13 -- FAIL \n");
+    }
+
+    /* Original corrupted, backup correct */
+    /* Setup storage area */
+    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
+    m_auStorArea1[4u]  = 0x03u; /* Page SUBTYPE */
+    m_auStorArea1[5u]  = 0x00u; /* Page index */
+    m_auStorArea1[6u]  = 0x00u; /* Page index */
+    m_auStorArea1[7u]  = 0x00u; /* Page index */
+    m_auStorArea1[8u]  = 0x00u; /* Page index */
+    m_auStorArea1[9u]  = 0x01u; /* Page type */
+    m_auStorArea1[10u] = 0x02u; /* Page version */
+    m_auStorArea1[11u] = 0x00u; /* Page version */
+    m_auStorArea1[12u] = 0x02u; /* Total page */
+    m_auStorArea1[13u] = 0x00u; /* Total page */
+    m_auStorArea1[14u] = 0x00u; /* Total page */
+    m_auStorArea1[15u] = 0x00u; /* Total page */
+    m_auStorArea1[16u] = 0xA5u; /* Magic number */
+    m_auStorArea1[17u] = 0xA5u; /* Magic number */
+    m_auStorArea1[18u] = 0xA5u; /* Magic number */
+    m_auStorArea1[19u] = 0xA5u; /* Magic number */
+    m_auStorArea1[20u] = 0x9Bu; /* CRC */
+    m_auStorArea1[21u] = 0x02u; /* CRC */
+    m_auStorArea1[22u] = 0x00u; /* CRC */
+    m_auStorArea1[23u] = 0x00u; /* CRC */
+
+    (void)memset(m_auStorArea2, 0x10, sizeof(m_auStorArea2));
+    m_auStorArea2[4u]  = 0x04u; /* Page SUBTYPE */
+    m_auStorArea2[5u]  = 0x01u; /* Page index */
+    m_auStorArea2[6u]  = 0x00u; /* Page index */
+    m_auStorArea2[7u]  = 0x00u; /* Page index */
+    m_auStorArea2[8u]  = 0x00u; /* Page index */
+    m_auStorArea2[9u]  = 0x01u; /* Page type */
+    m_auStorArea2[10u] = 0x01u; /* Page version */
+    m_auStorArea2[11u] = 0x00u; /* Page version */
+    m_auStorArea2[12u] = 0x02u; /* Total page */
+    m_auStorArea2[13u] = 0x00u; /* Total page */
+    m_auStorArea2[14u] = 0x00u; /* Total page */
+    m_auStorArea2[15u] = 0x00u; /* Total page */
+    m_auStorArea2[16u] = 0xA5u; /* Magic number */
+    m_auStorArea2[17u] = 0xA5u; /* Magic number */
+    m_auStorArea2[18u] = 0xA5u; /* Magic number */
+    m_auStorArea2[19u] = 0xA5u; /* Magic number */
+    m_auStorArea2[20u] = 0xDCu; /* CRC */
+    m_auStorArea2[21u] = 0x02u; /* CRC */
+    m_auStorArea2[22u] = 0x00u; /* CRC */
+    m_auStorArea2[23u] = 0x00u; /* CRC */
+
+    if( e_eFSS_COREHL_RES_OK_BKP_RCVRD == eFSS_COREHL_LoadPageInBuffNRipBkp(&l_tCtx, 0u, 1u, 0x03, 0x04) )
+    {
+        if( ( 0x10u == l_ltUseBuff.puBuf[0u] )  && ( 0x10u == l_ltUseBuff.puBuf[1u] ) && ( 0x10u == l_ltUseBuff.puBuf[2u] ) &&
+            ( 0x10u == l_ltUseBuff.puBuf[3u] )  && ( 0x03u == l_ltUseBuff.puBuf[4u] )  &&
+            ( 0x10u == l_ltUseBuff2.puBuf[0u] ) && ( 0x10u == l_ltUseBuff2.puBuf[1u] ) && ( 0x10u == l_ltUseBuff2.puBuf[2u] ) &&
+            ( 0x10u == l_ltUseBuff2.puBuf[3u] ) && ( 0x04u == l_ltUseBuff2.puBuf[4u] ) &&
+            ( 0x10u == m_auStorArea1[0u] )  && ( 0x10u == m_auStorArea1[1u] ) && ( 0x10u == m_auStorArea1[2u] ) &&
+            ( 0x10u == m_auStorArea1[3u] )  && ( 0x03u == m_auStorArea1[4u] ) && ( 0x00u == m_auStorArea1[5u] ) &&
+            ( 0xDAu == m_auStorArea1[20u] )  && ( 0x02u == m_auStorArea1[21u] ) && ( 0x00u == m_auStorArea1[22u] ) &&
+            ( 0x00u == m_auStorArea1[23u] ) &&
+            ( 0x10u == m_auStorArea2[0u] )  && ( 0x10u == m_auStorArea2[1u] ) && ( 0x10u == m_auStorArea2[2u] ) &&
+            ( 0x10u == m_auStorArea2[3u] )  && ( 0x04u == m_auStorArea2[4u] ) && ( 0x01u == m_auStorArea2[5u] ) &&
+            ( 0xDCu == m_auStorArea2[20u] )  && ( 0x02u == m_auStorArea2[21u] ) && ( 0x00u == m_auStorArea2[22u] ) &&
+            ( 0x00u == m_auStorArea2[23u] ) )
+        {
+            (void)printf("eFSS_COREHLTST_LoadBkupTest 14 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_COREHLTST_LoadBkupTest 14 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_COREHLTST_LoadBkupTest 14 -- FAIL \n");
+    }
+
+    /* Backup corrupted, original correct */
+    /* Setup storage area */
+    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
+    m_auStorArea1[4u]  = 0x03u; /* Page SUBTYPE */
+    m_auStorArea1[5u]  = 0x00u; /* Page index */
+    m_auStorArea1[6u]  = 0x00u; /* Page index */
+    m_auStorArea1[7u]  = 0x00u; /* Page index */
+    m_auStorArea1[8u]  = 0x00u; /* Page index */
+    m_auStorArea1[9u]  = 0x01u; /* Page type */
+    m_auStorArea1[10u] = 0x02u; /* Page version */
+    m_auStorArea1[11u] = 0x00u; /* Page version */
+    m_auStorArea1[12u] = 0x02u; /* Total page */
+    m_auStorArea1[13u] = 0x00u; /* Total page */
+    m_auStorArea1[14u] = 0x00u; /* Total page */
+    m_auStorArea1[15u] = 0x00u; /* Total page */
+    m_auStorArea1[16u] = 0xA5u; /* Magic number */
+    m_auStorArea1[17u] = 0xA5u; /* Magic number */
+    m_auStorArea1[18u] = 0xA5u; /* Magic number */
+    m_auStorArea1[19u] = 0xA5u; /* Magic number */
+    m_auStorArea1[20u] = 0x9Bu; /* CRC */
+    m_auStorArea1[21u] = 0x02u; /* CRC */
+    m_auStorArea1[22u] = 0x00u; /* CRC */
+    m_auStorArea1[23u] = 0x00u; /* CRC */
+
+    (void)memset(m_auStorArea2, 0x10, sizeof(m_auStorArea2));
+    m_auStorArea2[4u]  = 0x04u; /* Page SUBTYPE */
+    m_auStorArea2[5u]  = 0x01u; /* Page index */
+    m_auStorArea2[6u]  = 0x00u; /* Page index */
+    m_auStorArea2[7u]  = 0x00u; /* Page index */
+    m_auStorArea2[8u]  = 0x00u; /* Page index */
+    m_auStorArea2[9u]  = 0x01u; /* Page type */
+    m_auStorArea2[10u] = 0x01u; /* Page version */
+    m_auStorArea2[11u] = 0x00u; /* Page version */
+    m_auStorArea2[12u] = 0x02u; /* Total page */
+    m_auStorArea2[13u] = 0x00u; /* Total page */
+    m_auStorArea2[14u] = 0x00u; /* Total page */
+    m_auStorArea2[15u] = 0x00u; /* Total page */
+    m_auStorArea2[16u] = 0xA5u; /* Magic number */
+    m_auStorArea2[17u] = 0xA5u; /* Magic number */
+    m_auStorArea2[18u] = 0xA5u; /* Magic number */
+    m_auStorArea2[19u] = 0xA5u; /* Magic number */
+    m_auStorArea2[20u] = 0xDCu; /* CRC */
+    m_auStorArea2[21u] = 0x02u; /* CRC */
+    m_auStorArea2[22u] = 0x00u; /* CRC */
+    m_auStorArea2[23u] = 0x00u; /* CRC */
+
+    if( e_eFSS_COREHL_RES_OK_BKP_RCVRD == eFSS_COREHL_LoadPageInBuffNRipBkp(&l_tCtx, 1u, 0u, 0x04, 0x03) )
+    {
+        if( ( 0x10u == l_ltUseBuff.puBuf[0u] )  && ( 0x10u == l_ltUseBuff.puBuf[1u] ) && ( 0x10u == l_ltUseBuff.puBuf[2u] ) &&
+            ( 0x10u == l_ltUseBuff.puBuf[3u] )  && ( 0x04u == l_ltUseBuff.puBuf[4u] )  &&
+            ( 0x10u == l_ltUseBuff2.puBuf[0u] ) && ( 0x10u == l_ltUseBuff2.puBuf[1u] ) && ( 0x10u == l_ltUseBuff2.puBuf[2u] ) &&
+            ( 0x10u == l_ltUseBuff2.puBuf[3u] ) && ( 0x03u == l_ltUseBuff2.puBuf[4u] ) &&
+            ( 0x10u == m_auStorArea1[0u] )  && ( 0x10u == m_auStorArea1[1u] ) && ( 0x10u == m_auStorArea1[2u] ) &&
+            ( 0x10u == m_auStorArea1[3u] )  && ( 0x03u == m_auStorArea1[4u] ) && ( 0x00u == m_auStorArea1[5u] ) &&
+            ( 0xDAu == m_auStorArea1[20u] )  && ( 0x02u == m_auStorArea1[21u] ) && ( 0x00u == m_auStorArea1[22u] ) &&
+            ( 0x00u == m_auStorArea1[23u] ) &&
+            ( 0x10u == m_auStorArea2[0u] )  && ( 0x10u == m_auStorArea2[1u] ) && ( 0x10u == m_auStorArea2[2u] ) &&
+            ( 0x10u == m_auStorArea2[3u] )  && ( 0x04u == m_auStorArea2[4u] ) && ( 0x01u == m_auStorArea2[5u] ) &&
+            ( 0xDCu == m_auStorArea2[20u] )  && ( 0x02u == m_auStorArea2[21u] ) && ( 0x00u == m_auStorArea2[22u] ) &&
+            ( 0x00u == m_auStorArea2[23u] ) )
+        {
+            (void)printf("eFSS_COREHLTST_LoadBkupTest 14 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_COREHLTST_LoadBkupTest 14 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_COREHLTST_LoadBkupTest 14 -- FAIL \n");
+    }
+
+    /* Nothing OK, but new  */
+    /* Setup storage area */
+    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
+    m_auStorArea1[4u]  = 0x03u; /* Page SUBTYPE */
+    m_auStorArea1[5u]  = 0x00u; /* Page index */
+    m_auStorArea1[6u]  = 0x00u; /* Page index */
+    m_auStorArea1[7u]  = 0x00u; /* Page index */
+    m_auStorArea1[8u]  = 0x00u; /* Page index */
+    m_auStorArea1[9u]  = 0x01u; /* Page type */
+    m_auStorArea1[10u] = 0x02u; /* Page version */
+    m_auStorArea1[11u] = 0x00u; /* Page version */
+    m_auStorArea1[12u] = 0x02u; /* Total page */
+    m_auStorArea1[13u] = 0x00u; /* Total page */
+    m_auStorArea1[14u] = 0x00u; /* Total page */
+    m_auStorArea1[15u] = 0x00u; /* Total page */
+    m_auStorArea1[16u] = 0xA5u; /* Magic number */
+    m_auStorArea1[17u] = 0xA5u; /* Magic number */
+    m_auStorArea1[18u] = 0xA5u; /* Magic number */
+    m_auStorArea1[19u] = 0xA5u; /* Magic number */
+    m_auStorArea1[20u] = 0x9Bu; /* CRC */
+    m_auStorArea1[21u] = 0x02u; /* CRC */
+    m_auStorArea1[22u] = 0x00u; /* CRC */
+    m_auStorArea1[23u] = 0x00u; /* CRC */
+
+    (void)memset(m_auStorArea2, 0x10, sizeof(m_auStorArea2));
+    m_auStorArea2[4u]  = 0x04u; /* Page SUBTYPE */
+    m_auStorArea2[5u]  = 0x01u; /* Page index */
+    m_auStorArea2[6u]  = 0x00u; /* Page index */
+    m_auStorArea2[7u]  = 0x00u; /* Page index */
+    m_auStorArea2[8u]  = 0x00u; /* Page index */
+    m_auStorArea2[9u]  = 0x01u; /* Page type */
+    m_auStorArea2[10u] = 0x02u; /* Page version */
+    m_auStorArea2[11u] = 0x00u; /* Page version */
+    m_auStorArea2[12u] = 0x02u; /* Total page */
+    m_auStorArea2[13u] = 0x00u; /* Total page */
+    m_auStorArea2[14u] = 0x00u; /* Total page */
+    m_auStorArea2[15u] = 0x00u; /* Total page */
+    m_auStorArea2[16u] = 0xA5u; /* Magic number */
+    m_auStorArea2[17u] = 0xA5u; /* Magic number */
+    m_auStorArea2[18u] = 0xA5u; /* Magic number */
+    m_auStorArea2[19u] = 0xA5u; /* Magic number */
+    m_auStorArea2[20u] = 0xFFu; /* CRC */
+    m_auStorArea2[21u] = 0xFFu; /* CRC */
+    m_auStorArea2[22u] = 0xFFu; /* CRC */
+    m_auStorArea2[23u] = 0xFFu; /* CRC */
+
+    if( e_eFSS_COREHL_RES_NEWVERSIONFOUND == eFSS_COREHL_LoadPageInBuffNRipBkp(&l_tCtx, 0u, 1u, 0x03, 0x04) )
+    {
+        if( ( 0x00u == l_ltUseBuff.puBuf[0u] )  && ( 0x00u == l_ltUseBuff.puBuf[1u] ) && ( 0x00u == l_ltUseBuff.puBuf[2u] ) &&
+            ( 0x00u == l_ltUseBuff.puBuf[3u] )  && ( 0x03u == l_ltUseBuff.puBuf[4u] )  &&
+            ( 0x10u == l_ltUseBuff2.puBuf[0u] ) && ( 0x10u == l_ltUseBuff2.puBuf[1u] ) && ( 0x10u == l_ltUseBuff2.puBuf[2u] ) &&
+            ( 0x10u == l_ltUseBuff2.puBuf[3u] ) && ( 0x04u == l_ltUseBuff2.puBuf[4u] ) &&
+            ( 0x00u == m_auStorArea1[0u] )  && ( 0x00u == m_auStorArea1[1u] ) && ( 0x00u == m_auStorArea1[2u] ) &&
+            ( 0x00u == m_auStorArea1[3u] )  && ( 0x03u == m_auStorArea1[4u] ) && ( 0x00u == m_auStorArea1[5u] ) &&
+            ( 0x9Bu == m_auStorArea1[20u] )  && ( 0x02u == m_auStorArea1[21u] ) && ( 0x00u == m_auStorArea1[22u] ) &&
+            ( 0x00u == m_auStorArea1[23u] )  &&
+            ( 0x10u == m_auStorArea2[0u] )   && ( 0x10u == m_auStorArea2[1u] ) && ( 0x10u == m_auStorArea2[2u] ) &&
+            ( 0x10u == m_auStorArea2[3u] )   && ( 0x04u == m_auStorArea2[4u] ) && ( 0x01u == m_auStorArea2[5u] ) &&
+            ( 0xFFu == m_auStorArea2[20u] )  && ( 0xFFu == m_auStorArea2[21u] ) && ( 0xFFu == m_auStorArea2[22u] ) &&
+            ( 0xFFu == m_auStorArea2[23u] ) )
+        {
+            (void)printf("eFSS_COREHLTST_LoadBkupTest 15 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_COREHLTST_LoadBkupTest 15 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_COREHLTST_LoadBkupTest 15 -- FAIL \n");
+    }
+
+    /* Nothing OK, but new  */
+    /* Setup storage area */
+    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
+    m_auStorArea1[4u]  = 0x03u; /* Page SUBTYPE */
+    m_auStorArea1[5u]  = 0x00u; /* Page index */
+    m_auStorArea1[6u]  = 0x00u; /* Page index */
+    m_auStorArea1[7u]  = 0x00u; /* Page index */
+    m_auStorArea1[8u]  = 0x00u; /* Page index */
+    m_auStorArea1[9u]  = 0x01u; /* Page type */
+    m_auStorArea1[10u] = 0x02u; /* Page version */
+    m_auStorArea1[11u] = 0x00u; /* Page version */
+    m_auStorArea1[12u] = 0x02u; /* Total page */
+    m_auStorArea1[13u] = 0x00u; /* Total page */
+    m_auStorArea1[14u] = 0x00u; /* Total page */
+    m_auStorArea1[15u] = 0x00u; /* Total page */
+    m_auStorArea1[16u] = 0xA5u; /* Magic number */
+    m_auStorArea1[17u] = 0xA5u; /* Magic number */
+    m_auStorArea1[18u] = 0xA5u; /* Magic number */
+    m_auStorArea1[19u] = 0xA5u; /* Magic number */
+    m_auStorArea1[20u] = 0xFFu; /* CRC */
+    m_auStorArea1[21u] = 0xFFu; /* CRC */
+    m_auStorArea1[22u] = 0xFFu; /* CRC */
+    m_auStorArea1[23u] = 0xFFu; /* CRC */
+
+    (void)memset(m_auStorArea2, 0x10, sizeof(m_auStorArea2));
+    m_auStorArea2[4u]  = 0x04u; /* Page SUBTYPE */
+    m_auStorArea2[5u]  = 0x01u; /* Page index */
+    m_auStorArea2[6u]  = 0x00u; /* Page index */
+    m_auStorArea2[7u]  = 0x00u; /* Page index */
+    m_auStorArea2[8u]  = 0x00u; /* Page index */
+    m_auStorArea2[9u]  = 0x01u; /* Page type */
+    m_auStorArea2[10u] = 0x02u; /* Page version */
+    m_auStorArea2[11u] = 0x00u; /* Page version */
+    m_auStorArea2[12u] = 0x02u; /* Total page */
+    m_auStorArea2[13u] = 0x00u; /* Total page */
+    m_auStorArea2[14u] = 0x00u; /* Total page */
+    m_auStorArea2[15u] = 0x00u; /* Total page */
+    m_auStorArea2[16u] = 0xA5u; /* Magic number */
+    m_auStorArea2[17u] = 0xA5u; /* Magic number */
+    m_auStorArea2[18u] = 0xA5u; /* Magic number */
+    m_auStorArea2[19u] = 0xA5u; /* Magic number */
+    m_auStorArea2[20u] = 0xFFu; /* CRC */
+    m_auStorArea2[21u] = 0xFFu; /* CRC */
+    m_auStorArea2[22u] = 0xFFu; /* CRC */
+    m_auStorArea2[23u] = 0xFFu; /* CRC */
+
+    if( e_eFSS_COREHL_RES_NOTVALIDPAGE == eFSS_COREHL_LoadPageInBuffNRipBkp(&l_tCtx, 0u, 1u, 0x03, 0x04) )
+    {
+        if( ( 0x00u == l_ltUseBuff.puBuf[0u] )  && ( 0x00u == l_ltUseBuff.puBuf[1u] ) && ( 0x00u == l_ltUseBuff.puBuf[2u] ) &&
+            ( 0x00u == l_ltUseBuff.puBuf[3u] )  && ( 0x03u == l_ltUseBuff.puBuf[4u] )  &&
+            ( 0x10u == l_ltUseBuff2.puBuf[0u] ) && ( 0x10u == l_ltUseBuff2.puBuf[1u] ) && ( 0x10u == l_ltUseBuff2.puBuf[2u] ) &&
+            ( 0x10u == l_ltUseBuff2.puBuf[3u] ) && ( 0x04u == l_ltUseBuff2.puBuf[4u] ) &&
+            ( 0x00u == m_auStorArea1[0u] )  && ( 0x00u == m_auStorArea1[1u] ) && ( 0x00u == m_auStorArea1[2u] ) &&
+            ( 0x00u == m_auStorArea1[3u] )  && ( 0x03u == m_auStorArea1[4u] ) && ( 0x00u == m_auStorArea1[5u] ) &&
+            ( 0xFFu == m_auStorArea1[20u] )  && ( 0xFFu == m_auStorArea1[21u] ) && ( 0xFFu == m_auStorArea1[22u] ) &&
+            ( 0xFFu == m_auStorArea1[23u] )  &&
+            ( 0x10u == m_auStorArea2[0u] )   && ( 0x10u == m_auStorArea2[1u] ) && ( 0x10u == m_auStorArea2[2u] ) &&
+            ( 0x10u == m_auStorArea2[3u] )   && ( 0x04u == m_auStorArea2[4u] ) && ( 0x01u == m_auStorArea2[5u] ) &&
+            ( 0xFFu == m_auStorArea2[20u] )  && ( 0xFFu == m_auStorArea2[21u] ) && ( 0xFFu == m_auStorArea2[22u] ) &&
+            ( 0xFFu == m_auStorArea2[23u] ) )
+        {
+            (void)printf("eFSS_COREHLTST_LoadBkupTest 16 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_COREHLTST_LoadBkupTest 16 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_COREHLTST_LoadBkupTest 16 -- FAIL \n");
     }
 
     /* Misra complaiant */
@@ -5847,20 +6728,7 @@ static void eFSS_COREHLTST_LoadBkupTest(void)
     (void)l_tCtxCrc32.uTimeUsed;
 }
 
-
-
-
-
-
-#ifdef 0
-
-
 static void eFSS_COREHLTST_FlushBkupTest(void)
-{
-
-}
-
-static void eFSS_COREHLTST_GenTest(void)
 {
     /* Local variable */
     t_eFSS_COREHL_Ctx l_tCtx;
@@ -5873,6 +6741,7 @@ static void eFSS_COREHLTST_GenTest(void)
 	t_eFSS_TYPE_ReadCtx   l_tCtxRead;
 	t_eFSS_TYPE_CrcCtx    l_tCtxCrc32;
     t_eFSS_COREHL_StorBuf l_ltUseBuff;
+    t_eFSS_COREHL_StorBuf l_ltUseBuff2;
     uint8_t l_uSubTypeRead;
     uint8_t l_uSubTypeWrite;
     bool_t l_bIsEquals;
@@ -5915,119 +6784,125 @@ static void eFSS_COREHLTST_GenTest(void)
 
     if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_uStorType, l_auStor, sizeof(l_auStor) ) )
     {
-        (void)printf("eFSS_COREHLTST_GenTest 1  -- OK \n");
+        (void)printf("eFSS_COREHLTST_FlushBkupTest 1  -- OK \n");
     }
     else
     {
-        (void)printf("eFSS_COREHLTST_GenTest 1  -- FAIL \n");
+        (void)printf("eFSS_COREHLTST_FlushBkupTest 1  -- FAIL \n");
     }
 
     /* Function */
-    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_GetBuff(&l_tCtx, &l_ltUseBuff, &l_ltUseBuff2) )
+    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_GetBuff(&l_tCtx, &l_ltUseBuff) )
     {
-        (void)printf("eFSS_COREHLTST_GenTest 2  -- OK \n");
+        (void)printf("eFSS_COREHLTST_FlushBkupTest 2  -- OK \n");
     }
     else
     {
-        (void)printf("eFSS_COREHLTST_GenTest 2  -- FAIL \n");
+        (void)printf("eFSS_COREHLTST_FlushBkupTest 2  -- FAIL \n");
+    }
+
+    /* Setup storage area */
+    l_ltUseBuff2.uBufL = l_ltUseBuff.uBufL  + 1u;
+    l_ltUseBuff2.puBuf = &l_auStor[24];
+
+
+    /* Setup storage area */
+    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
+    (void)memset(m_auStorArea2, 0, sizeof(m_auStorArea2));
+    (void)memset(l_ltUseBuff.puBuf, 0x10, l_ltUseBuff.uBufL);
+
+
+    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_FlushBuffInPageNBkp(&l_tCtx, 0u, 1u, 0x03, 0x04) )
+    {
+        if( ( 0x10u == l_ltUseBuff.puBuf[0u] )  && ( 0x10u == l_ltUseBuff.puBuf[1u] ) && ( 0x10u == l_ltUseBuff.puBuf[2u] ) &&
+            ( 0x10u == l_ltUseBuff.puBuf[3u] )  && ( 0x03u == l_ltUseBuff.puBuf[4u] )  &&
+            ( 0x10u == l_ltUseBuff2.puBuf[0u] ) && ( 0x10u == l_ltUseBuff2.puBuf[1u] ) && ( 0x10u == l_ltUseBuff2.puBuf[2u] ) &&
+            ( 0x10u == l_ltUseBuff2.puBuf[3u] ) && ( 0x04u == l_ltUseBuff2.puBuf[4u] ) )
+        {
+            if( ( m_auStorArea1[0u]  == 0x10u ) && ( m_auStorArea1[1u]  == 0x10u ) && ( m_auStorArea1[2u]  == 0x10u ) &&
+                ( m_auStorArea1[3u]  == 0x10u ) && ( m_auStorArea1[4u]  == 0x03u ) && ( m_auStorArea1[5u]  == 0x00u ) &&
+                ( m_auStorArea1[6u]  == 0x00u ) && ( m_auStorArea1[7u]  == 0x00u ) && ( m_auStorArea1[8u]  == 0x00u ) &&
+                ( m_auStorArea1[9u]  == 0x01u ) && ( m_auStorArea1[10u] == 0x01u ) && ( m_auStorArea1[11u] == 0x00u ) &&
+                ( m_auStorArea1[12u] == 0x02u ) && ( m_auStorArea1[13u] == 0x00u ) && ( m_auStorArea1[14u] == 0x00u ) &&
+                ( m_auStorArea1[15u] == 0x00u ) && ( m_auStorArea1[16u] == 0xA5u ) && ( m_auStorArea1[17u] == 0xA5u ) &&
+                ( m_auStorArea1[18u] == 0xA5u ) && ( m_auStorArea1[19u] == 0xA5u ) && ( m_auStorArea1[20u] == 0xDAu ) &&
+                ( m_auStorArea1[21u] == 0x02u ) && ( m_auStorArea1[22u] == 0x00u ) && ( m_auStorArea1[23u] == 0x00u ) &&
+                ( m_auStorArea2[0u]  == 0x10u ) && ( m_auStorArea2[1u]  == 0x10u ) && ( m_auStorArea2[2u]  == 0x10u ) &&
+                ( m_auStorArea2[3u]  == 0x10u ) && ( m_auStorArea2[4u]  == 0x04u ) && ( m_auStorArea2[5u]  == 0x01u ) &&
+                ( m_auStorArea2[6u]  == 0x00u ) && ( m_auStorArea2[7u]  == 0x00u ) && ( m_auStorArea2[8u]  == 0x00u ) &&
+                ( m_auStorArea2[9u]  == 0x01u ) && ( m_auStorArea2[10u] == 0x01u ) && ( m_auStorArea2[11u] == 0x00u ) &&
+                ( m_auStorArea2[12u] == 0x02u ) && ( m_auStorArea2[13u] == 0x00u ) && ( m_auStorArea2[14u] == 0x00u ) &&
+                ( m_auStorArea2[15u] == 0x00u ) && ( m_auStorArea2[16u] == 0xA5u ) && ( m_auStorArea2[17u] == 0xA5u ) &&
+                ( m_auStorArea2[18u] == 0xA5u ) && ( m_auStorArea2[19u] == 0xA5u ) && ( m_auStorArea2[20u] == 0xDCu ) &&
+                ( m_auStorArea2[21u] == 0x02u ) && ( m_auStorArea2[22u] == 0x00u ) && ( m_auStorArea2[23u] == 0x00u ) )
+              {
+                  (void)printf("eFSS_COREHLTST_FlushBkupTest 3  -- OK \n");
+              }
+              else
+              {
+                  (void)printf("eFSS_COREHLTST_FlushBkupTest 3  -- FAIL \n");
+              }
+        }
+        else
+        {
+            (void)printf("eFSS_COREHLTST_FlushBkupTest 3  -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_COREHLTST_FlushBkupTest 3  -- FAIL \n");
     }
 
     /* Setup storage area */
     (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    (void)memset(m_auStorArea2, 0xFF, sizeof(m_auStorArea2));
+    (void)memset(m_auStorArea2, 0, sizeof(m_auStorArea2));
+    (void)memset(l_ltUseBuff.puBuf, 0x10, l_ltUseBuff.uBufL);
 
-    /* Setup buffer */
-    l_ltUseBuff.puBuf[0u] = 0x01u;
-    l_ltUseBuff.puBuf[1u] = 0x02u;
-    l_ltUseBuff.puBuf[2u] = 0x03u;
-    l_ltUseBuff.puBuf[3u] = 0x04u;
-    l_ltUseBuff.puBuf[4u] = 0x05u;
 
-    l_ltUseBuff2.puBuf[0u] = 0x11u;
-    l_ltUseBuff2.puBuf[1u] = 0x12u;
-    l_ltUseBuff2.puBuf[2u] = 0x13u;
-    l_ltUseBuff2.puBuf[3u] = 0x14u;
-    l_ltUseBuff2.puBuf[4u] = 0x15u;
-
-    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_FlushBuffInPage(&l_tCtx, e_eFSS_COREHL_BUFFTYPE_1, 0u) )
+    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_FlushBuffInPageNBkp(&l_tCtx, 1u, 0u, 0x04, 0x03) )
     {
-        (void)printf("eFSS_COREHLTST_GenTest 3  -- OK \n");
-    }
-    else
-    {
-        (void)printf("eFSS_COREHLTST_GenTest 3  -- FAIL \n");
-    }
-
-    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_LoadPageInBuff(&l_tCtx, e_eFSS_COREHL_BUFFTYPE_2, 0u) )
-    {
-        if( ( 0x01u== l_ltUseBuff2.puBuf[0u] ) && ( 0x02u== l_ltUseBuff2.puBuf[1u] ) && ( 0x03u== l_ltUseBuff2.puBuf[2u] ) &&
-             ( 0x04u== l_ltUseBuff2.puBuf[3u] ) && ( 0x05u== l_ltUseBuff2.puBuf[4u] ))
+        if( ( 0x10u == l_ltUseBuff.puBuf[0u] )  && ( 0x10u == l_ltUseBuff.puBuf[1u] ) && ( 0x10u == l_ltUseBuff.puBuf[2u] ) &&
+            ( 0x10u == l_ltUseBuff.puBuf[3u] )  && ( 0x04u == l_ltUseBuff.puBuf[4u] )  &&
+            ( 0x10u == l_ltUseBuff2.puBuf[0u] ) && ( 0x10u == l_ltUseBuff2.puBuf[1u] ) && ( 0x10u == l_ltUseBuff2.puBuf[2u] ) &&
+            ( 0x10u == l_ltUseBuff2.puBuf[3u] ) && ( 0x03u == l_ltUseBuff2.puBuf[4u] ) )
         {
-            (void)printf("eFSS_COREHLTST_GenTest 4  -- OK \n");
+            if( ( m_auStorArea2[0u]  == 0x10u ) && ( m_auStorArea2[1u]  == 0x10u ) && ( m_auStorArea2[2u]  == 0x10u ) &&
+                ( m_auStorArea2[3u]  == 0x10u ) && ( m_auStorArea2[4u]  == 0x04u ) && ( m_auStorArea2[5u]  == 0x01u ) &&
+                ( m_auStorArea2[6u]  == 0x00u ) && ( m_auStorArea2[7u]  == 0x00u ) && ( m_auStorArea2[8u]  == 0x00u ) &&
+                ( m_auStorArea2[9u]  == 0x01u ) && ( m_auStorArea2[10u] == 0x01u ) && ( m_auStorArea2[11u] == 0x00u ) &&
+                ( m_auStorArea2[12u] == 0x02u ) && ( m_auStorArea2[13u] == 0x00u ) && ( m_auStorArea2[14u] == 0x00u ) &&
+                ( m_auStorArea2[15u] == 0x00u ) && ( m_auStorArea2[16u] == 0xA5u ) && ( m_auStorArea2[17u] == 0xA5u ) &&
+                ( m_auStorArea2[18u] == 0xA5u ) && ( m_auStorArea2[19u] == 0xA5u ) && ( m_auStorArea2[20u] == 0xDCu ) &&
+                ( m_auStorArea2[21u] == 0x02u ) && ( m_auStorArea2[22u] == 0x00u ) && ( m_auStorArea2[23u] == 0x00u ) &&
+                ( m_auStorArea1[0u]  == 0x10u ) && ( m_auStorArea1[1u]  == 0x10u ) && ( m_auStorArea1[2u]  == 0x10u ) &&
+                ( m_auStorArea1[3u]  == 0x10u ) && ( m_auStorArea1[4u]  == 0x03u ) && ( m_auStorArea1[5u]  == 0x00u ) &&
+                ( m_auStorArea1[6u]  == 0x00u ) && ( m_auStorArea1[7u]  == 0x00u ) && ( m_auStorArea1[8u]  == 0x00u ) &&
+                ( m_auStorArea1[9u]  == 0x01u ) && ( m_auStorArea1[10u] == 0x01u ) && ( m_auStorArea1[11u] == 0x00u ) &&
+                ( m_auStorArea1[12u] == 0x02u ) && ( m_auStorArea1[13u] == 0x00u ) && ( m_auStorArea1[14u] == 0x00u ) &&
+                ( m_auStorArea1[15u] == 0x00u ) && ( m_auStorArea1[16u] == 0xA5u ) && ( m_auStorArea1[17u] == 0xA5u ) &&
+                ( m_auStorArea1[18u] == 0xA5u ) && ( m_auStorArea1[19u] == 0xA5u ) && ( m_auStorArea1[20u] == 0xDAu ) &&
+                ( m_auStorArea1[21u] == 0x02u ) && ( m_auStorArea1[22u] == 0x00u ) && ( m_auStorArea1[23u] == 0x00u ) )
+              {
+                  (void)printf("eFSS_COREHLTST_FlushBkupTest 4  -- OK \n");
+              }
+              else
+              {
+                  (void)printf("eFSS_COREHLTST_FlushBkupTest 4  -- FAIL \n");
+              }
         }
         else
         {
-            (void)printf("eFSS_COREHLTST_GenTest 4  -- FAIL \n");
+            (void)printf("eFSS_COREHLTST_FlushBkupTest 4  -- FAIL \n");
         }
     }
     else
     {
-        (void)printf("eFSS_COREHLTST_GenTest 4  -- FAIL \n");
+        (void)printf("eFSS_COREHLTST_FlushBkupTest 4  -- FAIL \n");
     }
-
-    /* Setup storage area */
-    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    (void)memset(m_auStorArea2, 0xFF, sizeof(m_auStorArea2));
-
-    /* Setup buffer */
-    l_ltUseBuff.puBuf[0u] = 0x01u;
-    l_ltUseBuff.puBuf[1u] = 0x02u;
-    l_ltUseBuff.puBuf[2u] = 0x03u;
-    l_ltUseBuff.puBuf[3u] = 0x04u;
-    l_ltUseBuff.puBuf[4u] = 0x05u;
-
-    l_ltUseBuff2.puBuf[0u] = 0x11u;
-    l_ltUseBuff2.puBuf[1u] = 0x12u;
-    l_ltUseBuff2.puBuf[2u] = 0x13u;
-    l_ltUseBuff2.puBuf[3u] = 0x14u;
-    l_ltUseBuff2.puBuf[4u] = 0x15u;
-
-    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_FlushBuffInPage(&l_tCtx, e_eFSS_COREHL_BUFFTYPE_2, 1u) )
-    {
-        (void)printf("eFSS_COREHLTST_GenTest 5  -- OK \n");
-    }
-    else
-    {
-        (void)printf("eFSS_COREHLTST_GenTest 5  -- FAIL \n");
-    }
-
-    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_LoadPageInBuff(&l_tCtx, e_eFSS_COREHL_BUFFTYPE_1, 1u) )
-    {
-        if( ( 0x11u== l_ltUseBuff.puBuf[0u] ) && ( 0x12u== l_ltUseBuff.puBuf[1u] ) && ( 0x13u== l_ltUseBuff.puBuf[2u] ) &&
-            ( 0x14u== l_ltUseBuff.puBuf[3u] ) && ( 0x15u== l_ltUseBuff.puBuf[4u] ))
-        {
-            (void)printf("eFSS_COREHLTST_GenTest 6  -- OK \n");
-        }
-        else
-        {
-            (void)printf("eFSS_COREHLTST_GenTest 6  -- FAIL \n");
-        }
-    }
-    else
-    {
-        (void)printf("eFSS_COREHLTST_GenTest 6  -- FAIL \n");
-    }
-
-    /* Misra complaiant */
-    (void)l_tCtxErase.eLastEr;
-    (void)l_tCtxErase.uTimeUsed;
-    (void)l_tCtxWrite.eLastEr;
-    (void)l_tCtxWrite.uTimeUsed;
-    (void)l_tCtxRead.eLastEr;
-    (void)l_tCtxRead.uTimeUsed;
-    (void)l_tCtxCrc32.eLastEr;
-    (void)l_tCtxCrc32.uTimeUsed;
-    (void)l_ltUseBuff2.puBuf;
 }
 
-#endif
+static void eFSS_COREHLTST_GenTest(void)
+{
+
+}
+
