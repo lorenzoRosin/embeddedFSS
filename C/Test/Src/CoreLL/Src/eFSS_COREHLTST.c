@@ -159,6 +159,12 @@ static uint8_t m_auStorArea2[24u];
 /***********************************************************************************************************************
  *   PRIVATE TEST FUNCTION DECLARATION
  **********************************************************************************************************************/
+#ifdef __IAR_SYSTEMS_ICC__
+    #pragma cstat_disable = "MISRAC2012-Rule-8.13"
+    /* Suppressed for code clarity in test execution*/
+#endif
+
+
 static bool_t eFSS_COREHLTST_EraseAdapt(t_eFSS_TYPE_EraseCtx* const p_ptCtx, const uint32_t p_uPageToErase)
 {
     bool_t l_bRes;
@@ -797,6 +803,10 @@ static bool_t eFSS_COREHLTST_CrcTst1Adapt(t_eFSS_TYPE_CrcCtx* const p_ptCtx, con
 
     return l_bRes;
 }
+
+#ifdef __IAR_SYSTEMS_ICC__
+    #pragma cstat_restore = "MISRAC2012-Rule-8.13"
+#endif
 
 /***********************************************************************************************************************
  *   PRIVATE FUNCTION
@@ -2395,6 +2405,11 @@ void eFSS_COREHLTST_Basic(void)
         (void)printf("eFSS_COREHLTST_Basic 7  -- FAIL \n");
     }
 }
+
+#ifdef __IAR_SYSTEMS_ICC__
+    #pragma cstat_disable = "CERT-INT31-C_c"
+    /* Suppressed for code clarity in test execution*/
+#endif
 
 void eFSS_COREHLTST_BadClBckNRetry(void)
 {
@@ -5094,7 +5109,7 @@ static void eFSS_COREHLTST_FlushTest(void)
     l_ltUseBuff2.puBuf[3u] = 0x14u;
     l_ltUseBuff2.puBuf[4u] = 0x15u;
 
-    l_uSubTypeWrite = 0x05;
+    l_uSubTypeWrite = 0x05u;
     if( e_eFSS_COREHL_RES_WRITENOMATCHREAD == eFSS_COREHL_FlushBuffInPage(&l_tCtx, 1u, l_uSubTypeWrite) )
     {
         (void)printf("eFSS_COREHLTST_FlushTest 8  -- OK \n");
@@ -6873,6 +6888,10 @@ static void eFSS_COREHLTST_FlushBkupTest(void)
     (void)l_tCtxCrc32.eLastEr;
     (void)l_tCtxCrc32.uTimeUsed;
 }
+
+#ifdef __IAR_SYSTEMS_ICC__
+    #pragma cstat_restore = "CERT-INT31-C_c"
+#endif
 
 static void eFSS_COREHLTST_GenTest(void)
 {
