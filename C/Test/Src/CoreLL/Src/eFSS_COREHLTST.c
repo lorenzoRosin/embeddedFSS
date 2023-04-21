@@ -1123,7 +1123,7 @@ void eFSS_COREHLTST_BadPointer(void)
     }
 
     /* Function */
-    if( e_eFSS_COREHL_RES_BADPOINTER == eFSS_COREHL_LoadPageInBuff(NULL, 0u, &l_uSubTypeRead) )
+    if( e_eFSS_COREHL_RES_BADPOINTER == eFSS_COREHL_LoadPageInBuff(&l_tCtx, 0u, NULL) )
     {
         (void)printf("eFSS_COREHLTST_BadPointer 24 -- OK \n");
     }
