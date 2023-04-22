@@ -208,16 +208,16 @@ e_eFSS_COREHL_RES eFSS_COREHL_CalcCrcInBuff(t_eFSS_COREHL_Ctx* const p_ptCtx, co
  * @param[in]   p_uOriSubT - Sub type of the original page
  * @param[in]   p_uBkpSubT - Sub type of the backup pages
  *
- * @return      e_eFSS_COREHL_RES_BADPOINTER       - In case of bad pointer passed to the function
- *		        e_eFSS_COREHL_RES_BADPARAM         - In case of an invalid parameter passed to the function
- *		        e_eFSS_COREHL_RES_CORRUPTCTX       - Context is corrupted
- *		        e_eFSS_COREHL_RES_NOINITLIB        - Need to init lib before calling function
- *		        e_eFSS_COREHL_RES_CLBCKCRCERR      - The crc callback reported an error
- *		        e_eFSS_COREHL_RES_CLBCKERASEERR    - The erase callback reported an error
- *		        e_eFSS_COREHL_RES_CLBCKWRITEERR    - The write callback reported an error
- *		        e_eFSS_COREHL_RES_CLBCKREADERR     - The read callback reported an error
- *		        e_eFSS_COREHL_RES_WRITENOMATCHREAD - Writen data dosent match what requested
- *              e_eFSS_COREHL_RES_OK               - Operation ended correctly
+ * @return   x   e_eFSS_COREHL_RES_BADPOINTER       - In case of bad pointer passed to the function
+ *		     x   e_eFSS_COREHL_RES_BADPARAM         - In case of an invalid parameter passed to the function
+ *		     x   e_eFSS_COREHL_RES_CORRUPTCTX       - Context is corrupted
+ *		     x   e_eFSS_COREHL_RES_NOINITLIB        - Need to init lib before calling function
+ *		     x   e_eFSS_COREHL_RES_CLBCKCRCERR      - The crc callback reported an error
+ *		     x   e_eFSS_COREHL_RES_CLBCKERASEERR    - The erase callback reported an error
+ *		     x   e_eFSS_COREHL_RES_CLBCKWRITEERR    - The write callback reported an error
+ *		     x   e_eFSS_COREHL_RES_CLBCKREADERR     - The read callback reported an error
+ *		     x   e_eFSS_COREHL_RES_WRITENOMATCHREAD - Writen data dosent match what requested
+ *           x   e_eFSS_COREHL_RES_OK               - Operation ended correctly
  */
 e_eFSS_COREHL_RES eFSS_COREHL_FlushBuffInPageNBkp(t_eFSS_COREHL_Ctx* const p_ptCtx,
 								                  const uint32_t p_uOriIdx, const uint32_t p_uBkpIdx,

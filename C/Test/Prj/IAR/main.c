@@ -16,14 +16,13 @@ int main(void)
     /* Start testing */
     // eFSS_BLOBTST_ExeTest();
     // eFSS_BLOBCTST_ExeTest();
-    // eFSS_DBCTST_ExeTest();
     // eFSS_LOGCTST_ExeTest();
     // eFSS_DBTST_ExeTest();
     // eFSS_LOGTST_ExeTest();
 
     // eFSS_UtilsTST_ExeTest();
     // eFSS_CORELLTST_ExeTest();
-    eFSS_COREHLTST_ExeTest();
-
+    // eFSS_COREHLTST_ExeTest();
+    eFSS_DBCTST_ExeTest();
     return 0;
 }
