@@ -407,7 +407,7 @@ static e_eFSS_DBC_RES eFSS_DB_HLtoDBCRes(const e_eFSS_COREHL_RES p_eHLRes)
 
         case e_eFSS_COREHL_RES_NEWVERSIONFOUND:
         {
-            l_eRes = e_eFSS_DBC_RES_NEWVERSIONDB;
+            l_eRes = e_eFSS_DBC_RES_NEWVERSIONFOUND;
             break;
         }
 
