@@ -44,7 +44,7 @@
  *  PRIVATE STATIC FUNCTION DECLARATION
  **********************************************************************************************************************/
 static bool_t eFSS_DBC_IsStatusStillCoherent(t_eFSS_DBC_Ctx* const p_ptCtx);
-static e_eFSS_DBC_RES eFSS_DB_HLtoDBCRes(const e_eFSS_COREHL_RES p_eHLRes);
+static e_eFSS_DBC_RES eFSS_DBC_HLtoDBCRes(const e_eFSS_COREHL_RES p_eHLRes);
 
 
 
@@ -82,7 +82,7 @@ e_eFSS_DBC_RES eFSS_DBC_InitCtx(t_eFSS_DBC_Ctx* const p_ptCtx, const t_eFSS_TYPE
             /* Can init low level context */
             l_eResHL = eFSS_COREHL_InitCtx(&p_ptCtx->tCOREHLCtx, p_tCtxCb, p_tStorSet, EFSS_PAGETYPE_DB, p_puBuff,
                                            p_uBuffL);
-            l_eRes = eFSS_DB_HLtoDBCRes(l_eResHL);
+            l_eRes = eFSS_DBC_HLtoDBCRes(l_eResHL);
         }
     }
 
@@ -103,7 +103,7 @@ e_eFSS_DBC_RES eFSS_DBC_IsInit(const t_eFSS_DBC_Ctx* p_ptCtx, bool_t* const p_pb
 	else
 	{
         l_eResHL = eFSS_COREHL_IsInit(&p_ptCtx->tCOREHLCtx, p_pbIsInit);
-        l_eRes = eFSS_DB_HLtoDBCRes(l_eResHL);
+        l_eRes = eFSS_DBC_HLtoDBCRes(l_eResHL);
 	}
 
 	return l_eRes;
@@ -131,7 +131,7 @@ e_eFSS_DBC_RES eFSS_DBC_GetBuffNUsable(t_eFSS_DBC_Ctx* const p_ptCtx, t_eFSS_DBC
 		/* Check Init */
         l_bIsInit = false;
         l_eResHL = eFSS_COREHL_IsInit(&p_ptCtx->tCOREHLCtx, &l_bIsInit);
-        l_eRes = eFSS_DB_HLtoDBCRes(l_eResHL);
+        l_eRes = eFSS_DBC_HLtoDBCRes(l_eResHL);
 
         if( e_eFSS_DBC_RES_OK == l_eRes )
         {
@@ -149,7 +149,7 @@ e_eFSS_DBC_RES eFSS_DBC_GetBuffNUsable(t_eFSS_DBC_Ctx* const p_ptCtx, t_eFSS_DBC
                 else
                 {
                     l_eResHL = eFSS_COREHL_GetBuffNStor(&p_ptCtx->tCOREHLCtx, &l_tBuff, &l_tStorSet);
-                    l_eRes = eFSS_DB_HLtoDBCRes(l_eResHL);
+                    l_eRes = eFSS_DBC_HLtoDBCRes(l_eResHL);
 
                     if( e_eFSS_DBC_RES_OK == l_eRes )
                     {
@@ -189,7 +189,7 @@ e_eFSS_DBC_RES eFSS_DBC_LoadPageInBuff(t_eFSS_DBC_Ctx* const p_ptCtx, const uint
 		/* Check Init */
         l_bIsInit = false;
         l_eResHL = eFSS_COREHL_IsInit(&p_ptCtx->tCOREHLCtx, &l_bIsInit);
-        l_eRes = eFSS_DB_HLtoDBCRes(l_eResHL);
+        l_eRes = eFSS_DBC_HLtoDBCRes(l_eResHL);
 
         if( e_eFSS_DBC_RES_OK == l_eRes )
         {
@@ -208,7 +208,7 @@ e_eFSS_DBC_RES eFSS_DBC_LoadPageInBuff(t_eFSS_DBC_Ctx* const p_ptCtx, const uint
                 {
                     /* Need to check page index validity, get the HL stor settings and verify */
                     l_eResHL = eFSS_COREHL_GetStorSett(&p_ptCtx->tCOREHLCtx, &l_tStorSet);
-                    l_eRes = eFSS_DB_HLtoDBCRes(l_eResHL);
+                    l_eRes = eFSS_DBC_HLtoDBCRes(l_eResHL);
 
                     if( e_eFSS_DBC_RES_OK == l_eRes )
                     {
@@ -223,7 +223,7 @@ e_eFSS_DBC_RES eFSS_DBC_LoadPageInBuff(t_eFSS_DBC_Ctx* const p_ptCtx, const uint
                             l_eResHL = eFSS_COREHL_LoadPageInBuffNRipBkp(&p_ptCtx->tCOREHLCtx, p_uPageIndx, l_uBkpIdx,
                                                                          EFSS_PAGESUBTYPE_DBORI,
                                                                          EFSS_PAGESUBTYPE_DBBKP);
-                            l_eRes = eFSS_DB_HLtoDBCRes(l_eResHL);
+                            l_eRes = eFSS_DBC_HLtoDBCRes(l_eResHL);
                         }
                     }
                 }
@@ -258,7 +258,7 @@ e_eFSS_DBC_RES eFSS_DBC_FlushBuffInPage(t_eFSS_DBC_Ctx* const p_ptCtx, const uin
 		/* Check Init */
         l_bIsInit = false;
         l_eResHL = eFSS_COREHL_IsInit(&p_ptCtx->tCOREHLCtx, &l_bIsInit);
-        l_eRes = eFSS_DB_HLtoDBCRes(l_eResHL);
+        l_eRes = eFSS_DBC_HLtoDBCRes(l_eResHL);
 
         if( e_eFSS_DBC_RES_OK == l_eRes )
         {
@@ -277,7 +277,7 @@ e_eFSS_DBC_RES eFSS_DBC_FlushBuffInPage(t_eFSS_DBC_Ctx* const p_ptCtx, const uin
                 {
                     /* Need to check page index validity, get the HL stor settings and verify */
                     l_eResHL = eFSS_COREHL_GetStorSett(&p_ptCtx->tCOREHLCtx, &l_tStorSet);
-                    l_eRes = eFSS_DB_HLtoDBCRes(l_eResHL);
+                    l_eRes = eFSS_DBC_HLtoDBCRes(l_eResHL);
 
                     if( e_eFSS_DBC_RES_OK == l_eRes )
                     {
@@ -292,7 +292,7 @@ e_eFSS_DBC_RES eFSS_DBC_FlushBuffInPage(t_eFSS_DBC_Ctx* const p_ptCtx, const uin
 
                             l_eResHL = eFSS_COREHL_FlushBuffInPageNBkp(&p_ptCtx->tCOREHLCtx, p_uPageIndx, l_uBkpIndex,
                                                                        EFSS_PAGESUBTYPE_DBORI, EFSS_PAGESUBTYPE_DBBKP);
-                            l_eRes = eFSS_DB_HLtoDBCRes(l_eResHL);
+                            l_eRes = eFSS_DBC_HLtoDBCRes(l_eResHL);
                         }
                     }
                 }
@@ -314,7 +314,7 @@ static bool_t eFSS_DBC_IsStatusStillCoherent(t_eFSS_DBC_Ctx* const p_ptCtx)
     bool_t l_bRes;
     e_eFSS_COREHL_RES l_eResHL;
 
-    /* Local var used for calculation */
+    /* Local var used for storage */
     t_eFSS_TYPE_StorSet l_tStorSet;
     uint32_t l_uNPage;
 
@@ -328,7 +328,7 @@ static bool_t eFSS_DBC_IsStatusStillCoherent(t_eFSS_DBC_Ctx* const p_ptCtx)
         l_uNPage = l_tStorSet.uTotPages;
 
         /* Check numbers of page validity */
-        if( ( l_uNPage < 2u ) || ( 0u != ( l_uNPage % 2u ) ) )
+        if( ( l_uNPage < EFSS_DBC_NPAGEMIN ) || ( 0u != ( l_uNPage % EFSS_DBC_NPAGEMIN ) ) )
         {
             l_bRes = false;
         }
@@ -341,7 +341,7 @@ static bool_t eFSS_DBC_IsStatusStillCoherent(t_eFSS_DBC_Ctx* const p_ptCtx)
     return l_bRes;
 }
 
-static e_eFSS_DBC_RES eFSS_DB_HLtoDBCRes(const e_eFSS_COREHL_RES p_eHLRes)
+static e_eFSS_DBC_RES eFSS_DBC_HLtoDBCRes(const e_eFSS_COREHL_RES p_eHLRes)
 {
     e_eFSS_DBC_RES l_eRes;
 
