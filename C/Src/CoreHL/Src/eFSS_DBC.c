@@ -36,6 +36,8 @@
 #define EFSS_PAGETYPE_DB                                                                         ( ( uint8_t )   0x03u )
 #define EFSS_PAGESUBTYPE_DBORI                                                                   ( ( uint8_t )   0x01u )
 #define EFSS_PAGESUBTYPE_DBBKP                                                                   ( ( uint8_t )   0x02u )
+#define EFSS_DBC_NPAGEMIN                                                                        ( ( uint32_t )     2u )
+
 
 
 /***********************************************************************************************************************
@@ -87,7 +89,7 @@ e_eFSS_DBC_RES eFSS_DBC_InitCtx(t_eFSS_DBC_Ctx* const p_ptCtx, const t_eFSS_TYPE
     return l_eRes;
 }
 
-e_eFSS_DBC_RES eFSS_DBC_IsInit(t_eFSS_DBC_Ctx* const p_ptCtx, bool_t* const p_pbIsInit)
+e_eFSS_DBC_RES eFSS_DBC_IsInit(const t_eFSS_DBC_Ctx* p_ptCtx, bool_t* const p_pbIsInit)
 {
 	/* Local variable */
 	e_eFSS_DBC_RES l_eRes;

@@ -87,10 +87,12 @@ e_eFSS_DBC_RES eFSS_DBC_InitCtx(t_eFSS_DBC_Ctx* const p_ptCtx, const t_eFSS_TYPE
  * @return      e_eFSS_DBC_RES_BADPOINTER    - In case of bad pointer passed to the function
  *              e_eFSS_DBC_RES_OK            - Operation ended correctly
  */
-e_eFSS_DBC_RES eFSS_DBC_IsInit(t_eFSS_DBC_Ctx* const p_ptCtx, bool_t* const p_pbIsInit);
+e_eFSS_DBC_RES eFSS_DBC_IsInit(const t_eFSS_DBC_Ctx* p_ptCtx, bool_t* const p_pbIsInit);
 
 /**
- * @brief       Get the numbers of usable page and the storage buffer
+ * @brief       Get the numbers of usable page for writing or reading logs and the buffer that we can use to read and
+ *              write data. The size of the buffer refers only to the user avaiable data, others private metadata
+ *              are not avaiable in this stage.
  *
  * @param[in]   p_ptCtx       - Database Core context
  * @param[out]  p_ptBuff      - Pointer to a struct that will be filled with info about internal buffer
@@ -105,11 +107,12 @@ e_eFSS_DBC_RES eFSS_DBC_GetBuffNUsable(t_eFSS_DBC_Ctx* const p_ptCtx, t_eFSS_DBC
                                        uint32_t* const p_puUsePages);
 
 /**
- * @brief       Load a page from the storage area in to the internal buffer
+ * @brief       Load a page from the storage area in to the internal buffer. Backup pages area managed automatically
  *
  * @param[in]   p_ptCtx         - Database Core context
  * @param[in]   p_uPageIndx     - uint32_t index rappresenting the page that we want to load from storage. Must be a
- *                                a value that can vary from 0 to p_puUsePages.
+ *                                a value that can vary from 0 to p_puUsePages-1 (returned from
+ *                                eFSS_DBC_GetBuffNUsable).
  *
  * @return      e_eFSS_DBC_RES_BADPOINTER       - In case of bad pointer passed to the function
  *		        e_eFSS_DBC_RES_BADPARAM         - In case of an invalid parameter passed to the function
@@ -128,11 +131,12 @@ e_eFSS_DBC_RES eFSS_DBC_GetBuffNUsable(t_eFSS_DBC_Ctx* const p_ptCtx, t_eFSS_DBC
 e_eFSS_DBC_RES eFSS_DBC_LoadPageInBuff(t_eFSS_DBC_Ctx* const p_ptCtx, const uint32_t p_uPageIndx);
 
 /**
- * @brief       Flush the internal buffer in to the storage area.
+ * @brief       Flush the internal buffer in to the storage area. Backup pages area managed automatically
  *
  * @param[in]   p_ptCtx             - Database Core context
  * @param[in]   p_uPageIndx         - uint32_t index rappresenting the page that we want to flush in storage. Must be a
- *                                    a value that can vary from 0 to p_puUsePages.
+ *                                    a value that can vary from 0 to p_puUsePages-1 (returned from
+ *                                    eFSS_DBC_GetBuffNUsable).
  *
  * @return      e_eFSS_DBC_RES_BADPOINTER       - In case of bad pointer passed to the function
  *		        e_eFSS_DBC_RES_BADPARAM         - In case of an invalid parameter passed to the function
