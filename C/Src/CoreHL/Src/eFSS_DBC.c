@@ -220,13 +220,13 @@ e_eFSS_DBC_RES eFSS_DBC_LoadPageInBuff(t_eFSS_DBC_Ctx* const p_ptCtx, const uint
                     if( e_eFSS_DBC_RES_OK == l_eRes )
                     {
                         l_uTotPages = l_tStorSet.uTotPages;
-                        if( p_uPageIndx >= ( l_uTotPages / 2u ) )
+                        if( p_uPageIndx >= ( l_uTotPages / EFSS_DBC_NPAGEMIN ) )
                         {
                             l_eRes = e_eFSS_DBC_RES_BADPARAM;
                         }
                         else
                         {
-                            l_uBkpIdx = p_uPageIndx + ( l_uTotPages / 2u );
+                            l_uBkpIdx = p_uPageIndx + ( l_uTotPages / EFSS_DBC_NPAGEMIN );
                             l_eResHL = eFSS_COREHL_LoadPageInBuffNRipBkp(&p_ptCtx->tCOREHLCtx, p_uPageIndx, l_uBkpIdx,
                                                                          EFSS_PAGESUBTYPE_DBORI,
                                                                          EFSS_PAGESUBTYPE_DBBKP);
@@ -291,13 +291,13 @@ e_eFSS_DBC_RES eFSS_DBC_FlushBuffInPage(t_eFSS_DBC_Ctx* const p_ptCtx, const uin
                     if( e_eFSS_DBC_RES_OK == l_eRes )
                     {
                         l_uTotPages = l_tStorSet.uTotPages;
-                        if( p_uPageIndx >= ( l_uTotPages / 2u ) )
+                        if( p_uPageIndx >= ( l_uTotPages / EFSS_DBC_NPAGEMIN ) )
                         {
                             l_eRes = e_eFSS_DBC_RES_BADPARAM;
                         }
                         else
                         {
-                            l_uBkpIndex = p_uPageIndx + ( l_uTotPages / 2u );
+                            l_uBkpIndex = p_uPageIndx + ( l_uTotPages / EFSS_DBC_NPAGEMIN );
 
                             l_eResHL = eFSS_COREHL_FlushBuffInPageNBkp(&p_ptCtx->tCOREHLCtx, p_uPageIndx, l_uBkpIndex,
                                                                        EFSS_PAGESUBTYPE_DBORI, EFSS_PAGESUBTYPE_DBBKP);
