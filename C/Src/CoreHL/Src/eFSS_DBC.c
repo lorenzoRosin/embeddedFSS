@@ -55,7 +55,7 @@ e_eFSS_DBC_RES eFSS_DBC_InitCtx(t_eFSS_DBC_Ctx* const p_ptCtx, const t_eFSS_TYPE
 								const t_eFSS_TYPE_StorSet p_tStorSet, uint8_t* const p_puBuff,
                                 const uint32_t p_uBuffL)
 {
-    /* Return local var */
+     /* Return local var */
     e_eFSS_DBC_RES l_eRes;
     e_eFSS_COREHL_RES l_eResHL;
 
@@ -73,13 +73,13 @@ e_eFSS_DBC_RES eFSS_DBC_InitCtx(t_eFSS_DBC_Ctx* const p_ptCtx, const t_eFSS_TYPE
         l_uNPage = p_tStorSet.uTotPages;
 
         /* Check numbers of page validity */
-        if( ( l_uNPage < 2u ) || ( 0u != ( l_uNPage % 2u ) ) )
+        if( ( l_uNPage < EFSS_DBC_NPAGEMIN ) || ( 0u != ( l_uNPage % EFSS_DBC_NPAGEMIN ) ) )
         {
             l_eRes = e_eFSS_DBC_RES_BADPARAM;
         }
         else
         {
-            /* Can init low level context */
+            /* Can now init low level context */
             l_eResHL = eFSS_COREHL_InitCtx(&p_ptCtx->tCOREHLCtx, p_tCtxCb, p_tStorSet, EFSS_PAGETYPE_DB, p_puBuff,
                                            p_uBuffL);
             l_eRes = eFSS_DBC_HLtoDBCRes(l_eResHL);
@@ -91,7 +91,7 @@ e_eFSS_DBC_RES eFSS_DBC_InitCtx(t_eFSS_DBC_Ctx* const p_ptCtx, const t_eFSS_TYPE
 
 e_eFSS_DBC_RES eFSS_DBC_IsInit(const t_eFSS_DBC_Ctx* p_ptCtx, bool_t* const p_pbIsInit)
 {
-	/* Local variable */
+	/* Return local var */
 	e_eFSS_DBC_RES l_eRes;
     e_eFSS_COREHL_RES l_eResHL;
 
@@ -112,14 +112,19 @@ e_eFSS_DBC_RES eFSS_DBC_IsInit(const t_eFSS_DBC_Ctx* p_ptCtx, bool_t* const p_pb
 e_eFSS_DBC_RES eFSS_DBC_GetBuffNUsable(t_eFSS_DBC_Ctx* const p_ptCtx, t_eFSS_DBC_StorBuf* const p_ptBuff,
                                        uint32_t* const p_puUsePages)
 {
-	/* Local variable */
+	/* Return local var */
 	e_eFSS_DBC_RES l_eRes;
     e_eFSS_COREHL_RES l_eResHL;
 
-    /* Local var used for calculation */
-    t_eFSS_COREHL_StorBuf l_tBuff;
-    t_eFSS_TYPE_StorSet   l_tStorSet;
+    /* Local var for init */
     bool_t l_bIsInit;
+
+    /* Local variable for storage */
+    t_eFSS_COREHL_StorBuf l_tBuff;
+
+    /* Local var used for calculation */
+    t_eFSS_TYPE_StorSet   l_tStorSet;
+
 
 	/* Check pointer validity */
 	if( ( NULL == p_ptCtx ) || ( NULL == p_ptBuff ) || ( NULL == p_puUsePages ) )
@@ -155,7 +160,7 @@ e_eFSS_DBC_RES eFSS_DBC_GetBuffNUsable(t_eFSS_DBC_Ctx* const p_ptCtx, t_eFSS_DBC
                     {
                         p_ptBuff->puBuf = l_tBuff.puBuf;
                         p_ptBuff->uBufL = l_tBuff.uBufL;
-                        *p_puUsePages = (uint32_t)( l_tStorSet.uTotPages / 2u );
+                        *p_puUsePages = (uint32_t)( l_tStorSet.uTotPages / EFSS_DBC_NPAGEMIN );
                     }
                 }
             }
@@ -167,15 +172,17 @@ e_eFSS_DBC_RES eFSS_DBC_GetBuffNUsable(t_eFSS_DBC_Ctx* const p_ptCtx, t_eFSS_DBC
 
 e_eFSS_DBC_RES eFSS_DBC_LoadPageInBuff(t_eFSS_DBC_Ctx* const p_ptCtx, const uint32_t p_uPageIndx)
 {
-	/* Local variable */
+	/* Return local var */
 	e_eFSS_DBC_RES l_eRes;
     e_eFSS_COREHL_RES l_eResHL;
+
+    /* Local var for init */
+    bool_t l_bIsInit;
 
     /* Local var used for storage */
     t_eFSS_TYPE_StorSet l_tStorSet;
 
     /* Local var used for calculation */
-    bool_t l_bIsInit;
     uint32_t l_uTotPages;
     uint32_t l_uBkpIdx;
 
@@ -236,15 +243,17 @@ e_eFSS_DBC_RES eFSS_DBC_LoadPageInBuff(t_eFSS_DBC_Ctx* const p_ptCtx, const uint
 
 e_eFSS_DBC_RES eFSS_DBC_FlushBuffInPage(t_eFSS_DBC_Ctx* const p_ptCtx, const uint32_t p_uPageIndx)
 {
-	/* Local variable */
+	/* Return local var */
 	e_eFSS_DBC_RES l_eRes;
     e_eFSS_COREHL_RES l_eResHL;
+
+    /* Local var for init */
+    bool_t l_bIsInit;
 
     /* Local var used for storage */
     t_eFSS_TYPE_StorSet l_tStorSet;
 
     /* Local var used for calculation */
-    bool_t l_bIsInit;
     uint32_t l_uTotPages;
     uint32_t l_uBkpIndex;
 
@@ -343,6 +352,7 @@ static bool_t eFSS_DBC_IsStatusStillCoherent(t_eFSS_DBC_Ctx* const p_ptCtx)
 
 static e_eFSS_DBC_RES eFSS_DBC_HLtoDBCRes(const e_eFSS_COREHL_RES p_eHLRes)
 {
+    /* Return local var */
     e_eFSS_DBC_RES l_eRes;
 
     switch(p_eHLRes)
