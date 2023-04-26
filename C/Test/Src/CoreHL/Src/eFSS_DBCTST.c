@@ -54,6 +54,7 @@ static bool_t eFSS_DBCTST_EraseErrAdapt(t_eFSS_TYPE_EraseCtx* const p_ptCtx, con
 
 static bool_t eFSS_DBCTST_EraseTst1Adapt(t_eFSS_TYPE_EraseCtx* const p_ptCtx, const uint32_t p_uPageToErase);
 
+static bool_t eFSS_DBCTST_EraseTstAAdapt(t_eFSS_TYPE_EraseCtx* const p_ptCtx, const uint32_t p_uPageToErase);
 
 static bool_t eFSS_DBCTST_WriteAdapt(t_eFSS_TYPE_WriteCtx* const p_ptCtx,
                                         const uint32_t p_uPageToWrite, const uint8_t* p_puDataToWrite,
@@ -68,6 +69,10 @@ static bool_t eFSS_DBCTST_WriteErrSecAdapt(t_eFSS_TYPE_WriteCtx* const p_ptCtx,
                                               const uint32_t p_uDataToWriteL );
 
 static bool_t eFSS_DBCTST_WriteTst1Adapt(t_eFSS_TYPE_WriteCtx* const p_ptCtx,
+                                        const uint32_t p_uPageToWrite, const uint8_t* p_puDataToWrite,
+                                        const uint32_t p_uDataToWriteL );
+
+static bool_t eFSS_DBCTST_WriteTstAAdapt(t_eFSS_TYPE_WriteCtx* const p_ptCtx,
                                         const uint32_t p_uPageToWrite, const uint8_t* p_puDataToWrite,
                                         const uint32_t p_uDataToWriteL );
 
@@ -87,6 +92,10 @@ static bool_t eFSS_DBCTST_ReadTst1Adapt(t_eFSS_TYPE_ReadCtx* const p_ptCtx,
                                        const uint32_t p_uPageToRead, uint8_t* const p_puReadBuffer,
                                        const uint32_t p_uReadBufferL );
 
+static bool_t eFSS_DBCTST_ReadTstAAdapt(t_eFSS_TYPE_ReadCtx* const p_ptCtx,
+                                       const uint32_t p_uPageToRead, uint8_t* const p_puReadBuffer,
+                                       const uint32_t p_uReadBufferL );
+
 static bool_t eFSS_DBCTST_ReadTst2Adapt(t_eFSS_TYPE_ReadCtx* const p_ptCtx,
                                        const uint32_t p_uPageToRead, uint8_t* const p_puReadBuffer,
                                        const uint32_t p_uReadBufferL );
@@ -100,6 +109,10 @@ static bool_t eFSS_DBCTST_CrcErrAdapt(t_eFSS_TYPE_CrcCtx* const p_ptCtx, const u
                                          uint32_t* const p_puCrc32Val );
 
 static bool_t eFSS_DBCTST_CrcTst1Adapt(t_eFSS_TYPE_CrcCtx* const p_ptCtx, const uint32_t p_uUseed,
+                                          const uint8_t* p_puData, const uint32_t p_uDataL,
+                                          uint32_t* const p_puCrc32Val );
+
+static bool_t eFSS_DBCTST_CrcTstAAdapt(t_eFSS_TYPE_CrcCtx* const p_ptCtx, const uint32_t p_uUseed,
                                           const uint8_t* p_puData, const uint32_t p_uDataL,
                                           uint32_t* const p_puCrc32Val );
 
@@ -145,8 +158,10 @@ void eFSS_DBCTST_ExeTest(void)
  **********************************************************************************************************************/
 static bool_t  m_bIsErased1 = false;
 static bool_t  m_bIsErased2 = false;
+static bool_t  m_bIsErasedA[6u];
 static uint8_t m_auStorArea1[24u];
 static uint8_t m_auStorArea2[24u];
+static uint8_t m_auStorAreaA[6u][24u];
 
 
 /***********************************************************************************************************************
@@ -197,6 +212,42 @@ static bool_t eFSS_DBCTST_EraseErrAdapt(t_eFSS_TYPE_EraseCtx* const p_ptCtx, con
 }
 
 static bool_t eFSS_DBCTST_EraseTst1Adapt(t_eFSS_TYPE_EraseCtx* const p_ptCtx, const uint32_t p_uPageToErase)
+{
+    bool_t l_bRes;
+
+    if( NULL == p_ptCtx )
+    {
+        l_bRes = false;
+    }
+    else
+    {
+        if( p_uPageToErase >= 2u )
+        {
+            l_bRes = false;
+            p_ptCtx->eLastEr = e_eFSS_DBC_RES_BADPARAM;
+        }
+        else
+        {
+            p_ptCtx->uTimeUsed++;
+
+            if( p_uPageToErase <= 5 )
+            {
+                l_bRes = true;
+                m_bIsErasedA[p_uPageToErase] = true;
+                (void)memset(m_auStorAreaA[p_uPageToErase], 0, sizeof(m_auStorAreaA[p_uPageToErase]));
+            }
+            else
+            {
+                l_bRes = false;
+                p_ptCtx->eLastEr = e_eFSS_DBC_RES_BADPARAM;
+            }
+        }
+    }
+
+    return l_bRes;
+}
+
+static bool_t eFSS_DBCTST_EraseTstAAdapt(t_eFSS_TYPE_EraseCtx* const p_ptCtx, const uint32_t p_uPageToErase)
 {
     bool_t l_bRes;
 
@@ -451,6 +502,61 @@ static bool_t eFSS_DBCTST_WriteTst1Adapt(t_eFSS_TYPE_WriteCtx* const p_ptCtx,
     return l_bRes;
 }
 
+static bool_t eFSS_DBCTST_WriteTstAAdapt(t_eFSS_TYPE_WriteCtx* const p_ptCtx,
+                                            const uint32_t p_uPageToWrite, const uint8_t* p_puDataToWrite,
+                                            const uint32_t p_uDataToWriteL )
+{
+    bool_t l_bRes;
+
+    if( NULL == p_ptCtx )
+    {
+        l_bRes = false;
+    }
+    else
+    {
+        if( NULL == p_puDataToWrite )
+        {
+            l_bRes = false;
+            p_ptCtx->eLastEr = e_eFSS_DBC_RES_BADPOINTER;
+        }
+        else
+        {
+            if( p_uPageToWrite >= 6u )
+            {
+                l_bRes = false;
+                p_ptCtx->eLastEr = e_eFSS_DBC_RES_BADPARAM;
+            }
+            else
+            {
+                if( 24u != p_uDataToWriteL )
+                {
+                    l_bRes = false;
+                    p_ptCtx->eLastEr = e_eFSS_DBC_RES_BADPARAM;
+                }
+                else
+                {
+                    p_ptCtx->uTimeUsed++;
+
+                    if( false == m_bIsErasedA[p_uPageToWrite] )
+                    {
+                        l_bRes = false;
+                        p_ptCtx->eLastEr = e_eFSS_DBC_RES_CORRUPTCTX;
+                    }
+                    else
+                    {
+                        l_bRes = true;
+                        p_ptCtx->eLastEr = e_eFSS_DBC_RES_OK;
+                        m_bIsErasedA[p_uPageToWrite] = false;
+                        (void)memcpy(m_auStorAreaA[p_uPageToWrite], p_puDataToWrite, p_uDataToWriteL);
+                    }
+                }
+            }
+        }
+    }
+
+    return l_bRes;
+}
+
 static bool_t eFSS_DBCTST_ReadAdapt(t_eFSS_TYPE_ReadCtx* const p_ptCtx,
                                        const uint32_t p_uPageToRead, uint8_t* const p_puReadBuffer,
                                        const uint32_t p_uReadBufferL )
@@ -632,6 +738,52 @@ static bool_t eFSS_DBCTST_ReadTst1Adapt(t_eFSS_TYPE_ReadCtx* const p_ptCtx,
     return l_bRes;
 }
 
+static bool_t eFSS_DBCTST_ReadTstAAdapt(t_eFSS_TYPE_ReadCtx* const p_ptCtx,
+                                       const uint32_t p_uPageToRead, uint8_t* const p_puReadBuffer,
+                                       const uint32_t p_uReadBufferL )
+{
+    bool_t l_bRes;
+
+    if( NULL == p_ptCtx )
+    {
+        l_bRes = false;
+    }
+    else
+    {
+        if( NULL == p_puReadBuffer )
+        {
+            l_bRes = false;
+            p_ptCtx->eLastEr = e_eFSS_DBC_RES_BADPOINTER;
+        }
+        else
+        {
+            if( p_uPageToRead >= 6u )
+            {
+                l_bRes = false;
+                p_ptCtx->eLastEr = e_eFSS_DBC_RES_BADPARAM;
+            }
+            else
+            {
+                if( 24u != p_uReadBufferL )
+                {
+                    l_bRes = false;
+                    p_ptCtx->eLastEr = e_eFSS_DBC_RES_BADPARAM;
+                }
+                else
+                {
+                    p_ptCtx->uTimeUsed++;
+
+                    l_bRes = true;
+                    p_ptCtx->eLastEr = e_eFSS_DBC_RES_OK;
+                    (void)memcpy(p_puReadBuffer, m_auStorAreaA[p_uPageToRead], p_uReadBufferL);
+                }
+            }
+        }
+    }
+
+    return l_bRes;
+}
+
 static bool_t eFSS_DBCTST_ReadTst2Adapt(t_eFSS_TYPE_ReadCtx* const p_ptCtx,
                                        const uint32_t p_uPageToRead, uint8_t* const p_puReadBuffer,
                                        const uint32_t p_uReadBufferL )
@@ -754,6 +906,50 @@ static bool_t eFSS_DBCTST_CrcErrAdapt(t_eFSS_TYPE_CrcCtx* const p_ptCtx, const u
 }
 
 static bool_t eFSS_DBCTST_CrcTst1Adapt(t_eFSS_TYPE_CrcCtx* const p_ptCtx, const uint32_t p_uUseed,
+                                          const uint8_t* p_puData, const uint32_t p_uDataL,
+                                          uint32_t* const p_puCrc32Val )
+{
+    bool_t l_bRes;
+    uint32_t l_uCnt;
+
+    if( NULL == p_ptCtx )
+    {
+        l_bRes = false;
+    }
+    else
+    {
+        p_ptCtx->uTimeUsed++;
+
+        if( ( NULL == p_puData ) || ( NULL == p_puCrc32Val ) )
+        {
+            l_bRes = false;
+            p_ptCtx->eLastEr = e_eFSS_DBC_RES_BADPOINTER;
+        }
+        else
+        {
+            if( 0u == p_uDataL )
+            {
+                l_bRes = false;
+                p_ptCtx->eLastEr = e_eFSS_DBC_RES_BADPARAM;
+            }
+            else
+            {
+                l_bRes = true;
+                p_ptCtx->eLastEr = e_eFSS_DBC_RES_OK;
+                *p_puCrc32Val = p_uUseed;
+
+                for(l_uCnt = 0u; l_uCnt < p_uDataL; l_uCnt++ )
+                {
+                    *p_puCrc32Val = ( (*p_puCrc32Val) + (p_puData[l_uCnt]) );
+                }
+            }
+        }
+    }
+
+    return l_bRes;
+}
+
+static bool_t eFSS_DBCTST_CrcTstAAdapt(t_eFSS_TYPE_CrcCtx* const p_ptCtx, const uint32_t p_uUseed,
                                           const uint8_t* p_puData, const uint32_t p_uDataL,
                                           uint32_t* const p_puCrc32Val )
 {
