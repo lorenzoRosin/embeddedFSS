@@ -114,10 +114,8 @@ static void eFSS_DBCTST_Basic(void);
 static void eFSS_DBCTST_BadClBckNRetry(void);
 static void eFSS_DBCTST_LoadBkupTest(void);
 static void eFSS_DBCTST_FlushBkupTest(void);
-
-#if 0
 static void eFSS_DBCTST_GenTest(void);
-#endif
+
 
 
 /***********************************************************************************************************************
@@ -134,11 +132,8 @@ void eFSS_DBCTST_ExeTest(void)
     // eFSS_DBCTST_Basic();
     // eFSS_DBCTST_BadClBckNRetry();
     // eFSS_DBCTST_LoadBkupTest();
-    eFSS_DBCTST_FlushBkupTest();
-
-    #if 0
+    // eFSS_DBCTST_FlushBkupTest();
     eFSS_DBCTST_GenTest();
-    #endif
 
     (void)printf("\n\nDB CORE TEST END \n\n");
 }
@@ -3016,16 +3011,16 @@ static void eFSS_DBCTST_LoadBkupTest(void)
             ( 0x01u == l_ltUseBuff2.puBuf[0u] ) && ( 0x01u == l_ltUseBuff2.puBuf[1u] ) && ( 0x01u == l_ltUseBuff2.puBuf[2u] ) &&
             ( 0x01u == l_ltUseBuff2.puBuf[3u] ) && ( 0x02u == l_ltUseBuff2.puBuf[4u] ) )
         {
-            (void)printf("eFSS_DBCTST_LoadBkupTest 5  -- OK \n");
+            (void)printf("eFSS_DBCTST_LoadBkupTest 4  -- OK \n");
         }
         else
         {
-            (void)printf("eFSS_DBCTST_LoadBkupTest 5  -- FAIL \n");
+            (void)printf("eFSS_DBCTST_LoadBkupTest 4  -- FAIL \n");
         }
     }
     else
     {
-        (void)printf("eFSS_DBCTST_LoadBkupTest 5  -- FAIL \n");
+        (void)printf("eFSS_DBCTST_LoadBkupTest 4  -- FAIL \n");
     }
 
     /* Setup storage area */
@@ -3088,16 +3083,16 @@ static void eFSS_DBCTST_LoadBkupTest(void)
             ( 0xDCu == m_auStorArea2[20u] )  && ( 0x02u == m_auStorArea2[21u] ) && ( 0x00u == m_auStorArea2[22u] ) &&
             ( 0x00u == m_auStorArea2[23u] ) )
         {
-            (void)printf("eFSS_DBCTST_LoadBkupTest 7  -- OK \n");
+            (void)printf("eFSS_DBCTST_LoadBkupTest 5  -- OK \n");
         }
         else
         {
-            (void)printf("eFSS_DBCTST_LoadBkupTest 7  -- FAIL \n");
+            (void)printf("eFSS_DBCTST_LoadBkupTest 5  -- FAIL \n");
         }
     }
     else
     {
-        (void)printf("eFSS_DBCTST_LoadBkupTest 7  -- FAIL \n");
+        (void)printf("eFSS_DBCTST_LoadBkupTest 5  -- FAIL \n");
     }
 
     /* Setup storage area */
@@ -3160,16 +3155,16 @@ static void eFSS_DBCTST_LoadBkupTest(void)
             ( 0x9Cu == m_auStorArea2[20u] )  && ( 0x02u == m_auStorArea2[21u] ) && ( 0x00u == m_auStorArea2[22u] ) &&
             ( 0x00u == m_auStorArea2[23u] ) )
         {
-            (void)printf("eFSS_DBCTST_LoadBkupTest 7  -- OK \n");
+            (void)printf("eFSS_DBCTST_LoadBkupTest 6  -- OK \n");
         }
         else
         {
-            (void)printf("eFSS_DBCTST_LoadBkupTest 7  -- FAIL \n");
+            (void)printf("eFSS_DBCTST_LoadBkupTest 6  -- FAIL \n");
         }
     }
     else
     {
-        (void)printf("eFSS_DBCTST_LoadBkupTest 7  -- FAIL \n");
+        (void)printf("eFSS_DBCTST_LoadBkupTest 6  -- FAIL \n");
     }
 
     /* Setup storage area */
@@ -3305,16 +3300,16 @@ static void eFSS_DBCTST_LoadBkupTest(void)
             ( 0xDCu == m_auStorArea2[20u] )  && ( 0x02u == m_auStorArea2[21u] ) && ( 0x00u == m_auStorArea2[22u] ) &&
             ( 0x00u == m_auStorArea2[23u] ) )
         {
-            (void)printf("eFSS_DBCTST_LoadBkupTest 7  -- OK \n");
+            (void)printf("eFSS_DBCTST_LoadBkupTest 8  -- OK \n");
         }
         else
         {
-            (void)printf("eFSS_DBCTST_LoadBkupTest 7  -- FAIL \n");
+            (void)printf("eFSS_DBCTST_LoadBkupTest 8  -- FAIL \n");
         }
     }
     else
     {
-        (void)printf("eFSS_DBCTST_LoadBkupTest 7  -- FAIL \n");
+        (void)printf("eFSS_DBCTST_LoadBkupTest 8  -- FAIL \n");
     }
 
     /* --------------------------------------------- All OK no backup generation */
@@ -3370,16 +3365,16 @@ static void eFSS_DBCTST_LoadBkupTest(void)
             ( 0x01u == l_ltUseBuff2.puBuf[0u] ) && ( 0x01u == l_ltUseBuff2.puBuf[1u] ) && ( 0x01u == l_ltUseBuff2.puBuf[2u] ) &&
             ( 0x01u == l_ltUseBuff2.puBuf[3u] ) && ( 0x02u == l_ltUseBuff2.puBuf[4u] ) )
         {
-            (void)printf("eFSS_DBCTST_LoadBkupTest 5  -- OK \n");
+            (void)printf("eFSS_DBCTST_LoadBkupTest 9  -- OK \n");
         }
         else
         {
-            (void)printf("eFSS_DBCTST_LoadBkupTest 5  -- FAIL \n");
+            (void)printf("eFSS_DBCTST_LoadBkupTest 9  -- FAIL \n");
         }
     }
     else
     {
-        (void)printf("eFSS_DBCTST_LoadBkupTest 5  -- FAIL \n");
+        (void)printf("eFSS_DBCTST_LoadBkupTest 9  -- FAIL \n");
     }
 
     /* Setup storage area */
@@ -3442,16 +3437,16 @@ static void eFSS_DBCTST_LoadBkupTest(void)
             ( 0xDCu == m_auStorArea2[20u] )  && ( 0x02u == m_auStorArea2[21u] ) && ( 0x00u == m_auStorArea2[22u] ) &&
             ( 0x00u == m_auStorArea2[23u] ) )
         {
-            (void)printf("eFSS_DBCTST_LoadBkupTest 7  -- OK \n");
+            (void)printf("eFSS_DBCTST_LoadBkupTest 10 -- OK \n");
         }
         else
         {
-            (void)printf("eFSS_DBCTST_LoadBkupTest 7  -- FAIL \n");
+            (void)printf("eFSS_DBCTST_LoadBkupTest 10 -- FAIL \n");
         }
     }
     else
     {
-        (void)printf("eFSS_DBCTST_LoadBkupTest 7  -- FAIL \n");
+        (void)printf("eFSS_DBCTST_LoadBkupTest 10 -- FAIL \n");
     }
 
     /* Setup storage area */
@@ -3506,16 +3501,16 @@ static void eFSS_DBCTST_LoadBkupTest(void)
             ( 0x00u == l_ltUseBuff2.puBuf[0u] ) && ( 0x00u == l_ltUseBuff2.puBuf[1u] ) && ( 0x00u == l_ltUseBuff2.puBuf[2u] ) &&
             ( 0x00u == l_ltUseBuff2.puBuf[3u] ) && ( 0x01u == l_ltUseBuff2.puBuf[4u] ) )
         {
-            (void)printf("eFSS_DBCTST_LoadBkupTest 3  -- OK \n");
+            (void)printf("eFSS_DBCTST_LoadBkupTest 11 -- OK \n");
         }
         else
         {
-            (void)printf("eFSS_DBCTST_LoadBkupTest 3  -- FAIL \n");
+            (void)printf("eFSS_DBCTST_LoadBkupTest 11 -- FAIL \n");
         }
     }
     else
     {
-        (void)printf("eFSS_DBCTST_LoadBkupTest 3  -- FAIL \n");
+        (void)printf("eFSS_DBCTST_LoadBkupTest 11 -- FAIL \n");
     }
 
     /* Misra complaiant */
@@ -3542,6 +3537,7 @@ static void eFSS_DBCTST_FlushBkupTest(void)
 	t_eFSS_TYPE_CrcCtx    l_tCtxCrc32;
     t_eFSS_DBC_StorBuf l_ltUseBuff;
     t_eFSS_DBC_StorBuf l_ltUseBuff2;
+    uint32_t l_uTotPage;
 
     /* Init callback var */
     l_tCtxCb.ptCtxErase = &l_tCtxErase;
@@ -3585,7 +3581,7 @@ static void eFSS_DBCTST_FlushBkupTest(void)
     }
 
     /* Function */
-    if( e_eFSS_DBC_RES_OK == eFSS_DBC_GetBuff(&l_tCtx, &l_ltUseBuff) )
+    if( e_eFSS_DBC_RES_OK == eFSS_DBC_GetBuffNUsable(&l_tCtx, &l_ltUseBuff, &l_uTotPage) )
     {
         (void)printf("eFSS_DBCTST_FlushBkupTest 2  -- OK \n");
     }
@@ -3605,25 +3601,25 @@ static void eFSS_DBCTST_FlushBkupTest(void)
     (void)memset(l_ltUseBuff.puBuf, 0x10, l_ltUseBuff.uBufL);
 
 
-    if( e_eFSS_DBC_RES_OK == eFSS_DBC_FlushBuffInPageNBkp(&l_tCtx, 0u, 1u, 0x03u, 0x04u) )
+    if( e_eFSS_DBC_RES_OK == eFSS_DBC_FlushBuffInPage(&l_tCtx, 0u) )
     {
         if( ( 0x10u == l_ltUseBuff.puBuf[0u] )  && ( 0x10u == l_ltUseBuff.puBuf[1u] ) && ( 0x10u == l_ltUseBuff.puBuf[2u] ) &&
-            ( 0x10u == l_ltUseBuff.puBuf[3u] )  && ( 0x03u == l_ltUseBuff.puBuf[4u] )  &&
+            ( 0x10u == l_ltUseBuff.puBuf[3u] )  && ( 0x01u == l_ltUseBuff.puBuf[4u] )  &&
             ( 0x10u == l_ltUseBuff2.puBuf[0u] ) && ( 0x10u == l_ltUseBuff2.puBuf[1u] ) && ( 0x10u == l_ltUseBuff2.puBuf[2u] ) &&
-            ( 0x10u == l_ltUseBuff2.puBuf[3u] ) && ( 0x04u == l_ltUseBuff2.puBuf[4u] ) )
+            ( 0x10u == l_ltUseBuff2.puBuf[3u] ) && ( 0x02u == l_ltUseBuff2.puBuf[4u] ) )
         {
             if( ( m_auStorArea1[0u]  == 0x10u ) && ( m_auStorArea1[1u]  == 0x10u ) && ( m_auStorArea1[2u]  == 0x10u ) &&
-                ( m_auStorArea1[3u]  == 0x10u ) && ( m_auStorArea1[4u]  == 0x03u ) && ( m_auStorArea1[5u]  == 0x00u ) &&
+                ( m_auStorArea1[3u]  == 0x10u ) && ( m_auStorArea1[4u]  == 0x01u ) && ( m_auStorArea1[5u]  == 0x00u ) &&
                 ( m_auStorArea1[6u]  == 0x00u ) && ( m_auStorArea1[7u]  == 0x00u ) && ( m_auStorArea1[8u]  == 0x00u ) &&
-                ( m_auStorArea1[9u]  == 0x01u ) && ( m_auStorArea1[10u] == 0x01u ) && ( m_auStorArea1[11u] == 0x00u ) &&
+                ( m_auStorArea1[9u]  == 0x03u ) && ( m_auStorArea1[10u] == 0x01u ) && ( m_auStorArea1[11u] == 0x00u ) &&
                 ( m_auStorArea1[12u] == 0x02u ) && ( m_auStorArea1[13u] == 0x00u ) && ( m_auStorArea1[14u] == 0x00u ) &&
                 ( m_auStorArea1[15u] == 0x00u ) && ( m_auStorArea1[16u] == 0xA5u ) && ( m_auStorArea1[17u] == 0xA5u ) &&
                 ( m_auStorArea1[18u] == 0xA5u ) && ( m_auStorArea1[19u] == 0xA5u ) && ( m_auStorArea1[20u] == 0xDAu ) &&
                 ( m_auStorArea1[21u] == 0x02u ) && ( m_auStorArea1[22u] == 0x00u ) && ( m_auStorArea1[23u] == 0x00u ) &&
                 ( m_auStorArea2[0u]  == 0x10u ) && ( m_auStorArea2[1u]  == 0x10u ) && ( m_auStorArea2[2u]  == 0x10u ) &&
-                ( m_auStorArea2[3u]  == 0x10u ) && ( m_auStorArea2[4u]  == 0x04u ) && ( m_auStorArea2[5u]  == 0x01u ) &&
+                ( m_auStorArea2[3u]  == 0x10u ) && ( m_auStorArea2[4u]  == 0x02u ) && ( m_auStorArea2[5u]  == 0x01u ) &&
                 ( m_auStorArea2[6u]  == 0x00u ) && ( m_auStorArea2[7u]  == 0x00u ) && ( m_auStorArea2[8u]  == 0x00u ) &&
-                ( m_auStorArea2[9u]  == 0x01u ) && ( m_auStorArea2[10u] == 0x01u ) && ( m_auStorArea2[11u] == 0x00u ) &&
+                ( m_auStorArea2[9u]  == 0x03u ) && ( m_auStorArea2[10u] == 0x01u ) && ( m_auStorArea2[11u] == 0x00u ) &&
                 ( m_auStorArea2[12u] == 0x02u ) && ( m_auStorArea2[13u] == 0x00u ) && ( m_auStorArea2[14u] == 0x00u ) &&
                 ( m_auStorArea2[15u] == 0x00u ) && ( m_auStorArea2[16u] == 0xA5u ) && ( m_auStorArea2[17u] == 0xA5u ) &&
                 ( m_auStorArea2[18u] == 0xA5u ) && ( m_auStorArea2[19u] == 0xA5u ) && ( m_auStorArea2[20u] == 0xDCu ) &&
@@ -3646,53 +3642,6 @@ static void eFSS_DBCTST_FlushBkupTest(void)
         (void)printf("eFSS_DBCTST_FlushBkupTest 3  -- FAIL \n");
     }
 
-    /* Setup storage area */
-    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    (void)memset(m_auStorArea2, 0, sizeof(m_auStorArea2));
-    (void)memset(l_ltUseBuff.puBuf, 0x10, l_ltUseBuff.uBufL);
-
-
-    if( e_eFSS_DBC_RES_OK == eFSS_DBC_FlushBuffInPageNBkp(&l_tCtx, 1u, 0u, 0x04u, 0x03u) )
-    {
-        if( ( 0x10u == l_ltUseBuff.puBuf[0u] )  && ( 0x10u == l_ltUseBuff.puBuf[1u] ) && ( 0x10u == l_ltUseBuff.puBuf[2u] ) &&
-            ( 0x10u == l_ltUseBuff.puBuf[3u] )  && ( 0x04u == l_ltUseBuff.puBuf[4u] )  &&
-            ( 0x10u == l_ltUseBuff2.puBuf[0u] ) && ( 0x10u == l_ltUseBuff2.puBuf[1u] ) && ( 0x10u == l_ltUseBuff2.puBuf[2u] ) &&
-            ( 0x10u == l_ltUseBuff2.puBuf[3u] ) && ( 0x03u == l_ltUseBuff2.puBuf[4u] ) )
-        {
-            if( ( m_auStorArea2[0u]  == 0x10u ) && ( m_auStorArea2[1u]  == 0x10u ) && ( m_auStorArea2[2u]  == 0x10u ) &&
-                ( m_auStorArea2[3u]  == 0x10u ) && ( m_auStorArea2[4u]  == 0x04u ) && ( m_auStorArea2[5u]  == 0x01u ) &&
-                ( m_auStorArea2[6u]  == 0x00u ) && ( m_auStorArea2[7u]  == 0x00u ) && ( m_auStorArea2[8u]  == 0x00u ) &&
-                ( m_auStorArea2[9u]  == 0x01u ) && ( m_auStorArea2[10u] == 0x01u ) && ( m_auStorArea2[11u] == 0x00u ) &&
-                ( m_auStorArea2[12u] == 0x02u ) && ( m_auStorArea2[13u] == 0x00u ) && ( m_auStorArea2[14u] == 0x00u ) &&
-                ( m_auStorArea2[15u] == 0x00u ) && ( m_auStorArea2[16u] == 0xA5u ) && ( m_auStorArea2[17u] == 0xA5u ) &&
-                ( m_auStorArea2[18u] == 0xA5u ) && ( m_auStorArea2[19u] == 0xA5u ) && ( m_auStorArea2[20u] == 0xDCu ) &&
-                ( m_auStorArea2[21u] == 0x02u ) && ( m_auStorArea2[22u] == 0x00u ) && ( m_auStorArea2[23u] == 0x00u ) &&
-                ( m_auStorArea1[0u]  == 0x10u ) && ( m_auStorArea1[1u]  == 0x10u ) && ( m_auStorArea1[2u]  == 0x10u ) &&
-                ( m_auStorArea1[3u]  == 0x10u ) && ( m_auStorArea1[4u]  == 0x03u ) && ( m_auStorArea1[5u]  == 0x00u ) &&
-                ( m_auStorArea1[6u]  == 0x00u ) && ( m_auStorArea1[7u]  == 0x00u ) && ( m_auStorArea1[8u]  == 0x00u ) &&
-                ( m_auStorArea1[9u]  == 0x01u ) && ( m_auStorArea1[10u] == 0x01u ) && ( m_auStorArea1[11u] == 0x00u ) &&
-                ( m_auStorArea1[12u] == 0x02u ) && ( m_auStorArea1[13u] == 0x00u ) && ( m_auStorArea1[14u] == 0x00u ) &&
-                ( m_auStorArea1[15u] == 0x00u ) && ( m_auStorArea1[16u] == 0xA5u ) && ( m_auStorArea1[17u] == 0xA5u ) &&
-                ( m_auStorArea1[18u] == 0xA5u ) && ( m_auStorArea1[19u] == 0xA5u ) && ( m_auStorArea1[20u] == 0xDAu ) &&
-                ( m_auStorArea1[21u] == 0x02u ) && ( m_auStorArea1[22u] == 0x00u ) && ( m_auStorArea1[23u] == 0x00u ) )
-              {
-                  (void)printf("eFSS_DBCTST_FlushBkupTest 4  -- OK \n");
-              }
-              else
-              {
-                  (void)printf("eFSS_DBCTST_FlushBkupTest 4  -- FAIL \n");
-              }
-        }
-        else
-        {
-            (void)printf("eFSS_DBCTST_FlushBkupTest 4  -- FAIL \n");
-        }
-    }
-    else
-    {
-        (void)printf("eFSS_DBCTST_FlushBkupTest 4  -- FAIL \n");
-    }
-
     /* Misra complaiant */
     (void)l_tCtxErase.eLastEr;
     (void)l_tCtxErase.uTimeUsed;
@@ -3703,8 +3652,6 @@ static void eFSS_DBCTST_FlushBkupTest(void)
     (void)l_tCtxCrc32.eLastEr;
     (void)l_tCtxCrc32.uTimeUsed;
 }
-
-#if 0
 
 static void eFSS_DBCTST_GenTest(void)
 {
@@ -3971,5 +3918,3 @@ static void eFSS_DBCTST_GenTest(void)
     (void)l_tCtxCrc32.eLastEr;
     (void)l_tCtxCrc32.uTimeUsed;
 }
-
-    #endif
