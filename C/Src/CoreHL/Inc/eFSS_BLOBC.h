@@ -166,8 +166,8 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_FlushBufferInPage(t_eFSS_BLOBC_Ctx* const p_ptCtx, c
  *              e_eFSS_BLOBC_RES_CLBCKCRCERR       - The crc callback reported an error
  *              e_eFSS_BLOBC_RES_OK                - Operation ended correctly
  */
-e_eFSS_BLOBC_RES eFSS_BLOBC_GetCrcFromTheBuffer(t_eFSS_BLOBC_Ctx* const p_ptCtx, const uint32_t p_uSeed,
-                                                const uint32_t p_uCrcL, uint32_t* const p_puCrc);
+e_eFSS_BLOBC_RES eFSS_BLOBC_CalcCrcInBuff(t_eFSS_BLOBC_Ctx* const p_ptCtx, const uint32_t p_uSeed,
+                                          const uint32_t p_uCrcL, uint32_t* const p_puCrc);
 
 /**
  * @brief       If the original page is not equals to the backup pages, copy the original page in to the backup area.
@@ -189,7 +189,7 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_GetCrcFromTheBuffer(t_eFSS_BLOBC_Ctx* const p_ptCtx,
  *              e_eFSS_BLOBC_RES_NEWVERSIONBLOB    - The readed page has a new version
  *              e_eFSS_BLOBC_RES_OK                - Operation ended correctly
  */
-e_eFSS_BLOBC_RES eFSS_BLOBC_CopyOriInBkpIfNotEquals(t_eFSS_BLOBC_Ctx* const p_ptCtx);
+e_eFSS_BLOBC_RES eFSS_BLOBC_CloneOriAreaInBkpIfNotEq(t_eFSS_BLOBC_Ctx* const p_ptCtx);
 
 /**
  * @brief       Clone an area of the storage in the other one. So we can clone the original area in to the backup one

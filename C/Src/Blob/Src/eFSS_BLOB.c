@@ -363,7 +363,7 @@ e_eFSS_BLOB_RES eFSS_BLOB_Format(t_eFSS_BLOB_Ctx* const p_ptCtx)
                                     /* Last page, calculate the CRC but exlude the CRC itself, and after that insert
                                        it inside the last page */
                                     l_uCrcOffset = ( l_tBuff.uBufL - EFSS_BLOB_CRCOFF );
-                                    l_eResC = eFSS_BLOBC_GetCrcFromTheBuffer(&p_ptCtx->tBLOBCCtx, l_uBlobCrc,
+                                    l_eResC = eFSS_BLOBC_CalcCrcInBuff(&p_ptCtx->tBLOBCCtx, l_uBlobCrc,
                                                                              l_uCrcOffset, &l_uBlobCrc);
                                     l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
 
@@ -380,7 +380,7 @@ e_eFSS_BLOB_RES eFSS_BLOB_Format(t_eFSS_BLOB_Ctx* const p_ptCtx)
                                 else
                                 {
                                     /* This is not the last page, can calculate the CRC of the whole buffer */
-                                    l_eResC = eFSS_BLOBC_GetCrcFromTheBuffer(&p_ptCtx->tBLOBCCtx, l_uBlobCrc,
+                                    l_eResC = eFSS_BLOBC_CalcCrcInBuff(&p_ptCtx->tBLOBCCtx, l_uBlobCrc,
                                                                              l_tBuff.uBufL, &l_uBlobCrc);
                                     l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
                                 }
@@ -753,7 +753,7 @@ e_eFSS_BLOB_RES eFSS_BLOB_AppendData(t_eFSS_BLOB_Ctx* const p_ptCtx, uint8_t* co
                                                append the BLOB size also */
                                             if( ( l_uUsePages - 1u ) != l_uCurrPage )
                                             {
-                                                l_eResC =  eFSS_BLOBC_GetCrcFromTheBuffer(&p_ptCtx->tBLOBCCtx,
+                                                l_eResC =  eFSS_BLOBC_CalcCrcInBuff(&p_ptCtx->tBLOBCCtx,
                                                                                           p_ptCtx->uCrcOfDataWritten,
                                                                                           l_tBuff.uBufL,
                                                                                           &p_ptCtx->uCrcOfDataWritten);
@@ -893,7 +893,7 @@ e_eFSS_BLOB_RES eFSS_BLOB_EndWrite(t_eFSS_BLOB_Ctx* const p_ptCtx)
                                         l_uRemToWrite -= ( l_tBuff.uBufL - l_uCurPageOff );
 
                                         /* Not the last page, update the CRC also */
-                                        l_eResC =  eFSS_BLOBC_GetCrcFromTheBuffer(&p_ptCtx->tBLOBCCtx,
+                                        l_eResC =  eFSS_BLOBC_CalcCrcInBuff(&p_ptCtx->tBLOBCCtx,
                                                                                   p_ptCtx->uCrcOfDataWritten,
                                                                                   l_tBuff.uBufL,
                                                                                   &p_ptCtx->uCrcOfDataWritten);
@@ -920,7 +920,7 @@ e_eFSS_BLOB_RES eFSS_BLOB_EndWrite(t_eFSS_BLOB_Ctx* const p_ptCtx)
                                         else
                                         {
                                             /* Can now calculate the CRC of the last page, excluding the CRC itself */
-                                            l_eResC =  eFSS_BLOBC_GetCrcFromTheBuffer(&p_ptCtx->tBLOBCCtx,
+                                            l_eResC =  eFSS_BLOBC_CalcCrcInBuff(&p_ptCtx->tBLOBCCtx,
                                                                                       p_ptCtx->uCrcOfDataWritten,
                                                                                       l_tBuff.uBufL - EFSS_BLOB_CRCOFF,
                                                                                       &p_ptCtx->uCrcOfDataWritten);
@@ -1229,7 +1229,7 @@ static e_eFSS_BLOB_RES eFSS_BLOB_OriginBackupAligner(t_eFSS_BLOB_Ctx* const p_pt
             /* Check is needed, how can we do it?
             * 1 - Verify if original partition contain a valid blob.
             * 2 - If original partition is valid, clone, if needed, original partition in backup one using
-            *     eFSS_BLOBC_CopyOriInBkpIfNotEquals
+            *     eFSS_BLOBC_CloneOriAreaInBkpIfNotEq
             * 3 - If original is not valid, verify if backup partition has a valid blob
             * 4 - If backup partition is valid, clone backup partition in original one using eFSS_BLOBC_CloneArea
             * 5 - If no partition is valid, return blob invalid */
@@ -1243,7 +1243,7 @@ static e_eFSS_BLOB_RES eFSS_BLOB_OriginBackupAligner(t_eFSS_BLOB_Ctx* const p_pt
                 if( true == l_bIsValidOrig )
                 {
                     /* Original area valid, verify that backup pages is aligned */
-                    l_eResC = eFSS_BLOBC_CopyOriInBkpIfNotEquals(&p_ptCtx->tBLOBCCtx);
+                    l_eResC = eFSS_BLOBC_CloneOriAreaInBkpIfNotEq(&p_ptCtx->tBLOBCCtx);
                     l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
                 }
                 else
@@ -1420,14 +1420,14 @@ static e_eFSS_BLOB_RES eFSS_BLOB_IsAreaValid(t_eFSS_BLOB_Ctx* const p_ptCtx, con
                                 if( ( l_uUsableP - 1u ) != l_uCurrPage )
                                 {
                                     /* Not the last page, check CRC of the whole */
-                                    l_eResC = eFSS_BLOBC_GetCrcFromTheBuffer(&p_ptCtx->tBLOBCCtx, l_uBlobCrc,
+                                    l_eResC = eFSS_BLOBC_CalcCrcInBuff(&p_ptCtx->tBLOBCCtx, l_uBlobCrc,
                                                                              l_tBuff.uBufL, &l_uBlobCrc);
                                     l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
                                 }
                                 else
                                 {
                                     /* This is the last page, exclude from calculation the stored CRC itself */
-                                    l_eResC = eFSS_BLOBC_GetCrcFromTheBuffer(&p_ptCtx->tBLOBCCtx, l_uBlobCrc,
+                                    l_eResC = eFSS_BLOBC_CalcCrcInBuff(&p_ptCtx->tBLOBCCtx, l_uBlobCrc,
                                                                              ( l_tBuff.uBufL - EFSS_BLOB_CRCOFF ),
                                                                              &l_uBlobCrc);
                                     l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);

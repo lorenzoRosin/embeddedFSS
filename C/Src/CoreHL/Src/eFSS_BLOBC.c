@@ -390,7 +390,7 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_FlushBufferInPage(t_eFSS_BLOBC_Ctx* const p_ptCtx, c
 	return l_eRes;
 }
 
-e_eFSS_BLOBC_RES eFSS_BLOBC_GetCrcFromTheBuffer(t_eFSS_BLOBC_Ctx* const p_ptCtx, const uint32_t p_uSeed,
+e_eFSS_BLOBC_RES eFSS_BLOBC_CalcCrcInBuff(t_eFSS_BLOBC_Ctx* const p_ptCtx, const uint32_t p_uSeed,
                                                 const uint32_t p_uCrcL, uint32_t* const p_puCrc)
 {
 	/* Local variable */
@@ -456,7 +456,7 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_GetCrcFromTheBuffer(t_eFSS_BLOBC_Ctx* const p_ptCtx,
 	return l_eRes;
 }
 
-e_eFSS_BLOBC_RES eFSS_BLOBC_CopyOriInBkpIfNotEquals(t_eFSS_BLOBC_Ctx* const p_ptCtx)
+e_eFSS_BLOBC_RES eFSS_BLOBC_CloneOriAreaInBkpIfNotEq(t_eFSS_BLOBC_Ctx* const p_ptCtx)
 {
 	/* Local variable */
 	e_eFSS_BLOBC_RES l_eRes;
