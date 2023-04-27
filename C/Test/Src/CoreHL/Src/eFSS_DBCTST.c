@@ -92,11 +92,11 @@ static bool_t eFSS_DBCTST_ReadTst1Adapt(t_eFSS_TYPE_ReadCtx* const p_ptCtx,
                                        const uint32_t p_uPageToRead, uint8_t* const p_puReadBuffer,
                                        const uint32_t p_uReadBufferL );
 
-static bool_t eFSS_DBCTST_ReadTstAAdapt(t_eFSS_TYPE_ReadCtx* const p_ptCtx,
-                                       const uint32_t p_uPageToRead, uint8_t* const p_puReadBuffer,
-                                       const uint32_t p_uReadBufferL );
-
 static bool_t eFSS_DBCTST_ReadTst2Adapt(t_eFSS_TYPE_ReadCtx* const p_ptCtx,
+                                        const uint32_t p_uPageToRead, uint8_t* const p_puReadBuffer,
+                                        const uint32_t p_uReadBufferL );
+
+static bool_t eFSS_DBCTST_ReadTstAAdapt(t_eFSS_TYPE_ReadCtx* const p_ptCtx,
                                        const uint32_t p_uPageToRead, uint8_t* const p_puReadBuffer,
                                        const uint32_t p_uReadBufferL );
 
@@ -128,6 +128,7 @@ static void eFSS_DBCTST_BadClBckNRetry(void);
 static void eFSS_DBCTST_LoadBkupTest(void);
 static void eFSS_DBCTST_FlushBkupTest(void);
 static void eFSS_DBCTST_GenTest(void);
+static void eFSS_DBCTST_CodeCoverage(void);
 
 
 
@@ -138,15 +139,16 @@ void eFSS_DBCTST_ExeTest(void)
 {
 	(void)printf("\n\nDB CORE TEST START \n\n");
 
-    // eFSS_DBCTST_BadPointer();
-    // eFSS_DBCTST_BadInit();
-    // eFSS_DBCTST_BadParamEntr();
-    // eFSS_DBCTST_CorruptedCtx();
-    // eFSS_DBCTST_Basic();
-    // eFSS_DBCTST_BadClBckNRetry();
-    // eFSS_DBCTST_LoadBkupTest();
-    // eFSS_DBCTST_FlushBkupTest();
+    eFSS_DBCTST_BadPointer();
+    eFSS_DBCTST_BadInit();
+    eFSS_DBCTST_BadParamEntr();
+    eFSS_DBCTST_CorruptedCtx();
+    eFSS_DBCTST_Basic();
+    eFSS_DBCTST_BadClBckNRetry();
+    eFSS_DBCTST_LoadBkupTest();
+    eFSS_DBCTST_FlushBkupTest();
     eFSS_DBCTST_GenTest();
+    eFSS_DBCTST_CodeCoverage();
 
     (void)printf("\n\nDB CORE TEST END \n\n");
 }
@@ -230,16 +232,17 @@ static bool_t eFSS_DBCTST_EraseTst1Adapt(t_eFSS_TYPE_EraseCtx* const p_ptCtx, co
         {
             p_ptCtx->uTimeUsed++;
 
-            if( p_uPageToErase <= 5 )
+            if( 0u == p_uPageToErase )
             {
                 l_bRes = true;
-                m_bIsErasedA[p_uPageToErase] = true;
-                (void)memset(m_auStorAreaA[p_uPageToErase], 0, sizeof(m_auStorAreaA[p_uPageToErase]));
+                m_bIsErased1 = true;
+                (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
             }
             else
             {
-                l_bRes = false;
-                p_ptCtx->eLastEr = e_eFSS_DBC_RES_BADPARAM;
+                l_bRes = true;
+                m_bIsErased2 = true;
+                (void)memset(m_auStorArea2, 0, sizeof(m_auStorArea2));
             }
         }
     }
@@ -257,7 +260,7 @@ static bool_t eFSS_DBCTST_EraseTstAAdapt(t_eFSS_TYPE_EraseCtx* const p_ptCtx, co
     }
     else
     {
-        if( p_uPageToErase >= 2u )
+        if( p_uPageToErase >= 6u )
         {
             l_bRes = false;
             p_ptCtx->eLastEr = e_eFSS_DBC_RES_BADPARAM;
@@ -266,18 +269,9 @@ static bool_t eFSS_DBCTST_EraseTstAAdapt(t_eFSS_TYPE_EraseCtx* const p_ptCtx, co
         {
             p_ptCtx->uTimeUsed++;
 
-            if( 0u == p_uPageToErase )
-            {
-                l_bRes = true;
-                m_bIsErased1 = true;
-                (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-            }
-            else
-            {
-                l_bRes = true;
-                m_bIsErased2 = true;
-                (void)memset(m_auStorArea2, 0, sizeof(m_auStorArea2));
-            }
+            l_bRes = true;
+            m_bIsErasedA[p_uPageToErase] = true;
+            (void)memset(m_auStorAreaA[p_uPageToErase], 0, sizeof(m_auStorAreaA[p_uPageToErase]));
         }
     }
 
@@ -738,55 +732,9 @@ static bool_t eFSS_DBCTST_ReadTst1Adapt(t_eFSS_TYPE_ReadCtx* const p_ptCtx,
     return l_bRes;
 }
 
-static bool_t eFSS_DBCTST_ReadTstAAdapt(t_eFSS_TYPE_ReadCtx* const p_ptCtx,
-                                       const uint32_t p_uPageToRead, uint8_t* const p_puReadBuffer,
-                                       const uint32_t p_uReadBufferL )
-{
-    bool_t l_bRes;
-
-    if( NULL == p_ptCtx )
-    {
-        l_bRes = false;
-    }
-    else
-    {
-        if( NULL == p_puReadBuffer )
-        {
-            l_bRes = false;
-            p_ptCtx->eLastEr = e_eFSS_DBC_RES_BADPOINTER;
-        }
-        else
-        {
-            if( p_uPageToRead >= 6u )
-            {
-                l_bRes = false;
-                p_ptCtx->eLastEr = e_eFSS_DBC_RES_BADPARAM;
-            }
-            else
-            {
-                if( 24u != p_uReadBufferL )
-                {
-                    l_bRes = false;
-                    p_ptCtx->eLastEr = e_eFSS_DBC_RES_BADPARAM;
-                }
-                else
-                {
-                    p_ptCtx->uTimeUsed++;
-
-                    l_bRes = true;
-                    p_ptCtx->eLastEr = e_eFSS_DBC_RES_OK;
-                    (void)memcpy(p_puReadBuffer, m_auStorAreaA[p_uPageToRead], p_uReadBufferL);
-                }
-            }
-        }
-    }
-
-    return l_bRes;
-}
-
 static bool_t eFSS_DBCTST_ReadTst2Adapt(t_eFSS_TYPE_ReadCtx* const p_ptCtx,
-                                       const uint32_t p_uPageToRead, uint8_t* const p_puReadBuffer,
-                                       const uint32_t p_uReadBufferL )
+                                        const uint32_t p_uPageToRead, uint8_t* const p_puReadBuffer,
+                                        const uint32_t p_uReadBufferL )
 {
     bool_t l_bRes;
 
@@ -833,6 +781,52 @@ static bool_t eFSS_DBCTST_ReadTst2Adapt(t_eFSS_TYPE_ReadCtx* const p_ptCtx,
                         (void)memcpy(p_puReadBuffer, m_auStorArea2, p_uReadBufferL);
                         p_puReadBuffer[0] = p_puReadBuffer[0] + 2u;
                     }
+                }
+            }
+        }
+    }
+
+    return l_bRes;
+}
+
+static bool_t eFSS_DBCTST_ReadTstAAdapt(t_eFSS_TYPE_ReadCtx* const p_ptCtx,
+                                       const uint32_t p_uPageToRead, uint8_t* const p_puReadBuffer,
+                                       const uint32_t p_uReadBufferL )
+{
+    bool_t l_bRes;
+
+    if( NULL == p_ptCtx )
+    {
+        l_bRes = false;
+    }
+    else
+    {
+        if( NULL == p_puReadBuffer )
+        {
+            l_bRes = false;
+            p_ptCtx->eLastEr = e_eFSS_DBC_RES_BADPOINTER;
+        }
+        else
+        {
+            if( p_uPageToRead >= 6u )
+            {
+                l_bRes = false;
+                p_ptCtx->eLastEr = e_eFSS_DBC_RES_BADPARAM;
+            }
+            else
+            {
+                if( 24u != p_uReadBufferL )
+                {
+                    l_bRes = false;
+                    p_ptCtx->eLastEr = e_eFSS_DBC_RES_BADPARAM;
+                }
+                else
+                {
+                    p_ptCtx->uTimeUsed++;
+
+                    l_bRes = true;
+                    p_ptCtx->eLastEr = e_eFSS_DBC_RES_OK;
+                    (void)memcpy(p_puReadBuffer, m_auStorAreaA[p_uPageToRead], p_uReadBufferL);
                 }
             }
         }
@@ -1012,12 +1006,7 @@ void eFSS_DBCTST_BadPointer(void)
 	t_eFSS_TYPE_ReadCtx   l_tCtxRead;
 	t_eFSS_TYPE_CrcCtx    l_tCtxCrc32;
     bool_t l_bIsInit;
-    t_eFSS_TYPE_StorSet l_tGetStorSet;
     t_eFSS_DBC_StorBuf l_ltUseBuff;
-    uint32_t l_uCrcGetted;
-    uint8_t l_uSubTypeRead;
-    uint8_t l_uSubTypeWrite;
-    bool_t l_bIsEquals;
     uint32_t l_uTotPage;
 
     /* Misra complaiant */
@@ -1045,10 +1034,6 @@ void eFSS_DBCTST_BadPointer(void)
     l_tStorSet.uPagesLen = 24u;
     l_tStorSet.uRWERetry = 2u;
     l_tStorSet.uPageVersion = 1u;
-
-    l_uSubTypeRead = 0u;
-    l_uSubTypeWrite = 0u;
-    l_bIsEquals = false;
     l_uTotPage = 0u;
 
     /* Function */
@@ -1317,17 +1302,8 @@ void eFSS_DBCTST_BadInit(void)
     /* Local variable */
     t_eFSS_DBC_Ctx l_tCtx;
     bool_t l_bIsInit;
-    t_eFSS_TYPE_StorSet l_tGetStorSet;
     t_eFSS_DBC_StorBuf l_ltUseBuff;
-    uint32_t l_uCrcGetted;
-    uint8_t l_uSubTypeRead;
-    uint8_t l_uSubTypeWrite;
-    bool_t l_bIsEquals;
     uint32_t l_uTotPage;
-
-    l_uSubTypeRead = 0u;
-    l_uSubTypeWrite = 0u;
-    l_bIsEquals = false;
 
     /* Init the remainings var */
     (void)memset(&l_tCtx, 0, sizeof(l_tCtx));
@@ -1391,11 +1367,6 @@ void eFSS_DBCTST_BadParamEntr(void)
 	t_eFSS_TYPE_WriteCtx  l_tCtxWrite;
 	t_eFSS_TYPE_ReadCtx   l_tCtxRead;
 	t_eFSS_TYPE_CrcCtx    l_tCtxCrc32;
-    uint32_t l_uCrcGetted;
-    uint8_t l_uSubTypeRead;
-    uint8_t l_uSubTypeWrite;
-    bool_t l_bIsEquals;
-    uint32_t l_uTotPage;
 
     /* Init callback var */
     l_tCtxCb.ptCtxErase = &l_tCtxErase;
@@ -1423,9 +1394,6 @@ void eFSS_DBCTST_BadParamEntr(void)
     l_tStorSet.uRWERetry = 2u;
     l_tStorSet.uPageVersion = 1u;
 
-    l_uSubTypeRead = 0u;
-    l_uSubTypeWrite = 0u;
-    l_bIsEquals = false;
 
     /* Function */
     l_tStorSet.uPagesLen = 25u;
@@ -1651,13 +1619,8 @@ void eFSS_DBCTST_CorruptedCtx(void)
 	t_eFSS_TYPE_WriteCtx  l_tCtxWrite;
 	t_eFSS_TYPE_ReadCtx   l_tCtxRead;
 	t_eFSS_TYPE_CrcCtx    l_tCtxCrc32;
-    t_eFSS_TYPE_StorSet l_tGetStorSet;
-    t_eFSS_DBC_StorBuf l_ltUseBuff;
-    uint32_t l_uCrcGetted;
-    uint8_t l_uSubTypeRead;
-    uint8_t l_uSubTypeWrite;
-    bool_t l_bIsEquals;
     uint32_t l_uTotPage;
+    t_eFSS_DBC_StorBuf l_ltUseBuff;
 
     /* Init callback var */
     l_tCtxCb.ptCtxErase = &l_tCtxErase;
@@ -1674,9 +1637,7 @@ void eFSS_DBCTST_CorruptedCtx(void)
     l_tStorSet.uPagesLen = 24u;
     l_tStorSet.uRWERetry = 2u;
     l_tStorSet.uPageVersion = 1u;
-    l_uSubTypeRead = 0u;
-    l_uSubTypeWrite = 0u;
-    l_bIsEquals = false;
+    l_uTotPage = 0u;
 
     /* Function */
     if( e_eFSS_DBC_RES_OK == eFSS_DBC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_auStor, sizeof(l_auStor) ) )
@@ -2213,7 +2174,6 @@ void eFSS_DBCTST_Basic(void)
 	t_eFSS_TYPE_CrcCtx    l_tCtxCrc32;
     bool_t l_bIsInit;
     uint32_t l_uTotPage;
-    t_eFSS_TYPE_StorSet l_tGetStorSet;
     t_eFSS_DBC_StorBuf l_ltUseBuff;
 
     /* Init callback var */
@@ -2344,6 +2304,11 @@ void eFSS_DBCTST_Basic(void)
     }
 }
 
+#ifdef __IAR_SYSTEMS_ICC__
+    #pragma cstat_disable = "CERT-INT31-C_c"
+    /* Suppressed for code clarity in test execution*/
+#endif
+
 void eFSS_DBCTST_BadClBckNRetry(void)
 {
     /* Local variable */
@@ -2356,12 +2321,7 @@ void eFSS_DBCTST_BadClBckNRetry(void)
 	t_eFSS_TYPE_ReadCtx   l_tCtxRead;
 	t_eFSS_TYPE_CrcCtx    l_tCtxCrc32;
     bool_t l_bIsInit;
-    t_eFSS_TYPE_StorSet l_tGetStorSet;
     t_eFSS_DBC_StorBuf l_ltUseBuff;
-    uint32_t l_uCrcGetted;
-    uint8_t l_uSubTypeRead;
-    uint8_t l_uSubTypeWrite;
-    bool_t l_bIsEquals;
     uint32_t l_uTotPage;
 
     /* Init callback var */
@@ -2389,10 +2349,7 @@ void eFSS_DBCTST_BadClBckNRetry(void)
     l_tStorSet.uPagesLen = 24u;
     l_tStorSet.uRWERetry = 3u;
     l_tStorSet.uPageVersion = 1u;
-    l_uSubTypeRead = 0u;
-    l_uSubTypeWrite = 0u;
     l_uTotPage = 0u;
-    l_bIsEquals = false;
 
     /* ------------------------------------------------------------------------------------------ TEST READ CALL BACK */
     /* Function */
@@ -3849,6 +3806,10 @@ static void eFSS_DBCTST_FlushBkupTest(void)
     (void)l_tCtxCrc32.uTimeUsed;
 }
 
+#ifdef __IAR_SYSTEMS_ICC__
+    #pragma cstat_restore = "CERT-INT31-C_c"
+#endif
+
 static void eFSS_DBCTST_GenTest(void)
 {
     /* Local variable */
@@ -3861,7 +3822,1207 @@ static void eFSS_DBCTST_GenTest(void)
 	t_eFSS_TYPE_ReadCtx   l_tCtxRead;
 	t_eFSS_TYPE_CrcCtx    l_tCtxCrc32;
     t_eFSS_DBC_StorBuf l_ltUseBuff;
-    uint8_t l_uSubTypeRead;
+    uint32_t l_uTotPage;
+
+    /* Init callback var */
+    l_tCtxCb.ptCtxErase = &l_tCtxErase;
+    l_tCtxCb.fErase = &eFSS_DBCTST_EraseTstAAdapt;
+	l_tCtxCb.ptCtxWrite = &l_tCtxWrite;
+    l_tCtxCb.fWrite = &eFSS_DBCTST_WriteTstAAdapt;
+	l_tCtxCb.ptCtxRead = &l_tCtxRead;
+    l_tCtxCb.fRead = &eFSS_DBCTST_ReadTstAAdapt;
+	l_tCtxCb.ptCtxCrc32 = &l_tCtxCrc32;
+    l_tCtxCb.fCrc32 = &eFSS_DBCTST_CrcTstAAdapt;
+
+    /* Init storage settings */
+    l_tStorSet.uTotPages = 6u;
+    l_tStorSet.uPagesLen = 24u;
+    l_tStorSet.uRWERetry = 3u;
+    l_tStorSet.uPageVersion = 1u;
+    l_uTotPage = 0u;
+
+    /* ------------------------------------------------------------------------------------------- TEST CRC CALL BACK */
+    /* Function */
+    l_tCtxCb.fErase = &eFSS_DBCTST_EraseTstAAdapt;
+    l_tCtxCb.fWrite = &eFSS_DBCTST_WriteTstAAdapt;
+    l_tCtxCb.fRead = &eFSS_DBCTST_ReadTstAAdapt;
+    l_tCtxCb.fCrc32 = &eFSS_DBCTST_CrcTstAAdapt;
+
+    l_tCtxErase.uTimeUsed = 0u;
+    l_tCtxErase.eLastEr = e_eFSS_DBC_RES_OK;
+    l_tCtxWrite.uTimeUsed = 0u;
+    l_tCtxWrite.eLastEr = e_eFSS_DBC_RES_OK;
+    l_tCtxRead.uTimeUsed = 0u;
+    l_tCtxRead.eLastEr = e_eFSS_DBC_RES_OK;
+    l_tCtxCrc32.uTimeUsed = 0u;
+    l_tCtxCrc32.eLastEr = e_eFSS_DBC_RES_OK;
+
+    /* Setup storage area */
+    (void)memset(m_auStorAreaA, 0, sizeof(m_auStorAreaA));
+
+    if( e_eFSS_DBC_RES_OK == eFSS_DBC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_auStor, sizeof(l_auStor) ) )
+    {
+        (void)printf("eFSS_DBCTST_GenTest 1  -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 1  -- FAIL \n");
+    }
+
+    /* Function */
+    if( e_eFSS_DBC_RES_OK == eFSS_DBC_GetBuffNUsable(&l_tCtx, &l_ltUseBuff, &l_uTotPage) )
+    {
+        (void)printf("eFSS_DBCTST_GenTest 2  -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 2  -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_NOTVALIDDB == eFSS_DBC_LoadPageInBuff(&l_tCtx, 0u) )
+    {
+        (void)printf("eFSS_DBCTST_GenTest 3  -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 3  -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_NOTVALIDDB == eFSS_DBC_LoadPageInBuff(&l_tCtx, 1u) )
+    {
+        (void)printf("eFSS_DBCTST_GenTest 4  -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 4  -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_NOTVALIDDB == eFSS_DBC_LoadPageInBuff(&l_tCtx, 2u) )
+    {
+        (void)printf("eFSS_DBCTST_GenTest 5  -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 5  -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_BADPARAM == eFSS_DBC_LoadPageInBuff(&l_tCtx, 3u) )
+    {
+        (void)printf("eFSS_DBCTST_GenTest 6  -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 6  -- FAIL \n");
+    }
+
+    l_ltUseBuff.puBuf[0u] = 0x01u;
+    l_ltUseBuff.puBuf[1u] = 0x02u;
+    l_ltUseBuff.puBuf[2u] = 0x03u;
+    l_ltUseBuff.puBuf[3u] = 0x04u;
+    if( e_eFSS_DBC_RES_BADPARAM == eFSS_DBC_FlushBuffInPage(&l_tCtx, 3u) )
+    {
+        (void)printf("eFSS_DBCTST_GenTest 7  -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 7  -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_NOTVALIDDB == eFSS_DBC_LoadPageInBuff(&l_tCtx, 0u) )
+    {
+        (void)printf("eFSS_DBCTST_GenTest 8  -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 8  -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_NOTVALIDDB == eFSS_DBC_LoadPageInBuff(&l_tCtx, 1u) )
+    {
+        (void)printf("eFSS_DBCTST_GenTest 8  -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 8  -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_NOTVALIDDB == eFSS_DBC_LoadPageInBuff(&l_tCtx, 2u) )
+    {
+        (void)printf("eFSS_DBCTST_GenTest 9  -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 9  -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_BADPARAM == eFSS_DBC_LoadPageInBuff(&l_tCtx, 3u) )
+    {
+        (void)printf("eFSS_DBCTST_GenTest 10 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 10 -- FAIL \n");
+    }
+
+    l_ltUseBuff.puBuf[0u] = 0x01u;
+    l_ltUseBuff.puBuf[1u] = 0x02u;
+    l_ltUseBuff.puBuf[2u] = 0x03u;
+    l_ltUseBuff.puBuf[3u] = 0x04u;
+    if( e_eFSS_DBC_RES_OK == eFSS_DBC_FlushBuffInPage(&l_tCtx, 2u) )
+    {
+        (void)printf("eFSS_DBCTST_GenTest 11 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 11 -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_NOTVALIDDB == eFSS_DBC_LoadPageInBuff(&l_tCtx, 0u) )
+    {
+        (void)printf("eFSS_DBCTST_GenTest 12 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 12 -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_NOTVALIDDB == eFSS_DBC_LoadPageInBuff(&l_tCtx, 1u) )
+    {
+        (void)printf("eFSS_DBCTST_GenTest 13 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 13 -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_OK == eFSS_DBC_LoadPageInBuff(&l_tCtx, 2u) )
+    {
+        if( ( 0x01u == l_ltUseBuff.puBuf[0u] ) && ( 0x02u == l_ltUseBuff.puBuf[1u] ) && ( 0x03u == l_ltUseBuff.puBuf[2u] ) &&
+            ( 0x04u == l_ltUseBuff.puBuf[3u] )  )
+        {
+            (void)printf("eFSS_DBCTST_GenTest 14 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_DBCTST_GenTest 14 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 14 -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_BADPARAM == eFSS_DBC_LoadPageInBuff(&l_tCtx, 3u) )
+    {
+        (void)printf("eFSS_DBCTST_GenTest 15 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 15 -- FAIL \n");
+    }
+
+    l_ltUseBuff.puBuf[0u] = 0x05u;
+    l_ltUseBuff.puBuf[1u] = 0x06u;
+    l_ltUseBuff.puBuf[2u] = 0x07u;
+    l_ltUseBuff.puBuf[3u] = 0x08u;
+    if( e_eFSS_DBC_RES_OK == eFSS_DBC_FlushBuffInPage(&l_tCtx, 1u) )
+    {
+        (void)printf("eFSS_DBCTST_GenTest 16 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 16 -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_NOTVALIDDB == eFSS_DBC_LoadPageInBuff(&l_tCtx, 0u) )
+    {
+        (void)printf("eFSS_DBCTST_GenTest 17 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 17 -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_OK == eFSS_DBC_LoadPageInBuff(&l_tCtx, 1u) )
+    {
+        if( ( 0x05u == l_ltUseBuff.puBuf[0u] ) && ( 0x06u == l_ltUseBuff.puBuf[1u] ) && ( 0x07u == l_ltUseBuff.puBuf[2u] ) &&
+            ( 0x08u == l_ltUseBuff.puBuf[3u] )  )
+        {
+            (void)printf("eFSS_DBCTST_GenTest 18 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_DBCTST_GenTest 18 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 18 -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_OK == eFSS_DBC_LoadPageInBuff(&l_tCtx, 2u) )
+    {
+        if( ( 0x01u == l_ltUseBuff.puBuf[0u] ) && ( 0x02u == l_ltUseBuff.puBuf[1u] ) && ( 0x03u == l_ltUseBuff.puBuf[2u] ) &&
+            ( 0x04u == l_ltUseBuff.puBuf[3u] )  )
+        {
+            (void)printf("eFSS_DBCTST_GenTest 19 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_DBCTST_GenTest 19 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 19 -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_BADPARAM == eFSS_DBC_LoadPageInBuff(&l_tCtx, 3u) )
+    {
+        (void)printf("eFSS_DBCTST_GenTest 20 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 20 -- FAIL \n");
+    }
+
+    l_ltUseBuff.puBuf[0u] = 0x09u;
+    l_ltUseBuff.puBuf[1u] = 0x0Au;
+    l_ltUseBuff.puBuf[2u] = 0x0Bu;
+    l_ltUseBuff.puBuf[3u] = 0x0Cu;
+    if( e_eFSS_DBC_RES_OK == eFSS_DBC_FlushBuffInPage(&l_tCtx, 0u) )
+    {
+        (void)printf("eFSS_DBCTST_GenTest 21 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 21 -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_OK == eFSS_DBC_LoadPageInBuff(&l_tCtx, 0u) )
+    {
+        if( ( 0x09u == l_ltUseBuff.puBuf[0u] ) && ( 0x0Au == l_ltUseBuff.puBuf[1u] ) && ( 0x0Bu == l_ltUseBuff.puBuf[2u] ) &&
+            ( 0x0Cu == l_ltUseBuff.puBuf[3u] )  )
+        {
+            (void)printf("eFSS_DBCTST_GenTest 22 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_DBCTST_GenTest 22 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 22 -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_OK == eFSS_DBC_LoadPageInBuff(&l_tCtx, 1u) )
+    {
+        if( ( 0x05u == l_ltUseBuff.puBuf[0u] ) && ( 0x06u == l_ltUseBuff.puBuf[1u] ) && ( 0x07u == l_ltUseBuff.puBuf[2u] ) &&
+            ( 0x08u == l_ltUseBuff.puBuf[3u] )  )
+        {
+            (void)printf("eFSS_DBCTST_GenTest 23 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_DBCTST_GenTest 23 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 23 -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_OK == eFSS_DBC_LoadPageInBuff(&l_tCtx, 2u) )
+    {
+        if( ( 0x01u == l_ltUseBuff.puBuf[0u] ) && ( 0x02u == l_ltUseBuff.puBuf[1u] ) && ( 0x03u == l_ltUseBuff.puBuf[2u] ) &&
+            ( 0x04u == l_ltUseBuff.puBuf[3u] )  )
+        {
+            (void)printf("eFSS_DBCTST_GenTest 24 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_DBCTST_GenTest 24 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 24 -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_BADPARAM == eFSS_DBC_LoadPageInBuff(&l_tCtx, 3u) )
+    {
+        (void)printf("eFSS_DBCTST_GenTest 25 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 25 -- FAIL \n");
+    }
+
+    l_ltUseBuff.puBuf[0u] = 0xF9u;
+    l_ltUseBuff.puBuf[1u] = 0xFAu;
+    l_ltUseBuff.puBuf[2u] = 0xFBu;
+    l_ltUseBuff.puBuf[3u] = 0xFCu;
+    if( e_eFSS_DBC_RES_OK == eFSS_DBC_FlushBuffInPage(&l_tCtx, 0u) )
+    {
+        (void)printf("eFSS_DBCTST_GenTest 26 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 26 -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_OK == eFSS_DBC_LoadPageInBuff(&l_tCtx, 0u) )
+    {
+        if( ( 0xF9u == l_ltUseBuff.puBuf[0u] ) && ( 0xFAu == l_ltUseBuff.puBuf[1u] ) && ( 0xFBu == l_ltUseBuff.puBuf[2u] ) &&
+            ( 0xFCu == l_ltUseBuff.puBuf[3u] )  )
+        {
+            (void)printf("eFSS_DBCTST_GenTest 27 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_DBCTST_GenTest 27 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 27 -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_OK == eFSS_DBC_LoadPageInBuff(&l_tCtx, 1u) )
+    {
+        if( ( 0x05u == l_ltUseBuff.puBuf[0u] ) && ( 0x06u == l_ltUseBuff.puBuf[1u] ) && ( 0x07u == l_ltUseBuff.puBuf[2u] ) &&
+            ( 0x08u == l_ltUseBuff.puBuf[3u] )  )
+        {
+            (void)printf("eFSS_DBCTST_GenTest 28 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_DBCTST_GenTest 28 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 28 -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_OK == eFSS_DBC_LoadPageInBuff(&l_tCtx, 2u) )
+    {
+        if( ( 0x01u == l_ltUseBuff.puBuf[0u] ) && ( 0x02u == l_ltUseBuff.puBuf[1u] ) && ( 0x03u == l_ltUseBuff.puBuf[2u] ) &&
+            ( 0x04u == l_ltUseBuff.puBuf[3u] )  )
+        {
+            (void)printf("eFSS_DBCTST_GenTest 29 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_DBCTST_GenTest 29 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 29 -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_BADPARAM == eFSS_DBC_LoadPageInBuff(&l_tCtx, 3u) )
+    {
+        (void)printf("eFSS_DBCTST_GenTest 30 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 30 -- FAIL \n");
+    }
+
+
+    l_ltUseBuff.puBuf[0u] = 0x09u;
+    l_ltUseBuff.puBuf[1u] = 0x0Au;
+    l_ltUseBuff.puBuf[2u] = 0x0Bu;
+    l_ltUseBuff.puBuf[3u] = 0x0Cu;
+    if( e_eFSS_DBC_RES_OK == eFSS_DBC_FlushBuffInPage(&l_tCtx, 0u) )
+    {
+        (void)printf("eFSS_DBCTST_GenTest 31 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 31 -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_OK == eFSS_DBC_LoadPageInBuff(&l_tCtx, 0u) )
+    {
+        if( ( 0x09u == l_ltUseBuff.puBuf[0u] ) && ( 0x0Au == l_ltUseBuff.puBuf[1u] ) && ( 0x0Bu == l_ltUseBuff.puBuf[2u] ) &&
+            ( 0x0Cu == l_ltUseBuff.puBuf[3u] )  )
+        {
+            (void)printf("eFSS_DBCTST_GenTest 32 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_DBCTST_GenTest 32 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 32 -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_OK == eFSS_DBC_LoadPageInBuff(&l_tCtx, 1u) )
+    {
+        if( ( 0x05u == l_ltUseBuff.puBuf[0u] ) && ( 0x06u == l_ltUseBuff.puBuf[1u] ) && ( 0x07u == l_ltUseBuff.puBuf[2u] ) &&
+            ( 0x08u == l_ltUseBuff.puBuf[3u] )  )
+        {
+            (void)printf("eFSS_DBCTST_GenTest 33 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_DBCTST_GenTest 33 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 33 -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_OK == eFSS_DBC_LoadPageInBuff(&l_tCtx, 2u) )
+    {
+        if( ( 0x01u == l_ltUseBuff.puBuf[0u] ) && ( 0x02u == l_ltUseBuff.puBuf[1u] ) && ( 0x03u == l_ltUseBuff.puBuf[2u] ) &&
+            ( 0x04u == l_ltUseBuff.puBuf[3u] )  )
+        {
+            (void)printf("eFSS_DBCTST_GenTest 34 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_DBCTST_GenTest 34 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 34 -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_BADPARAM == eFSS_DBC_LoadPageInBuff(&l_tCtx, 3u) )
+    {
+        (void)printf("eFSS_DBCTST_GenTest 35 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 35 -- FAIL \n");
+    }
+
+    /* ------------------------------------------------------------------------------------------- TEST CRC CALL BACK */
+    l_tStorSet.uPageVersion = 2u;
+
+    l_tCtxErase.uTimeUsed = 0u;
+    l_tCtxErase.eLastEr = e_eFSS_DBC_RES_OK;
+    l_tCtxWrite.uTimeUsed = 0u;
+    l_tCtxWrite.eLastEr = e_eFSS_DBC_RES_OK;
+    l_tCtxRead.uTimeUsed = 0u;
+    l_tCtxRead.eLastEr = e_eFSS_DBC_RES_OK;
+    l_tCtxCrc32.uTimeUsed = 0u;
+    l_tCtxCrc32.eLastEr = e_eFSS_DBC_RES_OK;
+
+    if( e_eFSS_DBC_RES_OK == eFSS_DBC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_auStor, sizeof(l_auStor) ) )
+    {
+        (void)printf("eFSS_DBCTST_GenTest 36 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 36 -- FAIL \n");
+    }
+
+    /* Function */
+    if( e_eFSS_DBC_RES_OK == eFSS_DBC_GetBuffNUsable(&l_tCtx, &l_ltUseBuff, &l_uTotPage) )
+    {
+        (void)printf("eFSS_DBCTST_GenTest 37 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 37 -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_NEWVERSIONFOUND == eFSS_DBC_LoadPageInBuff(&l_tCtx, 0u) )
+    {
+        (void)printf("eFSS_DBCTST_GenTest 38 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 38 -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_NEWVERSIONFOUND == eFSS_DBC_LoadPageInBuff(&l_tCtx, 1u) )
+    {
+        (void)printf("eFSS_DBCTST_GenTest 39 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 39 -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_NEWVERSIONFOUND == eFSS_DBC_LoadPageInBuff(&l_tCtx, 2u) )
+    {
+        (void)printf("eFSS_DBCTST_GenTest 40 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 40 -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_BADPARAM == eFSS_DBC_LoadPageInBuff(&l_tCtx, 3u) )
+    {
+        (void)printf("eFSS_DBCTST_GenTest 41 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 41 -- FAIL \n");
+    }
+
+    l_ltUseBuff.puBuf[0u] = 0x01u;
+    l_ltUseBuff.puBuf[1u] = 0x02u;
+    l_ltUseBuff.puBuf[2u] = 0x03u;
+    l_ltUseBuff.puBuf[3u] = 0x04u;
+    if( e_eFSS_DBC_RES_BADPARAM == eFSS_DBC_FlushBuffInPage(&l_tCtx, 3u) )
+    {
+        (void)printf("eFSS_DBCTST_GenTest 42 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 42 -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_NEWVERSIONFOUND == eFSS_DBC_LoadPageInBuff(&l_tCtx, 0u) )
+    {
+        (void)printf("eFSS_DBCTST_GenTest 43 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 43 -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_NEWVERSIONFOUND == eFSS_DBC_LoadPageInBuff(&l_tCtx, 1u) )
+    {
+        (void)printf("eFSS_DBCTST_GenTest 44 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 44 -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_NEWVERSIONFOUND == eFSS_DBC_LoadPageInBuff(&l_tCtx, 2u) )
+    {
+        (void)printf("eFSS_DBCTST_GenTest 45 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 45 -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_BADPARAM == eFSS_DBC_LoadPageInBuff(&l_tCtx, 3u) )
+    {
+        (void)printf("eFSS_DBCTST_GenTest 46 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 46 -- FAIL \n");
+    }
+
+    l_ltUseBuff.puBuf[0u] = 0x01u;
+    l_ltUseBuff.puBuf[1u] = 0x02u;
+    l_ltUseBuff.puBuf[2u] = 0x03u;
+    l_ltUseBuff.puBuf[3u] = 0x04u;
+    if( e_eFSS_DBC_RES_OK == eFSS_DBC_FlushBuffInPage(&l_tCtx, 2u) )
+    {
+        (void)printf("eFSS_DBCTST_GenTest 47 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 47 -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_NEWVERSIONFOUND == eFSS_DBC_LoadPageInBuff(&l_tCtx, 0u) )
+    {
+        (void)printf("eFSS_DBCTST_GenTest 48 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 48 -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_NEWVERSIONFOUND == eFSS_DBC_LoadPageInBuff(&l_tCtx, 1u) )
+    {
+        (void)printf("eFSS_DBCTST_GenTest 49 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 49 -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_OK == eFSS_DBC_LoadPageInBuff(&l_tCtx, 2u) )
+    {
+        if( ( 0x01u == l_ltUseBuff.puBuf[0u] ) && ( 0x02u == l_ltUseBuff.puBuf[1u] ) && ( 0x03u == l_ltUseBuff.puBuf[2u] ) &&
+            ( 0x04u == l_ltUseBuff.puBuf[3u] )  )
+        {
+            (void)printf("eFSS_DBCTST_GenTest 50 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_DBCTST_GenTest 50 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 50 -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_BADPARAM == eFSS_DBC_LoadPageInBuff(&l_tCtx, 3u) )
+    {
+        (void)printf("eFSS_DBCTST_GenTest 51 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 51 -- FAIL \n");
+    }
+
+    l_ltUseBuff.puBuf[0u] = 0x05u;
+    l_ltUseBuff.puBuf[1u] = 0x06u;
+    l_ltUseBuff.puBuf[2u] = 0x07u;
+    l_ltUseBuff.puBuf[3u] = 0x08u;
+    if( e_eFSS_DBC_RES_OK == eFSS_DBC_FlushBuffInPage(&l_tCtx, 1u) )
+    {
+        (void)printf("eFSS_DBCTST_GenTest 52 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 52 -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_NEWVERSIONFOUND == eFSS_DBC_LoadPageInBuff(&l_tCtx, 0u) )
+    {
+        (void)printf("eFSS_DBCTST_GenTest 53 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 53 -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_OK == eFSS_DBC_LoadPageInBuff(&l_tCtx, 1u) )
+    {
+        if( ( 0x05u == l_ltUseBuff.puBuf[0u] ) && ( 0x06u == l_ltUseBuff.puBuf[1u] ) && ( 0x07u == l_ltUseBuff.puBuf[2u] ) &&
+            ( 0x08u == l_ltUseBuff.puBuf[3u] )  )
+        {
+            (void)printf("eFSS_DBCTST_GenTest 54 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_DBCTST_GenTest 54 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 54 -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_OK == eFSS_DBC_LoadPageInBuff(&l_tCtx, 2u) )
+    {
+        if( ( 0x01u == l_ltUseBuff.puBuf[0u] ) && ( 0x02u == l_ltUseBuff.puBuf[1u] ) && ( 0x03u == l_ltUseBuff.puBuf[2u] ) &&
+            ( 0x04u == l_ltUseBuff.puBuf[3u] )  )
+        {
+            (void)printf("eFSS_DBCTST_GenTest 55 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_DBCTST_GenTest 55 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 55 -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_BADPARAM == eFSS_DBC_LoadPageInBuff(&l_tCtx, 3u) )
+    {
+        (void)printf("eFSS_DBCTST_GenTest 56 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 56 -- FAIL \n");
+    }
+
+    l_ltUseBuff.puBuf[0u] = 0x09u;
+    l_ltUseBuff.puBuf[1u] = 0x0Au;
+    l_ltUseBuff.puBuf[2u] = 0x0Bu;
+    l_ltUseBuff.puBuf[3u] = 0x0Cu;
+    if( e_eFSS_DBC_RES_OK == eFSS_DBC_FlushBuffInPage(&l_tCtx, 0u) )
+    {
+        (void)printf("eFSS_DBCTST_GenTest 57 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 57 -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_OK == eFSS_DBC_LoadPageInBuff(&l_tCtx, 0u) )
+    {
+        if( ( 0x09u == l_ltUseBuff.puBuf[0u] ) && ( 0x0Au == l_ltUseBuff.puBuf[1u] ) && ( 0x0Bu == l_ltUseBuff.puBuf[2u] ) &&
+            ( 0x0Cu == l_ltUseBuff.puBuf[3u] )  )
+        {
+            (void)printf("eFSS_DBCTST_GenTest 58 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_DBCTST_GenTest 58 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 58 -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_OK == eFSS_DBC_LoadPageInBuff(&l_tCtx, 1u) )
+    {
+        if( ( 0x05u == l_ltUseBuff.puBuf[0u] ) && ( 0x06u == l_ltUseBuff.puBuf[1u] ) && ( 0x07u == l_ltUseBuff.puBuf[2u] ) &&
+            ( 0x08u == l_ltUseBuff.puBuf[3u] )  )
+        {
+            (void)printf("eFSS_DBCTST_GenTest 59 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_DBCTST_GenTest 59 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 59 -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_OK == eFSS_DBC_LoadPageInBuff(&l_tCtx, 2u) )
+    {
+        if( ( 0x01u == l_ltUseBuff.puBuf[0u] ) && ( 0x02u == l_ltUseBuff.puBuf[1u] ) && ( 0x03u == l_ltUseBuff.puBuf[2u] ) &&
+            ( 0x04u == l_ltUseBuff.puBuf[3u] )  )
+        {
+            (void)printf("eFSS_DBCTST_GenTest 60 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_DBCTST_GenTest 60 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 60 -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_BADPARAM == eFSS_DBC_LoadPageInBuff(&l_tCtx, 3u) )
+    {
+        (void)printf("eFSS_DBCTST_GenTest 61 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 61 -- FAIL \n");
+    }
+
+    l_ltUseBuff.puBuf[0u] = 0xF9u;
+    l_ltUseBuff.puBuf[1u] = 0xFAu;
+    l_ltUseBuff.puBuf[2u] = 0xFBu;
+    l_ltUseBuff.puBuf[3u] = 0xFCu;
+    if( e_eFSS_DBC_RES_OK == eFSS_DBC_FlushBuffInPage(&l_tCtx, 0u) )
+    {
+        (void)printf("eFSS_DBCTST_GenTest 62 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 62 -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_OK == eFSS_DBC_LoadPageInBuff(&l_tCtx, 0u) )
+    {
+        if( ( 0xF9u == l_ltUseBuff.puBuf[0u] ) && ( 0xFAu == l_ltUseBuff.puBuf[1u] ) && ( 0xFBu == l_ltUseBuff.puBuf[2u] ) &&
+            ( 0xFCu == l_ltUseBuff.puBuf[3u] )  )
+        {
+            (void)printf("eFSS_DBCTST_GenTest 63 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_DBCTST_GenTest 63 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 63 -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_OK == eFSS_DBC_LoadPageInBuff(&l_tCtx, 1u) )
+    {
+        if( ( 0x05u == l_ltUseBuff.puBuf[0u] ) && ( 0x06u == l_ltUseBuff.puBuf[1u] ) && ( 0x07u == l_ltUseBuff.puBuf[2u] ) &&
+            ( 0x08u == l_ltUseBuff.puBuf[3u] )  )
+        {
+            (void)printf("eFSS_DBCTST_GenTest 64 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_DBCTST_GenTest 64 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 64 -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_OK == eFSS_DBC_LoadPageInBuff(&l_tCtx, 2u) )
+    {
+        if( ( 0x01u == l_ltUseBuff.puBuf[0u] ) && ( 0x02u == l_ltUseBuff.puBuf[1u] ) && ( 0x03u == l_ltUseBuff.puBuf[2u] ) &&
+            ( 0x04u == l_ltUseBuff.puBuf[3u] )  )
+        {
+            (void)printf("eFSS_DBCTST_GenTest 65 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_DBCTST_GenTest 65 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 65 -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_BADPARAM == eFSS_DBC_LoadPageInBuff(&l_tCtx, 3u) )
+    {
+        (void)printf("eFSS_DBCTST_GenTest 66 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 66 -- FAIL \n");
+    }
+
+    l_ltUseBuff.puBuf[0u] = 0x09u;
+    l_ltUseBuff.puBuf[1u] = 0x0Au;
+    l_ltUseBuff.puBuf[2u] = 0x0Bu;
+    l_ltUseBuff.puBuf[3u] = 0x0Cu;
+    if( e_eFSS_DBC_RES_OK == eFSS_DBC_FlushBuffInPage(&l_tCtx, 0u) )
+    {
+        (void)printf("eFSS_DBCTST_GenTest 67 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 67 -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_OK == eFSS_DBC_LoadPageInBuff(&l_tCtx, 0u) )
+    {
+        if( ( 0x09u == l_ltUseBuff.puBuf[0u] ) && ( 0x0Au == l_ltUseBuff.puBuf[1u] ) && ( 0x0Bu == l_ltUseBuff.puBuf[2u] ) &&
+            ( 0x0Cu == l_ltUseBuff.puBuf[3u] )  )
+        {
+            (void)printf("eFSS_DBCTST_GenTest 68 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_DBCTST_GenTest 68 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 68 -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_OK == eFSS_DBC_LoadPageInBuff(&l_tCtx, 1u) )
+    {
+        if( ( 0x05u == l_ltUseBuff.puBuf[0u] ) && ( 0x06u == l_ltUseBuff.puBuf[1u] ) && ( 0x07u == l_ltUseBuff.puBuf[2u] ) &&
+            ( 0x08u == l_ltUseBuff.puBuf[3u] )  )
+        {
+            (void)printf("eFSS_DBCTST_GenTest 69 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_DBCTST_GenTest 69 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 69 -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_OK == eFSS_DBC_LoadPageInBuff(&l_tCtx, 2u) )
+    {
+        if( ( 0x01u == l_ltUseBuff.puBuf[0u] ) && ( 0x02u == l_ltUseBuff.puBuf[1u] ) && ( 0x03u == l_ltUseBuff.puBuf[2u] ) &&
+            ( 0x04u == l_ltUseBuff.puBuf[3u] )  )
+        {
+            (void)printf("eFSS_DBCTST_GenTest 70 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_DBCTST_GenTest 70 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 70 -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_BADPARAM == eFSS_DBC_LoadPageInBuff(&l_tCtx, 3u) )
+    {
+        (void)printf("eFSS_DBCTST_GenTest 71 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 71 -- FAIL \n");
+    }
+
+    /* Check recover */
+    (void)memset(&m_auStorAreaA[3u], 0, 24u);
+    (void)memset(&m_auStorAreaA[4u], 0, 24u);
+    (void)memset(&m_auStorAreaA[5u], 0, 24u);
+
+
+    if( e_eFSS_DBC_RES_OK_BKP_RCVRD == eFSS_DBC_LoadPageInBuff(&l_tCtx, 0u) )
+    {
+        if( ( 0x09u == l_ltUseBuff.puBuf[0u] ) && ( 0x0Au == l_ltUseBuff.puBuf[1u] ) && ( 0x0Bu == l_ltUseBuff.puBuf[2u] ) &&
+            ( 0x0Cu == l_ltUseBuff.puBuf[3u] )  )
+        {
+            (void)printf("eFSS_DBCTST_GenTest 72 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_DBCTST_GenTest 72 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 72 -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_OK_BKP_RCVRD == eFSS_DBC_LoadPageInBuff(&l_tCtx, 1u) )
+    {
+        if( ( 0x05u == l_ltUseBuff.puBuf[0u] ) && ( 0x06u == l_ltUseBuff.puBuf[1u] ) && ( 0x07u == l_ltUseBuff.puBuf[2u] ) &&
+            ( 0x08u == l_ltUseBuff.puBuf[3u] )  )
+        {
+            (void)printf("eFSS_DBCTST_GenTest 73 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_DBCTST_GenTest 73 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 73 -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_OK_BKP_RCVRD == eFSS_DBC_LoadPageInBuff(&l_tCtx, 2u) )
+    {
+        if( ( 0x01u == l_ltUseBuff.puBuf[0u] ) && ( 0x02u == l_ltUseBuff.puBuf[1u] ) && ( 0x03u == l_ltUseBuff.puBuf[2u] ) &&
+            ( 0x04u == l_ltUseBuff.puBuf[3u] )  )
+        {
+            (void)printf("eFSS_DBCTST_GenTest 74 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_DBCTST_GenTest 74 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 74 -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_BADPARAM == eFSS_DBC_LoadPageInBuff(&l_tCtx, 3u) )
+    {
+        (void)printf("eFSS_DBCTST_GenTest 75 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 75 -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_OK == eFSS_DBC_LoadPageInBuff(&l_tCtx, 0u) )
+    {
+        if( ( 0x09u == l_ltUseBuff.puBuf[0u] ) && ( 0x0Au == l_ltUseBuff.puBuf[1u] ) && ( 0x0Bu == l_ltUseBuff.puBuf[2u] ) &&
+            ( 0x0Cu == l_ltUseBuff.puBuf[3u] )  )
+        {
+            (void)printf("eFSS_DBCTST_GenTest 76 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_DBCTST_GenTest 76 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 76 -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_OK == eFSS_DBC_LoadPageInBuff(&l_tCtx, 1u) )
+    {
+        if( ( 0x05u == l_ltUseBuff.puBuf[0u] ) && ( 0x06u == l_ltUseBuff.puBuf[1u] ) && ( 0x07u == l_ltUseBuff.puBuf[2u] ) &&
+            ( 0x08u == l_ltUseBuff.puBuf[3u] )  )
+        {
+            (void)printf("eFSS_DBCTST_GenTest 77 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_DBCTST_GenTest 77 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 77 -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_OK == eFSS_DBC_LoadPageInBuff(&l_tCtx, 2u) )
+    {
+        if( ( 0x01u == l_ltUseBuff.puBuf[0u] ) && ( 0x02u == l_ltUseBuff.puBuf[1u] ) && ( 0x03u == l_ltUseBuff.puBuf[2u] ) &&
+            ( 0x04u == l_ltUseBuff.puBuf[3u] )  )
+        {
+            (void)printf("eFSS_DBCTST_GenTest 78 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_DBCTST_GenTest 78 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 78 -- FAIL \n");
+    }
+
+    /* Check recover */
+    (void)memset(&m_auStorAreaA[0u], 0, 24u);
+    (void)memset(&m_auStorAreaA[1u], 0, 24u);
+    (void)memset(&m_auStorAreaA[2u], 0, 24u);
+
+
+    if( e_eFSS_DBC_RES_OK_BKP_RCVRD == eFSS_DBC_LoadPageInBuff(&l_tCtx, 0u) )
+    {
+        if( ( 0x09u == l_ltUseBuff.puBuf[0u] ) && ( 0x0Au == l_ltUseBuff.puBuf[1u] ) && ( 0x0Bu == l_ltUseBuff.puBuf[2u] ) &&
+            ( 0x0Cu == l_ltUseBuff.puBuf[3u] )  )
+        {
+            (void)printf("eFSS_DBCTST_GenTest 79 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_DBCTST_GenTest 79 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 79 -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_OK_BKP_RCVRD == eFSS_DBC_LoadPageInBuff(&l_tCtx, 1u) )
+    {
+        if( ( 0x05u == l_ltUseBuff.puBuf[0u] ) && ( 0x06u == l_ltUseBuff.puBuf[1u] ) && ( 0x07u == l_ltUseBuff.puBuf[2u] ) &&
+            ( 0x08u == l_ltUseBuff.puBuf[3u] )  )
+        {
+            (void)printf("eFSS_DBCTST_GenTest 80 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_DBCTST_GenTest 80 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 80 -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_OK_BKP_RCVRD == eFSS_DBC_LoadPageInBuff(&l_tCtx, 2u) )
+    {
+        if( ( 0x01u == l_ltUseBuff.puBuf[0u] ) && ( 0x02u == l_ltUseBuff.puBuf[1u] ) && ( 0x03u == l_ltUseBuff.puBuf[2u] ) &&
+            ( 0x04u == l_ltUseBuff.puBuf[3u] )  )
+        {
+            (void)printf("eFSS_DBCTST_GenTest 81 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_DBCTST_GenTest 81 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 81 -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_BADPARAM == eFSS_DBC_LoadPageInBuff(&l_tCtx, 3u) )
+    {
+        (void)printf("eFSS_DBCTST_GenTest 82 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 82 -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_OK == eFSS_DBC_LoadPageInBuff(&l_tCtx, 0u) )
+    {
+        if( ( 0x09u == l_ltUseBuff.puBuf[0u] ) && ( 0x0Au == l_ltUseBuff.puBuf[1u] ) && ( 0x0Bu == l_ltUseBuff.puBuf[2u] ) &&
+            ( 0x0Cu == l_ltUseBuff.puBuf[3u] )  )
+        {
+            (void)printf("eFSS_DBCTST_GenTest 83 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_DBCTST_GenTest 83 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 83 -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_OK == eFSS_DBC_LoadPageInBuff(&l_tCtx, 1u) )
+    {
+        if( ( 0x05u == l_ltUseBuff.puBuf[0u] ) && ( 0x06u == l_ltUseBuff.puBuf[1u] ) && ( 0x07u == l_ltUseBuff.puBuf[2u] ) &&
+            ( 0x08u == l_ltUseBuff.puBuf[3u] )  )
+        {
+            (void)printf("eFSS_DBCTST_GenTest 84 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_DBCTST_GenTest 84 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 84 -- FAIL \n");
+    }
+
+    if( e_eFSS_DBC_RES_OK == eFSS_DBC_LoadPageInBuff(&l_tCtx, 2u) )
+    {
+        if( ( 0x01u == l_ltUseBuff.puBuf[0u] ) && ( 0x02u == l_ltUseBuff.puBuf[1u] ) && ( 0x03u == l_ltUseBuff.puBuf[2u] ) &&
+            ( 0x04u == l_ltUseBuff.puBuf[3u] )  )
+        {
+            (void)printf("eFSS_DBCTST_GenTest 85 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_DBCTST_GenTest 85 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_GenTest 85 -- FAIL \n");
+    }
+
+    /* Misra complaiant */
+    (void)l_tCtxErase.eLastEr;
+    (void)l_tCtxErase.uTimeUsed;
+    (void)l_tCtxWrite.eLastEr;
+    (void)l_tCtxWrite.uTimeUsed;
+    (void)l_tCtxRead.eLastEr;
+    (void)l_tCtxRead.uTimeUsed;
+    (void)l_tCtxCrc32.eLastEr;
+    (void)l_tCtxCrc32.uTimeUsed;
+}
+
+static void eFSS_DBCTST_CodeCoverage(void)
+{
+    /* Local variable */
+    t_eFSS_DBC_Ctx l_tCtx;
+    t_eFSS_TYPE_CbStorCtx l_tCtxCb;
+    t_eFSS_TYPE_StorSet l_tStorSet;
+    uint8_t l_auStor[48u];
+    t_eFSS_TYPE_EraseCtx  l_tCtxErase;
+	t_eFSS_TYPE_WriteCtx  l_tCtxWrite;
+	t_eFSS_TYPE_ReadCtx   l_tCtxRead;
+	t_eFSS_TYPE_CrcCtx    l_tCtxCrc32;
+    t_eFSS_DBC_StorBuf l_ltUseBuff;
+    t_eFSS_DBC_StorBuf l_ltUseBuff2;
+    uint32_t l_uTotPage;
+
 
     /* Init callback var */
     l_tCtxCb.ptCtxErase = &l_tCtxErase;
@@ -3878,7 +5039,6 @@ static void eFSS_DBCTST_GenTest(void)
     l_tStorSet.uPagesLen = 24u;
     l_tStorSet.uRWERetry = 3u;
     l_tStorSet.uPageVersion = 1u;
-    l_uSubTypeRead = 0u;
 
     /* ------------------------------------------------------------------------------------------- TEST CRC CALL BACK */
     /* Function */
@@ -3896,212 +5056,188 @@ static void eFSS_DBCTST_GenTest(void)
     l_tCtxCrc32.uTimeUsed = 0u;
     l_tCtxCrc32.eLastEr = e_eFSS_DBC_RES_OK;
 
-    /* Setup storage area */
-    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    (void)memset(m_auStorArea2, 0, sizeof(m_auStorArea2));
+    /* Function */
+    l_tCtxCb.fErase = &eFSS_DBCTST_EraseTst1Adapt;
+    l_tCtxCb.fWrite = &eFSS_DBCTST_WriteTst1Adapt;
+    l_tCtxCb.fRead = &eFSS_DBCTST_ReadTst2Adapt;
+    l_tCtxCb.fCrc32 = &eFSS_DBCTST_CrcTst1Adapt;
+
+    l_tCtxErase.uTimeUsed = 0u;
+    l_tCtxErase.eLastEr = e_eFSS_DBC_RES_OK;
+    l_tCtxWrite.uTimeUsed = 0u;
+    l_tCtxWrite.eLastEr = e_eFSS_DBC_RES_OK;
+    l_tCtxRead.uTimeUsed = 0u;
+    l_tCtxRead.eLastEr = e_eFSS_DBC_RES_OK;
+    l_tCtxCrc32.uTimeUsed = 0u;
+    l_tCtxCrc32.eLastEr = e_eFSS_DBC_RES_OK;
 
     if( e_eFSS_DBC_RES_OK == eFSS_DBC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_auStor, sizeof(l_auStor) ) )
     {
-        (void)printf("eFSS_DBCTST_GenTest 1  -- OK \n");
+        (void)printf("eFSS_DBCTST_CodeCoverage 1  -- OK \n");
     }
     else
     {
-        (void)printf("eFSS_DBCTST_GenTest 1  -- FAIL \n");
+        (void)printf("eFSS_DBCTST_CodeCoverage 1  -- FAIL \n");
     }
 
     /* Function */
-    if( e_eFSS_DBC_RES_OK == eFSS_DBC_GetBuff(&l_tCtx, &l_ltUseBuff) )
+    if( e_eFSS_DBC_RES_OK == eFSS_DBC_GetBuffNUsable(&l_tCtx, &l_ltUseBuff, &l_uTotPage) )
     {
-        (void)printf("eFSS_DBCTST_GenTest 2  -- OK \n");
+        (void)printf("eFSS_DBCTST_CodeCoverage 2  -- OK \n");
     }
     else
     {
-        (void)printf("eFSS_DBCTST_GenTest 2  -- FAIL \n");
+        (void)printf("eFSS_DBCTST_CodeCoverage 2  -- FAIL \n");
     }
 
-    if( e_eFSS_DBC_RES_NOTVALIDPAGE == eFSS_DBC_LoadPageInBuff(&l_tCtx, 0u, &l_uSubTypeRead) )
-    {
-        (void)printf("eFSS_DBCTST_GenTest 3  -- OK \n");
-    }
-    else
-    {
-        (void)printf("eFSS_DBCTST_GenTest 3  -- FAIL \n");
-    }
+    /* Setup storage area */
+    l_ltUseBuff2.uBufL = l_ltUseBuff.uBufL  + 1u;
+    l_ltUseBuff2.puBuf = &l_auStor[24];
 
-    if( e_eFSS_DBC_RES_NOTVALIDPAGE == eFSS_DBC_LoadPageInBuff(&l_tCtx, 1u, &l_uSubTypeRead) )
-    {
-        (void)printf("eFSS_DBCTST_GenTest 4  -- OK \n");
-    }
-    else
-    {
-        (void)printf("eFSS_DBCTST_GenTest 4  -- FAIL \n");
-    }
+    /* Setup storage area */
+    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
+    (void)memset(m_auStorArea2, 0xFF, sizeof(m_auStorArea2));
 
+    /* Setup buffer */
     l_ltUseBuff.puBuf[0u] = 0x01u;
     l_ltUseBuff.puBuf[1u] = 0x02u;
     l_ltUseBuff.puBuf[2u] = 0x03u;
     l_ltUseBuff.puBuf[3u] = 0x04u;
-    if( e_eFSS_DBC_RES_OK == eFSS_DBC_FlushBuffInPage(&l_tCtx, 0u, 0x03u) )
+
+    l_ltUseBuff2.puBuf[0u] = 0x11u;
+    l_ltUseBuff2.puBuf[1u] = 0x12u;
+    l_ltUseBuff2.puBuf[2u] = 0x13u;
+    l_ltUseBuff2.puBuf[3u] = 0x14u;
+    l_ltUseBuff2.puBuf[4u] = 0x15u;
+
+    if( e_eFSS_DBC_RES_WRITENOMATCHREAD == eFSS_DBC_FlushBuffInPage(&l_tCtx, 0u) )
     {
-        (void)printf("eFSS_DBCTST_GenTest 5  -- OK \n");
+        (void)printf("eFSS_DBCTST_CodeCoverage 3  -- OK \n");
     }
     else
     {
-        (void)printf("eFSS_DBCTST_GenTest 5  -- FAIL \n");
+        (void)printf("eFSS_DBCTST_CodeCoverage 3  -- FAIL \n");
     }
 
-    if( e_eFSS_DBC_RES_OK == eFSS_DBC_FlushBuffInPage(&l_tCtx, 1u, 0x04u) )
-    {
-        (void)printf("eFSS_DBCTST_GenTest 6  -- OK \n");
-    }
-    else
-    {
-        (void)printf("eFSS_DBCTST_GenTest 6  -- FAIL \n");
-    }
-
-    if( e_eFSS_DBC_RES_OK == eFSS_DBC_LoadPageInBuffNRipBkp(&l_tCtx, 0u, 1u, 0x03u, 0x04u) )
-    {
-        (void)printf("eFSS_DBCTST_GenTest 7  -- OK \n");
-    }
-    else
-    {
-        (void)printf("eFSS_DBCTST_GenTest 7  -- FAIL \n");
-    }
-
-    if( ( 0x01u == l_ltUseBuff.puBuf[0u] ) && ( 0x02u == l_ltUseBuff.puBuf[1u] ) && ( 0x03u == l_ltUseBuff.puBuf[2u] ) && ( 0x04u == l_ltUseBuff.puBuf[3u] ) )
-    {
-        (void)printf("eFSS_DBCTST_GenTest 8  -- OK \n");
-    }
-    else
-    {
-        (void)printf("eFSS_DBCTST_GenTest 8  -- FAIL \n");
-    }
-
-    l_tStorSet.uPageVersion = 2u;
+    /* Function */
+    l_tCtxCb.fRead = &eFSS_DBCTST_ReadAdapt;
+    l_tCtxCb.fCrc32 = &eFSS_DBCTST_CrcErrAdapt;
+    l_tCtxCrc32.uTimeUsed = 0u;
+    l_tCtxCrc32.eLastEr = e_eFSS_DBC_RES_OK;
     if( e_eFSS_DBC_RES_OK == eFSS_DBC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_auStor, sizeof(l_auStor) ) )
     {
-        (void)printf("eFSS_DBCTST_GenTest 9  -- OK \n");
+        (void)printf("eFSS_DBCTST_CodeCoverage 4  -- OK \n");
     }
     else
     {
-        (void)printf("eFSS_DBCTST_GenTest 9  -- FAIL \n");
+        (void)printf("eFSS_DBCTST_CodeCoverage 4  -- FAIL \n");
     }
 
-    if( e_eFSS_DBC_RES_NEWVERSIONFOUND == eFSS_DBC_LoadPageInBuffNRipBkp(&l_tCtx, 0u, 1u, 0x03u, 0x04u) )
+    /* Function */
+    if( e_eFSS_DBC_RES_OK == eFSS_DBC_GetBuffNUsable(&l_tCtx, &l_ltUseBuff, &l_uTotPage) )
     {
-        (void)printf("eFSS_DBCTST_GenTest 10 -- OK \n");
+        (void)printf("eFSS_DBCTST_CodeCoverage 5  -- OK \n");
     }
     else
     {
-        (void)printf("eFSS_DBCTST_GenTest 10 -- FAIL \n");
+        (void)printf("eFSS_DBCTST_CodeCoverage 5  -- FAIL \n");
     }
 
-    l_tStorSet.uPageVersion = 1u;
+    /* Test LOAD */
+    l_tCtxRead.uTimeUsed = 0u;
+    l_tCtxRead.eLastEr = e_eFSS_DBC_RES_OK;
+    l_tCtxCrc32.uTimeUsed = 0u;
+    l_tCtxCrc32.eLastEr = e_eFSS_DBC_RES_OK;
+
+    if( e_eFSS_DBC_RES_CLBCKCRCERR == eFSS_DBC_LoadPageInBuff(&l_tCtx, 0u) )
+    {
+        if( ( 1u == l_tCtxRead.uTimeUsed ) && ( e_eFSS_DBC_RES_OK == l_tCtxRead.eLastEr ) )
+        {
+            if( ( 1u == l_tCtxCrc32.uTimeUsed ) && ( e_eFSS_DBC_RES_BADPOINTER == l_tCtxCrc32.eLastEr ) )
+            {
+                (void)printf("eFSS_DBCTST_CodeCoverage 6  -- OK \n");
+            }
+            else
+            {
+                (void)printf("eFSS_DBCTST_CodeCoverage 6  -- FAIL \n");
+            }
+        }
+        else
+        {
+            (void)printf("eFSS_DBCTST_CodeCoverage 6  -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_DBCTST_CodeCoverage 6  -- FAIL \n");
+    }
+
+    /* Function */
+    l_tCtxCb.fErase = &eFSS_DBCTST_EraseErrAdapt;
+    l_tCtxCb.fWrite = &eFSS_DBCTST_WriteAdapt;
+    l_tCtxCb.fRead = &eFSS_DBCTST_ReadAdapt;
+    l_tCtxCb.fCrc32 = &eFSS_DBCTST_CrcAdapt;
+
+    l_tCtxErase.uTimeUsed = 0u;
+    l_tCtxErase.eLastEr = e_eFSS_DBC_RES_OK;
+    l_tCtxWrite.uTimeUsed = 0u;
+    l_tCtxWrite.eLastEr = e_eFSS_DBC_RES_OK;
+    l_tCtxRead.uTimeUsed = 0u;
+    l_tCtxRead.eLastEr = e_eFSS_DBC_RES_OK;
+    l_tCtxCrc32.uTimeUsed = 0u;
+    l_tCtxCrc32.eLastEr = e_eFSS_DBC_RES_OK;
     if( e_eFSS_DBC_RES_OK == eFSS_DBC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_auStor, sizeof(l_auStor) ) )
     {
-        (void)printf("eFSS_DBCTST_GenTest 11 -- OK \n");
+        (void)printf("eFSS_DBCTST_CodeCoverage 7  -- OK \n");
     }
     else
     {
-        (void)printf("eFSS_DBCTST_GenTest 11 -- FAIL \n");
+        (void)printf("eFSS_DBCTST_CodeCoverage 7  -- FAIL \n");
     }
 
-    if( e_eFSS_DBC_RES_OK == eFSS_DBC_LoadPageInBuffNRipBkp(&l_tCtx, 0u, 1u, 0x03u, 0x04u) )
+    /* Function */
+    if( e_eFSS_DBC_RES_OK == eFSS_DBC_GetBuffNUsable(&l_tCtx, &l_ltUseBuff, &l_uTotPage) )
     {
-        (void)printf("eFSS_DBCTST_GenTest 12 -- OK \n");
+        (void)printf("eFSS_DBCTST_CodeCoverage 8  -- OK \n");
     }
     else
     {
-        (void)printf("eFSS_DBCTST_GenTest 12 -- FAIL \n");
+        (void)printf("eFSS_DBCTST_CodeCoverage 8  -- FAIL \n");
     }
 
-    if( ( 0x01u == l_ltUseBuff.puBuf[0u] ) && ( 0x02u == l_ltUseBuff.puBuf[1u] ) && ( 0x03u == l_ltUseBuff.puBuf[2u] ) && ( 0x04u == l_ltUseBuff.puBuf[3u] ) )
-    {
-        (void)printf("eFSS_DBCTST_GenTest 13 -- OK \n");
-    }
-    else
-    {
-        (void)printf("eFSS_DBCTST_GenTest 13 -- FAIL \n");
-    }
+    /* Test LOAD */
+    l_tCtxErase.uTimeUsed = 0u;
+    l_tCtxErase.eLastEr = e_eFSS_DBC_RES_OK;
+    l_tCtxWrite.uTimeUsed = 0u;
+    l_tCtxWrite.eLastEr = e_eFSS_DBC_RES_OK;
+    l_tCtxRead.uTimeUsed = 0u;
+    l_tCtxRead.eLastEr = e_eFSS_DBC_RES_OK;
+    l_tCtxCrc32.uTimeUsed = 0u;
+    l_tCtxCrc32.eLastEr = e_eFSS_DBC_RES_OK;
 
-    l_tStorSet.uTotPages = 3u;
-    if( e_eFSS_DBC_RES_OK == eFSS_DBC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_auStor, sizeof(l_auStor) ) )
+    if( e_eFSS_DBC_RES_CLBCKERASEERR == eFSS_DBC_FlushBuffInPage(&l_tCtx, 0u) )
     {
-        (void)printf("eFSS_DBCTST_GenTest 14 -- OK \n");
+        if( ( 1u == l_tCtxCrc32.uTimeUsed ) && ( e_eFSS_DBC_RES_OK == l_tCtxCrc32.eLastEr ) &&
+            ( 0u == l_tCtxWrite.uTimeUsed ) && ( e_eFSS_DBC_RES_OK == l_tCtxWrite.eLastEr ) &&
+            ( 0u == l_tCtxRead.uTimeUsed )  && ( e_eFSS_DBC_RES_OK == l_tCtxRead.eLastEr ) )
+        {
+            if( ( 3u == l_tCtxErase.uTimeUsed ) && ( e_eFSS_DBC_RES_BADPOINTER == l_tCtxErase.eLastEr ) )
+            {
+                (void)printf("eFSS_DBCTST_CodeCoverage 9  -- OK \n");
+            }
+            else
+            {
+                (void)printf("eFSS_DBCTST_CodeCoverage 9  -- FAIL \n");
+            }
+        }
+        else
+        {
+            (void)printf("eFSS_DBCTST_CodeCoverage 9  -- FAIL \n");
+        }
     }
     else
     {
-        (void)printf("eFSS_DBCTST_GenTest 14 -- FAIL \n");
-    }
-
-    if( e_eFSS_DBC_RES_NOTVALIDPAGE == eFSS_DBC_LoadPageInBuffNRipBkp(&l_tCtx, 0u, 1u, 0x03u, 0x04u) )
-    {
-        (void)printf("eFSS_DBCTST_GenTest 15 -- OK \n");
-    }
-    else
-    {
-        (void)printf("eFSS_DBCTST_GenTest 15 -- FAIL \n");
-    }
-
-    l_tStorSet.uTotPages = 2u;
-    if( e_eFSS_DBC_RES_OK == eFSS_DBC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_auStor, sizeof(l_auStor) ) )
-    {
-        (void)printf("eFSS_DBCTST_GenTest 16 -- OK \n");
-    }
-    else
-    {
-        (void)printf("eFSS_DBCTST_GenTest 16 -- FAIL \n");
-    }
-
-    l_ltUseBuff.puBuf[0u] = 0x11u;
-    l_ltUseBuff.puBuf[1u] = 0x12u;
-    l_ltUseBuff.puBuf[2u] = 0x13u;
-    l_ltUseBuff.puBuf[3u] = 0x14u;
-    if( e_eFSS_DBC_RES_OK == eFSS_DBC_FlushBuffInPageNBkp(&l_tCtx, 0u, 1u, 0x03u, 0x04u) )
-    {
-        (void)printf("eFSS_DBCTST_GenTest 17 -- OK \n");
-    }
-    else
-    {
-        (void)printf("eFSS_DBCTST_GenTest 17 -- FAIL \n");
-    }
-
-    if( e_eFSS_DBC_RES_OK == eFSS_DBC_LoadPageInBuff(&l_tCtx, 0u, &l_uSubTypeRead) )
-    {
-        (void)printf("eFSS_DBCTST_GenTest 18 -- OK \n");
-    }
-    else
-    {
-        (void)printf("eFSS_DBCTST_GenTest 18 -- FAIL \n");
-    }
-
-    if( ( 0x11u == l_ltUseBuff.puBuf[0u] ) && ( 0x12u == l_ltUseBuff.puBuf[1u] ) && ( 0x13u == l_ltUseBuff.puBuf[2u] ) && ( 0x14u == l_ltUseBuff.puBuf[3u] ) &&
-        ( 0x03u == l_uSubTypeRead ) )
-    {
-        (void)printf("eFSS_DBCTST_GenTest 19 -- OK \n");
-    }
-    else
-    {
-        (void)printf("eFSS_DBCTST_GenTest 19 -- FAIL \n");
-    }
-
-    if( e_eFSS_DBC_RES_OK == eFSS_DBC_LoadPageInBuff(&l_tCtx, 1u, &l_uSubTypeRead) )
-    {
-        (void)printf("eFSS_DBCTST_GenTest 20 -- OK \n");
-    }
-    else
-    {
-        (void)printf("eFSS_DBCTST_GenTest 20 -- FAIL \n");
-    }
-
-    if( ( 0x11u == l_ltUseBuff.puBuf[0u] ) && ( 0x12u == l_ltUseBuff.puBuf[1u] ) && ( 0x13u == l_ltUseBuff.puBuf[2u] ) && ( 0x14u == l_ltUseBuff.puBuf[3u] ) &&
-        ( 0x04u == l_uSubTypeRead ) )
-    {
-        (void)printf("eFSS_DBCTST_GenTest 21 -- OK \n");
-    }
-    else
-    {
-        (void)printf("eFSS_DBCTST_GenTest 21 -- FAIL \n");
+        (void)printf("eFSS_DBCTST_CodeCoverage 9  -- FAIL \n");
     }
 
     /* Misra complaiant */
@@ -4113,4 +5249,5 @@ static void eFSS_DBCTST_GenTest(void)
     (void)l_tCtxRead.uTimeUsed;
     (void)l_tCtxCrc32.eLastEr;
     (void)l_tCtxCrc32.uTimeUsed;
+    (void)l_ltUseBuff2.puBuf;
 }

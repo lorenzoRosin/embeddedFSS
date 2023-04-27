@@ -121,7 +121,7 @@ e_eFSS_DBC_RES eFSS_DBC_GetBuffNUsable(t_eFSS_DBC_Ctx* const p_ptCtx, t_eFSS_DBC
  *		        e_eFSS_DBC_RES_CLBCKREADERR     - The read callback reported an error
  *              e_eFSS_DBC_RES_CLBCKCRCERR      - The crc callback reported an error
  *              e_eFSS_DBC_RES_NOTVALIDDB       - The readed page is invalid
- *              e_eFSS_DBC_RES_NEWVERSIONDB     - The readed page has a new version
+ *              e_eFSS_DBC_RES_NEWVERSIONFOUND  - The readed page has a new version
  *              e_eFSS_DBC_RES_CLBCKERASEERR    - Error reported from the callback
  *              e_eFSS_DBC_RES_CLBCKWRITEERR    - Error reported from the callback
  *              e_eFSS_DBC_RES_WRITENOMATCHREAD - For some unknow reason data write dosent match data readed
