@@ -107,12 +107,13 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_GetBuffNUsable(t_eFSS_BLOBC_Ctx* const p_ptCtx, t_eF
                                            uint32_t* const p_puUsePages);
 
 /**
- * @brief       Load the buffer from a page at p_uIdx position, and read it's p_uSeqN number. We can read from
- *              the original area or from the backup one.
+ * @brief       Load a page from the storage area in to the internal buffer. We can choose if load the buffer from
+ *              the original pages area or from the backup ones.
  *
  * @param[in]   p_ptCtx       - Blob Core context
  * @param[in]   p_bInOrigin   - Choose if read page from origin or backup area
- * @param[in]   p_uIdx        - Index of the page we want to read from
+ * @param[in]   p_uIdx        - Index of the page we want to read from. Must be a a value that can vary from 0 to
+ *                              p_puUsePages-1 (returned from eFSS_BLOBC_GetBuffNUsable).
  * @param[out]  p_puSeqN      - An uint32_t value that will be filled with the sequence number from the page
  *
  * @return      e_eFSS_BLOBC_RES_BADPOINTER      - In case of bad pointer passed to the function
@@ -122,15 +123,16 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_GetBuffNUsable(t_eFSS_BLOBC_Ctx* const p_ptCtx, t_eF
  *		        e_eFSS_BLOBC_RES_CLBCKREADERR    - The read callback reported an error
  *              e_eFSS_BLOBC_RES_CLBCKCRCERR     - The crc callback reported an error
  *              e_eFSS_BLOBC_RES_NOTVALIDBLOB    - The readed page is invalid
- *              e_eFSS_BLOBC_RES_NEWVERSIONFOUND  - The readed page has a new version
+ *              e_eFSS_BLOBC_RES_NEWVERSIONFOUND - The readed page has a new version
  *              e_eFSS_BLOBC_RES_OK              - Operation ended correctly
  */
 e_eFSS_BLOBC_RES eFSS_BLOBC_LoadPageInBuff(t_eFSS_BLOBC_Ctx* const p_ptCtx, const bool_t p_bInOrigin,
-                                               const uint32_t p_uIdx, uint32_t* const p_puSeqN);
+                                           const uint32_t p_uIdx, uint32_t* const p_puSeqN);
 
 /**
  * @brief       Flush the buffer in a page at p_uIdx position, and with p_uSeqN as sequence number. We can write in
- *              to the original area or in to the backup one.
+ *              to the original area or in to the backup one. After this operation the used buffer will contain
+ *              the same values as before, except for the private metadata
  *
  * @param[in]   p_ptCtx       - Blob Core context
  * @param[in]   p_bInOrigin   - Choose if write page in origin or backup area
@@ -152,9 +154,10 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_FlushBufferInPage(t_eFSS_BLOBC_Ctx* const p_ptCtx, c
                                               const uint32_t p_uIdx, const uint32_t p_uSeqN);
 
 /**
- * @brief       Retrive the CRC value from the page present in the buffer getted using eFSS_BLOBC_GetBuffNUsable.
- *              The value of the getted CRC does not comprend the sequential number of the page, but only the
- *              raw data present in the buffer.
+ * @brief       Calculate the Crc of the data present in the buffer. It's not necessary to calculate the CRC
+ *              value of the whole buffer, we can choose to calculate the CRC of a portion of the buffer. In this
+ *              calculation private metadata and sequence number is not included. And so the max Length is the
+ *              same reported by the eFSS_BLOBC_GetBuffNUsable function
  *
  * @param[in]   p_ptCtx     - Blob Core context
  * @param[in]   p_uSeed     - Seed to use during the calculation

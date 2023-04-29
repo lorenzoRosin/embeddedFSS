@@ -132,6 +132,8 @@ e_eFSS_DBC_RES eFSS_DBC_LoadPageInBuff(t_eFSS_DBC_Ctx* const p_ptCtx, const uint
 
 /**
  * @brief       Flush the internal buffer in to the storage area. Backup pages area managed automatically
+ *              After this operation the used buffer will contain the same values as before, except for the private
+ *              metadata
  *
  * @param[in]   p_ptCtx             - Database Core context
  * @param[in]   p_uPageIndx         - uint32_t index rappresenting the page that we want to flush in storage. Must be a
