@@ -90,8 +90,8 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_InitCtx(t_eFSS_BLOBC_Ctx* const p_ptCtx, const t_eFS
 e_eFSS_BLOBC_RES eFSS_BLOBC_IsInit(const t_eFSS_BLOBC_Ctx* p_ptCtx, bool_t* const p_pbIsInit);
 
 /**
- * @brief       Get the numbers of usable page for writing or reading logs and the buffer that we can use to read and
- *              write data. The size of the buffer refers only to the user avaiable data, others private metadata
+ * @brief       Get the numbers of usable page for writing or reading the blob and the buffer that we can use to read
+ *              and write data. The size of the buffer refers only to the user avaiable data, others private metadata
  *              are not avaiable in this stage.
  *
  * @param[in]   p_ptCtx       - Blob Core context
