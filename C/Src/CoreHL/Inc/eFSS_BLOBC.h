@@ -40,7 +40,7 @@ typedef enum
     e_eFSS_BLOBC_RES_CLBCKREADERR,
     e_eFSS_BLOBC_RES_CLBCKCRCERR,
     e_eFSS_BLOBC_RES_NOTVALIDBLOB,
-    e_eFSS_BLOBC_RES_NEWVERSIONBLOB,
+    e_eFSS_BLOBC_RES_NEWVERSIONFOUND,
     e_eFSS_BLOBC_RES_WRITENOMATCHREAD,
     e_eFSS_BLOBC_RES_OK_BKP_RCVRD,
 }e_eFSS_BLOBC_RES;
@@ -120,7 +120,7 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_GetBuffNUsable(t_eFSS_BLOBC_Ctx* const p_ptCtx, t_eF
  *		        e_eFSS_BLOBC_RES_CLBCKREADERR    - The read callback reported an error
  *              e_eFSS_BLOBC_RES_CLBCKCRCERR     - The crc callback reported an error
  *              e_eFSS_BLOBC_RES_NOTVALIDBLOB    - The readed page is invalid
- *              e_eFSS_BLOBC_RES_NEWVERSIONBLOB  - The readed page has a new version
+ *              e_eFSS_BLOBC_RES_NEWVERSIONFOUND  - The readed page has a new version
  *              e_eFSS_BLOBC_RES_OK              - Operation ended correctly
  */
 e_eFSS_BLOBC_RES eFSS_BLOBC_LoadBufferFromPage(t_eFSS_BLOBC_Ctx* const p_ptCtx, const bool_t p_bInOrigin,
@@ -186,7 +186,7 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_CalcCrcInBuff(t_eFSS_BLOBC_Ctx* const p_ptCtx, const
  *		        e_eFSS_BLOBC_RES_CLBCKREADERR      - The read callback reported an error
  *		        e_eFSS_BLOBC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
  *              e_eFSS_BLOBC_RES_NOTVALIDBLOB      - The readed page is invalid
- *              e_eFSS_BLOBC_RES_NEWVERSIONBLOB    - The readed page has a new version
+ *              e_eFSS_BLOBC_RES_NEWVERSIONFOUND    - The readed page has a new version
  *              e_eFSS_BLOBC_RES_OK                - Operation ended correctly
  */
 e_eFSS_BLOBC_RES eFSS_BLOBC_CloneOriAreaInBkpIfNotEq(t_eFSS_BLOBC_Ctx* const p_ptCtx);
@@ -208,7 +208,7 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_CloneOriAreaInBkpIfNotEq(t_eFSS_BLOBC_Ctx* const p_p
  *		        e_eFSS_BLOBC_RES_CLBCKREADERR      - The read callback reported an error
  *		        e_eFSS_BLOBC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
  *              e_eFSS_BLOBC_RES_NOTVALIDBLOB      - The readed page is invalid
- *              e_eFSS_BLOBC_RES_NEWVERSIONBLOB    - The readed page has a new version
+ *              e_eFSS_BLOBC_RES_NEWVERSIONFOUND    - The readed page has a new version
  *              e_eFSS_BLOBC_RES_OK                - Operation ended correctly
  */
 e_eFSS_BLOBC_RES eFSS_BLOBC_CloneArea(t_eFSS_BLOBC_Ctx* const p_ptCtx, const bool_t p_bStartOri);

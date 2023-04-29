@@ -1174,7 +1174,7 @@ static e_eFSS_BLOB_RES eFSS_BLOB_BlobCtoBLOBRes(const e_eFSS_BLOBC_RES p_eCRes)
             break;
         }
 
-        case e_eFSS_BLOBC_RES_NEWVERSIONBLOB:
+        case e_eFSS_BLOBC_RES_NEWVERSIONFOUND:
         {
             l_eRes = e_eFSS_BLOB_RES_NEWVERSIONBLOB;
             break;

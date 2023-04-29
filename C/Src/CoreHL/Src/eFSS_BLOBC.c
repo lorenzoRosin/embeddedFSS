@@ -783,7 +783,7 @@ static e_eFSS_BLOBC_RES eFSS_BLOBC_HLtoBLOBCRes(const e_eFSS_COREHL_RES p_eHLRes
 
         case e_eFSS_COREHL_RES_NEWVERSIONFOUND:
         {
-            l_eRes = e_eFSS_BLOBC_RES_NEWVERSIONBLOB;
+            l_eRes = e_eFSS_BLOBC_RES_NEWVERSIONFOUND;
             break;
         }
 
