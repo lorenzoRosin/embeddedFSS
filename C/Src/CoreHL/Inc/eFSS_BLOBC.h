@@ -125,7 +125,7 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_GetBuffNUsable(t_eFSS_BLOBC_Ctx* const p_ptCtx, t_eF
  *              e_eFSS_BLOBC_RES_NEWVERSIONFOUND  - The readed page has a new version
  *              e_eFSS_BLOBC_RES_OK              - Operation ended correctly
  */
-e_eFSS_BLOBC_RES eFSS_BLOBC_LoadBufferFromPage(t_eFSS_BLOBC_Ctx* const p_ptCtx, const bool_t p_bInOrigin,
+e_eFSS_BLOBC_RES eFSS_BLOBC_LoadPageInBuff(t_eFSS_BLOBC_Ctx* const p_ptCtx, const bool_t p_bInOrigin,
                                                const uint32_t p_uIdx, uint32_t* const p_puSeqN);
 
 /**

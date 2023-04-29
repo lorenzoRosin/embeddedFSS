@@ -254,7 +254,7 @@ e_eFSS_BLOB_RES eFSS_BLOB_GetInfo(t_eFSS_BLOB_Ctx* const p_ptCtx, uint32_t* cons
                             if( e_eFSS_BLOB_RES_OK == l_eRes )
                             {
                                 /* Load the last page, where blob length is stored */
-                                l_eResC = eFSS_BLOBC_LoadBufferFromPage(&p_ptCtx->tBLOBCCtx, true,
+                                l_eResC = eFSS_BLOBC_LoadPageInBuff(&p_ptCtx->tBLOBCCtx, true,
                                                                         ( l_uUsePages - 1u ), &l_uSeqNumb);
                                 l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
                                 if( e_eFSS_BLOB_RES_OK == l_eRes )
@@ -486,7 +486,7 @@ e_eFSS_BLOB_RES eFSS_BLOB_ReadBlob(t_eFSS_BLOB_Ctx* const p_ptCtx, const uint32_
                             if( e_eFSS_BLOB_RES_OK == l_eRes )
                             {
                                 /* Get Blob info, load last page */
-                                l_eResC = eFSS_BLOBC_LoadBufferFromPage(&p_ptCtx->tBLOBCCtx, true,
+                                l_eResC = eFSS_BLOBC_LoadPageInBuff(&p_ptCtx->tBLOBCCtx, true,
                                                                         ( l_uUsePages - 1u ), &l_uSeqN);
                                 l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
                                 if( e_eFSS_BLOB_RES_OK == l_eRes )
@@ -527,7 +527,7 @@ e_eFSS_BLOB_RES eFSS_BLOB_ReadBlob(t_eFSS_BLOB_Ctx* const p_ptCtx, const uint32_
                                                 while( ( l_uRemToRead > 0u ) && ( e_eFSS_BLOB_RES_OK == l_eRes ) )
                                                 {
                                                     /* Read the current buffer */
-                                                    l_eResC = eFSS_BLOBC_LoadBufferFromPage(&p_ptCtx->tBLOBCCtx, true,
+                                                    l_eResC = eFSS_BLOBC_LoadPageInBuff(&p_ptCtx->tBLOBCCtx, true,
                                                                                             l_uCurrPage, &l_uSeqN);
                                                     l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
 
@@ -622,7 +622,7 @@ e_eFSS_BLOB_RES eFSS_BLOB_StartWrite(t_eFSS_BLOB_Ctx* const p_ptCtx)
                         {
                             /* Load a page just to read sequential number and increase it */
                             l_uSeqN = 0u;
-                            l_eResC = eFSS_BLOBC_LoadBufferFromPage(&p_ptCtx->tBLOBCCtx, true,
+                            l_eResC = eFSS_BLOBC_LoadPageInBuff(&p_ptCtx->tBLOBCCtx, true,
                                                                     0u, &l_uSeqN);
                             l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
 
@@ -727,7 +727,7 @@ e_eFSS_BLOB_RES eFSS_BLOB_AppendData(t_eFSS_BLOB_Ctx* const p_ptCtx, uint8_t* co
                                 {
                                     /* First load the page that we want to write, because we could have some
                                        already appended data */
-                                    l_eResC = eFSS_BLOBC_LoadBufferFromPage(&p_ptCtx->tBLOBCCtx, true, l_uCurrPage,
+                                    l_eResC = eFSS_BLOBC_LoadPageInBuff(&p_ptCtx->tBLOBCCtx, true, l_uCurrPage,
                                                                             &l_uSeqN);
                                     l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
 
@@ -876,7 +876,7 @@ e_eFSS_BLOB_RES eFSS_BLOB_EndWrite(t_eFSS_BLOB_Ctx* const p_ptCtx)
                             {
                                 /* First load the page that we want to write, because we could have some
                                    already appended data */
-                                l_eResC = eFSS_BLOBC_LoadBufferFromPage(&p_ptCtx->tBLOBCCtx, true, l_uCurrPage,
+                                l_eResC = eFSS_BLOBC_LoadPageInBuff(&p_ptCtx->tBLOBCCtx, true, l_uCurrPage,
                                                                         &l_uSeqN);
                                 l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
 
@@ -1332,7 +1332,7 @@ static e_eFSS_BLOB_RES eFSS_BLOB_IsAreaValid(t_eFSS_BLOB_Ctx* const p_ptCtx, con
             */
 
             /* Start reading only tyhe last page in order to retrive basic data */
-            l_eResC = eFSS_BLOBC_LoadBufferFromPage(&p_ptCtx->tBLOBCCtx, p_bIsOri, ( l_uUsableP - 1u ), &l_uReadedSeqN);
+            l_eResC = eFSS_BLOBC_LoadPageInBuff(&p_ptCtx->tBLOBCCtx, p_bIsOri, ( l_uUsableP - 1u ), &l_uReadedSeqN);
             l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
 
             if( e_eFSS_BLOB_RES_OK == l_eRes )
@@ -1375,7 +1375,7 @@ static e_eFSS_BLOB_RES eFSS_BLOB_IsAreaValid(t_eFSS_BLOB_Ctx* const p_ptCtx, con
 
                 while( ( l_uCurrPage < l_uUsableP ) && ( e_eFSS_BLOB_RES_OK == l_eRes ) )
                 {
-                    l_eResC = eFSS_BLOBC_LoadBufferFromPage(&p_ptCtx->tBLOBCCtx, true, l_uCurrPage, &l_uTempSeqN);
+                    l_eResC = eFSS_BLOBC_LoadPageInBuff(&p_ptCtx->tBLOBCCtx, true, l_uCurrPage, &l_uTempSeqN);
                     l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
 
                     if( e_eFSS_BLOB_RES_OK == l_eRes )
