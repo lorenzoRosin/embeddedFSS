@@ -37,9 +37,10 @@
  *      PRIVATE DEFINE
  **********************************************************************************************************************/
 #define EFSS_PAGETYPE_BLOB                                                                       ( ( uint8_t )   0x01u )
-#define EFSS_BLOBC_PAGEMIN_L                                                                     ( ( uint32_t )     4u )
 #define EFSS_PAGESUBTYPE_BLOBORI                                                                 ( ( uint8_t )   0x01u )
 #define EFSS_PAGESUBTYPE_BLOBBKP                                                                 ( ( uint8_t )   0x02u )
+#define EFSS_BLOBC_PAGEMIN_L                                                                     ( ( uint32_t )     4u )
+#define EFSS_BLOBC_NPAGEMIN                                                                      ( ( uint32_t )     2u )
 
 
 
@@ -115,7 +116,7 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_InitCtx(t_eFSS_BLOBC_Ctx* const p_ptCtx, const t_eFS
     return l_eRes;
 }
 
-e_eFSS_BLOBC_RES eFSS_BLOBC_IsInit(t_eFSS_BLOBC_Ctx* const p_ptCtx, bool_t* const p_pbIsInit)
+e_eFSS_BLOBC_RES eFSS_BLOBC_IsInit(const t_eFSS_BLOBC_Ctx* p_ptCtx, bool_t* const p_pbIsInit)
 {
 	/* Local variable */
 	e_eFSS_BLOBC_RES l_eRes;

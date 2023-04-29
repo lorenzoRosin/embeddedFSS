@@ -64,11 +64,11 @@ typedef struct
 /**
  * @brief       Initialize the Blob core module context
  *
- * @param[in]   p_ptCtx        - Blob Core context
- * @param[in]   p_tCtxCb       - All callback collection context
- * @param[in]   p_tStorSet     - Storage settings
- * @param[in]   p_puBuff       - Pointer to a buffer used by the modules to make calc, must be pageSize * 2
- * @param[in]   p_uBuffL       - Size of p_puBuff
+ * @param[in]   p_ptCtx          - Blob Core context
+ * @param[in]   p_tCtxCb         - All callback collection context
+ * @param[in]   p_tStorSet       - Storage settings
+ * @param[in]   p_puBuff         - Pointer to a buffer used by the modules to make calc, must be pageSize * 2
+ * @param[in]   p_uBuffL         - Size of p_puBuff
  *
  * @return      e_eFSS_BLOBC_RES_BADPOINTER    - In case of bad pointer passed to the function
  *		        e_eFSS_BLOBC_RES_BADPARAM      - In case of an invalid parameter passed to the function
@@ -87,10 +87,12 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_InitCtx(t_eFSS_BLOBC_Ctx* const p_ptCtx, const t_eFS
  * @return      e_eFSS_BLOBC_RES_BADPOINTER    - In case of bad pointer passed to the function
  *              e_eFSS_BLOBC_RES_OK            - Operation ended correctly
  */
-e_eFSS_BLOBC_RES eFSS_BLOBC_IsInit(t_eFSS_BLOBC_Ctx* const p_ptCtx, bool_t* const p_pbIsInit);
+e_eFSS_BLOBC_RES eFSS_BLOBC_IsInit(const t_eFSS_BLOBC_Ctx* p_ptCtx, bool_t* const p_pbIsInit);
 
 /**
- * @brief       Get the numbers of usable page and the storage buffer
+ * @brief       Get the numbers of usable page for writing or reading logs and the buffer that we can use to read and
+ *              write data. The size of the buffer refers only to the user avaiable data, others private metadata
+ *              are not avaiable in this stage.
  *
  * @param[in]   p_ptCtx       - Blob Core context
  * @param[out]  p_ptBuff      - Pointer to a storage struct that will be filled with info about internal buffer
