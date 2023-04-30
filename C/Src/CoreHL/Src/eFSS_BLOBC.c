@@ -251,7 +251,7 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_LoadPageInBuff(t_eFSS_BLOBC_Ctx* const p_ptCtx, cons
 
                     if( e_eFSS_BLOBC_RES_OK == l_eRes )
                     {
-                        l_uLastPageIdx = ( l_tStorSet.uTotPages / 2u );
+                        l_uLastPageIdx = (uint32_t)( l_tStorSet.uTotPages / EFSS_BLOBC_NPAGEMIN );
 
                         if( p_uIdx >= l_uLastPageIdx )
                         {
@@ -272,7 +272,7 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_LoadPageInBuff(t_eFSS_BLOBC_Ctx* const p_ptCtx, cons
                             }
 
                             /* Load the page in to the internal buffer */
-                            l_uSubTypeReaded = 0xFFu;
+                            l_uSubTypeReaded = 0u;
                             l_eResHL = eFSS_COREHL_LoadPageInBuff(&p_ptCtx->tCOREHLCtx, l_uCurrPageConv,
                                                                   &l_uSubTypeReaded);
                             l_eRes = eFSS_BLOBC_HLtoBLOBCRes(l_eResHL);
@@ -357,7 +357,7 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_FlushBufferInPage(t_eFSS_BLOBC_Ctx* const p_ptCtx, c
 
                     if( e_eFSS_BLOBC_RES_OK == l_eRes )
                     {
-                        l_uLastPageIdx = ( l_tStorSet.uTotPages / 2u );
+                        l_uLastPageIdx = (uint32_t)( l_tStorSet.uTotPages / EFSS_BLOBC_NPAGEMIN );
 
                         if( p_uIdx >= l_uLastPageIdx )
                         {
