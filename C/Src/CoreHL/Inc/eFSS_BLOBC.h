@@ -112,7 +112,7 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_GetBuffNUsable(t_eFSS_BLOBC_Ctx* const p_ptCtx, t_eF
  *
  * @param[in]   p_ptCtx       - Blob Core context
  * @param[in]   p_bInOrigin   - Choose if read page from origin or backup area
- * @param[in]   p_uIdx        - Index of the page we want to read from. Must be a a value that can vary from 0 to
+ * @param[in]   p_uIdx        - Index of the page we want to read from. Must be a value that can vary from 0 to
  *                              p_puUsePages-1 (returned from eFSS_BLOBC_GetBuffNUsable).
  * @param[out]  p_puSeqN      - An uint32_t value that will be filled with the sequence number from the page
  *
@@ -130,13 +130,14 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_LoadPageInBuff(t_eFSS_BLOBC_Ctx* const p_ptCtx, cons
                                            const uint32_t p_uIdx, uint32_t* const p_puSeqN);
 
 /**
- * @brief       Flush the buffer in a page at p_uIdx position, and with p_uSeqN as sequence number. We can write in
- *              to the original area or in to the backup one. After this operation the used buffer will contain
- *              the same values as before, except for the private metadata
+ * @brief       Flush the buffer in a page at p_uIdx position with p_uSeqN as sequence number. We can flush it in
+ *              to the original area or in to the backup one. After this operation is completed the used buffer
+ *              will contain the same values contained before, except for the private metadata
  *
  * @param[in]   p_ptCtx       - Blob Core context
  * @param[in]   p_bInOrigin   - Choose if write page in origin or backup area
- * @param[in]   p_uIdx        - Index of the page we want to write in to
+ * @param[in]   p_uIdx        - Index of the page we want to write in to. Must be a value that can vary from 0 to
+ *                              p_puUsePages-1 (returned from eFSS_BLOBC_GetBuffNUsable).
  * @param[in]   p_uSeqN       - An uint32_t value that rappresent the sequential number that we want to store
  *
  * @return      e_eFSS_BLOBC_RES_BADPOINTER        - In case of bad pointer passed to the function
@@ -161,7 +162,8 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_FlushBufferInPage(t_eFSS_BLOBC_Ctx* const p_ptCtx, c
  *
  * @param[in]   p_ptCtx     - Blob Core context
  * @param[in]   p_uSeed     - Seed to use during the calculation
- * @param[in]   p_uCrcL     - Length that we want to use for the calculation
+ * @param[in]   p_uCrcL     - Length that we want to use for the calculation. This value cannot be bigger than the
+ *                            internal buffer page size reported by eFSS_BLOBC_GetBuffNUsable
  * @param[out]  p_puCrc     - An uint32_t value that will be filled with the calculated CRC
  *
  * @return      e_eFSS_BLOBC_RES_BADPOINTER        - In case of bad pointer passed to the function
@@ -178,7 +180,7 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_CalcCrcInBuff(t_eFSS_BLOBC_Ctx* const p_ptCtx, const
  * @brief       If the original pages are not equals to the backup pages, copy the original pages in to the backup area.
  *              If they are equals do nothing. In this case the comparsion and the cloning phase comprend the
  *              sequential number, but not the others private metadata. We will do this operation for every page of
- *              the original area and the operation will be interrupted if one or more pages of the original area are
+ *              the original area and the operation can be interrupted if one or more pages of the original area are
  *              not valid.
  *
  * @param[in]   p_ptCtx      - Blob Core context
@@ -201,7 +203,7 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_CloneOriAreaInBkpIfNotEq(t_eFSS_BLOBC_Ctx* const p_p
 /**
  * @brief       Clone an area of the storage in the other one. So we can clone the original area in to the backup one
  *              or viceversa. In this case the cloning phase comprend the sequential number, but not the others private
- *              metadata. We will do this operation for every page of the designed area and the operation will be
+ *              metadata. We will do this operation for every page of the designed area and the operation can be
  *              interrupted if one or more pages of the designed area are not valid.
  *
  * @param[in]   p_ptCtx      - Blob Core context
