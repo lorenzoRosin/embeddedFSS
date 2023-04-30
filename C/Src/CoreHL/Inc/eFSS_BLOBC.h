@@ -175,9 +175,11 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_CalcCrcInBuff(t_eFSS_BLOBC_Ctx* const p_ptCtx, const
                                           const uint32_t p_uCrcL, uint32_t* const p_puCrc);
 
 /**
- * @brief       If the original page is not equals to the backup pages, copy the original page in to the backup area.
- *              If they are equals do nothing. In this case the comparsion comprend the sequential number.
- *              We will do this operation for every page of the original area
+ * @brief       If the original pages are not equals to the backup pages, copy the original pages in to the backup area.
+ *              If they are equals do nothing. In this case the comparsion and the cloning phase comprend the
+ *              sequential number, but not the others private metadata. We will do this operation for every page of
+ *              the original area and the operation will be interrupted if one or more pages of the original area are
+ *              not valid.
  *
  * @param[in]   p_ptCtx      - Blob Core context
  *
@@ -198,7 +200,9 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_CloneOriAreaInBkpIfNotEq(t_eFSS_BLOBC_Ctx* const p_p
 
 /**
  * @brief       Clone an area of the storage in the other one. So we can clone the original area in to the backup one
- *              or viceversa
+ *              or viceversa. In this case the cloning phase comprend the sequential number, but not the others private
+ *              metadata. We will do this operation for every page of the designed area and the operation will be
+ *              interrupted if one or more pages of the designed area are not valid.
  *
  * @param[in]   p_ptCtx      - Blob Core context
  * @param[in]   p_bStartOri  - bool_t parameter, if setted to true we will clone the original area in to the backup one
