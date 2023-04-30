@@ -414,7 +414,7 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_CalcCrcInBuff(t_eFSS_BLOBC_Ctx* const p_ptCtx, const
     t_eFSS_COREHL_StorBuf l_tBuff;
 
     /* Local var used for calculation */
-    uint32_t l_uSeqOff;
+    uint32_t l_uMaxCrcL;
 
 	/* Check pointer validity */
 	if( NULL == p_ptCtx )
@@ -449,10 +449,10 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_CalcCrcInBuff(t_eFSS_BLOBC_Ctx* const p_ptCtx, const
                     if( e_eFSS_BLOBC_RES_OK == l_eRes )
                     {
                         /* remove Seq Number from CRC calculation  */
-                        l_uSeqOff = l_tBuff.uBufL - EFSS_BLOBC_PAGEMIN_L;
+                        l_uMaxCrcL = l_tBuff.uBufL - EFSS_BLOBC_PAGEMIN_L;
 
                         /* Check data validity */
-                        if( ( 0u == p_uCrcL ) || ( p_uCrcL > l_uSeqOff ) )
+                        if( p_uCrcL > l_uMaxCrcL )
                         {
                             l_eRes = e_eFSS_BLOBC_RES_BADPARAM;
                         }
