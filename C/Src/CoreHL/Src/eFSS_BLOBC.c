@@ -591,10 +591,10 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_CloneArea(t_eFSS_BLOBC_Ctx* const p_ptCtx, const boo
     uint8_t l_uSubTypeReaded;
 
     /* Local variable for ori backup target */
-    uint32_t l_uStartAreaOf;
-    uint32_t l_uTargetAreaOf;
-    uint8_t l_uStartAreaT;
-    uint8_t l_uTargetAreaT;
+    uint32_t l_uReadAreaOf;
+    uint32_t l_uWriteAreaOf;
+    uint8_t l_uReadtAreaT;
+    uint8_t l_uWriteAreaT;
     uint32_t l_uCurIdx;
 
 	/* Check pointer validity */
@@ -631,48 +631,48 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_CloneArea(t_eFSS_BLOBC_Ctx* const p_ptCtx, const boo
                     if( e_eFSS_BLOBC_RES_OK == l_eRes )
                     {
                         /* Get last page in order to separate the two different area */
-                        l_uLastPageIdx = l_tStorSet.uTotPages / 2u ;
+                        l_uLastPageIdx = ( uint32_t )( l_tStorSet.uTotPages / EFSS_BLOBC_NPAGEMIN ) ;
 
                         if( true == p_bStartOri )
                         {
-                            l_uStartAreaOf = 0u;
-                            l_uTargetAreaOf = l_uLastPageIdx;
-                            l_uStartAreaT = EFSS_PAGESUBTYPE_BLOBORI;
-                            l_uTargetAreaT = EFSS_PAGESUBTYPE_BLOBBKP;
+                            l_uReadAreaOf  = 0u;
+                            l_uWriteAreaOf = l_uLastPageIdx;
+                            l_uReadtAreaT  = EFSS_PAGESUBTYPE_BLOBORI;
+                            l_uWriteAreaT  = EFSS_PAGESUBTYPE_BLOBBKP;
                         }
                         else
                         {
-                            l_uStartAreaOf = l_uLastPageIdx;
-                            l_uTargetAreaOf = 0u;
-                            l_uStartAreaT = EFSS_PAGESUBTYPE_BLOBBKP;
-                            l_uTargetAreaT = EFSS_PAGESUBTYPE_BLOBORI;
+                            l_uReadAreaOf  = l_uLastPageIdx;
+                            l_uWriteAreaOf = 0u;
+                            l_uReadtAreaT  = EFSS_PAGESUBTYPE_BLOBBKP;
+                            l_uWriteAreaT  = EFSS_PAGESUBTYPE_BLOBORI;
                         }
 
                         /* Init counter var */
                         l_uCurIdx = 0u;
+                        l_uSubTypeReaded = 0u;
 
                         /* Start cloning process */
                         while( ( l_uCurIdx < l_uLastPageIdx ) && ( e_eFSS_BLOBC_RES_OK == l_eRes ) )
                         {
                             /* Load the page in to the internal buffer */
-                            l_uSubTypeReaded = EFSS_PAGESUBTYPE_BLOBORI;
-                            l_eResHL = eFSS_COREHL_LoadPageInBuff(&p_ptCtx->tCOREHLCtx, ( l_uCurIdx + l_uStartAreaOf ),
+                            l_eResHL = eFSS_COREHL_LoadPageInBuff(&p_ptCtx->tCOREHLCtx, ( l_uCurIdx + l_uReadAreaOf ),
                                                                   &l_uSubTypeReaded);
                             l_eRes = eFSS_BLOBC_HLtoBLOBCRes(l_eResHL);
 
                             if( e_eFSS_BLOBC_RES_OK == l_eRes )
                             {
                                 /* Verify basic data */
-                                if( l_uStartAreaT != l_uSubTypeReaded )
+                                if( l_uReadtAreaT != l_uSubTypeReaded )
                                 {
                                     l_eRes = e_eFSS_BLOBC_RES_NOTVALIDBLOB;
                                 }
                                 else
                                 {
-                                    /* Flush ori in backup */
+                                    /* Flush the just readed data from an area in to ther other one */
                                     l_eResHL = eFSS_COREHL_FlushBuffInPage(&p_ptCtx->tCOREHLCtx,
-                                                                           ( l_uCurIdx + l_uTargetAreaOf ),
-                                                                           l_uTargetAreaT);
+                                                                           ( l_uCurIdx + l_uWriteAreaOf ),
+                                                                           l_uWriteAreaT);
                                     l_eRes = eFSS_BLOBC_HLtoBLOBCRes(l_eResHL);
 
                                     if( e_eFSS_BLOBC_RES_OK == l_eRes )

@@ -195,7 +195,7 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_CalcCrcInBuff(t_eFSS_BLOBC_Ctx* const p_ptCtx, const
  *		        e_eFSS_BLOBC_RES_CLBCKREADERR      - The read callback reported an error
  *		        e_eFSS_BLOBC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
  *              e_eFSS_BLOBC_RES_NOTVALIDBLOB      - The readed page is invalid
- *              e_eFSS_BLOBC_RES_NEWVERSIONFOUND    - The readed page has a new version
+ *              e_eFSS_BLOBC_RES_NEWVERSIONFOUND   - The readed page has a new version
  *              e_eFSS_BLOBC_RES_OK                - Operation ended correctly
  */
 e_eFSS_BLOBC_RES eFSS_BLOBC_CloneOriAreaInBkpIfNotEq(t_eFSS_BLOBC_Ctx* const p_ptCtx);
@@ -219,7 +219,7 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_CloneOriAreaInBkpIfNotEq(t_eFSS_BLOBC_Ctx* const p_p
  *		        e_eFSS_BLOBC_RES_CLBCKREADERR      - The read callback reported an error
  *		        e_eFSS_BLOBC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
  *              e_eFSS_BLOBC_RES_NOTVALIDBLOB      - The readed page is invalid
- *              e_eFSS_BLOBC_RES_NEWVERSIONFOUND    - The readed page has a new version
+ *              e_eFSS_BLOBC_RES_NEWVERSIONFOUND   - The readed page has a new version
  *              e_eFSS_BLOBC_RES_OK                - Operation ended correctly
  */
 e_eFSS_BLOBC_RES eFSS_BLOBC_CloneArea(t_eFSS_BLOBC_Ctx* const p_ptCtx, const bool_t p_bStartOri);
