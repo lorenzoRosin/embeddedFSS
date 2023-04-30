@@ -47,7 +47,7 @@
 /***********************************************************************************************************************
  *  PRIVATE STATIC FUNCTION DECLARATION
  **********************************************************************************************************************/
-static bool_t eFSS_BLOBC_IsStatusStillCoherent(t_eFSS_BLOBC_Ctx*const p_ptCtx);
+static bool_t eFSS_BLOBC_IsStatusStillCoherent(t_eFSS_BLOBC_Ctx* const p_ptCtx);
 static e_eFSS_BLOBC_RES eFSS_BLOBC_HLtoBLOBCRes(const e_eFSS_COREHL_RES p_eHLRes);
 
 
@@ -681,9 +681,11 @@ static bool_t eFSS_BLOBC_IsStatusStillCoherent(t_eFSS_BLOBC_Ctx* const p_ptCtx)
     bool_t l_bRes;
     e_eFSS_COREHL_RES l_eResHL;
 
-    /* Local var used for calculation */
+    /* Local var used for storage */
     t_eFSS_TYPE_StorSet l_tStorSet;
     t_eFSS_COREHL_StorBuf l_tBuff;
+
+    /* Local var used for calculation */
     uint32_t l_uNPage;
 
     l_eResHL = eFSS_COREHL_GetBuffNStor(&p_ptCtx->tCOREHLCtx, &l_tBuff, &l_tStorSet);
@@ -696,7 +698,7 @@ static bool_t eFSS_BLOBC_IsStatusStillCoherent(t_eFSS_BLOBC_Ctx* const p_ptCtx)
         l_uNPage = l_tStorSet.uTotPages;
 
         /* Check numbers of page validity */
-        if( ( l_uNPage < 2u ) || ( 0u != ( l_uNPage % 2u ) ) )
+        if( ( l_uNPage < EFSS_BLOBC_NPAGEMIN ) || ( 0u != ( l_uNPage % EFSS_BLOBC_NPAGEMIN ) ) )
         {
             l_bRes = false;
         }
