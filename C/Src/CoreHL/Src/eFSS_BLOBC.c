@@ -484,8 +484,9 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_CloneOriAreaInBkpIfNotEq(t_eFSS_BLOBC_Ctx* const p_p
 
     /* Local var used for calculation */
     bool_t l_bIsEquals;
+    bool_t l_bSomeWhereNotEquals;
 	uint32_t l_uLastPageIdx;
-    uint8_t l_uSubTypeReaded;
+    uint8_t l_uSubTR;
     uint32_t l_uCurIdx;
 
 	/* Check pointer validity */
@@ -521,23 +522,25 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_CloneOriAreaInBkpIfNotEq(t_eFSS_BLOBC_Ctx* const p_p
 
                     if( e_eFSS_BLOBC_RES_OK == l_eRes )
                     {
+                        /* Init var */
+                        l_bSomeWhereNotEquals = false;
+                        l_uSubTR = 0u;
+
                         /* Get last page */
-                        l_uLastPageIdx = l_tStorSet.uTotPages / 2u ;
+                        l_uLastPageIdx = (uint32_t)( l_tStorSet.uTotPages / EFSS_BLOBC_NPAGEMIN );
                         l_uCurIdx = 0u;
 
                         /* Start cloning if needed process */
-                        while( ( l_uCurIdx < l_uLastPageIdx ) &&
-                               ( ( e_eFSS_BLOBC_RES_OK == l_eRes ) || ( e_eFSS_BLOBC_RES_OK_BKP_RCVRD == l_eRes ) ) )
+                        while( ( l_uCurIdx < l_uLastPageIdx ) && ( ( e_eFSS_BLOBC_RES_OK == l_eRes ) ) )
                         {
                             /* Load the page in to the internal buffer */
-                            l_uSubTypeReaded = EFSS_PAGESUBTYPE_BLOBORI;
-                            l_eResHL = eFSS_COREHL_LoadPageInBuff(&p_ptCtx->tCOREHLCtx, l_uCurIdx, &l_uSubTypeReaded);
+                            l_eResHL = eFSS_COREHL_LoadPageInBuff(&p_ptCtx->tCOREHLCtx, l_uCurIdx, &l_uSubTR);
                             l_eRes = eFSS_BLOBC_HLtoBLOBCRes(l_eResHL);
 
                             if( e_eFSS_BLOBC_RES_OK == l_eRes )
                             {
                                 /* Verify basic data */
-                                if( EFSS_PAGESUBTYPE_BLOBORI != l_uSubTypeReaded )
+                                if( EFSS_PAGESUBTYPE_BLOBORI != l_uSubTR )
                                 {
                                     l_eRes = e_eFSS_BLOBC_RES_NOTVALIDBLOB;
                                 }
@@ -548,22 +551,30 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_CloneOriAreaInBkpIfNotEq(t_eFSS_BLOBC_Ctx* const p_p
                                     l_eResHL = eFSS_COREHL_IsBuffEqualToPage(&p_ptCtx->tCOREHLCtx,
                                                                              (l_uLastPageIdx + l_uCurIdx),
                                                                              &l_bIsEquals,
-                                                                             NULL);
+                                                                             &l_uSubTR);
+
                                     l_eRes = eFSS_BLOBC_HLtoBLOBCRes(l_eResHL);
 
-                                    if( e_eFSS_BLOBC_RES_OK == l_eRes )
+                                    if( ( ( e_eFSS_BLOBC_RES_OK == l_eRes ) &&
+                                          ( ( false == l_bIsEquals ) || ( EFSS_PAGESUBTYPE_BLOBBKP != l_uSubTR ) ) ) ||
+                                        ( e_eFSS_BLOBC_RES_NOTVALIDBLOB == l_eRes ) )
                                     {
-                                        if( false == l_bIsEquals )
-                                        {
-                                            /* Not equal! Flush ori in backup */
-                                            l_eResHL = eFSS_COREHL_FlushBuffInPage(&p_ptCtx->tCOREHLCtx,
-                                                                                   (l_uLastPageIdx + l_uCurIdx),
-                                                                                   EFSS_PAGESUBTYPE_BLOBBKP);
-                                            l_eRes = eFSS_BLOBC_HLtoBLOBCRes(l_eResHL);
-                                        }
+                                        /* Backup pages is not valid, clone */
+                                        l_bSomeWhereNotEquals = true;
+
+                                        /* Not equal! Flush ori in backup */
+                                        l_eResHL = eFSS_COREHL_FlushBuffInPage(&p_ptCtx->tCOREHLCtx,
+                                                                               (l_uLastPageIdx + l_uCurIdx),
+                                                                               EFSS_PAGESUBTYPE_BLOBBKP);
+                                        l_eRes = eFSS_BLOBC_HLtoBLOBCRes(l_eResHL);
                                     }
                                 }
                             }
+                        }
+
+                        if( ( e_eFSS_BLOBC_RES_OK == l_eRes ) && ( true == l_bSomeWhereNotEquals ) )
+                        {
+                            l_eRes = e_eFSS_BLOBC_RES_OK_BKP_RCVRD;
                         }
                     }
                 }
