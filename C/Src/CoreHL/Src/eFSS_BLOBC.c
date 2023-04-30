@@ -80,7 +80,7 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_InitCtx(t_eFSS_BLOBC_Ctx* const p_ptCtx, const t_eFS
         l_uNPage = p_tStorSet.uTotPages;
 
         /* Check numbers of page validity */
-        if( ( l_uNPage < 2u ) || ( 0u != ( l_uNPage % 2u ) ) )
+        if( ( l_uNPage < EFSS_BLOBC_NPAGEMIN ) || ( 0u != ( l_uNPage % EFSS_BLOBC_NPAGEMIN ) ) )
         {
             l_eRes = e_eFSS_BLOBC_RES_BADPARAM;
         }
@@ -96,6 +96,7 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_InitCtx(t_eFSS_BLOBC_Ctx* const p_ptCtx, const t_eFS
                 /* Check if we have enogh space for the page */
                 l_eResHL = eFSS_COREHL_GetBuff(&p_ptCtx->tCOREHLCtx, &l_tBuff);
                 l_eRes = eFSS_BLOBC_HLtoBLOBCRes(l_eResHL);
+
                 if( e_eFSS_BLOBC_RES_OK == l_eRes )
                 {
                     if( l_tBuff.uBufL <= EFSS_BLOBC_PAGEMIN_L )
@@ -186,7 +187,7 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_GetBuffNUsable(t_eFSS_BLOBC_Ctx* const p_ptCtx, t_eF
                     {
                         p_ptBuff->puBuf = l_tBuff.puBuf;
                         p_ptBuff->uBufL = l_tBuff.uBufL - EFSS_BLOBC_PAGEMIN_L;
-                        *p_puUsePages = (uint32_t)( l_tStorSet.uTotPages / 2u );
+                        *p_puUsePages = (uint32_t)( l_tStorSet.uTotPages / EFSS_BLOBC_NPAGEMIN );
                     }
                 }
             }
