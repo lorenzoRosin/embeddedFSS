@@ -63,9 +63,11 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_InitCtx(t_eFSS_BLOBC_Ctx* const p_ptCtx, const t_eFS
     e_eFSS_BLOBC_RES l_eRes;
     e_eFSS_COREHL_RES l_eResHL;
 
+    /* Local var used for storage */
+    t_eFSS_COREHL_StorBuf l_tBuff;
+
     /* Local var used for calculation */
     uint32_t l_uNPage;
-    t_eFSS_COREHL_StorBuf l_tBuff;
 
 	/* Check pointer validity */
 	if( NULL == p_ptCtx )
@@ -118,7 +120,7 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_InitCtx(t_eFSS_BLOBC_Ctx* const p_ptCtx, const t_eFS
 
 e_eFSS_BLOBC_RES eFSS_BLOBC_IsInit(const t_eFSS_BLOBC_Ctx* p_ptCtx, bool_t* const p_pbIsInit)
 {
-	/* Local variable */
+	/* Return local var */
 	e_eFSS_BLOBC_RES l_eRes;
     e_eFSS_COREHL_RES l_eResHL;
 
@@ -139,14 +141,16 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_IsInit(const t_eFSS_BLOBC_Ctx* p_ptCtx, bool_t* cons
 e_eFSS_BLOBC_RES eFSS_BLOBC_GetBuffNUsable(t_eFSS_BLOBC_Ctx* const p_ptCtx, t_eFSS_BLOBC_StorBuf* const p_ptBuff,
                                            uint32_t* const p_puUsePages)
 {
-	/* Local variable */
+	/* Return local var */
 	e_eFSS_BLOBC_RES l_eRes;
     e_eFSS_COREHL_RES l_eResHL;
 
-    /* Local var used for calculation */
+    /* Local var for init */
+    bool_t l_bIsInit;
+
+    /* Local var used for storage */
     t_eFSS_COREHL_StorBuf l_tBuff;
     t_eFSS_TYPE_StorSet   l_tStorSet;
-    bool_t l_bIsInit;
 
 	/* Check pointer validity */
 	if( ( NULL == p_ptCtx ) || ( NULL == p_ptBuff ) || ( NULL == p_puUsePages ) )
@@ -195,16 +199,18 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_GetBuffNUsable(t_eFSS_BLOBC_Ctx* const p_ptCtx, t_eF
 e_eFSS_BLOBC_RES eFSS_BLOBC_LoadPageInBuff(t_eFSS_BLOBC_Ctx* const p_ptCtx, const bool_t p_bInOrigin,
                                            const uint32_t p_uIdx, uint32_t* const p_puSeqN)
 {
-	/* Local variable */
+	/* Return local var */
 	e_eFSS_BLOBC_RES l_eRes;
     e_eFSS_COREHL_RES l_eResHL;
+
+    /* Local var for init */
+    bool_t l_bIsInit;
 
     /* Local var used for storage */
     t_eFSS_TYPE_StorSet l_tStorSet;
     t_eFSS_COREHL_StorBuf l_tBuff;
 
     /* Local var used for calculation */
-    bool_t l_bIsInit;
 	uint32_t l_uLastPageIdx;
     uint32_t l_uCurrPageConv;
     uint8_t l_uSubTypeToCheck;
@@ -300,16 +306,18 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_LoadPageInBuff(t_eFSS_BLOBC_Ctx* const p_ptCtx, cons
 e_eFSS_BLOBC_RES eFSS_BLOBC_FlushBufferInPage(t_eFSS_BLOBC_Ctx* const p_ptCtx, const bool_t p_bInOrigin,
                                               const uint32_t p_uIdx, const uint32_t p_uSeqN)
 {
-	/* Local variable */
+	/* Return local var */
 	e_eFSS_BLOBC_RES l_eRes;
     e_eFSS_COREHL_RES l_eResHL;
+
+    /* Local var for init */
+    bool_t l_bIsInit;
 
     /* Local var used for storage */
     t_eFSS_TYPE_StorSet l_tStorSet;
     t_eFSS_COREHL_StorBuf l_tBuff;
 
     /* Local var used for calculation */
-    bool_t l_bIsInit;
 	uint32_t l_uLastPageIdx;
     uint32_t l_uCurrPageConv;
     uint8_t l_uSubTypeWrite;
@@ -394,13 +402,17 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_FlushBufferInPage(t_eFSS_BLOBC_Ctx* const p_ptCtx, c
 e_eFSS_BLOBC_RES eFSS_BLOBC_CalcCrcInBuff(t_eFSS_BLOBC_Ctx* const p_ptCtx, const uint32_t p_uSeed,
                                           const uint32_t p_uCrcL, uint32_t* const p_puCrc)
 {
-	/* Local variable */
+	/* Return local var */
 	e_eFSS_BLOBC_RES l_eRes;
     e_eFSS_COREHL_RES l_eResHL;
 
-    /* Local var used for calculation */
+    /* Local var for init */
     bool_t l_bIsInit;
+
+    /* Local var used for storage */
     t_eFSS_COREHL_StorBuf l_tBuff;
+
+    /* Local var used for calculation */
     uint32_t l_uSeqOff;
 
 	/* Check pointer validity */
@@ -459,14 +471,18 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_CalcCrcInBuff(t_eFSS_BLOBC_Ctx* const p_ptCtx, const
 
 e_eFSS_BLOBC_RES eFSS_BLOBC_CloneOriAreaInBkpIfNotEq(t_eFSS_BLOBC_Ctx* const p_ptCtx)
 {
-	/* Local variable */
+	/* Return local var */
 	e_eFSS_BLOBC_RES l_eRes;
     e_eFSS_COREHL_RES l_eResHL;
 
-    /* Local var used for calculation */
+    /* Local var for init */
     bool_t l_bIsInit;
-    bool_t l_bIsEquals;
+
+    /* Local var used for storage */
     t_eFSS_TYPE_StorSet l_tStorSet;
+
+    /* Local var used for calculation */
+    bool_t l_bIsEquals;
 	uint32_t l_uLastPageIdx;
     uint8_t l_uSubTypeReaded;
     uint32_t l_uCurIdx;
@@ -559,13 +575,17 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_CloneOriAreaInBkpIfNotEq(t_eFSS_BLOBC_Ctx* const p_p
 
 e_eFSS_BLOBC_RES eFSS_BLOBC_CloneArea(t_eFSS_BLOBC_Ctx* const p_ptCtx, const bool_t p_bStartOri)
 {
-	/* Local variable */
+	/* Return local var */
 	e_eFSS_BLOBC_RES l_eRes;
     e_eFSS_COREHL_RES l_eResHL;
 
-    /* Local var used for calculation */
+    /* Local var for init */
     bool_t l_bIsInit;
+
+    /* Local var used for storage */
     t_eFSS_TYPE_StorSet l_tStorSet;
+
+    /* Local var used for calculation */
 	uint32_t l_uLastPageIdx;
     uint8_t l_uSubTypeReaded;
 
@@ -720,6 +740,7 @@ static bool_t eFSS_BLOBC_IsStatusStillCoherent(t_eFSS_BLOBC_Ctx* const p_ptCtx)
 
 static e_eFSS_BLOBC_RES eFSS_BLOBC_HLtoBLOBCRes(const e_eFSS_COREHL_RES p_eHLRes)
 {
+    /* Return local var */
     e_eFSS_BLOBC_RES l_eRes;
 
     switch(p_eHLRes)
