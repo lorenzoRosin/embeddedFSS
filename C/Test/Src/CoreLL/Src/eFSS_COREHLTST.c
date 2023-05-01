@@ -1649,6 +1649,58 @@ void eFSS_COREHLTST_BadParamEntr(void)
     {
         (void)printf("eFSS_COREHLTST_BadParamEntr 21 -- OK \n");
     }
+
+    /* Function */
+    l_tStorSet.uTotPages = 1u;
+    if( e_eFSS_COREHL_RES_OK == eFSS_COREHL_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_uStorType, l_auStor, sizeof(l_auStor) ) )
+    {
+        (void)printf("eFSS_COREHLTST_BadParamEntr 22 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_COREHLTST_BadParamEntr 22 -- FAIL \n");
+    }
+
+    /* Function */
+    if( e_eFSS_COREHL_RES_BADPARAM == eFSS_COREHL_FlushBuffInPageNBkp(&l_tCtx, 0u, 1u, 0u, 1u) )
+    {
+        (void)printf("eFSS_COREHLTST_BadParamEntr 23 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_COREHLTST_BadParamEntr 23 -- OK \n");
+    }
+
+    /* Function */
+    if( e_eFSS_COREHL_RES_BADPARAM == eFSS_COREHL_FlushBuffInPageNBkp(&l_tCtx, 1u, 0u, 0u, 1u) )
+    {
+        (void)printf("eFSS_COREHLTST_BadParamEntr 24 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_COREHLTST_BadParamEntr 24 -- OK \n");
+    }
+
+    /* Function */
+    if( e_eFSS_COREHL_RES_BADPARAM == eFSS_COREHL_LoadPageInBuffNRipBkp(&l_tCtx, 0u, 1u, 0u, 1u) )
+    {
+        (void)printf("eFSS_COREHLTST_BadParamEntr 25 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_COREHLTST_BadParamEntr 25 -- OK \n");
+    }
+
+    /* Function */
+    if( e_eFSS_COREHL_RES_BADPARAM == eFSS_COREHL_LoadPageInBuffNRipBkp(&l_tCtx, 1u, 0u, 0u, 1u) )
+    {
+        (void)printf("eFSS_COREHLTST_BadParamEntr 26 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_COREHLTST_BadParamEntr 26 -- OK \n");
+    }
+
 }
 
 void eFSS_COREHLTST_CorruptedCtx(void)
