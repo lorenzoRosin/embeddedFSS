@@ -192,13 +192,14 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_CalcCrcInBuff(t_eFSS_BLOBC_Ctx* const p_ptCtx, const
  *		        e_eFSS_BLOBC_RES_BADPARAM          - In case of an invalid parameter passed to the function
  *		        e_eFSS_BLOBC_RES_CORRUPTCTX        - Context is corrupted
  *		        e_eFSS_BLOBC_RES_NOINITLIB         - Need to init lib before calling function
+ *              e_eFSS_BLOBC_RES_OK_BKP_RCVRD      - Some page where different and a copy has been made
+ *              e_eFSS_BLOBC_RES_NOTVALIDBLOB      - The readed page is invalid
+ *		        e_eFSS_BLOBC_RES_CLBCKREADERR      - The read callback reported an error
  *              e_eFSS_BLOBC_RES_CLBCKCRCERR       - The crc callback reported an error
+ *              e_eFSS_BLOBC_RES_NEWVERSIONFOUND   - The readed page has a new version
  *		        e_eFSS_BLOBC_RES_CLBCKERASEERR     - The erase callback reported an error
  *		        e_eFSS_BLOBC_RES_CLBCKWRITEERR     - The write callback reported an error
- *		        e_eFSS_BLOBC_RES_CLBCKREADERR      - The read callback reported an error
  *		        e_eFSS_BLOBC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
- *              e_eFSS_BLOBC_RES_NOTVALIDBLOB      - The readed page is invalid
- *              e_eFSS_BLOBC_RES_NEWVERSIONFOUND   - The readed page has a new version
  *              e_eFSS_BLOBC_RES_OK                - Operation ended correctly
  */
 e_eFSS_BLOBC_RES eFSS_BLOBC_CloneOriAreaInBkpIfNotEq(t_eFSS_BLOBC_Ctx* const p_ptCtx);
@@ -216,13 +217,13 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_CloneOriAreaInBkpIfNotEq(t_eFSS_BLOBC_Ctx* const p_p
  *		        e_eFSS_BLOBC_RES_BADPARAM          - In case of an invalid parameter passed to the function
  *		        e_eFSS_BLOBC_RES_CORRUPTCTX        - Context is corrupted
  *		        e_eFSS_BLOBC_RES_NOINITLIB         - Need to init lib before calling function
- *              e_eFSS_BLOBC_RES_CLBCKCRCERR       - The crc callback reported an error
- *		        e_eFSS_BLOBC_RES_CLBCKERASEERR     - The erase callback reported an error
- *		        e_eFSS_BLOBC_RES_CLBCKWRITEERR     - The write callback reported an error
  *		        e_eFSS_BLOBC_RES_CLBCKREADERR      - The read callback reported an error
- *		        e_eFSS_BLOBC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
+ *              e_eFSS_BLOBC_RES_CLBCKCRCERR       - The crc callback reported an error
  *              e_eFSS_BLOBC_RES_NOTVALIDBLOB      - The readed page is invalid
  *              e_eFSS_BLOBC_RES_NEWVERSIONFOUND   - The readed page has a new version
+ *		        e_eFSS_BLOBC_RES_CLBCKERASEERR     - The erase callback reported an error
+ *		        e_eFSS_BLOBC_RES_CLBCKWRITEERR     - The write callback reported an error
+ *		        e_eFSS_BLOBC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
  *              e_eFSS_BLOBC_RES_OK                - Operation ended correctly
  */
 e_eFSS_BLOBC_RES eFSS_BLOBC_CloneArea(t_eFSS_BLOBC_Ctx* const p_ptCtx, const bool_t p_bStartOri);
