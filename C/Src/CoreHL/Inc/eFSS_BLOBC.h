@@ -182,6 +182,9 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_CalcCrcInBuff(t_eFSS_BLOBC_Ctx* const p_ptCtx, const
  *              sequential number, but not the others private metadata. We will do this operation for every page of
  *              the original area and the operation can be interrupted if one or more pages of the original area are
  *              not valid.
+ *              This operation is similar to the function called eFSS_BLOBC_CloneArea because is cloning original
+ *              pages in to the backup pages, but only if they differs. So using this operation we prevent the storage
+ *              area from been written when not needed, preventing some sort or wearingout of the storage support.
  *
  * @param[in]   p_ptCtx      - Blob Core context
  *
