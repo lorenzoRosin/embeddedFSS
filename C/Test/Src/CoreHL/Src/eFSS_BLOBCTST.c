@@ -1635,7 +1635,7 @@ void eFSS_BLOBCTST_CorruptedCtx(void)
     l_tCtxCb.fCrc32 = &eFSS_BLOBCTST_CrcAdapt;
 
     /* Init storage settings */
-    l_tStorSet.uTotPages = 1u;
+    l_tStorSet.uTotPages = 2u;
     l_tStorSet.uPagesLen = 28u;
     l_tStorSet.uRWERetry = 2u;
     l_tStorSet.uPageVersion = 1u;
