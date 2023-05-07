@@ -559,7 +559,7 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_CloneOriAreaInBkpIfNotEq(t_eFSS_BLOBC_Ctx* const p_p
                                           ( ( false == l_bIsEquals ) || ( EFSS_PAGESUBTYPE_BLOBBKP != l_uSubTR ) ) ) ||
                                         ( e_eFSS_BLOBC_RES_NOTVALIDBLOB == l_eRes ) )
                                     {
-                                        /* Backup pages is not valid, clone */
+                                        /* Backup pages is not valid or equals, clone */
                                         l_bSomeWhereNotEquals = true;
 
                                         /* Not equal! Flush ori in backup */
