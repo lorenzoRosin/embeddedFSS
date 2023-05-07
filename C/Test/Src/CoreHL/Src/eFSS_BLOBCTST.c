@@ -528,7 +528,7 @@ static bool_t eFSS_DBCTST_WriteTstAAdapt(t_eFSS_TYPE_WriteCtx* const p_ptCtx,
             }
             else
             {
-                if( 24u != p_uDataToWriteL )
+                if( 28 != p_uDataToWriteL )
                 {
                     l_bRes = false;
                     p_ptCtx->eLastEr = e_eFSS_BLOBC_RES_BADPARAM;
@@ -821,7 +821,7 @@ static bool_t eFSS_DBCTST_ReadTstAAdapt(t_eFSS_TYPE_ReadCtx* const p_ptCtx,
             }
             else
             {
-                if( 24u != p_uReadBufferL )
+                if( 28 != p_uReadBufferL )
                 {
                     l_bRes = false;
                     p_ptCtx->eLastEr = e_eFSS_BLOBC_RES_BADPARAM;
@@ -5394,6 +5394,217 @@ static void eFSS_BLOBCTST_CloneTest(void)
     {
         (void)printf("eFSS_BLOBCTST_CloneTest 2  -- FAIL \n");
     }
+
+    /* Function */
+    if( e_eFSS_BLOBC_RES_NOTVALIDBLOB == eFSS_BLOBC_CloneArea(&l_tCtx, true) )
+    {
+        (void)printf("eFSS_BLOBCTST_CloneTest 3  -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_BLOBCTST_CloneTest 3  -- FAIL \n");
+    }
+
+    /* Function */
+    if( e_eFSS_BLOBC_RES_NOTVALIDBLOB == eFSS_BLOBC_CloneArea(&l_tCtx, false) )
+    {
+        (void)printf("eFSS_BLOBCTST_CloneTest 4  -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_BLOBCTST_CloneTest 4  -- FAIL \n");
+    }
+
+    l_tCtxErase.uTimeUsed = 0u;
+    l_tCtxErase.eLastEr = e_eFSS_BLOBC_RES_OK;
+    l_tCtxWrite.uTimeUsed = 0u;
+    l_tCtxWrite.eLastEr = e_eFSS_BLOBC_RES_OK;
+    l_tCtxRead.uTimeUsed = 0u;
+    l_tCtxRead.eLastEr = e_eFSS_BLOBC_RES_OK;
+    l_tCtxCrc32.uTimeUsed = 0u;
+    l_tCtxCrc32.eLastEr = e_eFSS_BLOBC_RES_OK;
+
+    (void)memset(m_auStorAreaA, 0, sizeof(m_auStorAreaA));
+    m_auStorAreaA[0u][0u]  = 0x01u; /* Data */
+    m_auStorAreaA[0u][1u]  = 0x02u; /* Data */
+    m_auStorAreaA[0u][2u]  = 0x03u; /* Data */
+    m_auStorAreaA[0u][3u]  = 0x04u; /* Data */
+    m_auStorAreaA[0u][4u]  = 0x00u; /* seq number */
+    m_auStorAreaA[0u][5u]  = 0x00u; /* seq number */
+    m_auStorAreaA[0u][6u]  = 0x00u; /* seq number */
+    m_auStorAreaA[0u][7u]  = 0x01u; /* seq number */
+    m_auStorAreaA[0u][8u]  = 0x01u; /* Page SUBTYPE */
+    m_auStorAreaA[0u][9u]  = 0x00u; /* Page index */
+    m_auStorAreaA[0u][10u] = 0x00u; /* Page index */
+    m_auStorAreaA[0u][11u] = 0x00u; /* Page index */
+    m_auStorAreaA[0u][12u] = 0x00u; /* Page index */
+    m_auStorAreaA[0u][13u] = 0x01u; /* Page type */
+    m_auStorAreaA[0u][14u] = 0x01u; /* Page version */
+    m_auStorAreaA[0u][15u] = 0x00u; /* Page version */
+    m_auStorAreaA[0u][16u] = 0x06u; /* Total page */
+    m_auStorAreaA[0u][17u] = 0x00u; /* Total page */
+    m_auStorAreaA[0u][18u] = 0x00u; /* Total page */
+    m_auStorAreaA[0u][19u] = 0x00u; /* Total page */
+    m_auStorAreaA[0u][20u] = 0xA5u; /* Magic number */
+    m_auStorAreaA[0u][21u] = 0xA5u; /* Magic number */
+    m_auStorAreaA[0u][22u] = 0xA5u; /* Magic number */
+    m_auStorAreaA[0u][23u] = 0xA5u; /* Magic number */
+    m_auStorAreaA[0u][24u] = 0xA7u; /* CRC */
+    m_auStorAreaA[0u][25u] = 0x02u; /* CRC */
+    m_auStorAreaA[0u][26u] = 0x00u; /* CRC */
+    m_auStorAreaA[0u][27u] = 0x00u; /* CRC */
+
+    /* Function */
+    if( e_eFSS_BLOBC_RES_NOTVALIDBLOB == eFSS_BLOBC_CloneArea(&l_tCtx, true) )
+    {
+        if( ( m_auStorAreaA[0u][0u]  == 0x01u ) && ( m_auStorAreaA[0u][1u]  == 0x02u ) && ( m_auStorAreaA[0u][2u]  == 0x03u ) && ( m_auStorAreaA[0u][3u]  == 0x04u ) &&
+            ( m_auStorAreaA[0u][4u]  == 0x00u ) && ( m_auStorAreaA[0u][5u]  == 0x00u ) && ( m_auStorAreaA[0u][6u]  == 0x00u ) && ( m_auStorAreaA[0u][7u]  == 0x01u ) &&
+            ( m_auStorAreaA[0u][8u]  == 0x01u ) && ( m_auStorAreaA[0u][9u]  == 0x00u ) && ( m_auStorAreaA[0u][10u] == 0x00u ) && ( m_auStorAreaA[0u][11u] == 0x00u ) &&
+            ( m_auStorAreaA[0u][12u] == 0x00u ) && ( m_auStorAreaA[0u][13u] == 0x01u ) && ( m_auStorAreaA[0u][14u] == 0x01u ) && ( m_auStorAreaA[0u][15u] == 0x00u ) &&
+            ( m_auStorAreaA[0u][16u] == 0x06u ) && ( m_auStorAreaA[0u][17u] == 0x00u ) && ( m_auStorAreaA[0u][18u] == 0x00u ) && ( m_auStorAreaA[0u][19u] == 0x00u ) &&
+            ( m_auStorAreaA[0u][20u] == 0xA5u ) && ( m_auStorAreaA[0u][21u] == 0xA5u ) && ( m_auStorAreaA[0u][22u] == 0xA5u ) && ( m_auStorAreaA[0u][23u] == 0xA5u ) &&
+            ( m_auStorAreaA[0u][24u] == 0xA7u ) && ( m_auStorAreaA[0u][25u] == 0x02u ) && ( m_auStorAreaA[0u][26u] == 0x00u ) && ( m_auStorAreaA[0u][27u] == 0x00u ) )
+        {
+            if( ( m_auStorAreaA[3u][0u]  == 0x01u ) && ( m_auStorAreaA[3u][1u]  == 0x02u ) && ( m_auStorAreaA[3u][2u]  == 0x03u ) && ( m_auStorAreaA[3u][3u]  == 0x04u ) &&
+                ( m_auStorAreaA[3u][4u]  == 0x00u ) && ( m_auStorAreaA[3u][5u]  == 0x00u ) && ( m_auStorAreaA[3u][6u]  == 0x00u ) && ( m_auStorAreaA[3u][7u]  == 0x01u ) &&
+                ( m_auStorAreaA[3u][8u]  == 0x02u ) && ( m_auStorAreaA[3u][9u]  == 0x03u ) && ( m_auStorAreaA[3u][10u] == 0x00u ) && ( m_auStorAreaA[3u][11u] == 0x00u ) &&
+                ( m_auStorAreaA[3u][12u] == 0x00u ) && ( m_auStorAreaA[3u][13u] == 0x01u ) && ( m_auStorAreaA[3u][14u] == 0x01u ) && ( m_auStorAreaA[3u][15u] == 0x00u ) &&
+                ( m_auStorAreaA[3u][16u] == 0x06u ) && ( m_auStorAreaA[3u][17u] == 0x00u ) && ( m_auStorAreaA[3u][18u] == 0x00u ) && ( m_auStorAreaA[3u][19u] == 0x00u ) &&
+                ( m_auStorAreaA[3u][20u] == 0xA5u ) && ( m_auStorAreaA[3u][21u] == 0xA5u ) && ( m_auStorAreaA[3u][22u] == 0xA5u ) && ( m_auStorAreaA[3u][23u] == 0xA5u ) &&
+                ( m_auStorAreaA[3u][24u] == 0xABu ) && ( m_auStorAreaA[3u][25u] == 0x02u ) && ( m_auStorAreaA[3u][26u] == 0x00u ) && ( m_auStorAreaA[3u][27u] == 0x00u ) )
+            {
+                if( ( 1u == l_tCtxErase.uTimeUsed ) && ( 1u == l_tCtxWrite.uTimeUsed ) && ( 3u == l_tCtxRead.uTimeUsed ) )
+                {
+                    (void)printf("eFSS_BLOBCTST_CloneTest 5  -- OK \n");
+                }
+                else
+                {
+                    (void)printf("eFSS_BLOBCTST_CloneTest 5  -- FAIL \n");
+                }
+            }
+            else
+            {
+                (void)printf("eFSS_BLOBCTST_CloneTest 5  -- FAIL \n");
+            }
+        }
+        else
+        {
+            (void)printf("eFSS_BLOBCTST_CloneTest 5  -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_BLOBCTST_CloneTest 5  -- FAIL \n");
+    }
+
+    (void)memset(m_auStorAreaA, 0, sizeof(m_auStorAreaA));
+    m_auStorAreaA[3u][0u]  = 0x01u; /* Data */
+    m_auStorAreaA[3u][1u]  = 0x02u; /* Data */
+    m_auStorAreaA[3u][2u]  = 0x03u; /* Data */
+    m_auStorAreaA[3u][3u]  = 0x04u; /* Data */
+    m_auStorAreaA[3u][4u]  = 0x00u; /* seq number */
+    m_auStorAreaA[3u][5u]  = 0x00u; /* seq number */
+    m_auStorAreaA[3u][6u]  = 0x00u; /* seq number */
+    m_auStorAreaA[3u][7u]  = 0x01u; /* seq number */
+    m_auStorAreaA[3u][8u]  = 0x02u; /* Page SUBTYPE */
+    m_auStorAreaA[3u][9u]  = 0x03u; /* Page index */
+    m_auStorAreaA[3u][10u] = 0x00u; /* Page index */
+    m_auStorAreaA[3u][11u] = 0x00u; /* Page index */
+    m_auStorAreaA[3u][12u] = 0x00u; /* Page index */
+    m_auStorAreaA[3u][13u] = 0x01u; /* Page type */
+    m_auStorAreaA[3u][14u] = 0x01u; /* Page version */
+    m_auStorAreaA[3u][15u] = 0x00u; /* Page version */
+    m_auStorAreaA[3u][16u] = 0x06u; /* Total page */
+    m_auStorAreaA[3u][17u] = 0x00u; /* Total page */
+    m_auStorAreaA[3u][18u] = 0x00u; /* Total page */
+    m_auStorAreaA[3u][19u] = 0x00u; /* Total page */
+    m_auStorAreaA[3u][20u] = 0xA5u; /* Magic number */
+    m_auStorAreaA[3u][21u] = 0xA5u; /* Magic number */
+    m_auStorAreaA[3u][22u] = 0xA5u; /* Magic number */
+    m_auStorAreaA[3u][23u] = 0xA5u; /* Magic number */
+    m_auStorAreaA[3u][24u] = 0xABu; /* CRC */
+    m_auStorAreaA[3u][25u] = 0x02u; /* CRC */
+    m_auStorAreaA[3u][26u] = 0x00u; /* CRC */
+    m_auStorAreaA[3u][27u] = 0x00u; /* CRC */
+
+    /* Function */
+    if( e_eFSS_BLOBC_RES_NOTVALIDBLOB == eFSS_BLOBC_CloneArea(&l_tCtx, false) )
+    {
+        if( ( m_auStorAreaA[0u][0u]  == 0x01u ) && ( m_auStorAreaA[0u][1u]  == 0x02u ) && ( m_auStorAreaA[0u][2u]  == 0x03u ) && ( m_auStorAreaA[0u][3u]  == 0x04u ) &&
+            ( m_auStorAreaA[0u][4u]  == 0x00u ) && ( m_auStorAreaA[0u][5u]  == 0x00u ) && ( m_auStorAreaA[0u][6u]  == 0x00u ) && ( m_auStorAreaA[0u][7u]  == 0x01u ) &&
+            ( m_auStorAreaA[0u][8u]  == 0x01u ) && ( m_auStorAreaA[0u][9u]  == 0x00u ) && ( m_auStorAreaA[0u][10u] == 0x00u ) && ( m_auStorAreaA[0u][11u] == 0x00u ) &&
+            ( m_auStorAreaA[0u][12u] == 0x00u ) && ( m_auStorAreaA[0u][13u] == 0x01u ) && ( m_auStorAreaA[0u][14u] == 0x01u ) && ( m_auStorAreaA[0u][15u] == 0x00u ) &&
+            ( m_auStorAreaA[0u][16u] == 0x06u ) && ( m_auStorAreaA[0u][17u] == 0x00u ) && ( m_auStorAreaA[0u][18u] == 0x00u ) && ( m_auStorAreaA[0u][19u] == 0x00u ) &&
+            ( m_auStorAreaA[0u][20u] == 0xA5u ) && ( m_auStorAreaA[0u][21u] == 0xA5u ) && ( m_auStorAreaA[0u][22u] == 0xA5u ) && ( m_auStorAreaA[0u][23u] == 0xA5u ) &&
+            ( m_auStorAreaA[0u][24u] == 0xA7u ) && ( m_auStorAreaA[0u][25u] == 0x02u ) && ( m_auStorAreaA[0u][26u] == 0x00u ) && ( m_auStorAreaA[0u][27u] == 0x00u ) )
+        {
+            if( ( m_auStorAreaA[3u][0u]  == 0x01u ) && ( m_auStorAreaA[3u][1u]  == 0x02u ) && ( m_auStorAreaA[3u][2u]  == 0x03u ) && ( m_auStorAreaA[3u][3u]  == 0x04u ) &&
+                ( m_auStorAreaA[3u][4u]  == 0x00u ) && ( m_auStorAreaA[3u][5u]  == 0x00u ) && ( m_auStorAreaA[3u][6u]  == 0x00u ) && ( m_auStorAreaA[3u][7u]  == 0x01u ) &&
+                ( m_auStorAreaA[3u][8u]  == 0x02u ) && ( m_auStorAreaA[3u][9u]  == 0x03u ) && ( m_auStorAreaA[3u][10u] == 0x00u ) && ( m_auStorAreaA[3u][11u] == 0x00u ) &&
+                ( m_auStorAreaA[3u][12u] == 0x00u ) && ( m_auStorAreaA[3u][13u] == 0x01u ) && ( m_auStorAreaA[3u][14u] == 0x01u ) && ( m_auStorAreaA[3u][15u] == 0x00u ) &&
+                ( m_auStorAreaA[3u][16u] == 0x06u ) && ( m_auStorAreaA[3u][17u] == 0x00u ) && ( m_auStorAreaA[3u][18u] == 0x00u ) && ( m_auStorAreaA[3u][19u] == 0x00u ) &&
+                ( m_auStorAreaA[3u][20u] == 0xA5u ) && ( m_auStorAreaA[3u][21u] == 0xA5u ) && ( m_auStorAreaA[3u][22u] == 0xA5u ) && ( m_auStorAreaA[3u][23u] == 0xA5u ) &&
+                ( m_auStorAreaA[3u][24u] == 0xABu ) && ( m_auStorAreaA[3u][25u] == 0x02u ) && ( m_auStorAreaA[3u][26u] == 0x00u ) && ( m_auStorAreaA[3u][27u] == 0x00u ) )
+            {
+                if( ( 1u == l_tCtxErase.uTimeUsed ) && ( 1u == l_tCtxWrite.uTimeUsed ) && ( 3u == l_tCtxRead.uTimeUsed ) )
+                {
+                    (void)printf("eFSS_BLOBCTST_CloneTest 6  -- OK \n");
+                }
+                else
+                {
+                    (void)printf("eFSS_BLOBCTST_CloneTest 6  -- FAIL \n");
+                }
+            }
+            else
+            {
+                (void)printf("eFSS_BLOBCTST_CloneTest 6  -- FAIL \n");
+            }
+        }
+        else
+        {
+            (void)printf("eFSS_BLOBCTST_CloneTest 6  -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_BLOBCTST_CloneTest 6  -- FAIL \n");
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     /* Misra complaiant */
     (void)l_tCtxErase.eLastEr;
