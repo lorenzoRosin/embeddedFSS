@@ -568,6 +568,11 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_CloneOriAreaInBkpIfNotEq(t_eFSS_BLOBC_Ctx* const p_p
                                                                                EFSS_PAGESUBTYPE_BLOBBKP);
                                         l_eRes = eFSS_BLOBC_HLtoBLOBCRes(l_eResHL);
                                     }
+
+                                    if( e_eFSS_BLOBC_RES_OK == l_eRes )
+                                    {
+                                        l_uCurIdx++;
+                                    }
                                 }
                             }
                         }
