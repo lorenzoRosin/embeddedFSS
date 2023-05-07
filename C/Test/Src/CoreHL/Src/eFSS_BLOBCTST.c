@@ -6212,7 +6212,7 @@ static void eFSS_BLOBCTST_CloneIfNeededTest(void)
                 ( m_auStorAreaA[3u][20u] == 0xA5u ) && ( m_auStorAreaA[3u][21u] == 0xA5u ) && ( m_auStorAreaA[3u][22u] == 0xA5u ) && ( m_auStorAreaA[3u][23u] == 0xA5u ) &&
                 ( m_auStorAreaA[3u][24u] == 0xABu ) && ( m_auStorAreaA[3u][25u] == 0x02u ) && ( m_auStorAreaA[3u][26u] == 0x00u ) && ( m_auStorAreaA[3u][27u] == 0x00u ) )
             {
-                if( ( 1u == l_tCtxErase.uTimeUsed ) && ( 1u == l_tCtxWrite.uTimeUsed ) && ( 3u == l_tCtxRead.uTimeUsed ) )
+                if( ( 1u == l_tCtxErase.uTimeUsed ) && ( 1u == l_tCtxWrite.uTimeUsed ) && ( 4u == l_tCtxRead.uTimeUsed ) )
                 {
                     (void)printf("eFSS_BLOBCTST_CloneIfNeededTest 4  -- OK \n");
                 }
@@ -6416,7 +6416,7 @@ static void eFSS_BLOBCTST_CloneIfNeededTest(void)
     m_auStorAreaA[2u][27u] = 0x00u; /* CRC */
 
     /* Function */
-    if( e_eFSS_BLOBC_RES_OK == eFSS_BLOBC_CloneOriAreaInBkpIfNotEq(&l_tCtx) )
+    if( e_eFSS_BLOBC_RES_OK_BKP_RCVRD == eFSS_BLOBC_CloneOriAreaInBkpIfNotEq(&l_tCtx) )
     {
         if( ( m_auStorAreaA[0u][0u]  == 0x01u ) && ( m_auStorAreaA[0u][1u]  == 0x02u ) && ( m_auStorAreaA[0u][2u]  == 0x03u ) && ( m_auStorAreaA[0u][3u]  == 0x04u ) &&
             ( m_auStorAreaA[0u][4u]  == 0x00u ) && ( m_auStorAreaA[0u][5u]  == 0x00u ) && ( m_auStorAreaA[0u][6u]  == 0x00u ) && ( m_auStorAreaA[0u][7u]  == 0x01u ) &&
@@ -6508,7 +6508,7 @@ static void eFSS_BLOBCTST_CloneIfNeededTest(void)
     }
 
 
-    if( ( 3u == l_tCtxErase.uTimeUsed ) && ( 3u == l_tCtxWrite.uTimeUsed ) && ( 6u == l_tCtxRead.uTimeUsed ) )
+    if( ( 3u == l_tCtxErase.uTimeUsed ) && ( 3u == l_tCtxWrite.uTimeUsed ) && ( 9u == l_tCtxRead.uTimeUsed ) )
     {
         (void)printf("eFSS_BLOBCTST_CloneIfNeededTest 9  -- OK \n");
     }
