@@ -5327,9 +5327,85 @@ static void eFSS_BLOBCTST_FlushTest(void)
 
 static void eFSS_BLOBCTST_CloneTest(void)
 {
+    /* Local variable */
+    t_eFSS_BLOBC_Ctx l_tCtx;
+    t_eFSS_TYPE_CbStorCtx l_tCtxCb;
+    t_eFSS_TYPE_StorSet l_tStorSet;
+    uint8_t l_auStor[56u];
+    t_eFSS_TYPE_EraseCtx  l_tCtxErase;
+	t_eFSS_TYPE_WriteCtx  l_tCtxWrite;
+	t_eFSS_TYPE_ReadCtx   l_tCtxRead;
+	t_eFSS_TYPE_CrcCtx    l_tCtxCrc32;
+    t_eFSS_BLOBC_StorBuf l_ltUseBuff;
+    t_eFSS_BLOBC_StorBuf l_ltUseBuff2;
+    uint8_t l_uSubTypeWrite;
+    uint32_t l_uTotPages;
+    uint32_t l_uSeqNumb;
+    l_uTotPages = 0u;
+    l_uSeqNumb = 0u;
 
+    /* Init callback var */
+    l_tCtxCb.ptCtxErase = &l_tCtxErase;
+    l_tCtxCb.fErase = &eFSS_DBCTST_EraseTstAAdapt;
+	l_tCtxCb.ptCtxWrite = &l_tCtxWrite;
+    l_tCtxCb.fWrite = &eFSS_DBCTST_WriteTstAAdapt;
+	l_tCtxCb.ptCtxRead = &l_tCtxRead;
+    l_tCtxCb.fRead = &eFSS_DBCTST_ReadTstAAdapt;
+	l_tCtxCb.ptCtxCrc32 = &l_tCtxCrc32;
+    l_tCtxCb.fCrc32 = &eFSS_DBCTST_CrcTstAAdapt;
 
+    /* Init storage settings */
+    l_tStorSet.uTotPages = 6u;
+    l_tStorSet.uPagesLen = 28u;
+    l_tStorSet.uRWERetry = 3u;
+    l_tStorSet.uPageVersion = 1u;
 
+    /* ------------------------------------------------------------------------------------------- TEST CRC CALL BACK */
+    /* Function */
+    l_tCtxCb.fErase = &eFSS_DBCTST_EraseTstAAdapt;
+    l_tCtxCb.fWrite = &eFSS_DBCTST_WriteTstAAdapt;
+    l_tCtxCb.fRead = &eFSS_DBCTST_ReadTstAAdapt;
+    l_tCtxCb.fCrc32 = &eFSS_DBCTST_CrcTstAAdapt;
+
+    l_tCtxErase.uTimeUsed = 0u;
+    l_tCtxErase.eLastEr = e_eFSS_BLOBC_RES_OK;
+    l_tCtxWrite.uTimeUsed = 0u;
+    l_tCtxWrite.eLastEr = e_eFSS_BLOBC_RES_OK;
+    l_tCtxRead.uTimeUsed = 0u;
+    l_tCtxRead.eLastEr = e_eFSS_BLOBC_RES_OK;
+    l_tCtxCrc32.uTimeUsed = 0u;
+    l_tCtxCrc32.eLastEr = e_eFSS_BLOBC_RES_OK;
+
+    if( e_eFSS_BLOBC_RES_OK == eFSS_BLOBC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_auStor, sizeof(l_auStor) ) )
+    {
+        (void)printf("eFSS_BLOBCTST_CloneTest 1  -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_BLOBCTST_CloneTest 1  -- FAIL \n");
+    }
+
+    /* Function */
+    if( e_eFSS_BLOBC_RES_OK == eFSS_BLOBC_GetBuffNUsable(&l_tCtx, &l_ltUseBuff, &l_uTotPages) )
+    {
+        (void)printf("eFSS_BLOBCTST_CloneTest 2  -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_BLOBCTST_CloneTest 2  -- FAIL \n");
+    }
+
+    /* Misra complaiant */
+    (void)l_tCtxErase.eLastEr;
+    (void)l_tCtxErase.uTimeUsed;
+    (void)l_tCtxWrite.eLastEr;
+    (void)l_tCtxWrite.uTimeUsed;
+    (void)l_tCtxRead.eLastEr;
+    (void)l_tCtxRead.uTimeUsed;
+    (void)l_tCtxCrc32.eLastEr;
+    (void)l_tCtxCrc32.uTimeUsed;
+    (void)l_ltUseBuff.puBuf;
+    (void)l_ltUseBuff2.puBuf;
 }
 
 #if 0
