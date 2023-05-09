@@ -6794,6 +6794,7 @@ static void eFSS_BLOBCTST_GenTest(void)
     t_eFSS_BLOBC_StorBuf l_ltUseBuff;
     uint32_t l_uTotPages;
     uint32_t l_uSeqNumb;
+    bool_t l_bIsInit;
     l_uTotPages = 0u;
     l_uSeqNumb = 0u;
 
@@ -7503,6 +7504,23 @@ static void eFSS_BLOBCTST_GenTest(void)
     else
     {
         (void)printf("eFSS_BLOBCTST_GenTest 47 -- FAIL \n");
+    }
+
+    /* Function */
+    if( e_eFSS_BLOBC_RES_OK == eFSS_BLOBC_IsInit(&l_tCtx, &l_bIsInit) )
+    {
+        if( true == l_bIsInit )
+        {
+            (void)printf("eFSS_BLOBCTST_GenTest 48 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_BLOBCTST_GenTest 48 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_BLOBCTST_GenTest 48 -- FAIL \n");
     }
 
     /* Misra complaiant */
