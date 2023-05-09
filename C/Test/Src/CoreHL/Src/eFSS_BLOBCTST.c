@@ -5981,6 +5981,7 @@ static void eFSS_BLOBCTST_CloneIfNeededTest(void)
     l_tCtxRead.eLastEr = e_eFSS_BLOBC_RES_OK;
     l_tCtxCrc32.uTimeUsed = 0u;
     l_tCtxCrc32.eLastEr = e_eFSS_BLOBC_RES_OK;
+    (void)memset(m_auStorAreaA, 0, sizeof(m_auStorAreaA));
 
     if( e_eFSS_BLOBC_RES_OK == eFSS_BLOBC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_auStor, sizeof(l_auStor) ) )
     {
