@@ -141,17 +141,17 @@ void eFSS_BLOBCTST_ExeTest(void)
 {
 	(void)printf("\n\nBLOB CORE TEST START \n\n");
 
-    // eFSS_BLOBCTST_BadPointer();
-    // eFSS_BLOBCTST_BadInit();
-    // eFSS_BLOBCTST_BadParamEntr();
-    // eFSS_BLOBCTST_CorruptedCtx();
-    // eFSS_BLOBCTST_Basic();
-    // eFSS_BLOBCTST_BadClBckNRetry();
-    // eFSS_BLOBCTST_CrcTest();
-    // eFSS_BLOBCTST_LoadTest();
-    // eFSS_BLOBCTST_FlushTest();
-    // eFSS_BLOBCTST_CloneTest();
-    // eFSS_BLOBCTST_CloneIfNeededTest();
+    eFSS_BLOBCTST_BadPointer();
+    eFSS_BLOBCTST_BadInit();
+    eFSS_BLOBCTST_BadParamEntr();
+    eFSS_BLOBCTST_CorruptedCtx();
+    eFSS_BLOBCTST_Basic();
+    eFSS_BLOBCTST_BadClBckNRetry();
+    eFSS_BLOBCTST_CrcTest();
+    eFSS_BLOBCTST_LoadTest();
+    eFSS_BLOBCTST_FlushTest();
+    eFSS_BLOBCTST_CloneTest();
+    eFSS_BLOBCTST_CloneIfNeededTest();
     eFSS_BLOBCTST_GenTest();
 
     (void)printf("\n\nBLOB CORE TEST END \n\n");
@@ -6930,35 +6930,35 @@ static void eFSS_BLOBCTST_GenTest(void)
 	t_eFSS_TYPE_ReadCtx   l_tCtxRead;
 	t_eFSS_TYPE_CrcCtx    l_tCtxCrc32;
     t_eFSS_BLOBC_StorBuf l_ltUseBuff;
-    uint8_t l_uSubTypeRead;
+    t_eFSS_BLOBC_StorBuf l_ltUseBuff2;
+    uint8_t l_uSubTypeWrite;
     uint32_t l_uTotPages;
     uint32_t l_uSeqNumb;
-
-    /* Init callback var */
-    l_tCtxCb.ptCtxErase = &l_tCtxErase;
-    l_tCtxCb.fErase = &eFSS_BLOBCTST_EraseTst1Adapt;
-	l_tCtxCb.ptCtxWrite = &l_tCtxWrite;
-    l_tCtxCb.fWrite = &eFSS_BLOBCTST_WriteTst1Adapt;
-	l_tCtxCb.ptCtxRead = &l_tCtxRead;
-    l_tCtxCb.fRead = &eFSS_BLOBCTST_ReadTst1Adapt;
-	l_tCtxCb.ptCtxCrc32 = &l_tCtxCrc32;
-    l_tCtxCb.fCrc32 = &eFSS_BLOBCTST_CrcTst1Adapt;
-
-    /* Init storage settings */
-    l_tStorSet.uTotPages = 2u;
-    l_tStorSet.uPagesLen = 28u;
-    l_tStorSet.uRWERetry = 3u;
-    l_tStorSet.uPageVersion = 1u;
-    l_uSubTypeRead = 0u;
     l_uTotPages = 0u;
     l_uSeqNumb = 0u;
 
+    /* Init callback var */
+    l_tCtxCb.ptCtxErase = &l_tCtxErase;
+    l_tCtxCb.fErase = &eFSS_DBCTST_EraseTstAAdapt;
+	l_tCtxCb.ptCtxWrite = &l_tCtxWrite;
+    l_tCtxCb.fWrite = &eFSS_DBCTST_WriteTstAAdapt;
+	l_tCtxCb.ptCtxRead = &l_tCtxRead;
+    l_tCtxCb.fRead = &eFSS_DBCTST_ReadTstAAdapt;
+	l_tCtxCb.ptCtxCrc32 = &l_tCtxCrc32;
+    l_tCtxCb.fCrc32 = &eFSS_DBCTST_CrcTstAAdapt;
+
+    /* Init storage settings */
+    l_tStorSet.uTotPages = 6u;
+    l_tStorSet.uPagesLen = 28u;
+    l_tStorSet.uRWERetry = 3u;
+    l_tStorSet.uPageVersion = 1u;
+
     /* ------------------------------------------------------------------------------------------- TEST CRC CALL BACK */
     /* Function */
-    l_tCtxCb.fErase = &eFSS_BLOBCTST_EraseTst1Adapt;
-    l_tCtxCb.fWrite = &eFSS_BLOBCTST_WriteTst1Adapt;
-    l_tCtxCb.fRead = &eFSS_BLOBCTST_ReadTst1Adapt;
-    l_tCtxCb.fCrc32 = &eFSS_BLOBCTST_CrcTst1Adapt;
+    l_tCtxCb.fErase = &eFSS_DBCTST_EraseTstAAdapt;
+    l_tCtxCb.fWrite = &eFSS_DBCTST_WriteTstAAdapt;
+    l_tCtxCb.fRead = &eFSS_DBCTST_ReadTstAAdapt;
+    l_tCtxCb.fCrc32 = &eFSS_DBCTST_CrcTstAAdapt;
 
     l_tCtxErase.uTimeUsed = 0u;
     l_tCtxErase.eLastEr = e_eFSS_BLOBC_RES_OK;
@@ -6969,9 +6969,7 @@ static void eFSS_BLOBCTST_GenTest(void)
     l_tCtxCrc32.uTimeUsed = 0u;
     l_tCtxCrc32.eLastEr = e_eFSS_BLOBC_RES_OK;
 
-    /* Setup storage area */
-    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    (void)memset(m_auStorArea2, 0, sizeof(m_auStorArea2));
+    (void)memset(m_auStorAreaA, 0, sizeof(m_auStorAreaA));
 
     if( e_eFSS_BLOBC_RES_OK == eFSS_BLOBC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_auStor, sizeof(l_auStor) ) )
     {
@@ -6992,7 +6990,8 @@ static void eFSS_BLOBCTST_GenTest(void)
         (void)printf("eFSS_BLOBCTST_GenTest 2  -- FAIL \n");
     }
 
-    if( e_eFSS_BLOBC_RES_NOTVALIDBLOB == eFSS_BLOBC_LoadPageInBuff(&l_tCtx, 0u, &l_uSubTypeRead) )
+    /* Function */
+    if( e_eFSS_BLOBC_RES_NOTVALIDBLOB == eFSS_BLOBC_CloneOriAreaInBkpIfNotEq(&l_tCtx) )
     {
         (void)printf("eFSS_BLOBCTST_GenTest 3  -- OK \n");
     }
@@ -7001,7 +7000,8 @@ static void eFSS_BLOBCTST_GenTest(void)
         (void)printf("eFSS_BLOBCTST_GenTest 3  -- FAIL \n");
     }
 
-    if( e_eFSS_BLOBC_RES_NOTVALIDBLOB == eFSS_BLOBC_LoadPageInBuff(&l_tCtx, 1u, &l_uSubTypeRead) )
+    /* Function */
+    if( e_eFSS_BLOBC_RES_NOTVALIDBLOB == eFSS_BLOBC_CloneArea(&l_tCtx, true) )
     {
         (void)printf("eFSS_BLOBCTST_GenTest 4  -- OK \n");
     }
@@ -7010,11 +7010,8 @@ static void eFSS_BLOBCTST_GenTest(void)
         (void)printf("eFSS_BLOBCTST_GenTest 4  -- FAIL \n");
     }
 
-    l_ltUseBuff.puBuf[0u] = 0x01u;
-    l_ltUseBuff.puBuf[1u] = 0x02u;
-    l_ltUseBuff.puBuf[2u] = 0x03u;
-    l_ltUseBuff.puBuf[3u] = 0x04u;
-    if( e_eFSS_BLOBC_RES_OK == eFSS_BLOBC_FlushBuffInPage(&l_tCtx, 0u, 0x03u) )
+    /* Function */
+    if( e_eFSS_BLOBC_RES_NOTVALIDBLOB == eFSS_BLOBC_CloneArea(&l_tCtx, false) )
     {
         (void)printf("eFSS_BLOBCTST_GenTest 5  -- OK \n");
     }
@@ -7023,7 +7020,8 @@ static void eFSS_BLOBCTST_GenTest(void)
         (void)printf("eFSS_BLOBCTST_GenTest 5  -- FAIL \n");
     }
 
-    if( e_eFSS_BLOBC_RES_OK == eFSS_BLOBC_FlushBuffInPage(&l_tCtx, 1u, 0x04u) )
+    /* Function */
+    if( e_eFSS_BLOBC_RES_NOTVALIDBLOB == eFSS_BLOBC_LoadPageInBuff(&l_tCtx, true, 0u, &l_uSeqNumb) )
     {
         (void)printf("eFSS_BLOBCTST_GenTest 6  -- OK \n");
     }
@@ -7032,7 +7030,8 @@ static void eFSS_BLOBCTST_GenTest(void)
         (void)printf("eFSS_BLOBCTST_GenTest 6  -- FAIL \n");
     }
 
-    if( e_eFSS_BLOBC_RES_OK == eFSS_BLOBC_LoadPageInBuffNRipBkp(&l_tCtx, 0u, 1u, 0x03u, 0x04u) )
+    /* Function */
+    if( e_eFSS_BLOBC_RES_NOTVALIDBLOB == eFSS_BLOBC_LoadPageInBuff(&l_tCtx, true, 1u, &l_uSeqNumb) )
     {
         (void)printf("eFSS_BLOBCTST_GenTest 7  -- OK \n");
     }
@@ -7041,7 +7040,8 @@ static void eFSS_BLOBCTST_GenTest(void)
         (void)printf("eFSS_BLOBCTST_GenTest 7  -- FAIL \n");
     }
 
-    if( ( 0x01u == l_ltUseBuff.puBuf[0u] ) && ( 0x02u == l_ltUseBuff.puBuf[1u] ) && ( 0x03u == l_ltUseBuff.puBuf[2u] ) && ( 0x04u == l_ltUseBuff.puBuf[3u] ) )
+    /* Function */
+    if( e_eFSS_BLOBC_RES_NOTVALIDBLOB == eFSS_BLOBC_LoadPageInBuff(&l_tCtx, true, 2u, &l_uSeqNumb) )
     {
         (void)printf("eFSS_BLOBCTST_GenTest 8  -- OK \n");
     }
@@ -7050,8 +7050,8 @@ static void eFSS_BLOBCTST_GenTest(void)
         (void)printf("eFSS_BLOBCTST_GenTest 8  -- FAIL \n");
     }
 
-    l_tStorSet.uPageVersion = 2u;
-    if( e_eFSS_BLOBC_RES_OK == eFSS_BLOBC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_auStor, sizeof(l_auStor) ) )
+    /* Function */
+    if( e_eFSS_BLOBC_RES_BADPARAM == eFSS_BLOBC_LoadPageInBuff(&l_tCtx, true, 3u, &l_uSeqNumb) )
     {
         (void)printf("eFSS_BLOBCTST_GenTest 9  -- OK \n");
     }
@@ -7060,7 +7060,8 @@ static void eFSS_BLOBCTST_GenTest(void)
         (void)printf("eFSS_BLOBCTST_GenTest 9  -- FAIL \n");
     }
 
-    if( e_eFSS_BLOBC_RES_NEWVERSIONFOUND == eFSS_BLOBC_LoadPageInBuffNRipBkp(&l_tCtx, 0u, 1u, 0x03u, 0x04u) )
+    /* Function */
+    if( e_eFSS_BLOBC_RES_NOTVALIDBLOB == eFSS_BLOBC_LoadPageInBuff(&l_tCtx, false, 0u, &l_uSeqNumb) )
     {
         (void)printf("eFSS_BLOBCTST_GenTest 10 -- OK \n");
     }
@@ -7069,8 +7070,8 @@ static void eFSS_BLOBCTST_GenTest(void)
         (void)printf("eFSS_BLOBCTST_GenTest 10 -- FAIL \n");
     }
 
-    l_tStorSet.uPageVersion = 1u;
-    if( e_eFSS_BLOBC_RES_OK == eFSS_BLOBC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_auStor, sizeof(l_auStor) ) )
+    /* Function */
+    if( e_eFSS_BLOBC_RES_NOTVALIDBLOB == eFSS_BLOBC_LoadPageInBuff(&l_tCtx, false, 1u, &l_uSeqNumb) )
     {
         (void)printf("eFSS_BLOBCTST_GenTest 11 -- OK \n");
     }
@@ -7079,7 +7080,8 @@ static void eFSS_BLOBCTST_GenTest(void)
         (void)printf("eFSS_BLOBCTST_GenTest 11 -- FAIL \n");
     }
 
-    if( e_eFSS_BLOBC_RES_OK == eFSS_BLOBC_LoadPageInBuffNRipBkp(&l_tCtx, 0u, 1u, 0x03u, 0x04u) )
+    /* Function */
+    if( e_eFSS_BLOBC_RES_NOTVALIDBLOB == eFSS_BLOBC_LoadPageInBuff(&l_tCtx, false, 2u, &l_uSeqNumb) )
     {
         (void)printf("eFSS_BLOBCTST_GenTest 12 -- OK \n");
     }
@@ -7088,7 +7090,8 @@ static void eFSS_BLOBCTST_GenTest(void)
         (void)printf("eFSS_BLOBCTST_GenTest 12 -- FAIL \n");
     }
 
-    if( ( 0x01u == l_ltUseBuff.puBuf[0u] ) && ( 0x02u == l_ltUseBuff.puBuf[1u] ) && ( 0x03u == l_ltUseBuff.puBuf[2u] ) && ( 0x04u == l_ltUseBuff.puBuf[3u] ) )
+    /* Function */
+    if( e_eFSS_BLOBC_RES_BADPARAM == eFSS_BLOBC_LoadPageInBuff(&l_tCtx, false, 3u, &l_uSeqNumb) )
     {
         (void)printf("eFSS_BLOBCTST_GenTest 13 -- OK \n");
     }
@@ -7097,8 +7100,14 @@ static void eFSS_BLOBCTST_GenTest(void)
         (void)printf("eFSS_BLOBCTST_GenTest 13 -- FAIL \n");
     }
 
-    l_tStorSet.uTotPages = 3u;
-    if( e_eFSS_BLOBC_RES_OK == eFSS_BLOBC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_auStor, sizeof(l_auStor) ) )
+    /* Set up data in buffer */
+    l_ltUseBuff.puBuf[0u] = 0x01u;
+    l_ltUseBuff.puBuf[1u] = 0x02u;
+    l_ltUseBuff.puBuf[2u] = 0x03u;
+    l_ltUseBuff.puBuf[3u] = 0x04u;
+
+    /* Function */
+    if( e_eFSS_BLOBC_RES_OK == eFSS_BLOBC_FlushBufferInPage(&l_tCtx, true, 0u, 0x61u) )
     {
         (void)printf("eFSS_BLOBCTST_GenTest 14 -- OK \n");
     }
@@ -7107,7 +7116,14 @@ static void eFSS_BLOBCTST_GenTest(void)
         (void)printf("eFSS_BLOBCTST_GenTest 14 -- FAIL \n");
     }
 
-    if( e_eFSS_BLOBC_RES_NOTVALIDBLOB == eFSS_BLOBC_LoadPageInBuffNRipBkp(&l_tCtx, 0u, 1u, 0x03u, 0x04u) )
+    /* Set up data in buffer */
+    l_ltUseBuff.puBuf[0u] = 0x11u;
+    l_ltUseBuff.puBuf[1u] = 0x12u;
+    l_ltUseBuff.puBuf[2u] = 0x13u;
+    l_ltUseBuff.puBuf[3u] = 0x14u;
+
+    /* Function */
+    if( e_eFSS_BLOBC_RES_OK == eFSS_BLOBC_FlushBufferInPage(&l_tCtx, true, 1u, 0x62u) )
     {
         (void)printf("eFSS_BLOBCTST_GenTest 15 -- OK \n");
     }
@@ -7116,8 +7132,14 @@ static void eFSS_BLOBCTST_GenTest(void)
         (void)printf("eFSS_BLOBCTST_GenTest 15 -- FAIL \n");
     }
 
-    l_tStorSet.uTotPages = 2u;
-    if( e_eFSS_BLOBC_RES_OK == eFSS_BLOBC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_auStor, sizeof(l_auStor) ) )
+    /* Set up data in buffer */
+    l_ltUseBuff.puBuf[0u] = 0x21u;
+    l_ltUseBuff.puBuf[1u] = 0x22u;
+    l_ltUseBuff.puBuf[2u] = 0x23u;
+    l_ltUseBuff.puBuf[3u] = 0x24u;
+
+    /* Function */
+    if( e_eFSS_BLOBC_RES_OK == eFSS_BLOBC_FlushBufferInPage(&l_tCtx, true, 2u, 0x63u) )
     {
         (void)printf("eFSS_BLOBCTST_GenTest 16 -- OK \n");
     }
@@ -7126,11 +7148,14 @@ static void eFSS_BLOBCTST_GenTest(void)
         (void)printf("eFSS_BLOBCTST_GenTest 16 -- FAIL \n");
     }
 
-    l_ltUseBuff.puBuf[0u] = 0x11u;
-    l_ltUseBuff.puBuf[1u] = 0x12u;
-    l_ltUseBuff.puBuf[2u] = 0x13u;
-    l_ltUseBuff.puBuf[3u] = 0x14u;
-    if( e_eFSS_BLOBC_RES_OK == eFSS_BLOBC_FlushBuffInPageNBkp(&l_tCtx, 0u, 1u, 0x03u, 0x04u) )
+    /* Set up data in buffer */
+    l_ltUseBuff.puBuf[0u] = 0x31u;
+    l_ltUseBuff.puBuf[1u] = 0x32u;
+    l_ltUseBuff.puBuf[2u] = 0x33u;
+    l_ltUseBuff.puBuf[3u] = 0x34u;
+
+    /* Function */
+    if( e_eFSS_BLOBC_RES_BADPARAM == eFSS_BLOBC_FlushBufferInPage(&l_tCtx, true, 3u, 0x64u) )
     {
         (void)printf("eFSS_BLOBCTST_GenTest 17 -- OK \n");
     }
@@ -7139,7 +7164,14 @@ static void eFSS_BLOBCTST_GenTest(void)
         (void)printf("eFSS_BLOBCTST_GenTest 17 -- FAIL \n");
     }
 
-    if( e_eFSS_BLOBC_RES_OK == eFSS_BLOBC_LoadPageInBuff(&l_tCtx, 0u, &l_uSubTypeRead) )
+    /* Set up data in buffer */
+    l_ltUseBuff.puBuf[0u] = 0x41u;
+    l_ltUseBuff.puBuf[1u] = 0x42u;
+    l_ltUseBuff.puBuf[2u] = 0x43u;
+    l_ltUseBuff.puBuf[3u] = 0x44u;
+
+    /* Function */
+    if( e_eFSS_BLOBC_RES_OK == eFSS_BLOBC_FlushBufferInPage(&l_tCtx, false, 0u, 0x65u) )
     {
         (void)printf("eFSS_BLOBCTST_GenTest 18 -- OK \n");
     }
@@ -7148,8 +7180,14 @@ static void eFSS_BLOBCTST_GenTest(void)
         (void)printf("eFSS_BLOBCTST_GenTest 18 -- FAIL \n");
     }
 
-    if( ( 0x11u == l_ltUseBuff.puBuf[0u] ) && ( 0x12u == l_ltUseBuff.puBuf[1u] ) && ( 0x13u == l_ltUseBuff.puBuf[2u] ) && ( 0x14u == l_ltUseBuff.puBuf[3u] ) &&
-        ( 0x03u == l_uSubTypeRead ) )
+    /* Set up data in buffer */
+    l_ltUseBuff.puBuf[0u] = 0x51u;
+    l_ltUseBuff.puBuf[1u] = 0x52u;
+    l_ltUseBuff.puBuf[2u] = 0x53u;
+    l_ltUseBuff.puBuf[3u] = 0x54u;
+
+    /* Function */
+    if( e_eFSS_BLOBC_RES_OK == eFSS_BLOBC_FlushBufferInPage(&l_tCtx, false, 1u, 0x66u) )
     {
         (void)printf("eFSS_BLOBCTST_GenTest 19 -- OK \n");
     }
@@ -7158,7 +7196,14 @@ static void eFSS_BLOBCTST_GenTest(void)
         (void)printf("eFSS_BLOBCTST_GenTest 19 -- FAIL \n");
     }
 
-    if( e_eFSS_BLOBC_RES_OK == eFSS_BLOBC_LoadPageInBuff(&l_tCtx, 1u, &l_uSubTypeRead) )
+    /* Set up data in buffer */
+    l_ltUseBuff.puBuf[0u] = 0x61u;
+    l_ltUseBuff.puBuf[1u] = 0x62u;
+    l_ltUseBuff.puBuf[2u] = 0x63u;
+    l_ltUseBuff.puBuf[3u] = 0x64u;
+
+    /* Function */
+    if( e_eFSS_BLOBC_RES_OK == eFSS_BLOBC_FlushBufferInPage(&l_tCtx, false, 2u, 0x67u) )
     {
         (void)printf("eFSS_BLOBCTST_GenTest 20 -- OK \n");
     }
@@ -7167,14 +7212,437 @@ static void eFSS_BLOBCTST_GenTest(void)
         (void)printf("eFSS_BLOBCTST_GenTest 20 -- FAIL \n");
     }
 
-    if( ( 0x11u == l_ltUseBuff.puBuf[0u] ) && ( 0x12u == l_ltUseBuff.puBuf[1u] ) && ( 0x13u == l_ltUseBuff.puBuf[2u] ) && ( 0x14u == l_ltUseBuff.puBuf[3u] ) &&
-        ( 0x04u == l_uSubTypeRead ) )
+    /* Set up data in buffer */
+    l_ltUseBuff.puBuf[0u] = 0x71u;
+    l_ltUseBuff.puBuf[1u] = 0x72u;
+    l_ltUseBuff.puBuf[2u] = 0x73u;
+    l_ltUseBuff.puBuf[3u] = 0x74u;
+
+    /* Function */
+    if( e_eFSS_BLOBC_RES_BADPARAM == eFSS_BLOBC_FlushBufferInPage(&l_tCtx, false, 3u, 0x68u) )
     {
         (void)printf("eFSS_BLOBCTST_GenTest 21 -- OK \n");
     }
     else
     {
         (void)printf("eFSS_BLOBCTST_GenTest 21 -- FAIL \n");
+    }
+
+    /* Function */
+    if( e_eFSS_BLOBC_RES_OK == eFSS_BLOBC_LoadPageInBuff(&l_tCtx, true, 0u, &l_uSeqNumb) )
+    {
+        /* Function */
+        if( ( l_ltUseBuff.puBuf[0u] == 0x01u ) || ( l_ltUseBuff.puBuf[1u] == 0x02u ) || ( l_ltUseBuff.puBuf[2u] == 0x03u ) ||
+            ( l_ltUseBuff.puBuf[3u] == 0x04u ) || ( l_uSeqNumb == 0x61u )  )
+        {
+            (void)printf("eFSS_BLOBCTST_GenTest 22 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_BLOBCTST_GenTest 22 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_BLOBCTST_GenTest 22 -- FAIL \n");
+    }
+
+    /* Function */
+    if( e_eFSS_BLOBC_RES_OK == eFSS_BLOBC_LoadPageInBuff(&l_tCtx, true, 1u, &l_uSeqNumb) )
+    {
+        /* Function */
+        if( ( l_ltUseBuff.puBuf[0u] == 0x11u ) || ( l_ltUseBuff.puBuf[1u] == 0x12u ) || ( l_ltUseBuff.puBuf[2u] == 0x13u ) ||
+            ( l_ltUseBuff.puBuf[3u] == 0x14u ) || ( l_uSeqNumb == 0x62u )  )
+        {
+            (void)printf("eFSS_BLOBCTST_GenTest 23 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_BLOBCTST_GenTest 23 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_BLOBCTST_GenTest 23 -- FAIL \n");
+    }
+
+    /* Function */
+    if( e_eFSS_BLOBC_RES_OK == eFSS_BLOBC_LoadPageInBuff(&l_tCtx, true, 2u, &l_uSeqNumb) )
+    {
+        /* Function */
+        if( ( l_ltUseBuff.puBuf[0u] == 0x21u ) || ( l_ltUseBuff.puBuf[1u] == 0x22u ) || ( l_ltUseBuff.puBuf[2u] == 0x23u ) ||
+            ( l_ltUseBuff.puBuf[3u] == 0x24u ) || ( l_uSeqNumb == 0x63u )  )
+        {
+            (void)printf("eFSS_BLOBCTST_GenTest 24 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_BLOBCTST_GenTest 24 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_BLOBCTST_GenTest 24 -- FAIL \n");
+    }
+
+    /* Function */
+    if( e_eFSS_BLOBC_RES_BADPARAM == eFSS_BLOBC_LoadPageInBuff(&l_tCtx, true, 3u, &l_uSeqNumb) )
+    {
+        (void)printf("eFSS_BLOBCTST_GenTest 25 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_BLOBCTST_GenTest 25 -- FAIL \n");
+    }
+
+    /* Function */
+    if( e_eFSS_BLOBC_RES_OK == eFSS_BLOBC_LoadPageInBuff(&l_tCtx, false, 0u, &l_uSeqNumb) )
+    {
+        /* Function */
+        if( ( l_ltUseBuff.puBuf[0u] == 0x41u ) || ( l_ltUseBuff.puBuf[1u] == 0x42u ) || ( l_ltUseBuff.puBuf[2u] == 0x43u ) ||
+            ( l_ltUseBuff.puBuf[3u] == 0x44u ) || ( l_uSeqNumb == 0x65u )  )
+        {
+            (void)printf("eFSS_BLOBCTST_GenTest 26 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_BLOBCTST_GenTest 26 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_BLOBCTST_GenTest 26 -- FAIL \n");
+    }
+
+    /* Function */
+    if( e_eFSS_BLOBC_RES_OK == eFSS_BLOBC_LoadPageInBuff(&l_tCtx, false, 1u, &l_uSeqNumb) )
+    {
+        /* Function */
+        if( ( l_ltUseBuff.puBuf[0u] == 0x51u ) || ( l_ltUseBuff.puBuf[1u] == 0x52u ) || ( l_ltUseBuff.puBuf[2u] == 0x53u ) ||
+            ( l_ltUseBuff.puBuf[3u] == 0x54u ) || ( l_uSeqNumb == 0x66u )  )
+        {
+            (void)printf("eFSS_BLOBCTST_GenTest 27 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_BLOBCTST_GenTest 27 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_BLOBCTST_GenTest 27 -- FAIL \n");
+    }
+
+    /* Function */
+    if( e_eFSS_BLOBC_RES_OK == eFSS_BLOBC_LoadPageInBuff(&l_tCtx, false, 2u, &l_uSeqNumb) )
+    {
+        /* Function */
+        if( ( l_ltUseBuff.puBuf[0u] == 0x61u ) || ( l_ltUseBuff.puBuf[1u] == 0x62u ) || ( l_ltUseBuff.puBuf[2u] == 0x63u ) ||
+            ( l_ltUseBuff.puBuf[3u] == 0x64u ) || ( l_uSeqNumb == 0x67u )  )
+        {
+            (void)printf("eFSS_BLOBCTST_GenTest 28 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_BLOBCTST_GenTest 28 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_BLOBCTST_GenTest 28 -- FAIL \n");
+    }
+
+    /* Function */
+    if( e_eFSS_BLOBC_RES_BADPARAM == eFSS_BLOBC_LoadPageInBuff(&l_tCtx, false, 3u, &l_uSeqNumb) )
+    {
+        (void)printf("eFSS_BLOBCTST_GenTest 29 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_BLOBCTST_GenTest 29 -- FAIL \n");
+    }
+
+    /* Function */
+    if( e_eFSS_BLOBC_RES_OK_BKP_RCVRD == eFSS_BLOBC_CloneOriAreaInBkpIfNotEq(&l_tCtx) )
+    {
+        (void)printf("eFSS_BLOBCTST_GenTest 30 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_BLOBCTST_GenTest 30 -- FAIL \n");
+    }
+
+    /* Function */
+    if( e_eFSS_BLOBC_RES_OK == eFSS_BLOBC_LoadPageInBuff(&l_tCtx, false, 0u, &l_uSeqNumb) )
+    {
+        /* Function */
+        if( ( l_ltUseBuff.puBuf[0u] == 0x01u ) || ( l_ltUseBuff.puBuf[1u] == 0x02u ) || ( l_ltUseBuff.puBuf[2u] == 0x03u ) ||
+            ( l_ltUseBuff.puBuf[3u] == 0x04u ) || ( l_uSeqNumb == 0x61u )  )
+        {
+            (void)printf("eFSS_BLOBCTST_GenTest 31 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_BLOBCTST_GenTest 31 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_BLOBCTST_GenTest 31 -- FAIL \n");
+    }
+
+    /* Function */
+    if( e_eFSS_BLOBC_RES_OK == eFSS_BLOBC_LoadPageInBuff(&l_tCtx, false, 1u, &l_uSeqNumb) )
+    {
+        /* Function */
+        if( ( l_ltUseBuff.puBuf[0u] == 0x11u ) || ( l_ltUseBuff.puBuf[1u] == 0x12u ) || ( l_ltUseBuff.puBuf[2u] == 0x13u ) ||
+            ( l_ltUseBuff.puBuf[3u] == 0x14u ) || ( l_uSeqNumb == 0x62u )  )
+        {
+            (void)printf("eFSS_BLOBCTST_GenTest 32 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_BLOBCTST_GenTest 32 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_BLOBCTST_GenTest 32 -- FAIL \n");
+    }
+
+    /* Function */
+    if( e_eFSS_BLOBC_RES_OK == eFSS_BLOBC_LoadPageInBuff(&l_tCtx, false, 2u, &l_uSeqNumb) )
+    {
+        /* Function */
+        if( ( l_ltUseBuff.puBuf[0u] == 0x21u ) || ( l_ltUseBuff.puBuf[1u] == 0x22u ) || ( l_ltUseBuff.puBuf[2u] == 0x23u ) ||
+            ( l_ltUseBuff.puBuf[3u] == 0x24u ) || ( l_uSeqNumb == 0x63u )  )
+        {
+            (void)printf("eFSS_BLOBCTST_GenTest 33 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_BLOBCTST_GenTest 33 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_BLOBCTST_GenTest 33 -- FAIL \n");
+    }
+
+    /* Function */
+    if( e_eFSS_BLOBC_RES_BADPARAM == eFSS_BLOBC_LoadPageInBuff(&l_tCtx, false, 3u, &l_uSeqNumb) )
+    {
+        (void)printf("eFSS_BLOBCTST_GenTest 34 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_BLOBCTST_GenTest 34 -- FAIL \n");
+    }
+
+    /* Set up data in buffer */
+    l_ltUseBuff.puBuf[0u] = 0x41u;
+    l_ltUseBuff.puBuf[1u] = 0x42u;
+    l_ltUseBuff.puBuf[2u] = 0x43u;
+    l_ltUseBuff.puBuf[3u] = 0x44u;
+
+    /* Function */
+    if( e_eFSS_BLOBC_RES_OK == eFSS_BLOBC_FlushBufferInPage(&l_tCtx, false, 0u, 0x65u) )
+    {
+        (void)printf("eFSS_BLOBCTST_GenTest 35 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_BLOBCTST_GenTest 35 -- FAIL \n");
+    }
+
+    /* Set up data in buffer */
+    l_ltUseBuff.puBuf[0u] = 0x51u;
+    l_ltUseBuff.puBuf[1u] = 0x52u;
+    l_ltUseBuff.puBuf[2u] = 0x53u;
+    l_ltUseBuff.puBuf[3u] = 0x54u;
+
+    /* Function */
+    if( e_eFSS_BLOBC_RES_OK == eFSS_BLOBC_FlushBufferInPage(&l_tCtx, false, 1u, 0x66u) )
+    {
+        (void)printf("eFSS_BLOBCTST_GenTest 36 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_BLOBCTST_GenTest 363 -- FAIL \n");
+    }
+
+    /* Set up data in buffer */
+    l_ltUseBuff.puBuf[0u] = 0x61u;
+    l_ltUseBuff.puBuf[1u] = 0x62u;
+    l_ltUseBuff.puBuf[2u] = 0x63u;
+    l_ltUseBuff.puBuf[3u] = 0x64u;
+
+    /* Function */
+    if( e_eFSS_BLOBC_RES_OK == eFSS_BLOBC_FlushBufferInPage(&l_tCtx, false, 2u, 0x67u) )
+    {
+        (void)printf("eFSS_BLOBCTST_GenTest 37 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_BLOBCTST_GenTest 37 -- FAIL \n");
+    }
+
+    /* Set up data in buffer */
+    l_ltUseBuff.puBuf[0u] = 0x71u;
+    l_ltUseBuff.puBuf[1u] = 0x72u;
+    l_ltUseBuff.puBuf[2u] = 0x73u;
+    l_ltUseBuff.puBuf[3u] = 0x74u;
+
+    /* Function */
+    if( e_eFSS_BLOBC_RES_BADPARAM == eFSS_BLOBC_FlushBufferInPage(&l_tCtx, false, 3u, 0x68u) )
+    {
+        (void)printf("eFSS_BLOBCTST_GenTest 38 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_BLOBCTST_GenTest 38 -- FAIL \n");
+    }
+
+    /* Function */
+    if( e_eFSS_BLOBC_RES_OK == eFSS_BLOBC_CloneArea(&l_tCtx, false) )
+    {
+        (void)printf("eFSS_BLOBCTST_GenTest 39 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_BLOBCTST_GenTest 39 -- FAIL \n");
+    }
+
+    /* Function */
+    if( e_eFSS_BLOBC_RES_OK == eFSS_BLOBC_LoadPageInBuff(&l_tCtx, true, 0u, &l_uSeqNumb) )
+    {
+        /* Function */
+        if( ( l_ltUseBuff.puBuf[0u] == 0x41u ) || ( l_ltUseBuff.puBuf[1u] == 0x42u ) || ( l_ltUseBuff.puBuf[2u] == 0x43u ) ||
+            ( l_ltUseBuff.puBuf[3u] == 0x44u ) || ( l_uSeqNumb == 0x65u )  )
+        {
+            (void)printf("eFSS_BLOBCTST_GenTest 40 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_BLOBCTST_GenTest 40 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_BLOBCTST_GenTest 40 -- FAIL \n");
+    }
+
+    /* Function */
+    if( e_eFSS_BLOBC_RES_OK == eFSS_BLOBC_LoadPageInBuff(&l_tCtx, true, 1u, &l_uSeqNumb) )
+    {
+        /* Function */
+        if( ( l_ltUseBuff.puBuf[0u] == 0x51u ) || ( l_ltUseBuff.puBuf[1u] == 0x52u ) || ( l_ltUseBuff.puBuf[2u] == 0x53u ) ||
+            ( l_ltUseBuff.puBuf[3u] == 0x54u ) || ( l_uSeqNumb == 0x66u )  )
+        {
+            (void)printf("eFSS_BLOBCTST_GenTest 41 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_BLOBCTST_GenTest 41 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_BLOBCTST_GenTest 41 -- FAIL \n");
+    }
+
+    /* Function */
+    if( e_eFSS_BLOBC_RES_OK == eFSS_BLOBC_LoadPageInBuff(&l_tCtx, true, 2u, &l_uSeqNumb) )
+    {
+        /* Function */
+        if( ( l_ltUseBuff.puBuf[0u] == 0x61u ) || ( l_ltUseBuff.puBuf[1u] == 0x62u ) || ( l_ltUseBuff.puBuf[2u] == 0x63u ) ||
+            ( l_ltUseBuff.puBuf[3u] == 0x64u ) || ( l_uSeqNumb == 0x67u )  )
+        {
+            (void)printf("eFSS_BLOBCTST_GenTest 42 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_BLOBCTST_GenTest 42 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_BLOBCTST_GenTest 42 -- FAIL \n");
+    }
+
+    /* Function */
+    if( e_eFSS_BLOBC_RES_BADPARAM == eFSS_BLOBC_LoadPageInBuff(&l_tCtx, true, 3u, &l_uSeqNumb) )
+    {
+        (void)printf("eFSS_BLOBCTST_GenTest 43 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_BLOBCTST_GenTest 43 -- FAIL \n");
+    }
+
+    /* Function */
+    if( e_eFSS_BLOBC_RES_OK == eFSS_BLOBC_LoadPageInBuff(&l_tCtx, true, 2u, &l_uSeqNumb) )
+    {
+        /* Function */
+        if( ( l_ltUseBuff.puBuf[0u] == 0x61u ) || ( l_ltUseBuff.puBuf[1u] == 0x62u ) || ( l_ltUseBuff.puBuf[2u] == 0x63u ) ||
+            ( l_ltUseBuff.puBuf[3u] == 0x64u ) || ( l_uSeqNumb == 0x67u )  )
+        {
+            (void)printf("eFSS_BLOBCTST_GenTest 44 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_BLOBCTST_GenTest 44 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_BLOBCTST_GenTest 44 -- FAIL \n");
+    }
+
+    /* Function */
+    if( e_eFSS_BLOBC_RES_OK == eFSS_BLOBC_CalcCrcInBuff(&l_tCtx, 0x00u, 4u, &l_uSeqNumb) )
+    {
+        /* Function */
+        if( 0x18Au == l_uSeqNumb  )
+        {
+            (void)printf("eFSS_BLOBCTST_GenTest 45 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_BLOBCTST_GenTest 45 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_BLOBCTST_GenTest 45 -- FAIL \n");
+    }
+
+    /* Function */
+    if( e_eFSS_BLOBC_RES_OK == eFSS_BLOBC_CalcCrcInBuff(&l_tCtx, 0x00u, 1u, &l_uSeqNumb) )
+    {
+        /* Function */
+        if( 0x61u == l_uSeqNumb  )
+        {
+            (void)printf("eFSS_BLOBCTST_GenTest 46 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_BLOBCTST_GenTest 46 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_BLOBCTST_GenTest 46 -- FAIL \n");
+    }
+
+    /* Function */
+    if( e_eFSS_BLOBC_RES_BADPARAM == eFSS_BLOBC_CalcCrcInBuff(&l_tCtx, 0x00u, 5u, &l_uSeqNumb) )
+    {
+        (void)printf("eFSS_BLOBCTST_GenTest 47 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_BLOBCTST_GenTest 47 -- FAIL \n");
     }
 
     /* Misra complaiant */
