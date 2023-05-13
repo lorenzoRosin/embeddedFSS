@@ -473,7 +473,8 @@ e_eFSS_LOGC_RES eFSS_LOGC_ReadCache(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t* co
                                             /* Verify also parameter coherence */
                                             l_uUsableP = eFSS_LOGC_GetMaxPage(p_ptCtx->bFullBckup, p_ptCtx->bFlashCache,
                                                                               l_tStorSet.uTotPages);
-                                            /* Verify parameter */
+
+                                            /* Verify index parameter coherence */
                                             if( ( *p_puIdxN >= l_uUsableP ) || ( ( *p_puFilP + 3u ) > l_uUsableP ) )
                                             {
                                                 l_eRes = e_eFSS_LOGC_RES_NOTVALIDLOG;
