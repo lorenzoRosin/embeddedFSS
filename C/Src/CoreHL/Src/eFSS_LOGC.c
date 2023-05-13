@@ -61,6 +61,8 @@ static e_eFSS_LOGC_RES eFSS_LOGC_HLtoLOGCRes(const e_eFSS_COREHL_RES p_eHLRes);
 /***********************************************************************************************************************
  *  PRIVATE STATIC UTILS FUNCTION DECLARATION
  **********************************************************************************************************************/
+static uint32_t eFSS_LOGC_GetMaxPage(const bool_t p_bIsFullBkup, const bool_t p_bIsFCache, const uint32_t p_uTotPages);
+
 static e_eFSS_LOGC_RES eFSS_LOGC_FlushBuff(t_eFSS_LOGC_Ctx* const p_ptCtx, bool_t p_bIsBkpP, const uint32_t p_uByteUse,
 								           const uint32_t p_uOrigIdx, const uint32_t p_uBackupIdx,
                                            const uint8_t p_uOriSubT, const uint8_t p_uBckUpSubT);
@@ -68,8 +70,6 @@ static e_eFSS_LOGC_RES eFSS_LOGC_FlushBuff(t_eFSS_LOGC_Ctx* const p_ptCtx, bool_
 static e_eFSS_LOGC_RES eFSS_LOGC_LoadBuff(t_eFSS_LOGC_Ctx* const p_ptCtx, bool_t p_bIsBkpP, uint32_t* const p_puByteUse,
                                           const uint32_t p_uOrigIdx, const uint32_t p_uBackupIdx,
                                           const uint8_t p_uOriSubT, const uint8_t p_uBckUpSubT);
-
-static uint32_t eFSS_LOGC_GetMaxPage(const bool_t p_bIsFullBkup, const bool_t p_bIsFCache, const uint32_t p_uTotPages);
 
 
 
@@ -1143,6 +1143,38 @@ static e_eFSS_LOGC_RES eFSS_LOGC_HLtoLOGCRes(const e_eFSS_COREHL_RES p_eHLRes)
 /***********************************************************************************************************************
  *  PRIVATE STATIC UTILS FUNCTION DECLARATION
  **********************************************************************************************************************/
+static uint32_t eFSS_LOGC_GetMaxPage(const bool_t p_bIsFullBkup, const bool_t p_bIsFCache, const uint32_t p_uTotPages)
+{
+    /* Local return variable */
+	uint32_t l_uNPageU;
+
+    /* Get the total numbers of page */
+    l_uNPageU = p_uTotPages;
+
+    /* This function supposed that the context is coherent, so be sure to call eFSS_LOGC_IsStatusStillCoherent before */
+	/* Flash cache will use two flash pages */
+    if( true == p_bIsFCache )
+    {
+        if( l_uNPageU >= 2u )
+        {
+            l_uNPageU -= 2u;
+        }
+        else
+        {
+            /* Impossible end here, data is checkd before, just put zero */
+            l_uNPageU = 0u;
+        }
+    }
+
+	/* Flash full bakup will use twice as pages as normal log */
+    if( true == p_bIsFullBkup )
+    {
+        l_uNPageU = (uint32_t)( l_uNPageU / 2u );
+    }
+
+    return l_uNPageU;
+}
+
 static e_eFSS_LOGC_RES eFSS_LOGC_FlushBuff(t_eFSS_LOGC_Ctx* const p_ptCtx, bool_t p_bIsBkpP, const uint32_t p_uByteUse,
 								           const uint32_t p_uOrigIdx, const uint32_t p_uBackupIdx,
                                            const uint8_t p_uOriSubT, const uint8_t p_uBckUpSubT)
@@ -1260,35 +1292,4 @@ static e_eFSS_LOGC_RES eFSS_LOGC_LoadBuff(t_eFSS_LOGC_Ctx* const p_ptCtx, bool_t
     }
 
     return l_eRes;
-}
-
-static uint32_t eFSS_LOGC_GetMaxPage(const bool_t p_bIsFullBkup, const bool_t p_bIsFCache, const uint32_t p_uTotPages)
-{
-    /* Local return variable */
-	uint32_t l_uNPageU;
-
-    /* Get the total numbers of page */
-    l_uNPageU = p_uTotPages;
-
-	/* Flash cache will use two flash pages */
-    if( true == p_bIsFCache )
-    {
-        if( l_uNPageU >= 2u )
-        {
-            l_uNPageU -= 2u;
-        }
-        else
-        {
-            /* Impossible end here, data is checkd before, just put zero */
-            l_uNPageU = 0u;
-        }
-    }
-
-	/* Flash full bakup will use twice as pages as normal log */
-    if( true == p_bIsFullBkup )
-    {
-        l_uNPageU = (uint32_t)( l_uNPageU / 2u );
-    }
-
-    return l_uNPageU;
 }
