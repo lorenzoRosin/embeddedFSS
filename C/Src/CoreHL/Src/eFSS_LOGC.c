@@ -63,11 +63,13 @@ static e_eFSS_LOGC_RES eFSS_LOGC_HLtoLOGCRes(const e_eFSS_COREHL_RES p_eHLRes);
  **********************************************************************************************************************/
 static uint32_t eFSS_LOGC_GetMaxPage(const bool_t p_bIsFullBkup, const bool_t p_bIsFCache, const uint32_t p_uTotPages);
 
-static e_eFSS_LOGC_RES eFSS_LOGC_FlushBuff(t_eFSS_LOGC_Ctx* const p_ptCtx, bool_t p_bIsBkpP, const uint32_t p_uByteUse,
+static e_eFSS_LOGC_RES eFSS_LOGC_FlushBuff(t_eFSS_LOGC_Ctx* const p_ptCtx,
+                                           const bool_t p_bIsBkpP, const uint32_t p_uByteUse,
 								           const uint32_t p_uOrigIdx, const uint32_t p_uBackupIdx,
                                            const uint8_t p_uOriSubT, const uint8_t p_uBckUpSubT);
 
-static e_eFSS_LOGC_RES eFSS_LOGC_LoadBuff(t_eFSS_LOGC_Ctx* const p_ptCtx, bool_t p_bIsBkpP, uint32_t* const p_puByteUse,
+static e_eFSS_LOGC_RES eFSS_LOGC_LoadBuff(t_eFSS_LOGC_Ctx* const p_ptCtx,
+                                          const bool_t p_bIsBkpP, uint32_t* const p_puByteUse,
                                           const uint32_t p_uOrigIdx, const uint32_t p_uBackupIdx,
                                           const uint8_t p_uOriSubT, const uint8_t p_uBckUpSubT);
 
@@ -1175,7 +1177,8 @@ static uint32_t eFSS_LOGC_GetMaxPage(const bool_t p_bIsFullBkup, const bool_t p_
     return l_uNPageU;
 }
 
-static e_eFSS_LOGC_RES eFSS_LOGC_FlushBuff(t_eFSS_LOGC_Ctx* const p_ptCtx, bool_t p_bIsBkpP, const uint32_t p_uByteUse,
+static e_eFSS_LOGC_RES eFSS_LOGC_FlushBuff(t_eFSS_LOGC_Ctx* const p_ptCtx,
+                                           const bool_t p_bIsBkpP, const uint32_t p_uByteUse,
 								           const uint32_t p_uOrigIdx, const uint32_t p_uBackupIdx,
                                            const uint8_t p_uOriSubT, const uint8_t p_uBckUpSubT)
 {
@@ -1226,7 +1229,8 @@ static e_eFSS_LOGC_RES eFSS_LOGC_FlushBuff(t_eFSS_LOGC_Ctx* const p_ptCtx, bool_
     return l_eRes;
 }
 
-static e_eFSS_LOGC_RES eFSS_LOGC_LoadBuff(t_eFSS_LOGC_Ctx* const p_ptCtx, bool_t p_bIsBkpP, uint32_t* const p_puByteUse,
+static e_eFSS_LOGC_RES eFSS_LOGC_LoadBuff(t_eFSS_LOGC_Ctx* const p_ptCtx,
+                                          const bool_t p_bIsBkpP, uint32_t* const p_puByteUse,
                                           const uint32_t p_uOrigIdx, const uint32_t p_uBackupIdx,
                                           const uint8_t p_uOriSubT, const uint8_t p_uBckUpSubT)
 {
