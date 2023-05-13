@@ -193,7 +193,10 @@ e_eFSS_LOGC_RES eFSS_LOGC_ReadCache(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t* co
  * @param[in]   p_ptCtx          - Log Core context
  * @param[in]   p_ePageType      - SubType of the page we are flushing
  * @param[in]   p_uIdx           - Index of the log page we want to write
- * @param[in]   p_uFillInPage    - Number of filled byte in page
+ * @param[in]   p_uFillInPage    - Number of filled byte in page, this value dosent comprend the space needed to store
+ *                                 this parameter. So the max value can be the size of the buffer returned by
+ *                                 eFSS_LOGC_GetBuffNUsable minus the sizeof(uint32_t)
+ *
  *
  * @return      e_eFSS_LOGC_RES_BADPOINTER        - In case of bad pointer passed to the function
  *		        e_eFSS_LOGC_RES_BADPARAM          - In case of an invalid parameter passed to the function
@@ -219,7 +222,10 @@ e_eFSS_LOGC_RES eFSS_LOGC_FlushBufferAs(t_eFSS_LOGC_Ctx* const p_ptCtx, const e_
  * @param[in]   p_ePageType      - Subtype of the page we are reading. If pagesubtype dosent match readed subytype the
  *                                 page will be considerated invalid
  * @param[in]   p_uIdx           - Index of the log page we want to read
- * @param[out]  p_puFillInPage   - Pointer to an uint32_t where the number of filled byte in page will be copied
+ * @param[out]  p_puFillInPage   - Pointer to an uint32_t where the number of filled byte in page will be copied.
+ *                                 This value dosent comprend the space needed to store this parameter.
+ *                                 So the max value can be the size of the buffer returned by
+ *                                 eFSS_LOGC_GetBuffNUsable minus the sizeof(uint32_t)
  *
  * @return      e_eFSS_LOGC_RES_BADPOINTER        - In case of bad pointer passed to the function
  *		        e_eFSS_LOGC_RES_BADPARAM          - In case of an invalid parameter passed to the function

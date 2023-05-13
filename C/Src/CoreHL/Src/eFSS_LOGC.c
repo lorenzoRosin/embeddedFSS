@@ -1153,7 +1153,7 @@ static uint32_t eFSS_LOGC_GetMaxPage(const bool_t p_bIsFullBkup, const bool_t p_
     /* Get the total numbers of page */
     l_uNPageU = p_uTotPages;
 
-    /* This function supposed that the context is coherent, so be sure to call eFSS_LOGC_IsStatusStillCoherent before */
+    /* This function suppose that the context is coherent, so be sure to call eFSS_LOGC_IsStatusStillCoherent before */
 	/* Flash cache will use two flash pages */
     if( true == p_bIsFCache )
     {
@@ -1189,6 +1189,8 @@ static e_eFSS_LOGC_RES eFSS_LOGC_FlushBuff(t_eFSS_LOGC_Ctx* const p_ptCtx,
     /* Local var used for storage */
     t_eFSS_COREHL_StorBuf l_tBuff;
 
+    /* This function suppose that the context is coherent, so be sure to call eFSS_LOGC_IsStatusStillCoherent
+       before */
     l_eResHL = eFSS_COREHL_GetBuff(&p_ptCtx->tCOREHLCtx, &l_tBuff);
     l_eRes = eFSS_LOGC_HLtoLOGCRes(l_eResHL);
 
@@ -1197,6 +1199,7 @@ static e_eFSS_LOGC_RES eFSS_LOGC_FlushBuff(t_eFSS_LOGC_Ctx* const p_ptCtx,
         /* Check data validity */
         if( p_uByteUse > ( l_tBuff.uBufL - EFSS_LOGC_PAGEMIN_L ) )
         {
+            /* Cannot fill more data than possible */
             l_eRes = e_eFSS_LOGC_RES_BADPARAM;
         }
         else
@@ -1248,7 +1251,8 @@ static e_eFSS_LOGC_RES eFSS_LOGC_LoadBuff(t_eFSS_LOGC_Ctx* const p_ptCtx,
     }
     else
     {
-        /* Get storage settings */
+        /* This function suppose that the context is coherent, so be sure to call eFSS_LOGC_IsStatusStillCoherent
+           before */
         l_eResHL = eFSS_COREHL_GetBuff(&p_ptCtx->tCOREHLCtx, &l_tBuff);
         l_eRes = eFSS_LOGC_HLtoLOGCRes(l_eResHL);
 
@@ -1262,7 +1266,7 @@ static e_eFSS_LOGC_RES eFSS_LOGC_LoadBuff(t_eFSS_LOGC_Ctx* const p_ptCtx,
             }
             else
             {
-                l_uPageSubTypeRed = 0xFFu;
+                l_uPageSubTypeRed = 0x00u;
                 l_eResHL = eFSS_COREHL_LoadPageInBuff(&p_ptCtx->tCOREHLCtx, p_uOrigIdx, &l_uPageSubTypeRed);
                 l_eRes = eFSS_LOGC_HLtoLOGCRes(l_eResHL);
 
