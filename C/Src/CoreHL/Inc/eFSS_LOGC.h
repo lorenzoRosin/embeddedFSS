@@ -81,7 +81,7 @@ typedef struct
  * @param[in]   p_bFlashCache    - Use flash as cache for storing and resuming index
  * @param[in]   p_bFullBckup     - Save every log data in a backup pages
  *
- * @return      e_eFSS_LOGC_RES_BADPOINTER    - In case of bad pointer passed to the function
+ * @return      e_eFSS_LOGC_RES_BADPOINTER    - In case of bad pointer passed to the functione
  *		        e_eFSS_LOGC_RES_BADPARAM      - In case of an invalid parameter passed to the function
  *              e_eFSS_LOGC_RES_OK            - Operation ended correctly
  */
@@ -184,11 +184,14 @@ e_eFSS_LOGC_RES eFSS_LOGC_WriteCache(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint3
 e_eFSS_LOGC_RES eFSS_LOGC_ReadCache(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t* const p_puIdxN, uint32_t* const p_puFilP);
 
 /**
- * @brief       Flush the buffer in a page at p_uIdx position using p_ePageType as subtype. This function will take
- *              care of any support page when the fullbackup option is enabled.
+ * @brief       Flush the buffer in a page at p_uIdx position using p_ePageType as subtype and with a number of
+ *              valorized byte equals to p_uFillInPage. This function will take care of any support page when the
+ *              fullbackup option is enabled. Keep in mind that this function cannot overide flash cache pages.
+ *              After this operation the internal buffer will mantains it's original values, except for the private
+ *              metadata.
  *
  * @param[in]   p_ptCtx          - Log Core context
- * @param[in]   p_ePageType      - Type of the page we are flushing
+ * @param[in]   p_ePageType      - SubType of the page we are flushing
  * @param[in]   p_uIdx           - Index of the log page we want to write
  * @param[in]   p_uFillInPage    - Number of filled byte in page
  *
@@ -207,11 +210,14 @@ e_eFSS_LOGC_RES eFSS_LOGC_FlushBufferAs(t_eFSS_LOGC_Ctx* const p_ptCtx, const e_
                                         const uint32_t p_uIdx, const uint32_t p_uFillInPage);
 
 /**
- * @brief       Read a page of data at p_uIdx position with p_ePageType as subtype. This function will take
- *              care of any support page when the fullbackup option is enabled and can recover corrupted pages.
+ * @brief       Read a page of data at p_uIdx position with an expected subtype equals to p_ePageType. Load in
+ *              p_puFillInPage the numbers os previously saved valorized byte in page. This function
+ *              will take care of any support page when the fullbackup option is enabled and can so recover,
+ *              only in this case, corrupted pages. Keep in mind that this function cannot read flash cache pages
  *
  * @param[in]   p_ptCtx          - Log Core context
- * @param[in]   p_ePageType      - Subtype of the page we are reading
+ * @param[in]   p_ePageType      - Subtype of the page we are reading. If pagesubtype dosent match readed subytype the
+ *                                 page will be considerated invalid
  * @param[in]   p_uIdx           - Index of the log page we want to read
  * @param[out]  p_puFillInPage   - Pointer to an uint32_t where the number of filled byte in page will be copied
  *
@@ -234,13 +240,16 @@ e_eFSS_LOGC_RES eFSS_LOGC_LoadBufferAs(t_eFSS_LOGC_Ctx* const p_ptCtx, const e_e
                                        const uint32_t p_uIdx, uint32_t* const p_puFillInPage);
 
 /**
- * @brief       Read a page of data at p_uIdx and return e_eFSS_LOGC_RES_OK if the page type is
- *              e_eFSS_LOGC_PAGETYPE_NEWEST or e_eFSS_LOGC_PAGETYPE_NEWEST_BKUP.
- *              If the page is of type e_eFSS_LOGC_PAGETYPE_NEWEST valorize the bool_t with true
+ * @brief       Load in to the internal buffer the value of a page pointed by the index p_uIdx. The loaded page will
+ *              be considered valid only if the subtype of the page itself is e_eFSS_LOGC_PAGETYPE_NEWEST or
+ *              e_eFSS_LOGC_PAGETYPE_NEWEST_BKUP. When a valid page is found e_eFSS_LOGC_RES_OK is returned and
+ *              the field p_pbIsNewest will be valorized with true if the founded subtype is
+ *              e_eFSS_LOGC_PAGETYPE_NEWEST.
+ *
  * @param[in]   p_ptCtx          - Log Core context
  * @param[in]   p_uIdx           - Index of the log page we want to read
  * @param[out]  p_pbIsNewest     - When e_eFSS_LOGC_RES_OK is returned this boolean is valorize with true if the
- *                                 page type is e_eFSS_LOGC_PAGETYPE_NEWEST, and with false if the page type is
+ *                                 page subtype is e_eFSS_LOGC_PAGETYPE_NEWEST, and with false if the page subtype is
  *                                 e_eFSS_LOGC_PAGETYPE_NEWEST_BKUP.
  *
  * @return      e_eFSS_LOGC_RES_BADPOINTER        - In case of bad pointer passed to the function
@@ -257,14 +266,20 @@ e_eFSS_LOGC_RES eFSS_LOGC_IsPageNewOrBkup(t_eFSS_LOGC_Ctx* const p_ptCtx, const 
                                           bool_t* const p_pbIsNewest);
 
 /**
- * @brief       Check if the data present in to the internal buffer is equals to an another page. Keep in mind that
- *              subtype are not compared, the comparsion is only done using raw data. Th previusly present buffer
- *              is not modified after this call.
+ * @brief       Check if the data present in to the internal buffer is equals to an another page pointed by the
+ *              index p_uIdx, if the data are not equals flush the internal buffer data in to the pointed page.
+ *              If pages are equals do nothing.
+ *              If page pointed by p_uIdx is invalid or is valid but the subtype of the page itself is different
+ *              from p_eTypeFlush, flush anyway the data present in to the internal buffer.
+ *              Keep in mind that subtype are not compared, the comparsion is only done using raw data (so we
+ *              are comparing numbersofbytein page also).
+ *              Th previusly present data in buffer is not modified after this call.
  *
- * @param[in]   p_ptCtx         - High Level Core context
- * @param[in]   p_uIdx          - uint32_t index rappresenting the page that we want to compare
- * @param[out]  p_pbIsEquals    - pointer to a bool_t that will be filled with true if the intenral buffer is equals to
- *                                the data presnet in the page p_uPIdx
+ * @param[in]   p_ptCtx         - Log Core context
+ * @param[in]   p_uIdx          - uint32_t index rappresenting the page that we want to compare and eventualy flush
+ * @param[in]   p_eTypeFlush    - Subtype that the pointe page need to have to be considered a valid page. If page
+ *                                is valid but subtype dosent page the flush operation will be performed even if
+ *                                data present in buffer match the one present in to the page
  *
  * @return      e_eFSS_LOGC_RES_BADPOINTER      - In case of bad pointer passed to the function
  *		        e_eFSS_LOGC_RES_BADPARAM        - In case of an invalid parameter passed to the function
