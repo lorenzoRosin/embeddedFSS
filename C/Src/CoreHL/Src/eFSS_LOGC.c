@@ -80,13 +80,15 @@ e_eFSS_LOGC_RES eFSS_LOGC_InitCtx(t_eFSS_LOGC_Ctx* const p_ptCtx, const t_eFSS_T
                                   const t_eFSS_TYPE_StorSet p_tStorSet, uint8_t* const p_puBuff,
                                   const uint32_t p_uBuffL, const bool_t p_bFlashCache, const bool_t p_bFullBckup)
 {
-    /* Return local var */
+    /* Local return variable */
     e_eFSS_LOGC_RES l_eRes;
     e_eFSS_COREHL_RES l_eResHL;
 
-    /* Local var used for calculation */
-    uint32_t l_uNPage;
+    /* Local storage variable */
     t_eFSS_COREHL_StorBuf l_tBuff;
+
+    /* Local variable for calculation */
+    uint32_t l_uNPage;
 
 	/* Check pointer validity */
 	if( NULL == p_ptCtx )
@@ -148,7 +150,7 @@ e_eFSS_LOGC_RES eFSS_LOGC_InitCtx(t_eFSS_LOGC_Ctx* const p_ptCtx, const t_eFSS_T
 
 e_eFSS_LOGC_RES eFSS_LOGC_IsInit(t_eFSS_LOGC_Ctx* const p_ptCtx, bool_t* const p_pbIsInit)
 {
-	/* Local variable */
+	/* Local return variable */
 	e_eFSS_LOGC_RES l_eRes;
     e_eFSS_COREHL_RES l_eResHL;
 
@@ -168,11 +170,11 @@ e_eFSS_LOGC_RES eFSS_LOGC_IsInit(t_eFSS_LOGC_Ctx* const p_ptCtx, bool_t* const p
 
 e_eFSS_LOGC_RES eFSS_LOGC_IsFlashCacheUsed(t_eFSS_LOGC_Ctx* const p_ptCtx, bool_t* const p_pbIsFlashCacheUsed)
 {
-	/* Local variable */
+	/* Local return variable */
 	e_eFSS_LOGC_RES l_eRes;
     e_eFSS_COREHL_RES l_eResHL;
 
-    /* Local var used for calculation */
+    /* Local variable for calculation */
     bool_t l_bIsInit;
 
 	/* Check pointer validity */
@@ -215,13 +217,15 @@ e_eFSS_LOGC_RES eFSS_LOGC_IsFlashCacheUsed(t_eFSS_LOGC_Ctx* const p_ptCtx, bool_
 e_eFSS_LOGC_RES eFSS_LOGC_GetBuffNUsable(t_eFSS_LOGC_Ctx* const p_ptCtx, t_eFSS_LOGC_StorBuf* const p_ptBuff,
                                          uint32_t* const p_puUsePages)
 {
-	/* Local variable */
+	/* Local return variable */
 	e_eFSS_LOGC_RES l_eRes;
     e_eFSS_COREHL_RES l_eResHL;
 
-    /* Local var used for calculation */
+    /* Local storage variable */
     t_eFSS_COREHL_StorBuf l_tBuff;
     t_eFSS_TYPE_StorSet   l_tStorSet;
+
+    /* Local variable for calculation */
     bool_t l_bIsInit;
 
 
@@ -273,14 +277,16 @@ e_eFSS_LOGC_RES eFSS_LOGC_GetBuffNUsable(t_eFSS_LOGC_Ctx* const p_ptCtx, t_eFSS_
 
 e_eFSS_LOGC_RES eFSS_LOGC_WriteCache(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint32_t p_uIdxN, const uint32_t p_uFilP)
 {
-	/* Local variable */
+	/* Local return variable */
 	e_eFSS_LOGC_RES l_eRes;
     e_eFSS_COREHL_RES l_eResHL;
 
-    /* Local var used for calculation */
-    bool_t l_bIsInit;
+    /* Local storage variable */
     t_eFSS_TYPE_StorSet l_tStorSet;
     t_eFSS_COREHL_StorBuf l_tBuff;
+
+    /* Local variable for calculation */
+    bool_t l_bIsInit;
     uint32_t l_uCacheIdx;
     uint32_t l_uCacheIdxBkp;
     uint32_t l_uUsableP;
@@ -374,14 +380,16 @@ e_eFSS_LOGC_RES eFSS_LOGC_WriteCache(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint3
 
 e_eFSS_LOGC_RES eFSS_LOGC_ReadCache(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t* const p_puIdxN, uint32_t* const p_puFilP)
 {
-	/* Local variable */
+	/* Local return variable */
 	e_eFSS_LOGC_RES l_eRes;
     e_eFSS_COREHL_RES l_eResHL;
 
-    /* Local var used for calculation */
-    bool_t l_bIsInit;
+    /* Local storage variable */
     t_eFSS_TYPE_StorSet l_tStorSet;
     t_eFSS_COREHL_StorBuf l_tBuff;
+
+    /* Local variable for calculation */
+    bool_t l_bIsInit;
     uint32_t l_uCacheIdx;
     uint32_t l_uCacheIdxBkp;
     uint32_t l_uByteInP;
@@ -481,14 +489,16 @@ e_eFSS_LOGC_RES eFSS_LOGC_ReadCache(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t* co
 e_eFSS_LOGC_RES eFSS_LOGC_FlushBufferAs(t_eFSS_LOGC_Ctx* const p_ptCtx, const e_eFSS_LOGC_PAGETYPE p_ePageType,
                                         const uint32_t p_uIdx, const uint32_t p_uFillInPage)
 {
-	/* Local variable */
+	/* Local return variable */
 	e_eFSS_LOGC_RES l_eRes;
     e_eFSS_COREHL_RES l_eResHL;
 
-    /* Local var used for calculation */
-    bool_t l_bIsInit;
+    /* Local storage variable */
     t_eFSS_TYPE_StorSet l_tStorSet;
     uint32_t l_uNPageU;
+
+    /* Local variable for calculation */
+    bool_t l_bIsInit;
     uint8_t l_uPagSubTOri;
     uint8_t l_uPagSubTBkp;
 
@@ -585,14 +595,16 @@ e_eFSS_LOGC_RES eFSS_LOGC_FlushBufferAs(t_eFSS_LOGC_Ctx* const p_ptCtx, const e_
 e_eFSS_LOGC_RES eFSS_LOGC_LoadBufferAs(t_eFSS_LOGC_Ctx* const p_ptCtx, const e_eFSS_LOGC_PAGETYPE p_ePageType,
                                        const uint32_t p_uIdx, uint32_t* const p_puFillInPage)
 {
-	/* Local variable */
+	/* Local return variable */
 	e_eFSS_LOGC_RES l_eRes;
     e_eFSS_COREHL_RES l_eResHL;
 
-    /* Local var used for calculation */
-    bool_t l_bIsInit;
+    /* Local storage variable */
     t_eFSS_TYPE_StorSet l_tStorSet;
     uint32_t l_uNPageU;
+
+    /* Local variable for calculation */
+    bool_t l_bIsInit;
     uint8_t l_uPagSubTOri;
     uint8_t l_uPagSubTBkp;
 
@@ -688,14 +700,16 @@ e_eFSS_LOGC_RES eFSS_LOGC_LoadBufferAs(t_eFSS_LOGC_Ctx* const p_ptCtx, const e_e
 e_eFSS_LOGC_RES eFSS_LOGC_IsPageNewOrBkup(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint32_t p_uIdx,
                                           bool_t* const p_pbIsNewest)
 {
-	/* Local variable */
+	/* Local return variable */
 	e_eFSS_LOGC_RES l_eRes;
     e_eFSS_COREHL_RES l_eResHL;
 
-    /* Local var used for calculation */
-    bool_t l_bIsInit;
+    /* Local storage variable */
     t_eFSS_TYPE_StorSet l_tStorSet;
     t_eFSS_COREHL_StorBuf l_tBuff;
+
+    /* Local variable for calculation */
+    bool_t l_bIsInit;
     uint32_t l_uByteUsed;
     uint32_t l_uByteUsedOff;
     uint8_t l_uPageSubTypeRed;
@@ -851,15 +865,17 @@ e_eFSS_LOGC_RES eFSS_LOGC_IsPageNewOrBkup(t_eFSS_LOGC_Ctx* const p_ptCtx, const 
 e_eFSS_LOGC_RES eFSS_LOGC_FlushBuffIfNotEquals(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint32_t p_uIdx,
                                                const e_eFSS_LOGC_PAGETYPE p_eTypeFlush)
 {
-	/* Local variable */
+	/* Local return variable */
 	e_eFSS_LOGC_RES l_eRes;
     e_eFSS_COREHL_RES l_eResHL;
 
-    /* Local var used for calculation */
-    bool_t l_bIsInit;
+    /* Local storage variable */
     t_eFSS_TYPE_StorSet l_tStorSet;
     t_eFSS_COREHL_StorBuf l_tBuff;
     uint32_t l_uNPageU;
+
+   /* Local variable for calculation */
+    bool_t l_bIsInit;
     bool_t l_bAreEquals;
     uint8_t l_uPagSubTOri;
     uint8_t l_uPagSubTBkp;
@@ -982,13 +998,15 @@ e_eFSS_LOGC_RES eFSS_LOGC_FlushBuffIfNotEquals(t_eFSS_LOGC_Ctx* const p_ptCtx, c
  **********************************************************************************************************************/
 static bool_t eFSS_LOGC_IsStatusStillCoherent(t_eFSS_LOGC_Ctx* const p_ptCtx)
 {
-    /* Return local var */
+    /* Local return variable */
     bool_t l_bRes;
     e_eFSS_COREHL_RES l_eResHL;
 
-    /* Local var used for calculation */
+    /* Local storage variable */
     t_eFSS_TYPE_StorSet l_tStorSet;
     t_eFSS_COREHL_StorBuf l_tBuff;
+
+    /* Local variable for calculation */
     uint32_t l_uNPage;
 
     l_eResHL = eFSS_COREHL_GetBuffNStor(&p_ptCtx->tCOREHLCtx, &l_tBuff, &l_tStorSet);
@@ -1027,6 +1045,7 @@ static bool_t eFSS_LOGC_IsStatusStillCoherent(t_eFSS_LOGC_Ctx* const p_ptCtx)
 
 static e_eFSS_LOGC_RES eFSS_LOGC_HLtoLOGCRes(const e_eFSS_COREHL_RES p_eHLRes)
 {
+    /* Local return variable */
     e_eFSS_LOGC_RES l_eRes;
 
     switch(p_eHLRes)
@@ -1245,7 +1264,7 @@ static e_eFSS_LOGC_RES eFSS_LOGC_LoadBuff(t_eFSS_LOGC_Ctx* const p_ptCtx, bool_t
 
 static uint32_t eFSS_LOGC_GetMaxPage(const bool_t p_bIsFullBkup, const bool_t p_bIsFCache, const uint32_t p_uTotPages)
 {
-    /* Local variable for return */
+    /* Local return variable */
 	uint32_t l_uNPageU;
 
     /* Get the total numbers of page */
