@@ -546,6 +546,7 @@ e_eFSS_LOGC_RES eFSS_LOGC_FlushBufferAs(t_eFSS_LOGC_Ctx* const p_ptCtx, const e_
                         l_uNPageU = eFSS_LOGC_GetMaxPage(p_ptCtx->bFullBckup, p_ptCtx->bFlashCache,
                                                          l_tStorSet.uTotPages);
 
+                        /* Verify page coherence */
                         if( p_uIdx >= l_uNPageU )
                         {
                             l_eRes = e_eFSS_LOGC_RES_BADPARAM;
