@@ -7,6 +7,7 @@
  *
  **********************************************************************************************************************/
 
+
 /* In this module the page field has the following meaning:
  * ------------------------------------------------------------------ User data
  * - [uint8_t] -                    -> N byte of user data           |
@@ -760,27 +761,39 @@ e_eFSS_LOGC_RES eFSS_LOGC_IsPageNewOrBkup(t_eFSS_LOGC_Ctx* const p_ptCtx, const 
                         l_uNPageU = eFSS_LOGC_GetMaxPage(p_ptCtx->bFullBckup, p_ptCtx->bFlashCache,
                                                          l_tStorSet.uTotPages);
 
+                        /* Verify index validity */
                         if( p_uIdx >= l_uNPageU )
                         {
                             l_eRes = e_eFSS_LOGC_RES_BADPARAM;
                         }
                         else
                         {
+                            /* We can not used directly eFSS_LOGC_LoadBuff because we are checking two
+                               different subtype at time, and eFSS_LOGC_LoadBuff can only check one. So
+                               using eFSS_LOGC_LoadBuff could increase considerably the overhead of the function
+                               if used two times */
+
                             /* Calculate redByteOffset */
                             l_uByteUsedOff = l_tBuff.uBufL - EFSS_LOGC_PAGEMIN_L;
 
                             /* Start reading original page, if it's corrupted read the backup one */
-                            l_uPageSubTypeRed = 0xFFu;
+                            l_uPageSubTypeRed = 0x00u;
                             l_eResHL = eFSS_COREHL_LoadPageInBuff(&p_ptCtx->tCOREHLCtx, p_uIdx, &l_uPageSubTypeRed);
                             l_eRes = eFSS_LOGC_HLtoLOGCRes(l_eResHL);
 
                             if( e_eFSS_LOGC_RES_OK == l_eRes )
                             {
+                                /* Main page redable, if needed ripristinate backup before proceeding */
+                                if( true == p_ptCtx->bFullBckup )
+                                {
+                                    /* In case Flush */
+                                }
+
                                 /* Check subtype */
                                 if( ( EFSS_PAGESUBTYPE_LOGNEWESTORI    != l_uPageSubTypeRed ) &&
                                     ( EFSS_PAGESUBTYPE_LOGNEWESTBKPORI != l_uPageSubTypeRed ) )
                                 {
-                                    /* Not what we are searching */
+                                    /* Not what we are searching, decvlared as invalid for this pourpose only */
                                     l_eRes = e_eFSS_LOGC_RES_NOTVALIDLOG;
                                 }
                                 else
@@ -795,6 +808,8 @@ e_eFSS_LOGC_RES eFSS_LOGC_IsPageNewOrBkup(t_eFSS_LOGC_Ctx* const p_ptCtx, const 
                                         /* Check validity */
                                         if( l_uByteUsed > ( l_tBuff.uBufL - EFSS_LOGC_PAGEMIN_L ) )
                                         {
+                                            /* The page was written correctly, but the data is invalid, cannot
+                                               do other things */
                                             l_eRes = e_eFSS_LOGC_RES_NOTVALIDLOG;
                                         }
                                         else
@@ -811,55 +826,59 @@ e_eFSS_LOGC_RES eFSS_LOGC_IsPageNewOrBkup(t_eFSS_LOGC_Ctx* const p_ptCtx, const 
                                     }
                                 }
                             }
-
-                            /* Not valid? search on the packup pages */
-                            if( ( ( e_eFSS_LOGC_RES_NOTVALIDLOG == l_eRes ) ||
-                                  ( e_eFSS_LOGC_RES_NEWVERSIONFOUND == l_eRes ) ) &&
-                                ( true == p_ptCtx->bFullBckup ) )
+                            else if( e_eFSS_LOGC_RES_NOTVALIDLOG == l_eRes )
                             {
-                                l_uPageSubTypeRed = 0xFFu;
-                                l_eResHL = eFSS_COREHL_LoadPageInBuff(&p_ptCtx->tCOREHLCtx, ( l_uNPageU + p_uIdx ),
-                                                                      &l_uPageSubTypeRed);
-                                l_eRes = eFSS_LOGC_HLtoLOGCRes(l_eResHL);
-
-                                if( e_eFSS_LOGC_RES_OK == l_eRes )
+                                /* Main page was unredable, check if recovery from backup needed */
+                                if( true == p_ptCtx->bFullBckup )
                                 {
-                                    /* Check subtype */
-                                    if( ( EFSS_PAGESUBTYPE_LOGNEWESTBKP    != l_uPageSubTypeRed ) &&
-                                        ( EFSS_PAGESUBTYPE_LOGNEWESTBKPBKP != l_uPageSubTypeRed ) )
+                                    l_uPageSubTypeRed = 0xFFu;
+                                    l_eResHL = eFSS_COREHL_LoadPageInBuff(&p_ptCtx->tCOREHLCtx, ( l_uNPageU + p_uIdx ),
+                                                                        &l_uPageSubTypeRed);
+                                    l_eRes = eFSS_LOGC_HLtoLOGCRes(l_eResHL);
+
+                                    if( e_eFSS_LOGC_RES_OK == l_eRes )
                                     {
-                                        /* Not what we are searching */
-                                        l_eRes = e_eFSS_LOGC_RES_NOTVALIDLOG;
-                                    }
-                                    else
-                                    {
-                                        /* Retrive parameter */
-                                        if( true != eFSS_Utils_RetriveU32(&l_tBuff.puBuf[l_uByteUsedOff],
-                                                                          &l_uByteUsed) )
+                                        /* Check subtype */
+                                        if( ( EFSS_PAGESUBTYPE_LOGNEWESTBKP    != l_uPageSubTypeRed ) &&
+                                            ( EFSS_PAGESUBTYPE_LOGNEWESTBKPBKP != l_uPageSubTypeRed ) )
                                         {
-                                            l_eRes = e_eFSS_LOGC_RES_CORRUPTCTX;
+                                            /* Not what we are searching */
+                                            l_eRes = e_eFSS_LOGC_RES_NOTVALIDLOG;
                                         }
                                         else
                                         {
-                                            /* Check validity */
-                                            if( l_uByteUsed > ( l_tBuff.uBufL - EFSS_LOGC_PAGEMIN_L ) )
+                                            /* Retrive parameter */
+                                            if( true != eFSS_Utils_RetriveU32(&l_tBuff.puBuf[l_uByteUsedOff],
+                                                                            &l_uByteUsed) )
                                             {
-                                                l_eRes = e_eFSS_LOGC_RES_NOTVALIDLOG;
+                                                l_eRes = e_eFSS_LOGC_RES_CORRUPTCTX;
                                             }
                                             else
                                             {
-                                                if( EFSS_PAGESUBTYPE_LOGNEWESTBKP == l_uPageSubTypeRed )
+                                                /* Check validity */
+                                                if( l_uByteUsed > ( l_tBuff.uBufL - EFSS_LOGC_PAGEMIN_L ) )
                                                 {
-                                                    *p_pbIsNewest = true;
+                                                    l_eRes = e_eFSS_LOGC_RES_NOTVALIDLOG;
                                                 }
                                                 else
                                                 {
-                                                    *p_pbIsNewest = false;
+                                                    if( EFSS_PAGESUBTYPE_LOGNEWESTBKP == l_uPageSubTypeRed )
+                                                    {
+                                                        *p_pbIsNewest = true;
+                                                    }
+                                                    else
+                                                    {
+                                                        *p_pbIsNewest = false;
+                                                    }
                                                 }
                                             }
                                         }
                                     }
                                 }
+                            }
+                            else
+                            {
+                                /* Other kind of error */
                             }
                         }
                     }
