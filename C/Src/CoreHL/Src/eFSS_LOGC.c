@@ -47,6 +47,7 @@
 #define EFSS_PAGESUBTYPE_LOGCACHEORI                                                             ( ( uint8_t )   0x07u )
 #define EFSS_PAGESUBTYPE_LOGCACHEBKP                                                             ( ( uint8_t )   0x08u )
 #define EFSS_LOGC_PAGEMIN_L                                                                      ( ( uint32_t )     4u )
+#define EFSS_LOGC_CACHEMIN_L                                                                     ( ( uint32_t )    12u )
 
 
 
@@ -125,7 +126,8 @@ e_eFSS_LOGC_RES eFSS_LOGC_InitCtx(t_eFSS_LOGC_Ctx* const p_ptCtx, const t_eFSS_T
 
                 if( e_eFSS_LOGC_RES_OK == l_eRes )
                 {
-                    if( l_tBuff.uBufL <= EFSS_LOGC_PAGEMIN_L )
+                    if( ( ( l_tBuff.uBufL <= EFSS_LOGC_PAGEMIN_L  ) && ( false == p_bFlashCache ) ) ||
+                        ( ( l_tBuff.uBufL <= EFSS_LOGC_CACHEMIN_L ) && ( true == p_bFlashCache  ) ) )
                     {
                         /* De init HL, we dont' have enogh data avaible */
                         (void)memset(&p_ptCtx->tCOREHLCtx, 0, sizeof(t_eFSS_COREHL_Ctx));
@@ -320,6 +322,7 @@ e_eFSS_LOGC_RES eFSS_LOGC_WriteCache(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint3
                 }
                 else
                 {
+                    /* In order to write the cache the cache itself must be enabled */
                     if( false == p_ptCtx->bFlashCache )
                     {
                         l_eRes = e_eFSS_LOGC_RES_BADPARAM;
@@ -1031,7 +1034,8 @@ static bool_t eFSS_LOGC_IsStatusStillCoherent(t_eFSS_LOGC_Ctx* const p_ptCtx)
         }
         else
         {
-            if( l_tBuff.uBufL <= EFSS_LOGC_PAGEMIN_L )
+            if( ( ( l_tBuff.uBufL <= EFSS_LOGC_PAGEMIN_L  ) && ( false == p_ptCtx->bFlashCache ) ) ||
+                ( ( l_tBuff.uBufL <= EFSS_LOGC_CACHEMIN_L ) && ( true == p_ptCtx->bFlashCache  ) ) )
             {
                 l_bRes = false;
             }
