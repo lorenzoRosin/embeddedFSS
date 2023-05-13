@@ -119,14 +119,15 @@ e_eFSS_LOGC_RES eFSS_LOGC_InitCtx(t_eFSS_LOGC_Ctx* const p_ptCtx, const t_eFSS_T
 
             if( e_eFSS_LOGC_RES_OK == l_eRes )
             {
-                /* Check if we have enogh space for the page */
+                /* HL level initialized, now check if we have enogh space for the page specific data */
                 l_eResHL = eFSS_COREHL_GetBuff(&p_ptCtx->tCOREHLCtx, &l_tBuff);
                 l_eRes = eFSS_LOGC_HLtoLOGCRes(l_eResHL);
+
                 if( e_eFSS_LOGC_RES_OK == l_eRes )
                 {
                     if( l_tBuff.uBufL <= EFSS_LOGC_PAGEMIN_L )
                     {
-                        /* De init HL */
+                        /* De init HL, we dont' have enogh data avaible */
                         (void)memset(&p_ptCtx->tCOREHLCtx, 0, sizeof(t_eFSS_COREHL_Ctx));
 
                         l_eRes = e_eFSS_LOGC_RES_BADPARAM;
@@ -210,7 +211,6 @@ e_eFSS_LOGC_RES eFSS_LOGC_IsFlashCacheUsed(t_eFSS_LOGC_Ctx* const p_ptCtx, bool_
                 }
             }
         }
-
 	}
 
 	return l_eRes;
