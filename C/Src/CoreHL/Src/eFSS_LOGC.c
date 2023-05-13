@@ -12,19 +12,18 @@
  * - [uint8_t] -                    -> N byte of user data           |
  * ------------------------------------------------------------------ Metadata  (4 byte)
  * - uint32_t  - Byte in Page       -> Valorized byte in page        |
- * ------------------------------------------------------------------ Under we have LL/HL metadata
+ * ------------------------------------------------------------------ Under we have LL/HL metadata (20byte)
  * - LOW LEVEL / HIGH LEVEL METADATA                                 |
  * ------------------------------------------------------------------ End of Page
  *
  * In this module the storage is organizated as follow :
  *
  *   bFullBckup = true, bFlashCache = true
- * - [ 0                            -    ( ( uTotPages - 2 ) / 2 ) - 1 ]  -> Original pages
- * - [ ( ( uTotPages - 2 ) / 2 )    -    uTotPages - 1 - 2             ]  -> Backup pages
+ * - [ 0                            -    ( ( uTotPages - 2 ) / 2 ) - 1 ]  -> Original Log pages
+ * - [ ( ( uTotPages - 2 ) / 2 )    -    uTotPages - 1 - 2             ]  -> Backup Log pages
  * - [ uTotPages - 1 - 1            -    uTotPages - 1 - 1             ]  -> Cache original
  * - [ uTotPages - 1                -    uTotPages - 1                 ]  -> Cache backup
  *
- * First write original pages and after the backup pages
  */
 
 /***********************************************************************************************************************
@@ -39,7 +38,6 @@
  *      PRIVATE DEFINE
  **********************************************************************************************************************/
 #define EFSS_PAGETYPE_LOG                                                                        ( ( uint8_t )   0x02u )
-#define EFSS_LOGC_PAGEMIN_L                                                                      ( ( uint32_t )     4u )
 #define EFSS_PAGESUBTYPE_LOGORI                                                                  ( ( uint8_t )   0x01u )
 #define EFSS_PAGESUBTYPE_LOGBKP                                                                  ( ( uint8_t )   0x02u )
 #define EFSS_PAGESUBTYPE_LOGNEWESTORI                                                            ( ( uint8_t )   0x03u )
@@ -48,6 +46,7 @@
 #define EFSS_PAGESUBTYPE_LOGNEWESTBKPBKP                                                         ( ( uint8_t )   0x06u )
 #define EFSS_PAGESUBTYPE_LOGCACHEORI                                                             ( ( uint8_t )   0x07u )
 #define EFSS_PAGESUBTYPE_LOGCACHEBKP                                                             ( ( uint8_t )   0x08u )
+#define EFSS_LOGC_PAGEMIN_L                                                                      ( ( uint32_t )     4u )
 
 
 
