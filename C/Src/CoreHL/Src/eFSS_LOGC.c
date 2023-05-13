@@ -339,13 +339,14 @@ e_eFSS_LOGC_RES eFSS_LOGC_WriteCache(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint3
                             l_uUsableP = eFSS_LOGC_GetMaxPage(p_ptCtx->bFullBckup, p_ptCtx->bFlashCache,
                                                               l_tStorSet.uTotPages);
 
+                            /* Cannot save an invalid index and an overloaded numbers of filled page */
                             if( ( p_uIdxN >= l_uUsableP ) || ( ( p_uFilP + 3u ) > l_uUsableP ) )
                             {
                                 l_eRes = e_eFSS_LOGC_RES_BADPARAM;
                             }
                             else
                             {
-                                /* Clear data */
+                                /* Clear internal buffer */
                                 (void)memset(l_tBuff.puBuf, 0, l_tBuff.uBufL);
 
                                 /* Insert data */
