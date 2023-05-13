@@ -272,7 +272,7 @@ e_eFSS_LOGC_RES eFSS_LOGC_GetBuffNUsable(t_eFSS_LOGC_Ctx* const p_ptCtx, t_eFSS_
 	return l_eRes;
 }
 
-e_eFSS_LOGC_RES eFSS_LOGC_WriteCache(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint32_t p_uIdxN, const uint32_t p_uIFlP)
+e_eFSS_LOGC_RES eFSS_LOGC_WriteCache(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint32_t p_uIdxN, const uint32_t p_uFilP)
 {
 	/* Local variable */
 	e_eFSS_LOGC_RES l_eRes;
@@ -329,7 +329,7 @@ e_eFSS_LOGC_RES eFSS_LOGC_WriteCache(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint3
                             l_uUsableP = eFSS_LOGC_GetMaxPage(p_ptCtx->bFullBckup, p_ptCtx->bFlashCache,
                                                               l_tStorSet.uTotPages);
 
-                            if( ( p_uIdxN >= l_uUsableP ) || ( ( p_uIFlP + 3u ) > l_uUsableP ) )
+                            if( ( p_uIdxN >= l_uUsableP ) || ( ( p_uFilP + 3u ) > l_uUsableP ) )
                             {
                                 l_eRes = e_eFSS_LOGC_RES_BADPARAM;
                             }
@@ -346,7 +346,7 @@ e_eFSS_LOGC_RES eFSS_LOGC_WriteCache(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint3
                                 else
                                 {
                                     /* Insert data */
-                                    if( true != eFSS_Utils_InsertU32(&l_tBuff.puBuf[4u], p_uIFlP) )
+                                    if( true != eFSS_Utils_InsertU32(&l_tBuff.puBuf[4u], p_uFilP) )
                                     {
                                         l_eRes = e_eFSS_LOGC_RES_CORRUPTCTX;
                                     }
@@ -373,7 +373,7 @@ e_eFSS_LOGC_RES eFSS_LOGC_WriteCache(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint3
 	return l_eRes;
 }
 
-e_eFSS_LOGC_RES eFSS_LOGC_ReadCache(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t* const p_puIdxN, uint32_t* const p_puIFlP)
+e_eFSS_LOGC_RES eFSS_LOGC_ReadCache(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t* const p_puIdxN, uint32_t* const p_puFilP)
 {
 	/* Local variable */
 	e_eFSS_LOGC_RES l_eRes;
@@ -389,7 +389,7 @@ e_eFSS_LOGC_RES eFSS_LOGC_ReadCache(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t* co
     uint32_t l_uUsableP;
 
 	/* Check pointer validity */
-	if( ( NULL == p_ptCtx ) || ( NULL == p_puIdxN ) || ( NULL == p_puIFlP ) )
+	if( ( NULL == p_ptCtx ) || ( NULL == p_puIdxN ) || ( NULL == p_puFilP ) )
 	{
 		l_eRes = e_eFSS_LOGC_RES_BADPOINTER;
 	}
@@ -444,7 +444,7 @@ e_eFSS_LOGC_RES eFSS_LOGC_ReadCache(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t* co
                                 else
                                 {
                                     /* Retrive parameter */
-                                    if( true != eFSS_Utils_RetriveU32(&l_tBuff.puBuf[4u], p_puIFlP) )
+                                    if( true != eFSS_Utils_RetriveU32(&l_tBuff.puBuf[4u], p_puFilP) )
                                     {
                                         l_eRes = e_eFSS_LOGC_RES_CORRUPTCTX;
                                     }
@@ -461,7 +461,7 @@ e_eFSS_LOGC_RES eFSS_LOGC_ReadCache(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t* co
                                             l_uUsableP = eFSS_LOGC_GetMaxPage(p_ptCtx->bFullBckup, p_ptCtx->bFlashCache,
                                                                               l_tStorSet.uTotPages);
                                             /* Verify parameter */
-                                            if( ( *p_puIdxN >= l_uUsableP ) || ( ( *p_puIFlP + 3u ) > l_uUsableP ) )
+                                            if( ( *p_puIdxN >= l_uUsableP ) || ( ( *p_puFilP + 3u ) > l_uUsableP ) )
                                             {
                                                 l_eRes = e_eFSS_LOGC_RES_NOTVALIDLOG;
                                             }
@@ -792,7 +792,7 @@ e_eFSS_LOGC_RES eFSS_LOGC_IsPageNewOrBkup(t_eFSS_LOGC_Ctx* const p_ptCtx, const 
 
                             /* Not valid? search on the packup pages */
                             if( ( ( e_eFSS_LOGC_RES_NOTVALIDLOG == l_eRes ) ||
-                                  ( e_eFSS_LOGC_RES_NEWVERSIONLOG == l_eRes ) ) &&
+                                  ( e_eFSS_LOGC_RES_NEWVERSIONFOUND == l_eRes ) ) &&
                                 ( true == p_ptCtx->bFullBckup ) )
                             {
                                 l_uPageSubTypeRed = 0xFFu;
@@ -1094,7 +1094,7 @@ static e_eFSS_LOGC_RES eFSS_LOGC_HLtoLOGCRes(const e_eFSS_COREHL_RES p_eHLRes)
 
         case e_eFSS_COREHL_RES_NEWVERSIONFOUND:
         {
-            l_eRes = e_eFSS_LOGC_RES_NEWVERSIONLOG;
+            l_eRes = e_eFSS_LOGC_RES_NEWVERSIONFOUND;
             break;
         }
 

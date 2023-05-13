@@ -40,9 +40,9 @@ typedef enum
     e_eFSS_LOGC_RES_CLBCKREADERR,
     e_eFSS_LOGC_RES_CLBCKCRCERR,
     e_eFSS_LOGC_RES_NOTVALIDLOG,
-    e_eFSS_LOGC_RES_NEWVERSIONLOG,
+    e_eFSS_LOGC_RES_NEWVERSIONFOUND,
     e_eFSS_LOGC_RES_WRITENOMATCHREAD,
-    e_eFSS_LOGC_RES_OK_BKP_RCVRD,
+    e_eFSS_LOGC_RES_OK_BKP_RCVRD
 }e_eFSS_LOGC_RES;
 
 typedef enum
@@ -133,11 +133,12 @@ e_eFSS_LOGC_RES eFSS_LOGC_GetBuffNUsable(t_eFSS_LOGC_Ctx* const p_ptCtx, t_eFSS_
  * @brief       Write in cache the value of the new index location and the numbers of filled pages.
  *              The new index location refers to the current index that we are using to store data, the number of
  *              filled pages indicate the number of completly filled page (from this calculation the newest index is
- *              excluded)
+ *              excluded because it's where we are still writing or reading log).
+ *              This function take care of the backup pages. Use this function only if flash cache is enabled.
  *
  * @param[in]   p_ptCtx          - Log Core context
  * @param[in]   p_uIdxN          - Index of the new log page that we want to save in cache
- * @param[in]   p_uIFlP          - Number of filled pages that we want to save
+ * @param[in]   p_uFilP          - Number of filled pages that we want to save
  *
  * @return      e_eFSS_LOGC_RES_BADPOINTER        - In case of bad pointer passed to the function
  *		        e_eFSS_LOGC_RES_BADPARAM          - In case of an invalid parameter passed to the function
@@ -150,16 +151,20 @@ e_eFSS_LOGC_RES eFSS_LOGC_GetBuffNUsable(t_eFSS_LOGC_Ctx* const p_ptCtx, t_eFSS_
  *		        e_eFSS_LOGC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
  *              e_eFSS_LOGC_RES_OK                - Operation ended correctly
  */
-e_eFSS_LOGC_RES eFSS_LOGC_WriteCache(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint32_t p_uIdxN, const uint32_t p_uIFlP);
+e_eFSS_LOGC_RES eFSS_LOGC_WriteCache(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint32_t p_uIdxN, const uint32_t p_uFilP);
 
 /**
- * @brief       Read from cache the value of new index location and the numbers of filled pages. This function take
- *              care of the backup pages.
- *              Use this function only if flash cache is enabled.
+ * @brief       Read from cache the value of new index location and the numbers of filled pages.
+ *              The new index location refers to the current index that we are using to store data, the number of
+ *              filled pages indicate the number of completly filled page (from this calculation the newest index is
+ *              excluded because it's where we are still writing or reading log).
+ *              This function take care of the backup pages. Use this function only if flash cache is enabled.
  *
  * @param[in]   p_ptCtx          - Log Core context
- * @param[out]  p_puIdxN         - Index of the new log page that we want to read from cache
- * @param[out]  p_puIFlP         - Number of filled pages that we want to read
+ * @param[out]  p_puIdxN         - Pointer to an uint32_t that will be filled with the value of the index of the new
+ *                                 logs pages that we want to read from cache
+ * @param[out]  p_puFilP         - Pointer to an uint32_t that will be filled with the value of the number of filled
+ *                                 pages that we want to read
  *
  * @return      e_eFSS_LOGC_RES_BADPOINTER        - In case of bad pointer passed to the function
  *		        e_eFSS_LOGC_RES_BADPARAM          - In case of an invalid parameter passed to the function
@@ -168,7 +173,7 @@ e_eFSS_LOGC_RES eFSS_LOGC_WriteCache(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint3
  *		        e_eFSS_LOGC_RES_CLBCKREADERR      - The read callback reported an error
  *              e_eFSS_LOGC_RES_CLBCKCRCERR       - The crc callback reported an error
  *              e_eFSS_LOGC_RES_NOTVALIDLOG       - both origin and backup pages are corrupted
- *              e_eFSS_LOGC_RES_NEWVERSIONLOG     - The readed page has a new version
+ *              e_eFSS_LOGC_RES_NEWVERSIONFOUND   - The readed page has a new version
  *		        e_eFSS_LOGC_RES_CLBCKERASEERR     - The erase callback reported an error
  *		        e_eFSS_LOGC_RES_CLBCKWRITEERR     - The write callback reported an error
  *		        e_eFSS_LOGC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
@@ -176,7 +181,7 @@ e_eFSS_LOGC_RES eFSS_LOGC_WriteCache(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint3
  *                                                  page
  *              e_eFSS_LOGC_RES_OK                - Operation ended correctly
  */
-e_eFSS_LOGC_RES eFSS_LOGC_ReadCache(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t* const p_puIdxN, uint32_t* const p_puIFlP);
+e_eFSS_LOGC_RES eFSS_LOGC_ReadCache(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t* const p_puIdxN, uint32_t* const p_puFilP);
 
 /**
  * @brief       Flush the buffer in a page at p_uIdx position using p_ePageType as subtype. This function will take
@@ -217,7 +222,7 @@ e_eFSS_LOGC_RES eFSS_LOGC_FlushBufferAs(t_eFSS_LOGC_Ctx* const p_ptCtx, const e_
  *		        e_eFSS_LOGC_RES_CLBCKREADERR      - The read callback reported an error
  *              e_eFSS_LOGC_RES_CLBCKCRCERR       - The crc callback reported an error
  *              e_eFSS_LOGC_RES_NOTVALIDLOG       - both origin and backup pages are corrupted
- *              e_eFSS_LOGC_RES_NEWVERSIONLOG     - The readed page has a new version
+ *              e_eFSS_LOGC_RES_NEWVERSIONFOUND   - The readed page has a new version
  *		        e_eFSS_LOGC_RES_CLBCKERASEERR     - The erase callback reported an error
  *		        e_eFSS_LOGC_RES_CLBCKWRITEERR     - The write callback reported an error
  *		        e_eFSS_LOGC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
@@ -245,7 +250,7 @@ e_eFSS_LOGC_RES eFSS_LOGC_LoadBufferAs(t_eFSS_LOGC_Ctx* const p_ptCtx, const e_e
  *		        e_eFSS_LOGC_RES_CLBCKREADERR      - The read callback reported an error
  *              e_eFSS_LOGC_RES_CLBCKCRCERR       - The crc callback reported an error
  *              e_eFSS_LOGC_RES_NOTVALIDLOG       - both origin and backup pages are corrupted
- *              e_eFSS_LOGC_RES_NEWVERSIONLOG     - The readed page has a new version
+ *              e_eFSS_LOGC_RES_NEWVERSIONFOUND   - The readed page has a new version
  *              e_eFSS_LOGC_RES_OK                - Operation ended correctly
  */
 e_eFSS_LOGC_RES eFSS_LOGC_IsPageNewOrBkup(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint32_t p_uIdx,
