@@ -251,6 +251,8 @@ e_eFSS_LOGC_RES eFSS_LOGC_LoadBufferAs(t_eFSS_LOGC_Ctx* const p_ptCtx, const e_e
  *              e_eFSS_LOGC_PAGETYPE_NEWEST_BKUP. When a valid page is found e_eFSS_LOGC_RES_OK is returned and
  *              the field p_pbIsNewest will be valorized with true if the founded subtype is
  *              e_eFSS_LOGC_PAGETYPE_NEWEST.
+ *              When a new or new backup page is found and fullbackup is enable this function will take care of
+ *              backup pages
  *
  * @param[in]   p_ptCtx          - Log Core context
  * @param[in]   p_uIdx           - Index of the log page we want to read
@@ -278,8 +280,9 @@ e_eFSS_LOGC_RES eFSS_LOGC_IsPageNewOrBkup(t_eFSS_LOGC_Ctx* const p_ptCtx, const 
  *              If page pointed by p_uIdx is invalid or is valid but the subtype of the page itself is different
  *              from p_eTypeFlush, flush anyway the data present in to the internal buffer.
  *              Keep in mind that subtype are not compared, the comparsion is only done using raw data (so we
- *              are comparing numbersofbytein page also).
+ *              are comparing numbersofbyteinpage also).
  *              Th previusly present data in buffer is not modified after this call.
+ *              If fullbackup is enabled this page will take care of backup pages.
  *
  * @param[in]   p_ptCtx         - Log Core context
  * @param[in]   p_uIdx          - uint32_t index rappresenting the page that we want to compare and eventualy flush

@@ -937,6 +937,8 @@ e_eFSS_LOGC_RES eFSS_LOGC_FlushBuffIfNotEquals(t_eFSS_LOGC_Ctx* const p_ptCtx, c
     uint8_t l_uPagSubTOri;
     uint8_t l_uPagSubTBkp;
     uint32_t l_uByteInPage;
+    uint32_t l_uBytInPOff;
+    uint8_t l_uPageSubTypeRed;
 
 	/* Check pointer validity */
 	if( NULL == p_ptCtx )
@@ -1015,26 +1017,28 @@ e_eFSS_LOGC_RES eFSS_LOGC_FlushBuffIfNotEquals(t_eFSS_LOGC_Ctx* const p_ptCtx, c
                             if( e_eFSS_LOGC_RES_OK == l_eRes )
                             {
                                 l_bAreEquals = false;
+                                l_uPageSubTypeRed = 0u;
                                 l_eResHL = eFSS_COREHL_IsBuffEqualToPage(&p_ptCtx->tCOREHLCtx, p_uIdx, &l_bAreEquals,
-                                                                         NULL);
+                                                                         &l_uPageSubTypeRed);
                                 l_eRes = eFSS_LOGC_HLtoLOGCRes(l_eResHL);
 
-                                if( e_eFSS_LOGC_RES_OK == l_eRes )
+                                if( ( ( e_eFSS_LOGC_RES_OK == l_eRes ) &&
+                                      ( ( false == l_bAreEquals ) || ( l_uPagSubTOri != l_uPageSubTypeRed ) ) ) ||
+                                    ( e_eFSS_LOGC_RES_NOTVALIDLOG == l_eRes ) ||
+                                    ( e_eFSS_LOGC_RES_NEWVERSIONFOUND == l_eRes ) )
                                 {
-                                    /* Retrive parameter */
-                                    if( true != eFSS_Utils_RetriveU32(&l_tBuff.puBuf[4u], &l_uByteInPage) )
+                                    /* Retrive byte in page parameter from the buffer */
+                                    l_uBytInPOff = l_tBuff.uBufL - EFSS_LOGC_PAGEMIN_L;
+                                    if( true != eFSS_Utils_RetriveU32(&l_tBuff.puBuf[l_uBytInPOff], &l_uByteInPage) )
                                     {
                                         l_eRes = e_eFSS_LOGC_RES_CORRUPTCTX;
                                     }
                                     else
                                     {
-                                        if( false == l_bAreEquals )
-                                        {
-                                            /* Not equal! Flush buffer here */
-                                            l_eRes = eFSS_LOGC_FlushBuff(p_ptCtx, p_ptCtx->bFullBckup, l_uByteInPage,
-                                                                        p_uIdx, ( l_uNPageU + p_uIdx ), l_uPagSubTOri,
-                                                                        l_uPagSubTBkp);
-                                        }
+                                        /* Not equal! Flush buffer here */
+                                        l_eRes = eFSS_LOGC_FlushBuff(p_ptCtx, p_ptCtx->bFullBckup, l_uByteInPage,
+                                                                     p_uIdx, ( l_uNPageU + p_uIdx ), l_uPagSubTOri,
+                                                                     l_uPagSubTBkp);
                                     }
                                 }
                             }
