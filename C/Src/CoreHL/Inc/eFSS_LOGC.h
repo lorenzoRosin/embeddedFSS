@@ -252,7 +252,8 @@ e_eFSS_LOGC_RES eFSS_LOGC_LoadBufferAs(t_eFSS_LOGC_Ctx* const p_ptCtx, const e_e
  *              the field p_pbIsNewest will be valorized with true if the founded subtype is
  *              e_eFSS_LOGC_PAGETYPE_NEWEST.
  *              When a new or new backup page is found and fullbackup is enable this function will take care of
- *              backup pages
+ *              backup pages.
+ *              If the founded page is new or nebackp the internal buffer will contain valid data
  *
  * @param[in]   p_ptCtx          - Log Core context
  * @param[in]   p_uIdx           - Index of the log page we want to read

@@ -897,7 +897,7 @@ e_eFSS_LOGC_RES eFSS_LOGC_IsPageNewOrBkup(t_eFSS_LOGC_Ctx* const p_ptCtx, const 
                                                     }
                                                     /* Backup pages seems to be avaiable, ripristinate original */
                                                     l_eResHL = eFSS_COREHL_FlushBuffInPage(&p_ptCtx->tCOREHLCtx, p_uIdx,
-                                                                                          l_uSubTToRipr);
+                                                                                           l_uSubTToRipr);
                                                     l_eRes = eFSS_LOGC_HLtoLOGCRes(l_eResHL);
                                                 }
                                             }
@@ -1040,6 +1040,43 @@ e_eFSS_LOGC_RES eFSS_LOGC_FlushBuffIfNotEquals(t_eFSS_LOGC_Ctx* const p_ptCtx, c
                                                                      p_uIdx, ( l_uNPageU + p_uIdx ), l_uPagSubTOri,
                                                                      l_uPagSubTBkp);
                                     }
+                                }
+                                else if( ( e_eFSS_LOGC_RES_OK == l_eRes ) && ( true == l_bAreEquals ) ||
+                                         ( l_uPagSubTOri == l_uPageSubTypeRed ) && ( true == p_ptCtx->bFullBckup ) )
+                                {
+                                    /* Page are already OK, just need to check if the same is verified for the
+                                       backup page. */
+                                    l_bAreEquals = false;
+                                    l_uPageSubTypeRed = 0u;
+                                    l_eResHL = eFSS_COREHL_IsBuffEqualToPage(&p_ptCtx->tCOREHLCtx,
+                                                                             ( l_uNPageU + p_uIdx ), &l_bAreEquals,
+                                                                             &l_uPageSubTypeRed);
+                                    l_eRes = eFSS_LOGC_HLtoLOGCRes(l_eResHL);
+
+                                    if( ( ( e_eFSS_LOGC_RES_OK == l_eRes ) &&
+                                        ( ( false == l_bAreEquals ) || ( l_uPagSubTOri != l_uPageSubTypeRed ) ) ) ||
+                                        ( e_eFSS_LOGC_RES_NOTVALIDLOG == l_eRes ) ||
+                                        ( e_eFSS_LOGC_RES_NEWVERSIONFOUND == l_eRes ) )
+                                    {
+                                        /* Retrive byte in page parameter from the buffer */
+                                        l_uBytInPOff = l_tBuff.uBufL - EFSS_LOGC_PAGEMIN_L;
+                                        if( true != eFSS_Utils_RetriveU32(&l_tBuff.puBuf[l_uBytInPOff], &l_uByteInPage) )
+                                        {
+                                            l_eRes = e_eFSS_LOGC_RES_CORRUPTCTX;
+                                        }
+                                        else
+                                        {
+                                            /* Not equal! Flush buffer here */
+                                            l_eResHL = eFSS_COREHL_FlushBuffInPage(&p_ptCtx->tCOREHLCtx,
+                                                                                   ( l_uNPageU + p_uIdx ),
+                                                                                   l_uPagSubTBkp);
+                                            l_eRes = eFSS_LOGC_HLtoLOGCRes(l_eResHL);
+                                        }
+                                    }
+                                }
+                                else
+                                {
+
                                 }
                             }
                         }
