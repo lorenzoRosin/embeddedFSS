@@ -724,6 +724,8 @@ e_eFSS_LOGC_RES eFSS_LOGC_IsPageNewOrBkup(t_eFSS_LOGC_Ctx* const p_ptCtx, const 
     uint32_t l_uByteUsedOff;
     uint8_t l_uPageSubTypeRed;
     uint32_t l_uNPageU;
+    uint8_t l_uSubTToRipr;
+    bool_t l_bIsEquals;
 
 	/* Check pointer validity */
 	if( ( NULL == p_ptCtx ) || ( NULL == p_pbIsNewest ) )
@@ -783,12 +785,6 @@ e_eFSS_LOGC_RES eFSS_LOGC_IsPageNewOrBkup(t_eFSS_LOGC_Ctx* const p_ptCtx, const 
 
                             if( e_eFSS_LOGC_RES_OK == l_eRes )
                             {
-                                /* Main page redable, if needed ripristinate backup before proceeding */
-                                if( true == p_ptCtx->bFullBckup )
-                                {
-                                    /* In case Flush */
-                                }
-
                                 /* Check subtype */
                                 if( ( EFSS_PAGESUBTYPE_LOGNEWESTORI    != l_uPageSubTypeRed ) &&
                                     ( EFSS_PAGESUBTYPE_LOGNEWESTBKPORI != l_uPageSubTypeRed ) )
@@ -817,23 +813,50 @@ e_eFSS_LOGC_RES eFSS_LOGC_IsPageNewOrBkup(t_eFSS_LOGC_Ctx* const p_ptCtx, const 
                                             if( EFSS_PAGESUBTYPE_LOGNEWESTORI == l_uPageSubTypeRed )
                                             {
                                                 *p_pbIsNewest = true;
+                                                l_uSubTToRipr = EFSS_PAGESUBTYPE_LOGNEWESTBKP;
                                             }
                                             else
                                             {
                                                 *p_pbIsNewest = false;
+                                                l_uSubTToRipr = EFSS_PAGESUBTYPE_LOGNEWESTBKPBKP;
+                                            }
+
+                                            /* Main page redable, if needed ripristinate backup before proceeding */
+                                            if( true == p_ptCtx->bFullBckup )
+                                            {
+                                                /* In case Flush */
+                                                l_bIsEquals = false;
+                                                l_eResHL = eFSS_COREHL_IsBuffEqualToPage(&p_ptCtx->tCOREHLCtx,
+                                                                                         ( l_uNPageU + p_uIdx ),
+                                                                                         &l_bIsEquals,
+                                                                                         &l_uPageSubTypeRed);
+                                                l_eRes = eFSS_LOGC_HLtoLOGCRes(l_eResHL);
+
+                                                if( ( ( e_eFSS_LOGC_RES_OK == l_eRes ) &&
+                                                      ( ( false == l_bIsEquals ) ||
+                                                        ( l_uSubTToRipr != l_uPageSubTypeRed ) ) ) ||
+                                                    ( e_eFSS_LOGC_RES_NOTVALIDLOG == l_eRes ) ||
+                                                    ( e_eFSS_LOGC_RES_NEWVERSIONFOUND == l_eRes ) )
+                                                {
+                                                    l_eResHL = eFSS_COREHL_FlushBuffInPage(&p_ptCtx->tCOREHLCtx,
+                                                                                           ( l_uNPageU + p_uIdx ),
+                                                                                           l_uSubTToRipr);
+                                                    l_eRes = eFSS_LOGC_HLtoLOGCRes(l_eResHL);
+                                                }
                                             }
                                         }
                                     }
                                 }
                             }
-                            else if( e_eFSS_LOGC_RES_NOTVALIDLOG == l_eRes )
+                            else if( ( e_eFSS_LOGC_RES_NOTVALIDLOG == l_eRes ) ||
+                                     ( e_eFSS_LOGC_RES_NEWVERSIONFOUND == l_eRes ) )
                             {
-                                /* Main page was unredable, check if recovery from backup needed */
+                                /* Main page was unredable, check if recovery from backup avaiable */
                                 if( true == p_ptCtx->bFullBckup )
                                 {
-                                    l_uPageSubTypeRed = 0xFFu;
+                                    l_uPageSubTypeRed = 0x00u;
                                     l_eResHL = eFSS_COREHL_LoadPageInBuff(&p_ptCtx->tCOREHLCtx, ( l_uNPageU + p_uIdx ),
-                                                                        &l_uPageSubTypeRed);
+                                                                          &l_uPageSubTypeRed);
                                     l_eRes = eFSS_LOGC_HLtoLOGCRes(l_eResHL);
 
                                     if( e_eFSS_LOGC_RES_OK == l_eRes )
@@ -849,13 +872,13 @@ e_eFSS_LOGC_RES eFSS_LOGC_IsPageNewOrBkup(t_eFSS_LOGC_Ctx* const p_ptCtx, const 
                                         {
                                             /* Retrive parameter */
                                             if( true != eFSS_Utils_RetriveU32(&l_tBuff.puBuf[l_uByteUsedOff],
-                                                                            &l_uByteUsed) )
+                                                                              &l_uByteUsed) )
                                             {
                                                 l_eRes = e_eFSS_LOGC_RES_CORRUPTCTX;
                                             }
                                             else
                                             {
-                                                /* Check validity */
+                                                /* Check parameter validity */
                                                 if( l_uByteUsed > ( l_tBuff.uBufL - EFSS_LOGC_PAGEMIN_L ) )
                                                 {
                                                     l_eRes = e_eFSS_LOGC_RES_NOTVALIDLOG;
@@ -865,11 +888,17 @@ e_eFSS_LOGC_RES eFSS_LOGC_IsPageNewOrBkup(t_eFSS_LOGC_Ctx* const p_ptCtx, const 
                                                     if( EFSS_PAGESUBTYPE_LOGNEWESTBKP == l_uPageSubTypeRed )
                                                     {
                                                         *p_pbIsNewest = true;
+                                                        l_uSubTToRipr = EFSS_PAGESUBTYPE_LOGNEWESTORI;
                                                     }
                                                     else
                                                     {
                                                         *p_pbIsNewest = false;
+                                                        l_uSubTToRipr = EFSS_PAGESUBTYPE_LOGNEWESTBKPORI;
                                                     }
+                                                    /* Backup pages seems to be avaiable, ripristinate original */
+                                                    l_eResHL = eFSS_COREHL_FlushBuffInPage(&p_ptCtx->tCOREHLCtx, p_uIdx,
+                                                                                          l_uSubTToRipr);
+                                                    l_eRes = eFSS_LOGC_HLtoLOGCRes(l_eResHL);
                                                 }
                                             }
                                         }
