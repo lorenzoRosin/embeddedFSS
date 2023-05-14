@@ -1016,67 +1016,81 @@ e_eFSS_LOGC_RES eFSS_LOGC_FlushBuffIfNotEquals(t_eFSS_LOGC_Ctx* const p_ptCtx, c
 
                             if( e_eFSS_LOGC_RES_OK == l_eRes )
                             {
-                                l_bAreEquals = false;
-                                l_uPageSubTypeRed = 0u;
-                                l_eResHL = eFSS_COREHL_IsBuffEqualToPage(&p_ptCtx->tCOREHLCtx, p_uIdx, &l_bAreEquals,
-                                                                         &l_uPageSubTypeRed);
-                                l_eRes = eFSS_LOGC_HLtoLOGCRes(l_eResHL);
-
-                                if( ( ( e_eFSS_LOGC_RES_OK == l_eRes ) &&
-                                      ( ( false == l_bAreEquals ) || ( l_uPagSubTOri != l_uPageSubTypeRed ) ) ) ||
-                                    ( e_eFSS_LOGC_RES_NOTVALIDLOG == l_eRes ) ||
-                                    ( e_eFSS_LOGC_RES_NEWVERSIONFOUND == l_eRes ) )
+                                /* Before proceeding check if the buffer has some valid data */
+                                l_uBytInPOff = l_tBuff.uBufL - EFSS_LOGC_PAGEMIN_L;
+                                if( true != eFSS_Utils_RetriveU32(&l_tBuff.puBuf[l_uBytInPOff], &l_uByteInPage) )
                                 {
-                                    /* Retrive byte in page parameter from the buffer */
-                                    l_uBytInPOff = l_tBuff.uBufL - EFSS_LOGC_PAGEMIN_L;
-                                    if( true != eFSS_Utils_RetriveU32(&l_tBuff.puBuf[l_uBytInPOff], &l_uByteInPage) )
-                                    {
-                                        l_eRes = e_eFSS_LOGC_RES_CORRUPTCTX;
-                                    }
-                                    else
-                                    {
-                                        /* Not equal! Flush buffer here */
-                                        l_eRes = eFSS_LOGC_FlushBuff(p_ptCtx, p_ptCtx->bFullBckup, l_uByteInPage,
-                                                                     p_uIdx, ( l_uNPageU + p_uIdx ), l_uPagSubTOri,
-                                                                     l_uPagSubTBkp);
-                                    }
-                                }
-                                else if( ( e_eFSS_LOGC_RES_OK == l_eRes ) && ( true == l_bAreEquals ) ||
-                                         ( l_uPagSubTOri == l_uPageSubTypeRed ) && ( true == p_ptCtx->bFullBckup ) )
-                                {
-                                    /* Page are already OK, just need to check if the same is verified for the
-                                       backup page. */
-                                    l_bAreEquals = false;
-                                    l_uPageSubTypeRed = 0u;
-                                    l_eResHL = eFSS_COREHL_IsBuffEqualToPage(&p_ptCtx->tCOREHLCtx,
-                                                                             ( l_uNPageU + p_uIdx ), &l_bAreEquals,
-                                                                             &l_uPageSubTypeRed);
-                                    l_eRes = eFSS_LOGC_HLtoLOGCRes(l_eResHL);
-
-                                    if( ( ( e_eFSS_LOGC_RES_OK == l_eRes ) &&
-                                        ( ( false == l_bAreEquals ) || ( l_uPagSubTOri != l_uPageSubTypeRed ) ) ) ||
-                                        ( e_eFSS_LOGC_RES_NOTVALIDLOG == l_eRes ) ||
-                                        ( e_eFSS_LOGC_RES_NEWVERSIONFOUND == l_eRes ) )
-                                    {
-                                        /* Retrive byte in page parameter from the buffer */
-                                        l_uBytInPOff = l_tBuff.uBufL - EFSS_LOGC_PAGEMIN_L;
-                                        if( true != eFSS_Utils_RetriveU32(&l_tBuff.puBuf[l_uBytInPOff], &l_uByteInPage) )
-                                        {
-                                            l_eRes = e_eFSS_LOGC_RES_CORRUPTCTX;
-                                        }
-                                        else
-                                        {
-                                            /* Not equal! Flush buffer here */
-                                            l_eResHL = eFSS_COREHL_FlushBuffInPage(&p_ptCtx->tCOREHLCtx,
-                                                                                   ( l_uNPageU + p_uIdx ),
-                                                                                   l_uPagSubTBkp);
-                                            l_eRes = eFSS_LOGC_HLtoLOGCRes(l_eResHL);
-                                        }
-                                    }
+                                    l_eRes = e_eFSS_LOGC_RES_CORRUPTCTX;
                                 }
                                 else
                                 {
+                                    if( l_uByteInPage > ( l_tBuff.uBufL - EFSS_LOGC_PAGEMIN_L ) )
+                                    {
+                                        /* Cannot fill more data than possible */
+                                        l_eRes = e_eFSS_LOGC_RES_BADPARAM;
+                                    }
+                                    else
+                                    {
+                                        l_bAreEquals = false;
+                                        l_uPageSubTypeRed = 0u;
+                                        l_eResHL = eFSS_COREHL_IsBuffEqualToPage(&p_ptCtx->tCOREHLCtx, p_uIdx,
+                                                                                 &l_bAreEquals, &l_uPageSubTypeRed);
+                                        l_eRes = eFSS_LOGC_HLtoLOGCRes(l_eResHL);
 
+                                        if( ( ( e_eFSS_LOGC_RES_OK == l_eRes ) &&
+                                            ( ( false == l_bAreEquals ) || ( l_uPagSubTOri != l_uPageSubTypeRed ) ) ) ||
+                                            ( e_eFSS_LOGC_RES_NOTVALIDLOG == l_eRes ) ||
+                                            ( e_eFSS_LOGC_RES_NEWVERSIONFOUND == l_eRes ) )
+                                        {
+                                            /* Not equal! Flush buffer here */
+                                            l_eRes = eFSS_LOGC_FlushBuff(p_ptCtx, p_ptCtx->bFullBckup, l_uByteInPage,
+                                                                        p_uIdx, ( l_uNPageU + p_uIdx ), l_uPagSubTOri,
+                                                                        l_uPagSubTBkp);
+
+                                            if( e_eFSS_LOGC_RES_OK == l_eRes )
+                                            {
+                                                /* All ok, but overwritten */
+                                                l_eRes = e_eFSS_LOGC_RES_OK_BKP_RCVRD;
+                                            }
+                                        }
+                                        else if( ( e_eFSS_LOGC_RES_OK == l_eRes ) && ( true == l_bAreEquals ) &&
+                                                 ( l_uPagSubTOri == l_uPageSubTypeRed ) &&
+                                                 ( true == p_ptCtx->bFullBckup ) )
+                                        {
+                                            /* Page are already OK, just need to check if the same is verified for the
+                                            backup page. */
+                                            l_bAreEquals = false;
+                                            l_uPageSubTypeRed = 0u;
+                                            l_eResHL = eFSS_COREHL_IsBuffEqualToPage(&p_ptCtx->tCOREHLCtx,
+                                                                                     ( l_uNPageU + p_uIdx ),
+                                                                                     &l_bAreEquals,
+                                                                                     &l_uPageSubTypeRed);
+                                            l_eRes = eFSS_LOGC_HLtoLOGCRes(l_eResHL);
+
+                                            if( ( ( e_eFSS_LOGC_RES_OK == l_eRes ) &&
+                                                  ( ( false == l_bAreEquals ) ||
+                                                    ( l_uPagSubTBkp != l_uPageSubTypeRed ) ) ) ||
+                                                ( e_eFSS_LOGC_RES_NOTVALIDLOG == l_eRes ) ||
+                                                ( e_eFSS_LOGC_RES_NEWVERSIONFOUND == l_eRes ) )
+                                            {
+                                                /* So, all ok but backup page dosent match, flush it */
+                                                l_eResHL = eFSS_COREHL_FlushBuffInPage(&p_ptCtx->tCOREHLCtx,
+                                                                                       ( l_uNPageU + p_uIdx ),
+                                                                                       l_uPagSubTBkp);
+                                                l_eRes = eFSS_LOGC_HLtoLOGCRes(l_eResHL);
+
+                                                if( e_eFSS_LOGC_RES_OK == l_eRes )
+                                                {
+                                                    /* All ok, but bkup recovered */
+                                                    l_eRes = e_eFSS_LOGC_RES_OK_BKP_RCVRD;
+                                                }
+                                            }
+                                        }
+                                        else
+                                        {
+                                            /* Others irreparable error */
+                                        }
+                                    }
                                 }
                             }
                         }
