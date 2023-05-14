@@ -558,7 +558,7 @@ e_eFSS_BLOBC_RES eFSS_BLOBC_CloneOriAreaInBkpIfNotEq(t_eFSS_BLOBC_Ctx* const p_p
                                     if( ( ( e_eFSS_BLOBC_RES_OK == l_eRes ) &&
                                           ( ( false == l_bIsEquals ) || ( EFSS_PAGESUBTYPE_BLOBBKP != l_uSubTR ) ) ) ||
                                         ( e_eFSS_BLOBC_RES_NOTVALIDBLOB == l_eRes ) ||
-                                        ( e_eFSS_COREHL_RES_NEWVERSIONFOUND == l_eRes ) )
+                                        ( e_eFSS_BLOBC_RES_NEWVERSIONFOUND == l_eRes ) )
                                     {
                                         /* Backup pages is not valid or equals, clone */
                                         l_bSomeWhereNotEquals = true;
