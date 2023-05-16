@@ -128,7 +128,7 @@ e_eFSS_LOGC_RES eFSS_LOGC_InitCtx(t_eFSS_LOGC_Ctx* const p_ptCtx, const t_eFSS_T
                 if( e_eFSS_LOGC_RES_OK == l_eRes )
                 {
                     if( ( ( l_tBuff.uBufL <= EFSS_LOGC_PAGEMIN_L  ) && ( false == p_bFlashCache ) ) ||
-                        ( ( l_tBuff.uBufL <= EFSS_LOGC_CACHEMIN_L ) && ( true == p_bFlashCache  ) ) )
+                        ( ( l_tBuff.uBufL <  EFSS_LOGC_CACHEMIN_L ) && ( true == p_bFlashCache  ) ) )
                     {
                         /* De init HL, we dont' have enogh data avaible */
                         (void)memset(&p_ptCtx->tCOREHLCtx, 0, sizeof(t_eFSS_COREHL_Ctx));
@@ -805,7 +805,7 @@ e_eFSS_LOGC_RES eFSS_LOGC_IsPageNewOrBkup(t_eFSS_LOGC_Ctx* const p_ptCtx, const 
                                         if( l_uByteUsed > ( l_tBuff.uBufL - EFSS_LOGC_PAGEMIN_L ) )
                                         {
                                             /* The page was written correctly, but the data is invalid, cannot
-                                               do other things */
+                                               do other things. No need to check backup page */
                                             l_eRes = e_eFSS_LOGC_RES_NOTVALIDLOG;
                                         }
                                         else
@@ -842,6 +842,12 @@ e_eFSS_LOGC_RES eFSS_LOGC_IsPageNewOrBkup(t_eFSS_LOGC_Ctx* const p_ptCtx, const 
                                                                                            ( l_uNPageU + p_uIdx ),
                                                                                            l_uSubTToRipr);
                                                     l_eRes = eFSS_LOGC_HLtoLOGCRes(l_eResHL);
+
+                                                    if( e_eFSS_LOGC_RES_OK == l_eRes )
+                                                    {
+                                                        /* All ok, but bkup recovered */
+                                                        l_eRes = e_eFSS_LOGC_RES_OK_BKP_RCVRD;
+                                                    }
                                                 }
                                             }
                                         }
@@ -895,10 +901,17 @@ e_eFSS_LOGC_RES eFSS_LOGC_IsPageNewOrBkup(t_eFSS_LOGC_Ctx* const p_ptCtx, const 
                                                         *p_pbIsNewest = false;
                                                         l_uSubTToRipr = EFSS_PAGESUBTYPE_LOGNEWESTBKPORI;
                                                     }
+
                                                     /* Backup pages seems to be avaiable, ripristinate original */
                                                     l_eResHL = eFSS_COREHL_FlushBuffInPage(&p_ptCtx->tCOREHLCtx, p_uIdx,
                                                                                            l_uSubTToRipr);
                                                     l_eRes = eFSS_LOGC_HLtoLOGCRes(l_eResHL);
+
+                                                    if( e_eFSS_LOGC_RES_OK == l_eRes )
+                                                    {
+                                                        /* All ok, but bkup recovered */
+                                                        l_eRes = e_eFSS_LOGC_RES_OK_BKP_RCVRD;
+                                                    }
                                                 }
                                             }
                                         }
@@ -1142,7 +1155,7 @@ static bool_t eFSS_LOGC_IsStatusStillCoherent(t_eFSS_LOGC_Ctx* const p_ptCtx)
         else
         {
             if( ( ( l_tBuff.uBufL <= EFSS_LOGC_PAGEMIN_L  ) && ( false == p_ptCtx->bFlashCache ) ) ||
-                ( ( l_tBuff.uBufL <= EFSS_LOGC_CACHEMIN_L ) && ( true == p_ptCtx->bFlashCache  ) ) )
+                ( ( l_tBuff.uBufL <  EFSS_LOGC_CACHEMIN_L ) && ( true == p_ptCtx->bFlashCache  ) ) )
             {
                 l_bRes = false;
             }
