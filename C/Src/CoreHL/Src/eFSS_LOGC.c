@@ -791,7 +791,8 @@ e_eFSS_LOGC_RES eFSS_LOGC_IsPageNewOrBkup(t_eFSS_LOGC_Ctx* const p_ptCtx, const 
                                 if( ( EFSS_PAGESUBTYPE_LOGNEWESTORI    != l_uPageSubTypeRed ) &&
                                     ( EFSS_PAGESUBTYPE_LOGNEWESTBKPORI != l_uPageSubTypeRed ) )
                                 {
-                                    /* Not what we are searching, decvlared as invalid for this pourpose only */
+                                    /* Not what we are searching, declared as invalid for this pourpose only.
+                                       No need to check for backup */
                                     l_eRes = e_eFSS_LOGC_RES_NOTVALIDLOG;
                                 }
                                 else
@@ -883,7 +884,8 @@ e_eFSS_LOGC_RES eFSS_LOGC_IsPageNewOrBkup(t_eFSS_LOGC_Ctx* const p_ptCtx, const 
                                     if( ( EFSS_PAGESUBTYPE_LOGNEWESTBKP    != l_uPageSubTypeRed ) &&
                                         ( EFSS_PAGESUBTYPE_LOGNEWESTBKPBKP != l_uPageSubTypeRed ) )
                                     {
-                                        /* Not what we are searching */
+                                        /* Not what we are searching, declared as invalid for this pourpose only.
+                                           No need to check for a original page ripristination */
                                         l_eRes = e_eFSS_LOGC_RES_NOTVALIDLOG;
                                     }
                                     else
@@ -899,6 +901,8 @@ e_eFSS_LOGC_RES eFSS_LOGC_IsPageNewOrBkup(t_eFSS_LOGC_Ctx* const p_ptCtx, const 
                                             /* Check parameter validity */
                                             if( l_uByteUsed > ( l_tBuff.uBufL - EFSS_LOGC_PAGEMIN_L ) )
                                             {
+                                                /* If we are here it's means that main page is invalid. Cannot
+                                                   do a thing  */
                                                 l_eRes = e_eFSS_LOGC_RES_NOTVALIDLOG;
                                             }
                                             else
