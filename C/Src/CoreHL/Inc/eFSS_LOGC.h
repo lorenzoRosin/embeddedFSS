@@ -148,7 +148,7 @@ e_eFSS_LOGC_RES eFSS_LOGC_GetBuffNUsable(t_eFSS_LOGC_Ctx* const p_ptCtx, t_eFSS_
  *		        e_eFSS_LOGC_RES_CLBCKERASEERR     - The erase callback reported an error
  *		        e_eFSS_LOGC_RES_CLBCKWRITEERR     - The write callback reported an error
  *		        e_eFSS_LOGC_RES_CLBCKREADERR      - The read callback reported an error
- *		        e_eFSS_LOGC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
+ *		        e_eFSS_LOGC_RES_WRITENOMATCHREAD  - For some unknow reason data write dosent match data readed
  *              e_eFSS_LOGC_RES_OK                - Operation ended correctly
  */
 e_eFSS_LOGC_RES eFSS_LOGC_WriteCache(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint32_t p_uIdxN, const uint32_t p_uFilP);
@@ -176,8 +176,8 @@ e_eFSS_LOGC_RES eFSS_LOGC_WriteCache(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint3
  *              e_eFSS_LOGC_RES_NEWVERSIONFOUND   - The readed page has a new version
  *		        e_eFSS_LOGC_RES_CLBCKERASEERR     - The erase callback reported an error
  *		        e_eFSS_LOGC_RES_CLBCKWRITEERR     - The write callback reported an error
- *		        e_eFSS_LOGC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
- *              e_eFSS_LOGC_RES_OK_BKP_RCVRD      - operation ended successfully recovering a backup or an origin
+ *		        e_eFSS_LOGC_RES_WRITENOMATCHREAD  - For some unknow reason data write dosent match data readed
+ *              e_eFSS_LOGC_RES_OK_BKP_RCVRD      - Operation ended successfully recovering a backup or an origin
  *                                                  page
  *              e_eFSS_LOGC_RES_OK                - Operation ended correctly
  */
@@ -206,7 +206,7 @@ e_eFSS_LOGC_RES eFSS_LOGC_ReadCache(t_eFSS_LOGC_Ctx* const p_ptCtx, uint32_t* co
  *		        e_eFSS_LOGC_RES_CLBCKERASEERR     - The erase callback reported an error
  *		        e_eFSS_LOGC_RES_CLBCKWRITEERR     - The write callback reported an error
  *		        e_eFSS_LOGC_RES_CLBCKREADERR      - The read callback reported an error
- *		        e_eFSS_LOGC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
+ *		        e_eFSS_LOGC_RES_WRITENOMATCHREAD  - For some unknow reason data write dosent match data readed
  *              e_eFSS_LOGC_RES_OK                - Operation ended correctly
  */
 e_eFSS_LOGC_RES eFSS_LOGC_FlushBufferAs(t_eFSS_LOGC_Ctx* const p_ptCtx, const e_eFSS_LOGC_PAGETYPE p_ePageType,
@@ -233,12 +233,12 @@ e_eFSS_LOGC_RES eFSS_LOGC_FlushBufferAs(t_eFSS_LOGC_Ctx* const p_ptCtx, const e_
  *		        e_eFSS_LOGC_RES_NOINITLIB         - Need to init lib before calling function
  *		        e_eFSS_LOGC_RES_CLBCKREADERR      - The read callback reported an error
  *              e_eFSS_LOGC_RES_CLBCKCRCERR       - The crc callback reported an error
- *              e_eFSS_LOGC_RES_NOTVALIDLOG       - both origin and backup pages are corrupted
+ *              e_eFSS_LOGC_RES_NOTVALIDLOG       - Both origin and backup pages are corrupted
  *              e_eFSS_LOGC_RES_NEWVERSIONFOUND   - The readed page has a new version
  *		        e_eFSS_LOGC_RES_CLBCKERASEERR     - The erase callback reported an error
  *		        e_eFSS_LOGC_RES_CLBCKWRITEERR     - The write callback reported an error
- *		        e_eFSS_LOGC_RES_WRITENOMATCHREAD  - Writen data dosent match what requested
- *              e_eFSS_LOGC_RES_OK_BKP_RCVRD      - operation ended successfully recovering a backup or an origin
+ *		        e_eFSS_LOGC_RES_WRITENOMATCHREAD  - For some unknow reason data write dosent match data readed
+ *              e_eFSS_LOGC_RES_OK_BKP_RCVRD      - Operation ended successfully recovering a backup or an origin
  *                                                  page
  *              e_eFSS_LOGC_RES_OK                - Operation ended correctly
  */
@@ -267,9 +267,16 @@ e_eFSS_LOGC_RES eFSS_LOGC_LoadBufferAs(t_eFSS_LOGC_Ctx* const p_ptCtx, const e_e
  *		        e_eFSS_LOGC_RES_NOINITLIB         - Need to init lib before calling function
  *		        e_eFSS_LOGC_RES_CLBCKREADERR      - The read callback reported an error
  *              e_eFSS_LOGC_RES_CLBCKCRCERR       - The crc callback reported an error
- *              e_eFSS_LOGC_RES_NOTVALIDLOG       - both origin and backup pages are corrupted
+ *              e_eFSS_LOGC_RES_NOTVALIDLOG       - Both origin and backup pages are not what we are looking for.
+ *                                                  Page can be corrupted or just not having the needed subtype
  *              e_eFSS_LOGC_RES_NEWVERSIONFOUND   - The readed page has a new version
- *              e_eFSS_LOGC_RES_OK                - Operation ended correctly
+ *		        e_eFSS_LOGC_RES_CLBCKERASEERR     - The erase callback reported an error
+ *		        e_eFSS_LOGC_RES_CLBCKWRITEERR     - The write callback reported an error
+ *		        e_eFSS_LOGC_RES_WRITENOMATCHREAD  - For some unknow reason data write dosent match data readed
+ *              e_eFSS_LOGC_RES_OK_BKP_RCVRD      - Operation ended successfully recovering a backup or an origin
+ *                                                  page. The subtype of the pages are matching newest or newestbkup
+ *              e_eFSS_LOGC_RES_OK                - Operation ended correctly. The subtype of the pages are matching
+ *                                                  newest or newestbkup
  */
 e_eFSS_LOGC_RES eFSS_LOGC_IsPageNewOrBkup(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint32_t p_uIdx,
                                           bool_t* const p_pbIsNewest);
@@ -291,15 +298,19 @@ e_eFSS_LOGC_RES eFSS_LOGC_IsPageNewOrBkup(t_eFSS_LOGC_Ctx* const p_ptCtx, const 
  *                                is valid but subtype dosent page the flush operation will be performed even if
  *                                data present in buffer match the one present in to the page
  *
- * @return      e_eFSS_LOGC_RES_BADPOINTER      - In case of bad pointer passed to the function
- *		        e_eFSS_LOGC_RES_BADPARAM        - In case of an invalid parameter passed to the function
- *		        e_eFSS_LOGC_RES_CORRUPTCTX      - Context is corrupted
- *		        e_eFSS_LOGC_RES_NOINITLIB       - Need to init lib before calling function
- *		        e_eFSS_LOGC_RES_CLBCKREADERR    - The read callback reported an error
- *              e_eFSS_LOGC_RES_CLBCKCRCERR     - The crc callback reported an error
- *              e_eFSS_LOGC_RES_NOTVALIDPAGE    - The readed page is invalid
- *              e_eFSS_LOGC_RES_NEWVERSIONFOUND - The readed page has a new version
- *              e_eFSS_LOGC_RES_OK              - Operation ended correctly
+ * @return      e_eFSS_LOGC_RES_BADPOINTER        - In case of bad pointer passed to the function
+ *		        e_eFSS_LOGC_RES_BADPARAM          - In case of an invalid parameter passed to the functionsB
+ *		        e_eFSS_LOGC_RES_CORRUPTCTX        - Context is corrupted
+ *		        e_eFSS_LOGC_RES_NOINITLIB         - Need to init lib before calling function
+ *		        e_eFSS_LOGC_RES_CLBCKREADERR      - The read callback reported an error
+ *              e_eFSS_LOGC_RES_CLBCKCRCERR       - The crc callback reported an error
+ *              e_eFSS_LOGC_RES_NEWVERSIONFOUND   - The readed page has a new version
+ *		        e_eFSS_LOGC_RES_CLBCKERASEERR     - The erase callback reported an error
+ *		        e_eFSS_LOGC_RES_CLBCKWRITEERR     - The write callback reported an error
+ *		        e_eFSS_LOGC_RES_WRITENOMATCHREAD  - For some unknow reason data write dosent match data readed
+ *              e_eFSS_LOGC_RES_OK_BKP_RCVRD      - Operation ended successfully recovering a backup or an origin
+ *                                                  page, because they were different from the buffer contenent
+ *              e_eFSS_LOGC_RES_OK                - Operation ended correctly, no flush operation performed
  */
 e_eFSS_LOGC_RES eFSS_LOGC_FlushBuffIfNotEquals(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint32_t p_uIdx,
                                                const e_eFSS_LOGC_PAGETYPE p_eTypeFlush);
