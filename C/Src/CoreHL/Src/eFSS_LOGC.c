@@ -776,11 +776,13 @@ e_eFSS_LOGC_RES eFSS_LOGC_IsPageNewOrBkup(t_eFSS_LOGC_Ctx* const p_ptCtx, const 
                                using eFSS_LOGC_LoadBuff could increase considerably the overhead of the function
                                if used two times */
 
+                            /* Init backup boolean checker */
+                            l_bNeedCheckRec = false;
+
                             /* Calculate redByteOffset */
                             l_uByteUsedOff = l_tBuff.uBufL - EFSS_LOGC_PAGEMIN_L;
 
                             /* Start reading original page, if it's corrupted read the backup one */
-                            l_bNeedCheckRec = false;
                             l_uPageSubTypeRed = 0x00u;
                             l_eResHL = eFSS_COREHL_LoadPageInBuff(&p_ptCtx->tCOREHLCtx, p_uIdx, &l_uPageSubTypeRed);
                             l_eRes = eFSS_LOGC_HLtoLOGCRes(l_eResHL);
@@ -791,9 +793,17 @@ e_eFSS_LOGC_RES eFSS_LOGC_IsPageNewOrBkup(t_eFSS_LOGC_Ctx* const p_ptCtx, const 
                                 if( ( EFSS_PAGESUBTYPE_LOGNEWESTORI    != l_uPageSubTypeRed ) &&
                                     ( EFSS_PAGESUBTYPE_LOGNEWESTBKPORI != l_uPageSubTypeRed ) )
                                 {
-                                    /* Not what we are searching, declared as invalid for this pourpose only.
-                                       No need to check for backup */
-                                    l_eRes = e_eFSS_LOGC_RES_NOTVALIDLOG;
+                                    if( true == p_ptCtx->bFullBckup )
+                                    {
+                                        /* Maybe backup pages hold the searched page */
+                                        l_bNeedCheckRec = true;
+                                    }
+                                    else
+                                    {
+                                        /* Not what we are searching, declared as invalid for this pourpose only.
+                                        No need to check for backup */
+                                        l_eRes = e_eFSS_LOGC_RES_NOTVALIDLOG;
+                                    }
                                 }
                                 else
                                 {
@@ -809,7 +819,16 @@ e_eFSS_LOGC_RES eFSS_LOGC_IsPageNewOrBkup(t_eFSS_LOGC_Ctx* const p_ptCtx, const 
                                         {
                                             /* The page was written correctly, but the data is invalid, cannot
                                                do other things. Check the backup just in case */
-                                            l_bNeedCheckRec = true;
+                                            if( true == p_ptCtx->bFullBckup )
+                                            {
+                                                /* Maybe backup pages hold a valid page */
+                                                l_bNeedCheckRec = true;
+                                            }
+                                            else
+                                            {
+                                                /* Page saved with wrong data */
+                                                l_eRes = e_eFSS_LOGC_RES_NOTVALIDLOG;
+                                            }
                                         }
                                         else
                                         {
@@ -873,6 +892,8 @@ e_eFSS_LOGC_RES eFSS_LOGC_IsPageNewOrBkup(t_eFSS_LOGC_Ctx* const p_ptCtx, const 
 
                             if( true == l_bNeedCheckRec )
                             {
+                                /* Main page dosent hold valid data or searched subtype, check the backup just in
+                                   case */
                                 l_uPageSubTypeRed = 0x00u;
                                 l_eResHL = eFSS_COREHL_LoadPageInBuff(&p_ptCtx->tCOREHLCtx, ( l_uNPageU + p_uIdx ),
                                                                       &l_uPageSubTypeRed);
@@ -1068,8 +1089,8 @@ e_eFSS_LOGC_RES eFSS_LOGC_FlushBuffIfNotEquals(t_eFSS_LOGC_Ctx* const p_ptCtx, c
                                         {
                                             /* Not equal! Flush buffer here */
                                             l_eRes = eFSS_LOGC_FlushBuff(p_ptCtx, p_ptCtx->bFullBckup, l_uByteInPage,
-                                                                        p_uIdx, ( l_uNPageU + p_uIdx ), l_uPagSubTOri,
-                                                                        l_uPagSubTBkp);
+                                                                         p_uIdx, ( l_uNPageU + p_uIdx ), l_uPagSubTOri,
+                                                                         l_uPagSubTBkp);
 
                                             if( e_eFSS_LOGC_RES_OK == l_eRes )
                                             {
