@@ -828,9 +828,6 @@ void eFSS_LOGCTST_BadPointer(void)
 	t_eFSS_TYPE_CrcCtx    l_tCtxCrc32;
     bool_t l_bIsInit;
     t_eFSS_LOGC_StorBuf l_ltUseBuff;
-    uint32_t l_uCrcGetted;
-    uint8_t l_uSubTypeRead;
-    uint8_t l_uSubTypeWrite;
     bool_t l_bIsNewest;
     uint32_t l_uByteInPage;
     uint32_t l_uPageUsable;
@@ -863,8 +860,6 @@ void eFSS_LOGCTST_BadPointer(void)
     l_tStorSet.uRWERetry = 2u;
     l_tStorSet.uPageVersion = 1u;
 
-    l_uSubTypeRead = 0u;
-    l_uSubTypeWrite = 0u;
     l_bIsNewest = false;
     l_uByteInPage = 0u;
     l_uPageUsable = 0u;
@@ -1110,7 +1105,7 @@ void eFSS_LOGCTST_BadPointer(void)
     }
 
     /* Function */
-    if( e_eFSS_LOGC_RES_BADPOINTER == eFSS_LOGC_WriteCache(&l_tCtx, 0u, 0u) )
+    if( e_eFSS_LOGC_RES_BADPOINTER == eFSS_LOGC_WriteCache(NULL, 0u, 0u) )
     {
         (void)printf("eFSS_LOGCTST_BadPointer 22 -- OK \n");
         (void)memset(&l_tCtx, 0, sizeof(l_tCtx));
@@ -1200,61 +1195,61 @@ void eFSS_LOGCTST_BadPointer(void)
     /* Function */
     if( e_eFSS_LOGC_RES_BADPOINTER == eFSS_LOGC_FlushBufferAs(NULL, e_eFSS_LOGC_PAGETYPE_LOG, 0u, 0u) )
     {
-        (void)printf("eFSS_LOGCTST_BadPointer 22 -- OK \n");
+        (void)printf("eFSS_LOGCTST_BadPointer 30 -- OK \n");
     }
     else
     {
-        (void)printf("eFSS_LOGCTST_BadPointer 22 -- FAIL \n");
+        (void)printf("eFSS_LOGCTST_BadPointer 30 -- FAIL \n");
     }
 
     /* Function */
     if( e_eFSS_LOGC_RES_BADPOINTER == eFSS_LOGC_LoadBufferAs(NULL, e_eFSS_LOGC_PAGETYPE_LOG, 0u, &l_uByteInPage) )
     {
-        (void)printf("eFSS_LOGCTST_BadPointer 23 -- OK \n");
+        (void)printf("eFSS_LOGCTST_BadPointer 31 -- OK \n");
     }
     else
     {
-        (void)printf("eFSS_LOGCTST_BadPointer 23 -- FAIL \n");
+        (void)printf("eFSS_LOGCTST_BadPointer 31 -- FAIL \n");
     }
 
     /* Function */
-    if( e_eFSS_LOGC_RES_BADPOINTER == eFSS_LOGC_LoadBufferAs(&l_tCtx, e_eFSS_LOGC_PAGETYPE_LOG, 0u, &l_uByteInPage) )
+    if( e_eFSS_LOGC_RES_BADPOINTER == eFSS_LOGC_LoadBufferAs(&l_tCtx, e_eFSS_LOGC_PAGETYPE_LOG, 0u, NULL) )
     {
-        (void)printf("eFSS_LOGCTST_BadPointer 24 -- OK \n");
+        (void)printf("eFSS_LOGCTST_BadPointer 32 -- OK \n");
     }
     else
     {
-        (void)printf("eFSS_LOGCTST_BadPointer 24 -- FAIL \n");
+        (void)printf("eFSS_LOGCTST_BadPointer 32 -- FAIL \n");
     }
 
     /* Function */
     if( e_eFSS_LOGC_RES_BADPOINTER == eFSS_LOGC_IsPageNewOrBkup(NULL, 0u, &l_bIsNewest) )
     {
-        (void)printf("eFSS_LOGCTST_BadPointer 25 -- OK \n");
+        (void)printf("eFSS_LOGCTST_BadPointer 33 -- OK \n");
     }
     else
     {
-        (void)printf("eFSS_LOGCTST_BadPointer 25 -- FAIL \n");
+        (void)printf("eFSS_LOGCTST_BadPointer 33 -- FAIL \n");
     }
 
     /* Function */
     if( e_eFSS_LOGC_RES_BADPOINTER == eFSS_LOGC_IsPageNewOrBkup(&l_tCtx, 0u, NULL) )
     {
-        (void)printf("eFSS_LOGCTST_BadPointer 26 -- OK \n");
+        (void)printf("eFSS_LOGCTST_BadPointer 34 -- OK \n");
     }
     else
     {
-        (void)printf("eFSS_LOGCTST_BadPointer 26 -- FAIL \n");
+        (void)printf("eFSS_LOGCTST_BadPointer 34 -- FAIL \n");
     }
 
     /* Function */
     if( e_eFSS_LOGC_RES_BADPOINTER == eFSS_LOGC_FlushBuffIfNotEquals(NULL, 0u, e_eFSS_LOGC_PAGETYPE_LOG) )
     {
-        (void)printf("eFSS_LOGCTST_BadPointer 27 -- OK \n");
+        (void)printf("eFSS_LOGCTST_BadPointer 35 -- OK \n");
     }
     else
     {
-        (void)printf("eFSS_LOGCTST_BadPointer 27 -- FAIL \n");
+        (void)printf("eFSS_LOGCTST_BadPointer 35 -- FAIL \n");
     }
 
     /* Misra complaiant */
