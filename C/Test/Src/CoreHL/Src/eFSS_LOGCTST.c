@@ -834,6 +834,7 @@ void eFSS_LOGCTST_BadPointer(void)
     uint8_t l_uSubTypeWrite;
     bool_t l_bIsEquals;
     uint32_t l_uByteInPage;
+    uint32_t l_uPageUsable;
 
     /* Misra complaiant */
     l_tCtxErase.eLastEr = e_eFSS_LOGC_RES_OK;
@@ -865,6 +866,7 @@ void eFSS_LOGCTST_BadPointer(void)
     l_uSubTypeWrite = 0u;
     l_bIsEquals = false;
     l_uByteInPage = 0u;
+    l_uPageUsable = 0u;
 
     /* Function */
     if( e_eFSS_LOGC_RES_BADPOINTER == eFSS_LOGC_InitCtx(NULL, l_tCtxCb, l_tStorSet, l_auStor, sizeof(l_auStor), false, false ) )
@@ -877,7 +879,7 @@ void eFSS_LOGCTST_BadPointer(void)
     }
 
     /* Function */
-    if( e_eFSS_LOGC_RES_BADPOINTER == eFSS_LOGC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_uStorType, NULL, sizeof(l_auStor) ) )
+    if( e_eFSS_LOGC_RES_BADPOINTER == eFSS_LOGC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, NULL, sizeof(l_auStor), false, false ) )
     {
         (void)printf("eFSS_LOGCTST_BadPointer 2  -- OK \n");
     }
@@ -888,7 +890,7 @@ void eFSS_LOGCTST_BadPointer(void)
 
     /* Function */
     l_tCtxCb.ptCtxErase = NULL;
-    if( e_eFSS_LOGC_RES_BADPOINTER == eFSS_LOGC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_uStorType, l_auStor, sizeof(l_auStor) ) )
+    if( e_eFSS_LOGC_RES_BADPOINTER == eFSS_LOGC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_auStor, sizeof(l_auStor), false, false ) )
     {
         (void)printf("eFSS_LOGCTST_BadPointer 3  -- OK \n");
         l_tCtxCb.ptCtxErase = &l_tCtxErase;
@@ -901,7 +903,7 @@ void eFSS_LOGCTST_BadPointer(void)
 
     /* Function */
     l_tCtxCb.fErase = NULL;
-    if( e_eFSS_LOGC_RES_BADPOINTER == eFSS_LOGC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_uStorType, l_auStor, sizeof(l_auStor) ) )
+    if( e_eFSS_LOGC_RES_BADPOINTER == eFSS_LOGC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_auStor, sizeof(l_auStor), false, false ) )
     {
         (void)printf("eFSS_LOGCTST_BadPointer 4  -- OK \n");
         l_tCtxCb.fErase = &eFSS_LOGCTST_EraseAdapt;
@@ -914,7 +916,7 @@ void eFSS_LOGCTST_BadPointer(void)
 
     /* Function */
     l_tCtxCb.ptCtxWrite = NULL;
-    if( e_eFSS_LOGC_RES_BADPOINTER == eFSS_LOGC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_uStorType, l_auStor, sizeof(l_auStor) ) )
+    if( e_eFSS_LOGC_RES_BADPOINTER == eFSS_LOGC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_auStor, sizeof(l_auStor), false, false ) )
     {
         (void)printf("eFSS_LOGCTST_BadPointer 5  -- OK \n");
         l_tCtxCb.ptCtxWrite = &l_tCtxWrite;
@@ -927,7 +929,7 @@ void eFSS_LOGCTST_BadPointer(void)
 
     /* Function */
     l_tCtxCb.fWrite = NULL;
-    if( e_eFSS_LOGC_RES_BADPOINTER == eFSS_LOGC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_uStorType, l_auStor, sizeof(l_auStor) ) )
+    if( e_eFSS_LOGC_RES_BADPOINTER == eFSS_LOGC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_auStor, sizeof(l_auStor), false, false ) )
     {
         (void)printf("eFSS_LOGCTST_BadPointer 6  -- OK \n");
         l_tCtxCb.fWrite = &eFSS_LOGCTST_WriteAdapt;
@@ -940,7 +942,7 @@ void eFSS_LOGCTST_BadPointer(void)
 
     /* Function */
     l_tCtxCb.ptCtxRead = NULL;
-    if( e_eFSS_LOGC_RES_BADPOINTER == eFSS_LOGC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_uStorType, l_auStor, sizeof(l_auStor) ) )
+    if( e_eFSS_LOGC_RES_BADPOINTER == eFSS_LOGC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_auStor, sizeof(l_auStor), false, false ) )
     {
         (void)printf("eFSS_LOGCTST_BadPointer 7  -- OK \n");
         l_tCtxCb.ptCtxRead = &l_tCtxRead;
@@ -953,7 +955,7 @@ void eFSS_LOGCTST_BadPointer(void)
 
     /* Function */
     l_tCtxCb.fRead = NULL;
-    if( e_eFSS_LOGC_RES_BADPOINTER == eFSS_LOGC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_uStorType, l_auStor, sizeof(l_auStor) ) )
+    if( e_eFSS_LOGC_RES_BADPOINTER == eFSS_LOGC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_auStor, sizeof(l_auStor), false, false ) )
     {
         (void)printf("eFSS_LOGCTST_BadPointer 8  -- OK \n");
         l_tCtxCb.fRead = &eFSS_LOGCTST_ReadAdapt;
@@ -966,7 +968,7 @@ void eFSS_LOGCTST_BadPointer(void)
 
     /* Function */
     l_tCtxCb.ptCtxCrc32 = NULL;
-    if( e_eFSS_LOGC_RES_BADPOINTER == eFSS_LOGC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_uStorType, l_auStor, sizeof(l_auStor) ) )
+    if( e_eFSS_LOGC_RES_BADPOINTER == eFSS_LOGC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_auStor, sizeof(l_auStor), false, false ) )
     {
         (void)printf("eFSS_LOGCTST_BadPointer 9  -- OK \n");
         l_tCtxCb.ptCtxCrc32 = &l_tCtxCrc32;
@@ -979,7 +981,7 @@ void eFSS_LOGCTST_BadPointer(void)
 
     /* Function */
     l_tCtxCb.fCrc32 = NULL;
-    if( e_eFSS_LOGC_RES_BADPOINTER == eFSS_LOGC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_uStorType, l_auStor, sizeof(l_auStor) ) )
+    if( e_eFSS_LOGC_RES_BADPOINTER == eFSS_LOGC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_auStor, sizeof(l_auStor), false, false ) )
     {
         (void)printf("eFSS_LOGCTST_BadPointer 10 -- OK \n");
         l_tCtxCb.fCrc32 = &eFSS_LOGCTST_CrcAdapt;
@@ -1011,7 +1013,7 @@ void eFSS_LOGCTST_BadPointer(void)
     }
 
     /* Function */
-    if( e_eFSS_LOGC_RES_BADPOINTER == eFSS_LOGC_GetStorSett(NULL, &l_tGetStorSet) )
+    if( e_eFSS_LOGC_RES_BADPOINTER == eFSS_LOGC_IsFlashCacheUsed(NULL, &l_bIsInit) )
     {
         (void)printf("eFSS_LOGCTST_BadPointer 13 -- OK \n");
     }
@@ -1021,7 +1023,7 @@ void eFSS_LOGCTST_BadPointer(void)
     }
 
     /* Function */
-    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_uStorType, l_auStor, sizeof(l_auStor) ) )
+    if( e_eFSS_LOGC_RES_BADPOINTER == eFSS_LOGC_IsFlashCacheUsed(&l_tCtx, NULL) )
     {
         (void)printf("eFSS_LOGCTST_BadPointer 14 -- OK \n");
     }
@@ -1030,20 +1032,55 @@ void eFSS_LOGCTST_BadPointer(void)
         (void)printf("eFSS_LOGCTST_BadPointer 14 -- FAIL \n");
     }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     /* Function */
-    if( e_eFSS_LOGC_RES_BADPOINTER == eFSS_LOGC_GetStorSett(&l_tCtx, NULL) )
+    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_auStor, sizeof(l_auStor), false, false ) )
     {
         (void)printf("eFSS_LOGCTST_BadPointer 15 -- OK \n");
-        (void)memset(&l_tCtx, 0, sizeof(l_tCtx));
     }
     else
     {
         (void)printf("eFSS_LOGCTST_BadPointer 15 -- FAIL \n");
-        (void)memset(&l_tCtx, 0, sizeof(l_tCtx));
     }
 
     /* Function */
-    if( e_eFSS_LOGC_RES_BADPOINTER == eFSS_LOGC_GetBuff(NULL, &l_ltUseBuff) )
+    if( e_eFSS_LOGC_RES_BADPOINTER == eFSS_LOGC_GetBuffNUsable(NULL, &l_ltUseBuff, &l_tGetStorSet) )
     {
         (void)printf("eFSS_LOGCTST_BadPointer 16 -- OK \n");
     }
@@ -1053,7 +1090,7 @@ void eFSS_LOGCTST_BadPointer(void)
     }
 
     /* Function */
-    if( e_eFSS_LOGC_RES_BADPOINTER == eFSS_LOGC_GetBuff(&l_tCtx, NULL) )
+    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_auStor, sizeof(l_auStor), false, false ) )
     {
         (void)printf("eFSS_LOGCTST_BadPointer 17 -- OK \n");
     }
@@ -1063,17 +1100,19 @@ void eFSS_LOGCTST_BadPointer(void)
     }
 
     /* Function */
-    if( e_eFSS_LOGC_RES_BADPOINTER == eFSS_LOGC_GetBuffNStor(NULL, &l_ltUseBuff, &l_tGetStorSet) )
+    if( e_eFSS_LOGC_RES_BADPOINTER == eFSS_LOGC_GetBuffNUsable(&l_tCtx, NULL, &l_tGetStorSet) )
     {
         (void)printf("eFSS_LOGCTST_BadPointer 18 -- OK \n");
+        (void)memset(&l_tCtx, 0, sizeof(l_tCtx));
     }
     else
     {
         (void)printf("eFSS_LOGCTST_BadPointer 18 -- FAIL \n");
+        (void)memset(&l_tCtx, 0, sizeof(l_tCtx));
     }
 
     /* Function */
-    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_uStorType, l_auStor, sizeof(l_auStor) ) )
+    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_auStor, sizeof(l_auStor), false, false ) )
     {
         (void)printf("eFSS_LOGCTST_BadPointer 19 -- OK \n");
     }
@@ -1083,7 +1122,7 @@ void eFSS_LOGCTST_BadPointer(void)
     }
 
     /* Function */
-    if( e_eFSS_LOGC_RES_BADPOINTER == eFSS_LOGC_GetBuffNStor(&l_tCtx, NULL, &l_tGetStorSet) )
+    if( e_eFSS_LOGC_RES_BADPOINTER == eFSS_LOGC_GetBuffNUsable(&l_tCtx, &l_ltUseBuff, NULL) )
     {
         (void)printf("eFSS_LOGCTST_BadPointer 20 -- OK \n");
         (void)memset(&l_tCtx, 0, sizeof(l_tCtx));
@@ -1094,27 +1133,54 @@ void eFSS_LOGCTST_BadPointer(void)
         (void)memset(&l_tCtx, 0, sizeof(l_tCtx));
     }
 
-    /* Function */
-    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_uStorType, l_auStor, sizeof(l_auStor) ) )
-    {
-        (void)printf("eFSS_LOGCTST_BadPointer 21 -- OK \n");
-    }
-    else
-    {
-        (void)printf("eFSS_LOGCTST_BadPointer 21 -- FAIL \n");
-    }
 
-    /* Function */
-    if( e_eFSS_LOGC_RES_BADPOINTER == eFSS_LOGC_GetBuffNStor(&l_tCtx, &l_ltUseBuff, NULL) )
-    {
-        (void)printf("eFSS_LOGCTST_BadPointer 22 -- OK \n");
-        (void)memset(&l_tCtx, 0, sizeof(l_tCtx));
-    }
-    else
-    {
-        (void)printf("eFSS_LOGCTST_BadPointer 22 -- FAIL \n");
-        (void)memset(&l_tCtx, 0, sizeof(l_tCtx));
-    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     /* Function */
     if( e_eFSS_LOGC_RES_BADPOINTER == eFSS_LOGC_LoadPageInBuff(NULL, 0u, &l_uSubTypeRead) )
@@ -1261,11 +1327,13 @@ void eFSS_LOGCTST_BadInit(void)
     uint8_t l_uSubTypeWrite;
     bool_t l_bIsEquals;
     uint32_t l_uByteInPage;
+    uint32_t l_uPageUsable;
 
     l_uSubTypeRead = 0u;
     l_uSubTypeWrite = 0u;
     l_bIsEquals = false;
     l_uByteInPage = 0u;
+    l_uPageUsable = 0u;
 
     /* Init the remainings var */
     (void)memset(&l_tCtx, 0, sizeof(l_tCtx));
@@ -1395,6 +1463,7 @@ void eFSS_LOGCTST_BadParamEntr(void)
     uint8_t l_uSubTypeWrite;
     bool_t l_bIsEquals;
     uint32_t l_uByteInPage;
+    uint32_t l_uPageUsable;
 
     /* Init callback var */
     l_tCtxCb.ptCtxErase = &l_tCtxErase;
@@ -1427,6 +1496,7 @@ void eFSS_LOGCTST_BadParamEntr(void)
     l_uSubTypeWrite = 0u;
     l_bIsEquals = false;
     l_uByteInPage = 0u;
+    l_uPageUsable = 0u;
 
     /* Function */
     l_tStorSet.uPagesLen = 25u;
@@ -1732,6 +1802,7 @@ void eFSS_LOGCTST_CorruptedCtx(void)
     uint8_t l_uSubTypeWrite;
     bool_t l_bIsEquals;
     uint32_t l_uByteInPage;
+    uint32_t l_uPageUsable;
 
     /* Init callback var */
     l_tCtxCb.ptCtxErase = &l_tCtxErase;
@@ -1753,6 +1824,7 @@ void eFSS_LOGCTST_CorruptedCtx(void)
     l_uSubTypeWrite = 0u;
     l_bIsEquals = false;
     l_uByteInPage = 0u;
+    l_uPageUsable = 0u;
 
     /* Function */
     if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_uStorType, l_auStor, sizeof(l_auStor) ) )
@@ -2334,6 +2406,7 @@ void eFSS_LOGCTST_Basic(void)
     t_eFSS_TYPE_StorSet l_tGetStorSet;
     t_eFSS_LOGC_StorBuf l_ltUseBuff;
     uint32_t l_uByteInPage;
+    uint32_t l_uPageUsable;
 
     /* Init callback var */
     l_tCtxCb.ptCtxErase = &l_tCtxErase;
@@ -2362,6 +2435,7 @@ void eFSS_LOGCTST_Basic(void)
     l_tStorSet.uPageVersion = 1u;
     l_uStorType = 1u;
     l_uByteInPage = 0u;
+    l_uPageUsable = 0u;
 
     /* Function */
     if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_uStorType, l_auStor, sizeof(l_auStor) ) )
@@ -2497,6 +2571,7 @@ void eFSS_LOGCTST_BadClBckNRetry(void)
     uint8_t l_uSubTypeWrite;
     bool_t l_bIsEquals;
     uint32_t l_uByteInPage;
+    uint32_t l_uPageUsable;
 
     /* Init callback var */
     l_tCtxCb.ptCtxErase = &l_tCtxErase;
@@ -2528,6 +2603,7 @@ void eFSS_LOGCTST_BadClBckNRetry(void)
     l_uSubTypeWrite = 0u;
     l_bIsEquals = false;
     l_uByteInPage = 0u;
+    l_uPageUsable = 0u;
 
     /* ------------------------------------------------------------------------------------------ TEST READ CALL BACK */
     /* Function */
@@ -3727,6 +3803,7 @@ static void eFSS_LOGCTST_CrcTest(void)
     t_eFSS_LOGC_StorBuf l_ltUseBuff;
     uint32_t l_uCrcGetted;
     uint32_t l_uByteInPage;
+    uint32_t l_uPageUsable;
 
     /* Init callback var */
     l_tCtxCb.ptCtxErase = &l_tCtxErase;
@@ -3745,6 +3822,7 @@ static void eFSS_LOGCTST_CrcTest(void)
     l_tStorSet.uPageVersion = 1u;
     l_uStorType = 1u;
     l_uByteInPage = 0u;
+    l_uPageUsable = 0u;
 
     /* ------------------------------------------------------------------------------------------- TEST CRC CALL BACK */
     /* Function */
@@ -4085,6 +4163,7 @@ static void eFSS_LOGCTST_LoadTest(void)
     t_eFSS_LOGC_StorBuf l_ltUseBuff2;
     uint8_t l_uSubTypeRead;
     uint32_t l_uByteInPage;
+    uint32_t l_uPageUsable;
 
     /* Init callback var */
     l_tCtxCb.ptCtxErase = &l_tCtxErase;
@@ -4103,6 +4182,7 @@ static void eFSS_LOGCTST_LoadTest(void)
     l_tStorSet.uPageVersion = 1u;
     l_uStorType = 1u;
     l_uByteInPage = 0u;
+    l_uPageUsable = 0u;
 
     /* ------------------------------------------------------------------------------------------- TEST CRC CALL BACK */
     /* Function */
@@ -4924,6 +5004,7 @@ static void eFSS_LOGCTST_FlushTest(void)
     t_eFSS_LOGC_StorBuf l_ltUseBuff2;
     uint8_t l_uSubTypeWrite;
     uint32_t l_uByteInPage;
+    uint32_t l_uPageUsable;
 
     /* Init callback var */
     l_tCtxCb.ptCtxErase = &l_tCtxErase;
@@ -4942,6 +5023,7 @@ static void eFSS_LOGCTST_FlushTest(void)
     l_tStorSet.uPageVersion = 1u;
     l_uStorType = 1u;
     l_uByteInPage = 0u;
+    l_uPageUsable = 0u;
 
     /* ------------------------------------------------------------------------------------------- TEST CRC CALL BACK */
     /* Function */
@@ -5223,6 +5305,7 @@ static void eFSS_LOGCTST_Compare(void)
     uint8_t l_uSubTypeRead;
     bool_t l_bIsEquals;
     uint32_t l_uByteInPage;
+    uint32_t l_uPageUsable;
 
     /* Init callback var */
     l_tCtxCb.ptCtxErase = &l_tCtxErase;
@@ -5242,6 +5325,7 @@ static void eFSS_LOGCTST_Compare(void)
     l_uStorType = 1u;
     l_bIsEquals = false;
     l_uByteInPage = 0u;
+    l_uPageUsable = 0u;
 
     /* ------------------------------------------------------------------------------------------- TEST CRC CALL BACK */
     /* Function */
@@ -5751,6 +5835,7 @@ static void eFSS_LOGCTST_LoadBkupTest(void)
     t_eFSS_LOGC_StorBuf l_ltUseBuff;
     t_eFSS_LOGC_StorBuf l_ltUseBuff2;
     uint32_t l_uByteInPage;
+    uint32_t l_uPageUsable;
 
     /* Init callback var */
     l_tCtxCb.ptCtxErase = &l_tCtxErase;
@@ -5769,6 +5854,7 @@ static void eFSS_LOGCTST_LoadBkupTest(void)
     l_tStorSet.uPageVersion = 1u;
     l_uStorType = 1u;
     l_uByteInPage = 0u;
+    l_uPageUsable = 0u;
 
     /* ------------------------------------------------------------------------------------------- TEST CRC CALL BACK */
     /* Function */
@@ -6805,6 +6891,7 @@ static void eFSS_LOGCTST_FlushBkupTest(void)
     t_eFSS_LOGC_StorBuf l_ltUseBuff;
     t_eFSS_LOGC_StorBuf l_ltUseBuff2;
     uint32_t l_uByteInPage;
+    uint32_t l_uPageUsable;
 
     /* Init callback var */
     l_tCtxCb.ptCtxErase = &l_tCtxErase;
@@ -6823,6 +6910,7 @@ static void eFSS_LOGCTST_FlushBkupTest(void)
     l_tStorSet.uPageVersion = 1u;
     l_uStorType = 1u;
     l_uByteInPage = 0u;
+    l_uPageUsable = 0u;
 
     /* ------------------------------------------------------------------------------------------- TEST CRC CALL BACK */
     /* Function */
@@ -6988,6 +7076,7 @@ static void eFSS_LOGCTST_GenTest(void)
     t_eFSS_LOGC_StorBuf l_ltUseBuff;
     uint8_t l_uSubTypeRead;
     uint32_t l_uByteInPage;
+    uint32_t l_uPageUsable;
 
     /* Init callback var */
     l_tCtxCb.ptCtxErase = &l_tCtxErase;
@@ -7007,6 +7096,7 @@ static void eFSS_LOGCTST_GenTest(void)
     l_uStorType = 1u;
     l_uSubTypeRead = 0u;
     l_uByteInPage = 0u;
+    l_uPageUsable = 0u;
 
     /* ------------------------------------------------------------------------------------------- TEST CRC CALL BACK */
     /* Function */
