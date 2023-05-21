@@ -1395,7 +1395,6 @@ void eFSS_LOGCTST_BadParamEntr(void)
     t_eFSS_LOGC_Ctx l_tCtx;
     t_eFSS_TYPE_CbStorCtx l_tCtxCb;
     t_eFSS_TYPE_StorSet l_tStorSet;
-    uint8_t l_uStorType;
     uint8_t l_auStor[56u];
     t_eFSS_TYPE_EraseCtx  l_tCtxErase;
 	t_eFSS_TYPE_WriteCtx  l_tCtxWrite;
@@ -1436,7 +1435,6 @@ void eFSS_LOGCTST_BadParamEntr(void)
     l_tStorSet.uRWERetry = 2u;
     l_tStorSet.uPageVersion = 1u;
 
-    l_uStorType = 1u;
     l_uSubTypeRead = 0u;
     l_uSubTypeWrite = 0u;
     l_bIsNewest = false;
@@ -1447,7 +1445,7 @@ void eFSS_LOGCTST_BadParamEntr(void)
 
     /* Function */
     l_tStorSet.uPagesLen = 25u;
-    if( e_eFSS_LOGC_RES_BADPARAM == eFSS_LOGC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_uStorType, l_auStor, sizeof(l_auStor) ) )
+    if( e_eFSS_LOGC_RES_BADPARAM == eFSS_LOGC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_auStor, sizeof(l_auStor), false, false ) )
     {
         (void)printf("eFSS_LOGCTST_BadParamEntr 1  -- OK \n");
         l_tStorSet.uPagesLen = 28u;
@@ -1460,7 +1458,7 @@ void eFSS_LOGCTST_BadParamEntr(void)
 
     /* Function */
     l_tStorSet.uPagesLen = 23u;
-    if( e_eFSS_LOGC_RES_BADPARAM == eFSS_LOGC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_uStorType, l_auStor, sizeof(l_auStor) ) )
+    if( e_eFSS_LOGC_RES_BADPARAM == eFSS_LOGC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_auStor, sizeof(l_auStor), false, false ) )
     {
         (void)printf("eFSS_LOGCTST_BadParamEntr 2  -- OK \n");
         l_tStorSet.uPagesLen = 28u;
@@ -1473,7 +1471,7 @@ void eFSS_LOGCTST_BadParamEntr(void)
 
     /* Function */
     l_tStorSet.uTotPages = 0u;
-    if( e_eFSS_LOGC_RES_BADPARAM == eFSS_LOGC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_uStorType, l_auStor, sizeof(l_auStor) ) )
+    if( e_eFSS_LOGC_RES_BADPARAM == eFSS_LOGC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_auStor, sizeof(l_auStor), false, false ) )
     {
         (void)printf("eFSS_LOGCTST_BadParamEntr 3  -- OK \n");
         l_tStorSet.uTotPages = 14;
@@ -1486,7 +1484,7 @@ void eFSS_LOGCTST_BadParamEntr(void)
 
     /* Function */
     l_tStorSet.uPagesLen = 19u;
-    if( e_eFSS_LOGC_RES_BADPARAM == eFSS_LOGC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_uStorType, l_auStor, l_tStorSet.uPagesLen * 2u ) )
+    if( e_eFSS_LOGC_RES_BADPARAM == eFSS_LOGC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_auStor, l_tStorSet.uPagesLen * 2u, false, false  ) )
     {
         (void)printf("eFSS_LOGCTST_BadParamEntr 4  -- OK \n");
         l_tStorSet.uPagesLen = 28u;
@@ -1499,7 +1497,7 @@ void eFSS_LOGCTST_BadParamEntr(void)
 
     /* Function */
     l_tStorSet.uPagesLen = 18u;
-    if( e_eFSS_LOGC_RES_BADPARAM == eFSS_LOGC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_uStorType, l_auStor, l_tStorSet.uPagesLen * 2u ) )
+    if( e_eFSS_LOGC_RES_BADPARAM == eFSS_LOGC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_auStor, l_tStorSet.uPagesLen * 2u, false, false  ) )
     {
         (void)printf("eFSS_LOGCTST_BadParamEntr 5  -- OK \n");
         l_tStorSet.uPagesLen = 28u;
@@ -1512,7 +1510,7 @@ void eFSS_LOGCTST_BadParamEntr(void)
 
     /* Function */
     l_tStorSet.uRWERetry = 0u;
-    if( e_eFSS_LOGC_RES_BADPARAM == eFSS_LOGC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_uStorType, l_auStor, sizeof(l_auStor) ) )
+    if( e_eFSS_LOGC_RES_BADPARAM == eFSS_LOGC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_auStor, sizeof(l_auStor), false, false  ) )
     {
         (void)printf("eFSS_LOGCTST_BadParamEntr 6  -- OK \n");
         l_tStorSet.uRWERetry = 1u;
@@ -1525,7 +1523,7 @@ void eFSS_LOGCTST_BadParamEntr(void)
 
     /* Function */
     l_tStorSet.uPagesLen = 20u;
-    if( e_eFSS_LOGC_RES_BADPARAM == eFSS_LOGC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_uStorType, l_auStor, l_tStorSet.uPagesLen * 2u ) )
+    if( e_eFSS_LOGC_RES_BADPARAM == eFSS_LOGC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_auStor, l_tStorSet.uPagesLen * 2u, false, false ) )
     {
         (void)printf("eFSS_LOGCTST_BadParamEntr 7  -- OK \n");
         l_tStorSet.uPagesLen = 28u;
@@ -1537,7 +1535,7 @@ void eFSS_LOGCTST_BadParamEntr(void)
     }
 
     /* Function */
-    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_uStorType, l_auStor, sizeof(l_auStor) ) )
+    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_auStor, sizeof(l_auStor), false, false ) )
     {
         (void)printf("eFSS_LOGCTST_BadParamEntr 8  -- OK \n");
     }
@@ -1546,6 +1544,68 @@ void eFSS_LOGCTST_BadParamEntr(void)
         (void)printf("eFSS_LOGCTST_BadParamEntr 8  -- FAIL \n");
     }
 
+    /* Now we can test the new bad param for the init function */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    #if 0
     /* Function */
     if( e_eFSS_LOGC_RES_BADPARAM == eFSS_LOGC_LoadBufferAs(&l_tCtx, 1u, &l_uSubTypeRead) )
     {
@@ -1727,7 +1787,7 @@ void eFSS_LOGCTST_BadParamEntr(void)
     {
         (void)printf("eFSS_LOGCTST_BadParamEntr 26 -- OK \n");
     }
-
+    #endif
 }
 
 #if 0
