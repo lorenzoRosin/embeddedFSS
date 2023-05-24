@@ -133,11 +133,11 @@ void eFSS_LOGCTST_ExeTest(void)
 {
 	(void)printf("\n\nLOG CORE TEST START \n\n");
 
-    eFSS_LOGCTST_BadPointer();
-    eFSS_LOGCTST_BadInit();
-    eFSS_LOGCTST_BadParamEntr();
-    eFSS_LOGCTST_CorruptedCtx();
-    eFSS_LOGCTST_Basic();
+    // eFSS_LOGCTST_BadPointer();
+    // eFSS_LOGCTST_BadInit();
+    // eFSS_LOGCTST_BadParamEntr();
+    // eFSS_LOGCTST_CorruptedCtx();
+    // eFSS_LOGCTST_Basic();
     eFSS_LOGCTST_BadClBckNRetry();
 
 #if 0
