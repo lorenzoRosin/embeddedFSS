@@ -133,11 +133,11 @@ void eFSS_LOGCTST_ExeTest(void)
 {
 	(void)printf("\n\nLOG CORE TEST START \n\n");
 
-    // eFSS_LOGCTST_BadPointer();
-    // eFSS_LOGCTST_BadInit();
-    // eFSS_LOGCTST_BadParamEntr();
-    // eFSS_LOGCTST_CorruptedCtx();
-    // eFSS_LOGCTST_Basic();
+    eFSS_LOGCTST_BadPointer();
+    eFSS_LOGCTST_BadInit();
+    eFSS_LOGCTST_BadParamEntr();
+    eFSS_LOGCTST_CorruptedCtx();
+    eFSS_LOGCTST_Basic();
     eFSS_LOGCTST_BadClBckNRetry();
 
 #if 0
@@ -158,10 +158,9 @@ void eFSS_LOGCTST_ExeTest(void)
 /***********************************************************************************************************************
  *   PRIVATE MODULES VARIABLE DECLARATION
  **********************************************************************************************************************/
-static bool_t  m_bIsErased1 = false;
-static bool_t  m_bIsErased2 = false;
-static uint8_t m_auStorArea1[28u];
-static uint8_t m_auStorArea2[28u];
+static bool_t  m_bIsErased[14u] = false;
+static uint8_t m_auStorArea[14][64u];
+
 
 
 /***********************************************************************************************************************
@@ -221,7 +220,7 @@ static bool_t eFSS_LOGCTST_EraseTst1Adapt(t_eFSS_TYPE_EraseCtx* const p_ptCtx, c
     }
     else
     {
-        if( p_uPageToErase >= 2u )
+        if( p_uPageToErase >= 14u )
         {
             l_bRes = false;
             p_ptCtx->eLastEr = e_eFSS_LOGC_RES_BADPARAM;
@@ -229,19 +228,10 @@ static bool_t eFSS_LOGCTST_EraseTst1Adapt(t_eFSS_TYPE_EraseCtx* const p_ptCtx, c
         else
         {
             p_ptCtx->uTimeUsed++;
+            (void)memset(m_auStorArea, 0, sizeof(m_auStorArea));
+            l_bRes = true;
+            m_bIsErased[p_uPageToErase] = true;
 
-            if( 0u == p_uPageToErase )
-            {
-                l_bRes = true;
-                m_bIsErased1 = true;
-                (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-            }
-            else
-            {
-                l_bRes = true;
-                m_bIsErased2 = true;
-                (void)memset(m_auStorArea2, 0, sizeof(m_auStorArea2));
-            }
         }
     }
 
@@ -329,14 +319,14 @@ static bool_t eFSS_LOGCTST_WriteErrSecAdapt(t_eFSS_TYPE_WriteCtx* const p_ptCtx,
         }
         else
         {
-            if( p_uPageToWrite >= 2u )
+            if( p_uPageToWrite >= 14u )
             {
                 l_bRes = false;
                 p_ptCtx->eLastEr = e_eFSS_LOGC_RES_BADPARAM;
             }
             else
             {
-                if( 28u != p_uDataToWriteL )
+                if( 32u != p_uDataToWriteL )
                 {
                     l_bRes = false;
                     p_ptCtx->eLastEr = e_eFSS_LOGC_RES_BADPARAM;
@@ -345,35 +335,17 @@ static bool_t eFSS_LOGCTST_WriteErrSecAdapt(t_eFSS_TYPE_WriteCtx* const p_ptCtx,
                 {
                     if( 0u == p_ptCtx->uTimeUsed )
                     {
-                        if( 0u == p_uPageToWrite )
+                        if( false == m_bIsErased[p_uPageToWrite] )
                         {
-                            if( false == m_bIsErased1 )
-                            {
-                                l_bRes = false;
-                                p_ptCtx->eLastEr = e_eFSS_LOGC_RES_CORRUPTCTX;
-                            }
-                            else
-                            {
-                                l_bRes = true;
-                                p_ptCtx->eLastEr = e_eFSS_LOGC_RES_OK;
-                                m_bIsErased1 = false;
-                                (void)memcpy(m_auStorArea1, p_puDataToWrite, p_uDataToWriteL);
-                            }
+                            l_bRes = false;
+                            p_ptCtx->eLastEr = e_eFSS_LOGC_RES_CORRUPTCTX;
                         }
                         else
                         {
-                            if( false == m_bIsErased2 )
-                            {
-                                l_bRes = false;
-                                p_ptCtx->eLastEr = e_eFSS_LOGC_RES_CORRUPTCTX;
-                            }
-                            else
-                            {
-                                l_bRes = true;
-                                p_ptCtx->eLastEr = e_eFSS_LOGC_RES_OK;
-                                m_bIsErased2 = false;
-                                (void)memcpy(m_auStorArea2, p_puDataToWrite, p_uDataToWriteL);
-                            }
+                            l_bRes = true;
+                            p_ptCtx->eLastEr = e_eFSS_LOGC_RES_OK;
+                            m_bIsErased[p_uPageToWrite] = false;
+                            (void)memcpy(m_auStorArea[p_uPageToWrite], p_puDataToWrite, p_uDataToWriteL);
                         }
 
                         p_ptCtx->uTimeUsed++;
@@ -411,14 +383,14 @@ static bool_t eFSS_LOGCTST_WriteTst1Adapt(t_eFSS_TYPE_WriteCtx* const p_ptCtx,
         }
         else
         {
-            if( p_uPageToWrite >= 2u )
+            if( p_uPageToWrite >= 14u )
             {
                 l_bRes = false;
                 p_ptCtx->eLastEr = e_eFSS_LOGC_RES_BADPARAM;
             }
             else
             {
-                if( 28u != p_uDataToWriteL )
+                if( 32u != p_uDataToWriteL )
                 {
                     l_bRes = false;
                     p_ptCtx->eLastEr = e_eFSS_LOGC_RES_BADPARAM;
@@ -427,37 +399,18 @@ static bool_t eFSS_LOGCTST_WriteTst1Adapt(t_eFSS_TYPE_WriteCtx* const p_ptCtx,
                 {
                     p_ptCtx->uTimeUsed++;
 
-                    if( 0u == p_uPageToWrite )
+                    if( false == m_bIsErased[p_uPageToWrite] )
                     {
-                        if( false == m_bIsErased1 )
-                        {
-                            l_bRes = false;
-                            p_ptCtx->eLastEr = e_eFSS_LOGC_RES_CORRUPTCTX;
-                        }
-                        else
-                        {
-                            l_bRes = true;
-                            p_ptCtx->eLastEr = e_eFSS_LOGC_RES_OK;
-                            m_bIsErased1 = false;
-                            (void)memcpy(m_auStorArea1, p_puDataToWrite, p_uDataToWriteL);
-                        }
+                        l_bRes = false;
+                        p_ptCtx->eLastEr = e_eFSS_LOGC_RES_CORRUPTCTX;
                     }
                     else
                     {
-                        if( false == m_bIsErased2 )
-                        {
-                            l_bRes = false;
-                            p_ptCtx->eLastEr = e_eFSS_LOGC_RES_CORRUPTCTX;
-                        }
-                        else
-                        {
-                            l_bRes = true;
-                            p_ptCtx->eLastEr = e_eFSS_LOGC_RES_OK;
-                            m_bIsErased2 = false;
-                            (void)memcpy(m_auStorArea2, p_puDataToWrite, p_uDataToWriteL);
-                        }
+                        l_bRes = true;
+                        p_ptCtx->eLastEr = e_eFSS_LOGC_RES_OK;
+                        m_bIsErased[p_uPageToWrite] = false;
+                        (void)memcpy(m_auStorArea[p_uPageToWrite], p_puDataToWrite, p_uDataToWriteL);
                     }
-
                 }
             }
         }
@@ -548,14 +501,14 @@ static bool_t eFSS_LOGCTST_ReadErrSecAdapt(t_eFSS_TYPE_ReadCtx* const p_ptCtx,
         }
         else
         {
-            if( p_uPageToRead >= 2u )
+            if( p_uPageToRead >= 14u )
             {
                 l_bRes = false;
                 p_ptCtx->eLastEr = e_eFSS_LOGC_RES_BADPARAM;
             }
             else
             {
-                if( 28u != p_uReadBufferL )
+                if( 32u != p_uReadBufferL )
                 {
                     l_bRes = false;
                     p_ptCtx->eLastEr = e_eFSS_LOGC_RES_BADPARAM;
@@ -564,18 +517,9 @@ static bool_t eFSS_LOGCTST_ReadErrSecAdapt(t_eFSS_TYPE_ReadCtx* const p_ptCtx,
                 {
                     if( 0u == p_ptCtx->uTimeUsed )
                     {
-                        if( 0u == p_uPageToRead )
-                        {
-                            l_bRes = true;
-                            p_ptCtx->eLastEr = e_eFSS_LOGC_RES_OK;
-                            (void)memcpy(p_puReadBuffer, m_auStorArea1, p_uReadBufferL);
-                        }
-                        else
-                        {
-                            l_bRes = true;
-                            p_ptCtx->eLastEr = e_eFSS_LOGC_RES_OK;
-                            (void)memcpy(p_puReadBuffer, m_auStorArea2, p_uReadBufferL);
-                        }
+                        l_bRes = true;
+                        p_ptCtx->eLastEr = e_eFSS_LOGC_RES_OK;
+                        (void)memcpy(p_puReadBuffer, m_auStorArea[p_uPageToRead], p_uReadBufferL);
 
                         p_ptCtx->uTimeUsed++;
                     }
@@ -611,14 +555,14 @@ static bool_t eFSS_LOGCTST_ReadTst1Adapt(t_eFSS_TYPE_ReadCtx* const p_ptCtx,
         }
         else
         {
-            if( p_uPageToRead >= 2u )
+            if( p_uPageToRead >= 14u )
             {
                 l_bRes = false;
                 p_ptCtx->eLastEr = e_eFSS_LOGC_RES_BADPARAM;
             }
             else
             {
-                if( 28u != p_uReadBufferL )
+                if( 32u != p_uReadBufferL )
                 {
                     l_bRes = false;
                     p_ptCtx->eLastEr = e_eFSS_LOGC_RES_BADPARAM;
@@ -627,18 +571,9 @@ static bool_t eFSS_LOGCTST_ReadTst1Adapt(t_eFSS_TYPE_ReadCtx* const p_ptCtx,
                 {
                     p_ptCtx->uTimeUsed++;
 
-                    if( 0u == p_uPageToRead )
-                    {
-                        l_bRes = true;
-                        p_ptCtx->eLastEr = e_eFSS_LOGC_RES_OK;
-                        (void)memcpy(p_puReadBuffer, m_auStorArea1, p_uReadBufferL);
-                    }
-                    else
-                    {
-                        l_bRes = true;
-                        p_ptCtx->eLastEr = e_eFSS_LOGC_RES_OK;
-                        (void)memcpy(p_puReadBuffer, m_auStorArea2, p_uReadBufferL);
-                    }
+                    l_bRes = true;
+                    p_ptCtx->eLastEr = e_eFSS_LOGC_RES_OK;
+                    (void)memcpy(p_puReadBuffer, m_auStorArea[p_uPageToRead], p_uReadBufferL);
                 }
             }
         }
@@ -666,14 +601,14 @@ static bool_t eFSS_LOGCTST_ReadTst2Adapt(t_eFSS_TYPE_ReadCtx* const p_ptCtx,
         }
         else
         {
-            if( p_uPageToRead >= 2u )
+            if( p_uPageToRead >= 14u )
             {
                 l_bRes = false;
                 p_ptCtx->eLastEr = e_eFSS_LOGC_RES_BADPARAM;
             }
             else
             {
-                if( 28u != p_uReadBufferL )
+                if( 32u != p_uReadBufferL )
                 {
                     l_bRes = false;
                     p_ptCtx->eLastEr = e_eFSS_LOGC_RES_BADPARAM;
@@ -682,20 +617,10 @@ static bool_t eFSS_LOGCTST_ReadTst2Adapt(t_eFSS_TYPE_ReadCtx* const p_ptCtx,
                 {
                     p_ptCtx->uTimeUsed++;
 
-                    if( 0u == p_uPageToRead )
-                    {
-                        l_bRes = true;
-                        p_ptCtx->eLastEr = e_eFSS_LOGC_RES_OK;
-                        (void)memcpy(p_puReadBuffer, m_auStorArea1, p_uReadBufferL);
-                        p_puReadBuffer[0] = p_puReadBuffer[0] + 2u;
-                    }
-                    else
-                    {
-                        l_bRes = true;
-                        p_ptCtx->eLastEr = e_eFSS_LOGC_RES_OK;
-                        (void)memcpy(p_puReadBuffer, m_auStorArea2, p_uReadBufferL);
-                        p_puReadBuffer[0] = p_puReadBuffer[0] + 2u;
-                    }
+                    l_bRes = true;
+                    p_ptCtx->eLastEr = e_eFSS_LOGC_RES_OK;
+                    (void)memcpy(p_puReadBuffer, m_auStorArea[p_uPageToRead], p_uReadBufferL);
+                    p_puReadBuffer[0] = p_puReadBuffer[0] + 2u;
                 }
             }
         }
@@ -3076,7 +3001,7 @@ void eFSS_LOGCTST_BadClBckNRetry(void)
     (void)l_tCtxCrc32.uTimeUsed;
 
     /* Init storage settings */
-    l_tStorSet.uTotPages = 2u;
+    l_tStorSet.uTotPages = 14u;
     l_tStorSet.uPagesLen = 32u;
     l_tStorSet.uRWERetry = 3u;
     l_tStorSet.uPageVersion = 1u;
@@ -3091,7 +3016,7 @@ void eFSS_LOGCTST_BadClBckNRetry(void)
 
     /* ------------------------------------------------------------------------------------------ TEST READ CALL BACK */
     /* Function */
-    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_auStor, sizeof(l_auStor), false, false ) )
+    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_auStor, sizeof(l_auStor), true, false ) )
     {
         (void)printf("eFSS_LOGCTST_BadClBckNRetry 1  -- OK \n");
     }
@@ -3099,8 +3024,6 @@ void eFSS_LOGCTST_BadClBckNRetry(void)
     {
         (void)printf("eFSS_LOGCTST_BadClBckNRetry 1  -- FAIL \n");
     }
-
-#if 0
 
     /* Function */
     if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_IsInit(&l_tCtx, &l_bIsInit ) )
@@ -3120,9 +3043,9 @@ void eFSS_LOGCTST_BadClBckNRetry(void)
     }
 
     /* Function */
-    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_GetBuffNStor(&l_tCtx, &l_ltUseBuff, &l_tGetStorSet) )
+    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_GetBuffNUsable(&l_tCtx, &l_ltUseBuff, &l_uPageUsable) )
     {
-        if( ( l_auStor == l_ltUseBuff.puBuf ) && ( (28u-20u) == l_ltUseBuff.uBufL ) )
+        if( ( l_auStor == l_ltUseBuff.puBuf ) && ( (32u-24u) == l_ltUseBuff.uBufL ) && ( 12u == l_uPageUsable ) )
         {
             (void)printf("eFSS_LOGCTST_BadClBckNRetry 3  -- OK \n");
         }
@@ -3153,15 +3076,10 @@ void eFSS_LOGCTST_BadClBckNRetry(void)
         (void)printf("eFSS_LOGCTST_BadClBckNRetry 4  -- FAIL \n");
     }
 
-    /* Test LOAD */
-    l_tCtxRead.uTimeUsed = 0u;
-    l_tCtxRead.eLastEr = e_eFSS_LOGC_RES_OK;
-    l_tCtxCrc32.uTimeUsed = 0u;
-    l_tCtxCrc32.eLastEr = e_eFSS_LOGC_RES_OK;
-    if( e_eFSS_LOGC_RES_CLBCKREADERR == eFSS_LOGC_LoadBufferAs(&l_tCtx, 0u, &l_uSubTypeRead) )
+    /* Function */
+    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_IsFlashCacheUsed(&l_tCtx, &l_bIsInit ) )
     {
-        if( ( l_tStorSet.uRWERetry == l_tCtxRead.uTimeUsed ) && ( e_eFSS_LOGC_RES_BADPOINTER == l_tCtxRead.eLastEr ) &&
-            ( 0u == l_tCtxCrc32.uTimeUsed ) )
+        if( true == l_bIsInit )
         {
             (void)printf("eFSS_LOGCTST_BadClBckNRetry 5  -- OK \n");
         }
@@ -3175,14 +3093,22 @@ void eFSS_LOGCTST_BadClBckNRetry(void)
         (void)printf("eFSS_LOGCTST_BadClBckNRetry 5  -- FAIL \n");
     }
 
-    /* Function */
-    l_tCtxCb.fRead = &eFSS_LOGCTST_ReadAdapt;
-    l_tCtxCb.fCrc32 = &eFSS_LOGCTST_CrcErrAdapt;
+    /* ----------------------------------------------------------------------------------------- TEST LOAD CACHE CALL BACK */
+    l_tCtxRead.uTimeUsed = 0u;
+    l_tCtxRead.eLastEr = e_eFSS_LOGC_RES_OK;
     l_tCtxCrc32.uTimeUsed = 0u;
     l_tCtxCrc32.eLastEr = e_eFSS_LOGC_RES_OK;
-    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_uStorType, l_auStor, sizeof(l_auStor) ) )
+    if( e_eFSS_LOGC_RES_CLBCKREADERR == eFSS_LOGC_ReadCache(&l_tCtx, &l_uNewPIx, &l_uFillPIdx) )
     {
-        (void)printf("eFSS_LOGCTST_BadClBckNRetry 6  -- OK \n");
+        if( ( l_tStorSet.uRWERetry == l_tCtxRead.uTimeUsed ) && ( e_eFSS_LOGC_RES_BADPOINTER == l_tCtxRead.eLastEr ) &&
+            ( 0u == l_tCtxCrc32.uTimeUsed ) )
+        {
+            (void)printf("eFSS_LOGCTST_BadClBckNRetry 6  -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_LOGCTST_BadClBckNRetry 6  -- FAIL \n");
+        }
     }
     else
     {
@@ -3190,7 +3116,11 @@ void eFSS_LOGCTST_BadClBckNRetry(void)
     }
 
     /* Function */
-    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_GetBuff(&l_tCtx, &l_ltUseBuff) )
+    l_tCtxCb.fRead = &eFSS_LOGCTST_ReadAdapt;
+    l_tCtxCb.fCrc32 = &eFSS_LOGCTST_CrcErrAdapt;
+    l_tCtxCrc32.uTimeUsed = 0u;
+    l_tCtxCrc32.eLastEr = e_eFSS_LOGC_RES_OK;
+    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_auStor, sizeof(l_auStor), true, false ) )
     {
         (void)printf("eFSS_LOGCTST_BadClBckNRetry 7  -- OK \n");
     }
@@ -3199,52 +3129,52 @@ void eFSS_LOGCTST_BadClBckNRetry(void)
         (void)printf("eFSS_LOGCTST_BadClBckNRetry 7  -- FAIL \n");
     }
 
-    /* Test LOAD */
-    l_tCtxRead.uTimeUsed = 0u;
-    l_tCtxRead.eLastEr = e_eFSS_LOGC_RES_OK;
-    l_tCtxCrc32.uTimeUsed = 0u;
-    l_tCtxCrc32.eLastEr = e_eFSS_LOGC_RES_OK;
-
-    if( e_eFSS_LOGC_RES_CLBCKCRCERR == eFSS_LOGC_LoadBufferAs(&l_tCtx, 0u, &l_uSubTypeRead) )
+    /* Function */
+    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_GetBuffNUsable(&l_tCtx, &l_ltUseBuff, &l_uPageUsable) )
     {
-        if( ( 1u == l_tCtxRead.uTimeUsed ) && ( e_eFSS_LOGC_RES_OK == l_tCtxRead.eLastEr ) )
-        {
-            if( ( 1u == l_tCtxCrc32.uTimeUsed ) && ( e_eFSS_LOGC_RES_BADPOINTER == l_tCtxCrc32.eLastEr ) )
-            {
-                (void)printf("eFSS_LOGCTST_BadClBckNRetry 8  -- OK \n");
-            }
-            else
-            {
-                (void)printf("eFSS_LOGCTST_BadClBckNRetry 8  -- FAIL \n");
-            }
-        }
-        else
-        {
-            (void)printf("eFSS_LOGCTST_BadClBckNRetry 8  -- FAIL \n");
-        }
+        (void)printf("eFSS_LOGCTST_BadClBckNRetry 8  -- OK \n");
     }
     else
     {
         (void)printf("eFSS_LOGCTST_BadClBckNRetry 8  -- FAIL \n");
     }
 
-    /* ------------------------------------------------------------------------------------------- TEST CRC CALL BACK */
-    /* Function */
-    l_tCtxCb.fRead = &eFSS_LOGCTST_ReadAdapt;
-    l_tCtxCb.fCrc32 = &eFSS_LOGCTST_CrcErrAdapt;
+    /* Test LOAD */
+    l_tCtxRead.uTimeUsed = 0u;
+    l_tCtxRead.eLastEr = e_eFSS_LOGC_RES_OK;
     l_tCtxCrc32.uTimeUsed = 0u;
     l_tCtxCrc32.eLastEr = e_eFSS_LOGC_RES_OK;
-    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_uStorType, l_auStor, sizeof(l_auStor) ) )
+
+    if( e_eFSS_LOGC_RES_CLBCKCRCERR == eFSS_LOGC_ReadCache(&l_tCtx, &l_uNewPIx, &l_uFillPIdx) )
     {
-        (void)printf("eFSS_LOGCTST_BadClBckNRetry 9  -- OK \n");
+        if( ( 1u == l_tCtxRead.uTimeUsed ) && ( e_eFSS_LOGC_RES_OK == l_tCtxRead.eLastEr ) )
+        {
+            if( ( 1u == l_tCtxCrc32.uTimeUsed ) && ( e_eFSS_LOGC_RES_BADPOINTER == l_tCtxCrc32.eLastEr ) )
+            {
+                (void)printf("eFSS_LOGCTST_BadClBckNRetry 9  -- OK \n");
+            }
+            else
+            {
+                (void)printf("eFSS_LOGCTST_BadClBckNRetry 9  -- FAIL \n");
+            }
+        }
+        else
+        {
+            (void)printf("eFSS_LOGCTST_BadClBckNRetry 9  -- FAIL \n");
+        }
     }
     else
     {
         (void)printf("eFSS_LOGCTST_BadClBckNRetry 9  -- FAIL \n");
     }
 
+    /* ----------------------------------------------------------------------------------------- TEST FLUSH CACHE CALL BACK */
     /* Function */
-    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_GetBuff(&l_tCtx, &l_ltUseBuff) )
+    l_tCtxCb.fRead = &eFSS_LOGCTST_ReadErrAdapt;
+    l_tCtxCb.fCrc32 = &eFSS_LOGCTST_CrcAdapt;
+    l_tCtxCrc32.uTimeUsed = 0u;
+    l_tCtxCrc32.eLastEr = e_eFSS_LOGC_RES_OK;
+    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_auStor, sizeof(l_auStor), true, false ) )
     {
         (void)printf("eFSS_LOGCTST_BadClBckNRetry 10 -- OK \n");
     }
@@ -3253,24 +3183,16 @@ void eFSS_LOGCTST_BadClBckNRetry(void)
         (void)printf("eFSS_LOGCTST_BadClBckNRetry 10 -- FAIL \n");
     }
 
-    /* Test LOAD */
     l_tCtxRead.uTimeUsed = 0u;
     l_tCtxRead.eLastEr = e_eFSS_LOGC_RES_OK;
     l_tCtxCrc32.uTimeUsed = 0u;
     l_tCtxCrc32.eLastEr = e_eFSS_LOGC_RES_OK;
-
-    if( e_eFSS_LOGC_RES_CLBCKCRCERR == eFSS_LOGC_CalcCrcInBuff(&l_tCtx, 0u, 4u, &l_uCrcGetted) )
+    if( e_eFSS_LOGC_RES_CLBCKREADERR == eFSS_LOGC_WriteCache(&l_tCtx, 0u, 0u) )
     {
-        if( ( 0u == l_tCtxRead.uTimeUsed ) && ( e_eFSS_LOGC_RES_OK == l_tCtxRead.eLastEr ) )
+        if( ( l_tStorSet.uRWERetry == l_tCtxRead.uTimeUsed ) && ( e_eFSS_LOGC_RES_BADPOINTER == l_tCtxRead.eLastEr ) &&
+            ( 1u == l_tCtxCrc32.uTimeUsed ) )
         {
-            if( ( 1u == l_tCtxCrc32.uTimeUsed ) && ( e_eFSS_LOGC_RES_BADPOINTER == l_tCtxCrc32.eLastEr ) )
-            {
-                (void)printf("eFSS_LOGCTST_BadClBckNRetry 11 -- OK \n");
-            }
-            else
-            {
-                (void)printf("eFSS_LOGCTST_BadClBckNRetry 11 -- FAIL \n");
-            }
+            (void)printf("eFSS_LOGCTST_BadClBckNRetry 11 -- OK \n");
         }
         else
         {
@@ -3282,7 +3204,80 @@ void eFSS_LOGCTST_BadClBckNRetry(void)
         (void)printf("eFSS_LOGCTST_BadClBckNRetry 11 -- FAIL \n");
     }
 
-    /* ----------------------------------------------------------------------------------------- TEST WRITE CALL BACK */
+    /* Function */
+    l_tCtxCb.fRead = &eFSS_LOGCTST_ReadAdapt;
+    l_tCtxCb.fCrc32 = &eFSS_LOGCTST_CrcErrAdapt;
+    l_tCtxCrc32.uTimeUsed = 0u;
+    l_tCtxCrc32.eLastEr = e_eFSS_LOGC_RES_OK;
+    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_auStor, sizeof(l_auStor), true, false ) )
+    {
+        (void)printf("eFSS_LOGCTST_BadClBckNRetry 12 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_BadClBckNRetry 12 -- FAIL \n");
+    }
+
+    /* Function */
+    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_GetBuffNUsable(&l_tCtx, &l_ltUseBuff, &l_uPageUsable) )
+    {
+        (void)printf("eFSS_LOGCTST_BadClBckNRetry 13 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_BadClBckNRetry 13 -- FAIL \n");
+    }
+
+    /* Test LOAD */
+    l_tCtxRead.uTimeUsed = 0u;
+    l_tCtxRead.eLastEr = e_eFSS_LOGC_RES_OK;
+    l_tCtxCrc32.uTimeUsed = 0u;
+    l_tCtxCrc32.eLastEr = e_eFSS_LOGC_RES_OK;
+
+    if( e_eFSS_LOGC_RES_CLBCKCRCERR == eFSS_LOGC_WriteCache(&l_tCtx, 0u, 0u) )
+    {
+        if( ( 0u == l_tCtxRead.uTimeUsed ) && ( e_eFSS_LOGC_RES_OK == l_tCtxRead.eLastEr ) )
+        {
+            if( ( 1u == l_tCtxCrc32.uTimeUsed ) && ( e_eFSS_LOGC_RES_BADPOINTER == l_tCtxCrc32.eLastEr ) )
+            {
+                (void)printf("eFSS_LOGCTST_BadClBckNRetry 14 -- OK \n");
+            }
+            else
+            {
+                (void)printf("eFSS_LOGCTST_BadClBckNRetry 14 -- FAIL \n");
+            }
+        }
+        else
+        {
+            (void)printf("eFSS_LOGCTST_BadClBckNRetry 14 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_BadClBckNRetry 14 -- FAIL \n");
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#if 0
+    /* ----------------------------------------------------------------------------------------- TEST WRITE CACHE CALL BACK */
     /* Function */
     l_tCtxCb.fErase = &eFSS_LOGCTST_EraseAdapt;
     l_tCtxCb.fWrite = &eFSS_LOGCTST_WriteAdapt;
@@ -3697,6 +3692,76 @@ void eFSS_LOGCTST_BadClBckNRetry(void)
         (void)printf("eFSS_LOGCTST_BadClBckNRetry 29 -- FAIL \n");
     }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     /* Function */
     l_tCtxCb.fErase = &eFSS_LOGCTST_EraseAdapt;
     l_tCtxCb.fWrite = &eFSS_LOGCTST_WriteAdapt;
@@ -3942,55 +4007,55 @@ void eFSS_LOGCTST_BadClBckNRetry(void)
     }
 
     /* Setup storage area */
-    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    (void)memset(m_auStorArea2, 0xFF, sizeof(m_auStorArea2));
+    (void)memset(m_auStorArea[p_uPageToWrite], 0, sizeof(m_auStorArea[p_uPageToWrite]));
+    (void)memset(m_auStorArea[p_uPageToWrite], 0xFF, sizeof(m_auStorArea[p_uPageToWrite]));
 
     /* Fill the two storage page */
 
 
     /* Setup storage area */
-    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    m_auStorArea1[5u] = 0x00u;
-    m_auStorArea1[6u] = 0x00u;
-    m_auStorArea1[7u] = 0x00u;
-    m_auStorArea1[8u] = 0x00u;
-    m_auStorArea1[9u] = 0x01u;
-    m_auStorArea1[10u] = 0x00u;
-    m_auStorArea1[11u] = 0x00u;
-    m_auStorArea1[12u] = 0x02u;
-    m_auStorArea1[13u] = 0x00u;
-    m_auStorArea1[14u] = 0x00u;
-    m_auStorArea1[15u] = 0x00u;
-    m_auStorArea1[16u] = 0xA5u;
-    m_auStorArea1[17u] = 0xA5u;
-    m_auStorArea1[18u] = 0xA5u;
-    m_auStorArea1[19u] = 0xA5u;
-    m_auStorArea1[20u] = 0x96u;
-    m_auStorArea1[21u] = 0x02u;
-    m_auStorArea1[22u] = 0x00u;
-    m_auStorArea1[23u] = 0x00u;
+    (void)memset(m_auStorArea[p_uPageToWrite], 0, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][5u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][6u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][7u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][8u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][9u] = 0x01u;
+    m_auStorArea[p_uPageToWrite][10u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u;
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][20u] = 0x96u;
+    m_auStorArea[p_uPageToWrite][21u] = 0x02u;
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u;
 
-    (void)memset(m_auStorArea2, 0x10, sizeof(m_auStorArea2));
+    (void)memset(m_auStorArea[p_uPageToWrite], 0x10, sizeof(m_auStorArea[p_uPageToWrite]));
 
-    m_auStorArea2[5u] = 0x01u;
-    m_auStorArea2[6u] = 0x00u;
-    m_auStorArea2[7u] = 0x00u;
-    m_auStorArea2[8u] = 0x00u;
-    m_auStorArea2[9u] = 0x01u;
-    m_auStorArea2[10u] = 0x00u;
-    m_auStorArea2[11u] = 0x00u;
-    m_auStorArea2[12u] = 0x02u;
-    m_auStorArea2[13u] = 0x00u;
-    m_auStorArea2[14u] = 0x00u;
-    m_auStorArea2[15u] = 0x00u;
-    m_auStorArea2[16u] = 0xA5u;
-    m_auStorArea2[17u] = 0xA5u;
-    m_auStorArea2[18u] = 0xA5u;
-    m_auStorArea2[19u] = 0xA5u;
-    m_auStorArea2[20u] = 0xE7u;
-    m_auStorArea2[21u] = 0x02u;
-    m_auStorArea2[22u] = 0x00u;
-    m_auStorArea2[23u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][5u] = 0x01u;
+    m_auStorArea[p_uPageToWrite][6u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][7u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][8u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][9u] = 0x01u;
+    m_auStorArea[p_uPageToWrite][10u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u;
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][20u] = 0xE7u;
+    m_auStorArea[p_uPageToWrite][21u] = 0x02u;
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u;
 
     /* Test FLUSH */
     l_tCtxErase.uTimeUsed = 0u;
@@ -4065,55 +4130,55 @@ void eFSS_LOGCTST_BadClBckNRetry(void)
     }
 
     /* Setup storage area */
-    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    (void)memset(m_auStorArea2, 0xFF, sizeof(m_auStorArea2));
+    (void)memset(m_auStorArea[p_uPageToWrite], 0, sizeof(m_auStorArea[p_uPageToWrite]));
+    (void)memset(m_auStorArea[p_uPageToWrite], 0xFF, sizeof(m_auStorArea[p_uPageToWrite]));
 
     /* Fill the two storage page */
 
 
     /* Setup storage area */
-    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    m_auStorArea1[5u] = 0x00u;
-    m_auStorArea1[6u] = 0x00u;
-    m_auStorArea1[7u] = 0x00u;
-    m_auStorArea1[8u] = 0x00u;
-    m_auStorArea1[9u] = 0x01u;
-    m_auStorArea1[10u] = 0x00u;
-    m_auStorArea1[11u] = 0x00u;
-    m_auStorArea1[12u] = 0x02u;
-    m_auStorArea1[13u] = 0x00u;
-    m_auStorArea1[14u] = 0x00u;
-    m_auStorArea1[15u] = 0x00u;
-    m_auStorArea1[16u] = 0xA5u;
-    m_auStorArea1[17u] = 0xA5u;
-    m_auStorArea1[18u] = 0xA5u;
-    m_auStorArea1[19u] = 0xA5u;
-    m_auStorArea1[20u] = 0x00u;
-    m_auStorArea1[21u] = 0x00u;
-    m_auStorArea1[22u] = 0x00u;
-    m_auStorArea1[23u] = 0x00u;
+    (void)memset(m_auStorArea[p_uPageToWrite], 0, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][5u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][6u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][7u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][8u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][9u] = 0x01u;
+    m_auStorArea[p_uPageToWrite][10u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u;
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][20u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][21u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u;
 
-    (void)memset(m_auStorArea2, 0x10, sizeof(m_auStorArea2));
+    (void)memset(m_auStorArea[p_uPageToWrite], 0x10, sizeof(m_auStorArea[p_uPageToWrite]));
 
-    m_auStorArea2[5u] = 0x01u;
-    m_auStorArea2[6u] = 0x00u;
-    m_auStorArea2[7u] = 0x00u;
-    m_auStorArea2[8u] = 0x00u;
-    m_auStorArea2[9u] = 0x01u;
-    m_auStorArea2[10u] = 0x00u;
-    m_auStorArea2[11u] = 0x00u;
-    m_auStorArea2[12u] = 0x02u;
-    m_auStorArea2[13u] = 0x00u;
-    m_auStorArea2[14u] = 0x00u;
-    m_auStorArea2[15u] = 0x00u;
-    m_auStorArea2[16u] = 0xA5u;
-    m_auStorArea2[17u] = 0xA5u;
-    m_auStorArea2[18u] = 0xA5u;
-    m_auStorArea2[19u] = 0xA5u;
-    m_auStorArea2[20u] = 0xE7u;
-    m_auStorArea2[21u] = 0x02u;
-    m_auStorArea2[22u] = 0x00u;
-    m_auStorArea2[23u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][5u] = 0x01u;
+    m_auStorArea[p_uPageToWrite][6u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][7u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][8u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][9u] = 0x01u;
+    m_auStorArea[p_uPageToWrite][10u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u;
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][20u] = 0xE7u;
+    m_auStorArea[p_uPageToWrite][21u] = 0x02u;
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u;
 
     /* Test FLUSH */
     l_tCtxErase.uTimeUsed = 0u;
@@ -4188,55 +4253,55 @@ void eFSS_LOGCTST_BadClBckNRetry(void)
     }
 
     /* Setup storage area */
-    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    (void)memset(m_auStorArea2, 0xFF, sizeof(m_auStorArea2));
+    (void)memset(m_auStorArea[p_uPageToWrite], 0, sizeof(m_auStorArea[p_uPageToWrite]));
+    (void)memset(m_auStorArea[p_uPageToWrite], 0xFF, sizeof(m_auStorArea[p_uPageToWrite]));
 
     /* Fill the two storage page */
 
 
     /* Setup storage area */
-    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    m_auStorArea1[5u] = 0x00u;
-    m_auStorArea1[6u] = 0x00u;
-    m_auStorArea1[7u] = 0x00u;
-    m_auStorArea1[8u] = 0x00u;
-    m_auStorArea1[9u] = 0x01u;
-    m_auStorArea1[10u] = 0x00u;
-    m_auStorArea1[11u] = 0x00u;
-    m_auStorArea1[12u] = 0x02u;
-    m_auStorArea1[13u] = 0x00u;
-    m_auStorArea1[14u] = 0x00u;
-    m_auStorArea1[15u] = 0x00u;
-    m_auStorArea1[16u] = 0xA5u;
-    m_auStorArea1[17u] = 0xA5u;
-    m_auStorArea1[18u] = 0xA5u;
-    m_auStorArea1[19u] = 0xA5u;
-    m_auStorArea1[20u] = 0x96u;
-    m_auStorArea1[21u] = 0x02u;
-    m_auStorArea1[22u] = 0x00u;
-    m_auStorArea1[23u] = 0x00u;
+    (void)memset(m_auStorArea[p_uPageToWrite], 0, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][5u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][6u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][7u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][8u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][9u] = 0x01u;
+    m_auStorArea[p_uPageToWrite][10u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u;
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][20u] = 0x96u;
+    m_auStorArea[p_uPageToWrite][21u] = 0x02u;
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u;
 
-    (void)memset(m_auStorArea2, 0x10, sizeof(m_auStorArea2));
+    (void)memset(m_auStorArea[p_uPageToWrite], 0x10, sizeof(m_auStorArea[p_uPageToWrite]));
 
-    m_auStorArea2[5u] = 0x01u;
-    m_auStorArea2[6u] = 0x00u;
-    m_auStorArea2[7u] = 0x00u;
-    m_auStorArea2[8u] = 0x00u;
-    m_auStorArea2[9u] = 0x01u;
-    m_auStorArea2[10u] = 0x00u;
-    m_auStorArea2[11u] = 0x00u;
-    m_auStorArea2[12u] = 0x02u;
-    m_auStorArea2[13u] = 0x00u;
-    m_auStorArea2[14u] = 0x00u;
-    m_auStorArea2[15u] = 0x00u;
-    m_auStorArea2[16u] = 0xA5u;
-    m_auStorArea2[17u] = 0xA5u;
-    m_auStorArea2[18u] = 0xA5u;
-    m_auStorArea2[19u] = 0xA5u;
-    m_auStorArea2[20u] = 0x00u;
-    m_auStorArea2[21u] = 0x00u;
-    m_auStorArea2[22u] = 0x00u;
-    m_auStorArea2[23u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][5u] = 0x01u;
+    m_auStorArea[p_uPageToWrite][6u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][7u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][8u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][9u] = 0x01u;
+    m_auStorArea[p_uPageToWrite][10u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u;
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][20u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][21u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u;
 
     /* Test FLUSH */
     l_tCtxErase.uTimeUsed = 0u;
@@ -4722,8 +4787,8 @@ static void eFSS_LOGCTST_ReadCacheTest(void)
     l_ltUseBuff2.puBuf = &l_auStor[24];
 
     /* Setup storage area */
-    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    (void)memset(m_auStorArea2, 0xFF, sizeof(m_auStorArea2));
+    (void)memset(m_auStorArea[p_uPageToWrite], 0, sizeof(m_auStorArea[p_uPageToWrite]));
+    (void)memset(m_auStorArea[p_uPageToWrite], 0xFF, sizeof(m_auStorArea[p_uPageToWrite]));
 
     /* Setup buffer */
     l_uSubTypeRead = 0u;
@@ -4793,17 +4858,17 @@ static void eFSS_LOGCTST_ReadCacheTest(void)
     }
 
     /* Setup storage area */
-    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    m_auStorArea1[20u] = 0xFFu;
-    m_auStorArea1[21u] = 0xFFu;
-    m_auStorArea1[22u] = 0xFFu;
-    m_auStorArea1[23u] = 0xFFu;
+    (void)memset(m_auStorArea[p_uPageToWrite], 0, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][20u] = 0xFFu;
+    m_auStorArea[p_uPageToWrite][21u] = 0xFFu;
+    m_auStorArea[p_uPageToWrite][22u] = 0xFFu;
+    m_auStorArea[p_uPageToWrite][23u] = 0xFFu;
 
-    (void)memset(m_auStorArea2, 0x10, sizeof(m_auStorArea2));
-    m_auStorArea2[20u] = 0x3Fu;
-    m_auStorArea2[21u] = 0x01u;
-    m_auStorArea2[22u] = 0x00u;
-    m_auStorArea2[23u] = 0x00u;
+    (void)memset(m_auStorArea[p_uPageToWrite], 0x10, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][20u] = 0x3Fu;
+    m_auStorArea[p_uPageToWrite][21u] = 0x01u;
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u;
 
     /* Setup buffer */
     l_ltUseBuff.puBuf[0u] = 0x01u;
@@ -4872,25 +4937,25 @@ static void eFSS_LOGCTST_ReadCacheTest(void)
     }
 
     /* Setup storage area */
-    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    m_auStorArea1[16u] = 0xA5u;
-    m_auStorArea1[17u] = 0xA5u;
-    m_auStorArea1[18u] = 0xA5u;
-    m_auStorArea1[19u] = 0xA5u;
-    m_auStorArea1[20u] = 0x93u;
-    m_auStorArea1[21u] = 0x02u;
-    m_auStorArea1[22u] = 0x00u;
-    m_auStorArea1[23u] = 0x00u;
+    (void)memset(m_auStorArea[p_uPageToWrite], 0, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][20u] = 0x93u;
+    m_auStorArea[p_uPageToWrite][21u] = 0x02u;
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u;
 
-    (void)memset(m_auStorArea2, 0x10, sizeof(m_auStorArea2));
-    m_auStorArea2[16u] = 0xA5u;
-    m_auStorArea2[17u] = 0xA5u;
-    m_auStorArea2[18u] = 0xA5u;
-    m_auStorArea2[19u] = 0xA5u;
-    m_auStorArea2[20u] = 0x93u;
-    m_auStorArea2[21u] = 0x03u;
-    m_auStorArea2[22u] = 0x00u;
-    m_auStorArea2[23u] = 0x00u;
+    (void)memset(m_auStorArea[p_uPageToWrite], 0x10, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][20u] = 0x93u;
+    m_auStorArea[p_uPageToWrite][21u] = 0x03u;
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u;
 
     /* Setup buffer */
     l_ltUseBuff.puBuf[0u] = 0x01u;
@@ -4932,33 +4997,33 @@ static void eFSS_LOGCTST_ReadCacheTest(void)
     }
 
     /* Setup storage area */
-    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    m_auStorArea1[12u] = 0x02u;
-    m_auStorArea1[13u] = 0x00u;
-    m_auStorArea1[14u] = 0x00u;
-    m_auStorArea1[15u] = 0x00u;
-    m_auStorArea1[16u] = 0xA5u;
-    m_auStorArea1[17u] = 0xA5u;
-    m_auStorArea1[18u] = 0xA5u;
-    m_auStorArea1[19u] = 0xA5u;
-    m_auStorArea1[20u] = 0x95u;
-    m_auStorArea1[21u] = 0x02u;
-    m_auStorArea1[22u] = 0x00u;
-    m_auStorArea1[23u] = 0x00u;
+    (void)memset(m_auStorArea[p_uPageToWrite], 0, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u;
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][20u] = 0x95u;
+    m_auStorArea[p_uPageToWrite][21u] = 0x02u;
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u;
 
-    (void)memset(m_auStorArea2, 0x10, sizeof(m_auStorArea2));
-    m_auStorArea2[12u] = 0x02u;
-    m_auStorArea2[13u] = 0x00u;
-    m_auStorArea2[14u] = 0x00u;
-    m_auStorArea2[15u] = 0x00u;
-    m_auStorArea2[16u] = 0xA5u;
-    m_auStorArea2[17u] = 0xA5u;
-    m_auStorArea2[18u] = 0xA5u;
-    m_auStorArea2[19u] = 0xA5u;
-    m_auStorArea2[20u] = 0x55u;
-    m_auStorArea2[21u] = 0x03u;
-    m_auStorArea2[22u] = 0x00u;
-    m_auStorArea2[23u] = 0x00u;
+    (void)memset(m_auStorArea[p_uPageToWrite], 0x10, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u;
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][20u] = 0x55u;
+    m_auStorArea[p_uPageToWrite][21u] = 0x03u;
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u;
 
     /* Setup buffer */
     l_ltUseBuff.puBuf[0u] = 0x01u;
@@ -5000,37 +5065,37 @@ static void eFSS_LOGCTST_ReadCacheTest(void)
     }
 
     /* Setup storage area */
-    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    m_auStorArea1[10u] = 0x01u;
-    m_auStorArea1[11u] = 0x00u;
-    m_auStorArea1[12u] = 0x02u;
-    m_auStorArea1[13u] = 0x00u;
-    m_auStorArea1[14u] = 0x00u;
-    m_auStorArea1[15u] = 0x00u;
-    m_auStorArea1[16u] = 0xA5u;
-    m_auStorArea1[17u] = 0xA5u;
-    m_auStorArea1[18u] = 0xA5u;
-    m_auStorArea1[19u] = 0xA5u;
-    m_auStorArea1[20u] = 0x96u;
-    m_auStorArea1[21u] = 0x02u;
-    m_auStorArea1[22u] = 0x00u;
-    m_auStorArea1[23u] = 0x00u;
+    (void)memset(m_auStorArea[p_uPageToWrite], 0, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][10u] = 0x01u;
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u;
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][20u] = 0x96u;
+    m_auStorArea[p_uPageToWrite][21u] = 0x02u;
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u;
 
-    (void)memset(m_auStorArea2, 0x10, sizeof(m_auStorArea2));
-    m_auStorArea2[10u] = 0x01u;
-    m_auStorArea2[11u] = 0x00u;
-    m_auStorArea2[12u] = 0x02u;
-    m_auStorArea2[13u] = 0x00u;
-    m_auStorArea2[14u] = 0x00u;
-    m_auStorArea2[15u] = 0x00u;
-    m_auStorArea2[16u] = 0xA5u;
-    m_auStorArea2[17u] = 0xA5u;
-    m_auStorArea2[18u] = 0xA5u;
-    m_auStorArea2[19u] = 0xA5u;
-    m_auStorArea2[20u] = 0x36u;
-    m_auStorArea2[21u] = 0x03u;
-    m_auStorArea2[22u] = 0x00u;
-    m_auStorArea2[23u] = 0x00u;
+    (void)memset(m_auStorArea[p_uPageToWrite], 0x10, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][10u] = 0x01u;
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u;
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][20u] = 0x36u;
+    m_auStorArea[p_uPageToWrite][21u] = 0x03u;
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u;
 
     /* Setup buffer */
     l_ltUseBuff.puBuf[0u] = 0x01u;
@@ -5072,39 +5137,39 @@ static void eFSS_LOGCTST_ReadCacheTest(void)
     }
 
     /* Setup storage area */
-    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    m_auStorArea1[9u] = 0x01u;
-    m_auStorArea1[10u] = 0x01u;
-    m_auStorArea1[11u] = 0x00u;
-    m_auStorArea1[12u] = 0x02u;
-    m_auStorArea1[13u] = 0x00u;
-    m_auStorArea1[14u] = 0x00u;
-    m_auStorArea1[15u] = 0x00u;
-    m_auStorArea1[16u] = 0xA5u;
-    m_auStorArea1[17u] = 0xA5u;
-    m_auStorArea1[18u] = 0xA5u;
-    m_auStorArea1[19u] = 0xA5u;
-    m_auStorArea1[20u] = 0x97u;
-    m_auStorArea1[21u] = 0x02u;
-    m_auStorArea1[22u] = 0x00u;
-    m_auStorArea1[23u] = 0x00u;
+    (void)memset(m_auStorArea[p_uPageToWrite], 0, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][9u] = 0x01u;
+    m_auStorArea[p_uPageToWrite][10u] = 0x01u;
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u;
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][20u] = 0x97u;
+    m_auStorArea[p_uPageToWrite][21u] = 0x02u;
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u;
 
-    (void)memset(m_auStorArea2, 0x10, sizeof(m_auStorArea2));
-    m_auStorArea2[9u] = 0x01u;
-    m_auStorArea2[10u] = 0x01u;
-    m_auStorArea2[11u] = 0x00u;
-    m_auStorArea2[12u] = 0x02u;
-    m_auStorArea2[13u] = 0x00u;
-    m_auStorArea2[14u] = 0x00u;
-    m_auStorArea2[15u] = 0x00u;
-    m_auStorArea2[16u] = 0xA5u;
-    m_auStorArea2[17u] = 0xA5u;
-    m_auStorArea2[18u] = 0xA5u;
-    m_auStorArea2[19u] = 0xA5u;
-    m_auStorArea2[20u] = 0x27u;
-    m_auStorArea2[21u] = 0x03u;
-    m_auStorArea2[22u] = 0x00u;
-    m_auStorArea2[23u] = 0x00u;
+    (void)memset(m_auStorArea[p_uPageToWrite], 0x10, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][9u] = 0x01u;
+    m_auStorArea[p_uPageToWrite][10u] = 0x01u;
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u;
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][20u] = 0x27u;
+    m_auStorArea[p_uPageToWrite][21u] = 0x03u;
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u;
 
     /* Setup buffer */
     l_ltUseBuff.puBuf[0u] = 0x01u;
@@ -5146,48 +5211,48 @@ static void eFSS_LOGCTST_ReadCacheTest(void)
     }
 
     /* Setup storage area */
-    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    m_auStorArea1[5u] = 0x01u;
-    m_auStorArea1[6u] = 0x00u;
-    m_auStorArea1[7u] = 0x00u;
-    m_auStorArea1[8u] = 0x00u;
-    m_auStorArea1[9u] = 0x01u;
-    m_auStorArea1[10u] = 0x01u;
-    m_auStorArea1[11u] = 0x00u;
-    m_auStorArea1[12u] = 0x02u;
-    m_auStorArea1[13u] = 0x00u;
-    m_auStorArea1[14u] = 0x00u;
-    m_auStorArea1[15u] = 0x00u;
-    m_auStorArea1[16u] = 0xA5u;
-    m_auStorArea1[17u] = 0xA5u;
-    m_auStorArea1[18u] = 0xA5u;
-    m_auStorArea1[19u] = 0xA5u;
-    m_auStorArea1[20u] = 0x98u;
-    m_auStorArea1[21u] = 0x02u;
-    m_auStorArea1[22u] = 0x00u;
-    m_auStorArea1[23u] = 0x00u;
+    (void)memset(m_auStorArea[p_uPageToWrite], 0, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][5u] = 0x01u;
+    m_auStorArea[p_uPageToWrite][6u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][7u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][8u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][9u] = 0x01u;
+    m_auStorArea[p_uPageToWrite][10u] = 0x01u;
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u;
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][20u] = 0x98u;
+    m_auStorArea[p_uPageToWrite][21u] = 0x02u;
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u;
 
-    (void)memset(m_auStorArea2, 0x10, sizeof(m_auStorArea2));
+    (void)memset(m_auStorArea[p_uPageToWrite], 0x10, sizeof(m_auStorArea[p_uPageToWrite]));
 
-    m_auStorArea2[5u] = 0x01u;
-    m_auStorArea2[6u] = 0x00u;
-    m_auStorArea2[7u] = 0x00u;
-    m_auStorArea2[8u] = 0x00u;
-    m_auStorArea2[9u] = 0x01u;
-    m_auStorArea2[10u] = 0x01u;
-    m_auStorArea2[11u] = 0x00u;
-    m_auStorArea2[12u] = 0x02u;
-    m_auStorArea2[13u] = 0x00u;
-    m_auStorArea2[14u] = 0x00u;
-    m_auStorArea2[15u] = 0x00u;
-    m_auStorArea2[16u] = 0xA5u;
-    m_auStorArea2[17u] = 0xA5u;
-    m_auStorArea2[18u] = 0xA5u;
-    m_auStorArea2[19u] = 0xA5u;
-    m_auStorArea2[20u] = 0xE8u;
-    m_auStorArea2[21u] = 0x02u;
-    m_auStorArea2[22u] = 0x00u;
-    m_auStorArea2[23u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][5u] = 0x01u;
+    m_auStorArea[p_uPageToWrite][6u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][7u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][8u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][9u] = 0x01u;
+    m_auStorArea[p_uPageToWrite][10u] = 0x01u;
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u;
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][20u] = 0xE8u;
+    m_auStorArea[p_uPageToWrite][21u] = 0x02u;
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u;
 
     /* Setup buffer */
     l_ltUseBuff.puBuf[0u] = 0x01u;
@@ -5229,48 +5294,48 @@ static void eFSS_LOGCTST_ReadCacheTest(void)
     }
 
     /* Setup storage area */
-    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    m_auStorArea1[5u] = 0x00u;
-    m_auStorArea1[6u] = 0x00u;
-    m_auStorArea1[7u] = 0x00u;
-    m_auStorArea1[8u] = 0x00u;
-    m_auStorArea1[9u] = 0x01u;
-    m_auStorArea1[10u] = 0x00u;
-    m_auStorArea1[11u] = 0x00u;
-    m_auStorArea1[12u] = 0x02u;
-    m_auStorArea1[13u] = 0x00u;
-    m_auStorArea1[14u] = 0x00u;
-    m_auStorArea1[15u] = 0x00u;
-    m_auStorArea1[16u] = 0xA5u;
-    m_auStorArea1[17u] = 0xA5u;
-    m_auStorArea1[18u] = 0xA5u;
-    m_auStorArea1[19u] = 0xA5u;
-    m_auStorArea1[20u] = 0x96u;
-    m_auStorArea1[21u] = 0x02u;
-    m_auStorArea1[22u] = 0x00u;
-    m_auStorArea1[23u] = 0x00u;
+    (void)memset(m_auStorArea[p_uPageToWrite], 0, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][5u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][6u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][7u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][8u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][9u] = 0x01u;
+    m_auStorArea[p_uPageToWrite][10u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u;
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][20u] = 0x96u;
+    m_auStorArea[p_uPageToWrite][21u] = 0x02u;
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u;
 
-    (void)memset(m_auStorArea2, 0x10, sizeof(m_auStorArea2));
+    (void)memset(m_auStorArea[p_uPageToWrite], 0x10, sizeof(m_auStorArea[p_uPageToWrite]));
 
-    m_auStorArea2[5u] = 0x01u;
-    m_auStorArea2[6u] = 0x00u;
-    m_auStorArea2[7u] = 0x00u;
-    m_auStorArea2[8u] = 0x00u;
-    m_auStorArea2[9u] = 0x01u;
-    m_auStorArea2[10u] = 0x02u;
-    m_auStorArea2[11u] = 0x00u;
-    m_auStorArea2[12u] = 0x02u;
-    m_auStorArea2[13u] = 0x00u;
-    m_auStorArea2[14u] = 0x00u;
-    m_auStorArea2[15u] = 0x00u;
-    m_auStorArea2[16u] = 0xA5u;
-    m_auStorArea2[17u] = 0xA5u;
-    m_auStorArea2[18u] = 0xA5u;
-    m_auStorArea2[19u] = 0xA5u;
-    m_auStorArea2[20u] = 0xE9u;
-    m_auStorArea2[21u] = 0x02u;
-    m_auStorArea2[22u] = 0x00u;
-    m_auStorArea2[23u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][5u] = 0x01u;
+    m_auStorArea[p_uPageToWrite][6u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][7u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][8u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][9u] = 0x01u;
+    m_auStorArea[p_uPageToWrite][10u] = 0x02u;
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u;
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][20u] = 0xE9u;
+    m_auStorArea[p_uPageToWrite][21u] = 0x02u;
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u;
 
     /* Setup buffer */
     l_ltUseBuff.puBuf[0u] = 0x01u;
@@ -5315,49 +5380,49 @@ static void eFSS_LOGCTST_ReadCacheTest(void)
     l_uSubTypeRead = 0u;
 
     /* Setup storage area */
-    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    m_auStorArea1[4u] = 0x00u;  /* Page SUBTYPE */
-    m_auStorArea1[5u] = 0x00u;  /* Page index */
-    m_auStorArea1[6u] = 0x00u;  /* Page index */
-    m_auStorArea1[7u] = 0x00u;  /* Page index */
-    m_auStorArea1[8u] = 0x00u;  /* Page index */
-    m_auStorArea1[9u] = 0x01u;  /* Page type */
-    m_auStorArea1[10u] = 0x01u; /* Page version */
-    m_auStorArea1[11u] = 0x00u; /* Page version */
-    m_auStorArea1[12u] = 0x02u; /* Total page */
-    m_auStorArea1[13u] = 0x00u; /* Total page */
-    m_auStorArea1[14u] = 0x00u; /* Total page */
-    m_auStorArea1[15u] = 0x00u; /* Total page */
-    m_auStorArea1[16u] = 0xA5u; /* Magic number */
-    m_auStorArea1[17u] = 0xA5u; /* Magic number */
-    m_auStorArea1[18u] = 0xA5u; /* Magic number */
-    m_auStorArea1[19u] = 0xA5u; /* Magic number */
-    m_auStorArea1[20u] = 0x97u; /* CRC */
-    m_auStorArea1[21u] = 0x02u; /* CRC */
-    m_auStorArea1[22u] = 0x00u; /* CRC */
-    m_auStorArea1[23u] = 0x00u; /* CRC */
+    (void)memset(m_auStorArea[p_uPageToWrite], 0, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][4u] = 0x00u;  /* Page SUBTYPE */
+    m_auStorArea[p_uPageToWrite][5u] = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][6u] = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][7u] = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][8u] = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][9u] = 0x01u;  /* Page type */
+    m_auStorArea[p_uPageToWrite][10u] = 0x01u; /* Page version */
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u; /* Page version */
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u; /* Total page */
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][20u] = 0x97u; /* CRC */
+    m_auStorArea[p_uPageToWrite][21u] = 0x02u; /* CRC */
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u; /* CRC */
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u; /* CRC */
 
-    (void)memset(m_auStorArea2, 0x10, sizeof(m_auStorArea2));
-    m_auStorArea2[4u] = 0x00u;  /* Page SUBTYPE */
-    m_auStorArea2[5u] = 0x01u;  /* Page index */
-    m_auStorArea2[6u] = 0x00u;  /* Page index */
-    m_auStorArea2[7u] = 0x00u;  /* Page index */
-    m_auStorArea2[8u] = 0x00u;  /* Page index */
-    m_auStorArea2[9u] = 0x01u;  /* Page type */
-    m_auStorArea2[10u] = 0x01u; /* Page version */
-    m_auStorArea2[11u] = 0x00u; /* Page version */
-    m_auStorArea2[12u] = 0x02u; /* Total page */
-    m_auStorArea2[13u] = 0x00u; /* Total page */
-    m_auStorArea2[14u] = 0x00u; /* Total page */
-    m_auStorArea2[15u] = 0x00u; /* Total page */
-    m_auStorArea2[16u] = 0xA5u; /* Magic number */
-    m_auStorArea2[17u] = 0xA5u; /* Magic number */
-    m_auStorArea2[18u] = 0xA5u; /* Magic number */
-    m_auStorArea2[19u] = 0xA5u; /* Magic number */
-    m_auStorArea2[20u] = 0xD8u; /* CRC */
-    m_auStorArea2[21u] = 0x02u; /* CRC */
-    m_auStorArea2[22u] = 0x00u; /* CRC */
-    m_auStorArea2[23u] = 0x00u; /* CRC */
+    (void)memset(m_auStorArea[p_uPageToWrite], 0x10, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][4u] = 0x00u;  /* Page SUBTYPE */
+    m_auStorArea[p_uPageToWrite][5u] = 0x01u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][6u] = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][7u] = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][8u] = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][9u] = 0x01u;  /* Page type */
+    m_auStorArea[p_uPageToWrite][10u] = 0x01u; /* Page version */
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u; /* Page version */
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u; /* Total page */
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][20u] = 0xD8u; /* CRC */
+    m_auStorArea[p_uPageToWrite][21u] = 0x02u; /* CRC */
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u; /* CRC */
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u; /* CRC */
 
     if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_LoadBufferAs(&l_tCtx, 0u, &l_uSubTypeRead) )
     {
@@ -5397,49 +5462,49 @@ static void eFSS_LOGCTST_ReadCacheTest(void)
     l_uSubTypeRead = 0u;
 
     /* Setup storage area */
-    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    m_auStorArea1[4u] = 0x03u;  /* Page SUBTYPE */
-    m_auStorArea1[5u] = 0x00u;  /* Page index */
-    m_auStorArea1[6u] = 0x00u;  /* Page index */
-    m_auStorArea1[7u] = 0x00u;  /* Page index */
-    m_auStorArea1[8u] = 0x00u;  /* Page index */
-    m_auStorArea1[9u] = 0x01u;  /* Page type */
-    m_auStorArea1[10u] = 0x01u; /* Page version */
-    m_auStorArea1[11u] = 0x00u; /* Page version */
-    m_auStorArea1[12u] = 0x02u; /* Total page */
-    m_auStorArea1[13u] = 0x00u; /* Total page */
-    m_auStorArea1[14u] = 0x00u; /* Total page */
-    m_auStorArea1[15u] = 0x00u; /* Total page */
-    m_auStorArea1[16u] = 0xA5u; /* Magic number */
-    m_auStorArea1[17u] = 0xA5u; /* Magic number */
-    m_auStorArea1[18u] = 0xA5u; /* Magic number */
-    m_auStorArea1[19u] = 0xA5u; /* Magic number */
-    m_auStorArea1[20u] = 0x9Au; /* CRC */
-    m_auStorArea1[21u] = 0x02u; /* CRC */
-    m_auStorArea1[22u] = 0x00u; /* CRC */
-    m_auStorArea1[23u] = 0x00u; /* CRC */
+    (void)memset(m_auStorArea[p_uPageToWrite], 0, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][4u] = 0x03u;  /* Page SUBTYPE */
+    m_auStorArea[p_uPageToWrite][5u] = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][6u] = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][7u] = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][8u] = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][9u] = 0x01u;  /* Page type */
+    m_auStorArea[p_uPageToWrite][10u] = 0x01u; /* Page version */
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u; /* Page version */
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u; /* Total page */
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][20u] = 0x9Au; /* CRC */
+    m_auStorArea[p_uPageToWrite][21u] = 0x02u; /* CRC */
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u; /* CRC */
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u; /* CRC */
 
-    (void)memset(m_auStorArea2, 0x10, sizeof(m_auStorArea2));
-    m_auStorArea2[4u] = 0x04u;  /* Page SUBTYPE */
-    m_auStorArea2[5u] = 0x01u;  /* Page index */
-    m_auStorArea2[6u] = 0x00u;  /* Page index */
-    m_auStorArea2[7u] = 0x00u;  /* Page index */
-    m_auStorArea2[8u] = 0x00u;  /* Page index */
-    m_auStorArea2[9u] = 0x01u;  /* Page type */
-    m_auStorArea2[10u] = 0x01u; /* Page version */
-    m_auStorArea2[11u] = 0x00u; /* Page version */
-    m_auStorArea2[12u] = 0x02u; /* Total page */
-    m_auStorArea2[13u] = 0x00u; /* Total page */
-    m_auStorArea2[14u] = 0x00u; /* Total page */
-    m_auStorArea2[15u] = 0x00u; /* Total page */
-    m_auStorArea2[16u] = 0xA5u; /* Magic number */
-    m_auStorArea2[17u] = 0xA5u; /* Magic number */
-    m_auStorArea2[18u] = 0xA5u; /* Magic number */
-    m_auStorArea2[19u] = 0xA5u; /* Magic number */
-    m_auStorArea2[20u] = 0xDCu; /* CRC */
-    m_auStorArea2[21u] = 0x02u; /* CRC */
-    m_auStorArea2[22u] = 0x00u; /* CRC */
-    m_auStorArea2[23u] = 0x00u; /* CRC */
+    (void)memset(m_auStorArea[p_uPageToWrite], 0x10, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][4u] = 0x04u;  /* Page SUBTYPE */
+    m_auStorArea[p_uPageToWrite][5u] = 0x01u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][6u] = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][7u] = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][8u] = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][9u] = 0x01u;  /* Page type */
+    m_auStorArea[p_uPageToWrite][10u] = 0x01u; /* Page version */
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u; /* Page version */
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u; /* Total page */
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][20u] = 0xDCu; /* CRC */
+    m_auStorArea[p_uPageToWrite][21u] = 0x02u; /* CRC */
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u; /* CRC */
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u; /* CRC */
 
     if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_LoadBufferAs(&l_tCtx, 0u, &l_uSubTypeRead) )
     {
@@ -5567,8 +5632,8 @@ static void eFSS_LOGCTST_WriteCacheTest(void)
     l_ltUseBuff2.puBuf = &l_auStor[24];
 
     /* Setup storage area */
-    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    (void)memset(m_auStorArea2, 0xFF, sizeof(m_auStorArea2));
+    (void)memset(m_auStorArea[p_uPageToWrite], 0, sizeof(m_auStorArea[p_uPageToWrite]));
+    (void)memset(m_auStorArea[p_uPageToWrite], 0xFF, sizeof(m_auStorArea[p_uPageToWrite]));
 
     /* Setup buffer */
     l_ltUseBuff.puBuf[0u] = 0x01u;
@@ -5585,24 +5650,24 @@ static void eFSS_LOGCTST_WriteCacheTest(void)
     l_uSubTypeWrite = 0x05u;
     if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_FlushBufferAs(&l_tCtx, 0u, l_uSubTypeWrite) )
     {
-        if( ( 0x01u== m_auStorArea1[0u] )  && ( 0x02u== m_auStorArea1[1u] )  && ( 0x03u== m_auStorArea1[2u] ) &&
-            ( 0x04u== m_auStorArea1[3u] )  && ( 0x05u== m_auStorArea1[4u] )  &&
-            ( 0x00u== m_auStorArea1[5u] )  && ( 0x00u== m_auStorArea1[6u] )  && ( 0x00u== m_auStorArea1[7u] ) &&
-            ( 0x00u== m_auStorArea1[8u] )  && ( 0x01u== m_auStorArea1[9u] )  && ( 0x01u== m_auStorArea1[10u] ) &&
-            ( 0x00u== m_auStorArea1[11u] ) && ( 0x02u== m_auStorArea1[12u] ) && ( 0x00u== m_auStorArea1[13u] ) &&
-            ( 0x00u== m_auStorArea1[14u] ) && ( 0x00u== m_auStorArea1[15u] ) && ( 0xA5u== m_auStorArea1[16u] ) &&
-            ( 0xA5u== m_auStorArea1[17u] ) && ( 0xA5u== m_auStorArea1[18u] ) && ( 0xA5u== m_auStorArea1[19u] ) &&
-            ( 0xA6u== m_auStorArea1[20u] ) && ( 0x02u== m_auStorArea1[21u] ) && ( 0x00u== m_auStorArea1[22u] ) &&
-            ( 0x00u== m_auStorArea1[23u] ) &&
-            ( 0xFFu== m_auStorArea2[0u] )  && ( 0xFFu== m_auStorArea2[1u] )  && ( 0xFFu== m_auStorArea2[2u] ) &&
-            ( 0xFFu== m_auStorArea2[3u] )  && ( 0xFFu== m_auStorArea2[4u] )  &&
-            ( 0xFFu== m_auStorArea2[5u] )  && ( 0xFFu== m_auStorArea2[6u] )  && ( 0xFFu== m_auStorArea2[7u] ) &&
-            ( 0xFFu== m_auStorArea2[8u] )  && ( 0xFFu== m_auStorArea2[9u] )  && ( 0xFFu== m_auStorArea2[10u] ) &&
-            ( 0xFFu== m_auStorArea2[11u] ) && ( 0xFFu== m_auStorArea2[12u] ) && ( 0xFFu== m_auStorArea2[13u] ) &&
-            ( 0xFFu== m_auStorArea2[14u] ) && ( 0xFFu== m_auStorArea2[15u] ) && ( 0xFFu== m_auStorArea2[16u] ) &&
-            ( 0xFFu== m_auStorArea2[17u] ) && ( 0xFFu== m_auStorArea2[18u] ) && ( 0xFFu== m_auStorArea2[19u] ) &&
-            ( 0xFFu== m_auStorArea2[20u] ) && ( 0xFFu== m_auStorArea2[21u] ) && ( 0xFFu== m_auStorArea2[22u] ) &&
-            ( 0xFFu== m_auStorArea2[23u] ) )
+        if( ( 0x01u== m_auStorArea[p_uPageToWrite][0u] )  && ( 0x02u== m_auStorArea[p_uPageToWrite][1u] )  && ( 0x03u== m_auStorArea[p_uPageToWrite][2u] ) &&
+            ( 0x04u== m_auStorArea[p_uPageToWrite][3u] )  && ( 0x05u== m_auStorArea[p_uPageToWrite][4u] )  &&
+            ( 0x00u== m_auStorArea[p_uPageToWrite][5u] )  && ( 0x00u== m_auStorArea[p_uPageToWrite][6u] )  && ( 0x00u== m_auStorArea[p_uPageToWrite][7u] ) &&
+            ( 0x00u== m_auStorArea[p_uPageToWrite][8u] )  && ( 0x01u== m_auStorArea[p_uPageToWrite][9u] )  && ( 0x01u== m_auStorArea[p_uPageToWrite][10u] ) &&
+            ( 0x00u== m_auStorArea[p_uPageToWrite][11u] ) && ( 0x02u== m_auStorArea[p_uPageToWrite][12u] ) && ( 0x00u== m_auStorArea[p_uPageToWrite][13u] ) &&
+            ( 0x00u== m_auStorArea[p_uPageToWrite][14u] ) && ( 0x00u== m_auStorArea[p_uPageToWrite][15u] ) && ( 0xA5u== m_auStorArea[p_uPageToWrite][16u] ) &&
+            ( 0xA5u== m_auStorArea[p_uPageToWrite][17u] ) && ( 0xA5u== m_auStorArea[p_uPageToWrite][18u] ) && ( 0xA5u== m_auStorArea[p_uPageToWrite][19u] ) &&
+            ( 0xA6u== m_auStorArea[p_uPageToWrite][20u] ) && ( 0x02u== m_auStorArea[p_uPageToWrite][21u] ) && ( 0x00u== m_auStorArea[p_uPageToWrite][22u] ) &&
+            ( 0x00u== m_auStorArea[p_uPageToWrite][23u] ) &&
+            ( 0xFFu== m_auStorArea[p_uPageToWrite][0u] )  && ( 0xFFu== m_auStorArea[p_uPageToWrite][1u] )  && ( 0xFFu== m_auStorArea[p_uPageToWrite][2u] ) &&
+            ( 0xFFu== m_auStorArea[p_uPageToWrite][3u] )  && ( 0xFFu== m_auStorArea[p_uPageToWrite][4u] )  &&
+            ( 0xFFu== m_auStorArea[p_uPageToWrite][5u] )  && ( 0xFFu== m_auStorArea[p_uPageToWrite][6u] )  && ( 0xFFu== m_auStorArea[p_uPageToWrite][7u] ) &&
+            ( 0xFFu== m_auStorArea[p_uPageToWrite][8u] )  && ( 0xFFu== m_auStorArea[p_uPageToWrite][9u] )  && ( 0xFFu== m_auStorArea[p_uPageToWrite][10u] ) &&
+            ( 0xFFu== m_auStorArea[p_uPageToWrite][11u] ) && ( 0xFFu== m_auStorArea[p_uPageToWrite][12u] ) && ( 0xFFu== m_auStorArea[p_uPageToWrite][13u] ) &&
+            ( 0xFFu== m_auStorArea[p_uPageToWrite][14u] ) && ( 0xFFu== m_auStorArea[p_uPageToWrite][15u] ) && ( 0xFFu== m_auStorArea[p_uPageToWrite][16u] ) &&
+            ( 0xFFu== m_auStorArea[p_uPageToWrite][17u] ) && ( 0xFFu== m_auStorArea[p_uPageToWrite][18u] ) && ( 0xFFu== m_auStorArea[p_uPageToWrite][19u] ) &&
+            ( 0xFFu== m_auStorArea[p_uPageToWrite][20u] ) && ( 0xFFu== m_auStorArea[p_uPageToWrite][21u] ) && ( 0xFFu== m_auStorArea[p_uPageToWrite][22u] ) &&
+            ( 0xFFu== m_auStorArea[p_uPageToWrite][23u] ) )
         {
             if( ( 0x01u== l_ltUseBuff.puBuf[0u] )  && ( 0x02u== l_ltUseBuff.puBuf[1u] )  && ( 0x03u== l_ltUseBuff.puBuf[2u] ) &&
                 ( 0x04u== l_ltUseBuff.puBuf[3u] )  && ( 0x05u== l_ltUseBuff.puBuf[4u] )  &&
@@ -5627,8 +5692,8 @@ static void eFSS_LOGCTST_WriteCacheTest(void)
     }
 
     /* Setup storage area */
-    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    (void)memset(m_auStorArea2, 0xFF, sizeof(m_auStorArea2));
+    (void)memset(m_auStorArea[p_uPageToWrite], 0, sizeof(m_auStorArea[p_uPageToWrite]));
+    (void)memset(m_auStorArea[p_uPageToWrite], 0xFF, sizeof(m_auStorArea[p_uPageToWrite]));
 
     /* Setup buffer */
     l_ltUseBuff.puBuf[0u] = 0x01u;
@@ -5645,24 +5710,24 @@ static void eFSS_LOGCTST_WriteCacheTest(void)
     l_uSubTypeWrite = 0x05u;
     if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_FlushBufferAs(&l_tCtx, 1u, l_uSubTypeWrite) )
     {
-        if( ( 0x01u== m_auStorArea2[0u] )  && ( 0x02u== m_auStorArea2[1u] )  && ( 0x03u== m_auStorArea2[2u] ) &&
-            ( 0x04u== m_auStorArea2[3u] )  && ( 0x05u== m_auStorArea2[4u] )  &&
-            ( 0x01u== m_auStorArea2[5u] )  && ( 0x00u== m_auStorArea2[6u] )  && ( 0x00u== m_auStorArea2[7u] ) &&
-            ( 0x00u== m_auStorArea2[8u] )  && ( 0x01u== m_auStorArea2[9u] )  && ( 0x01u== m_auStorArea2[10u] ) &&
-            ( 0x00u== m_auStorArea2[11u] ) && ( 0x02u== m_auStorArea2[12u] ) && ( 0x00u== m_auStorArea2[13u] ) &&
-            ( 0x00u== m_auStorArea2[14u] ) && ( 0x00u== m_auStorArea2[15u] ) && ( 0xA5u== m_auStorArea2[16u] ) &&
-            ( 0xA5u== m_auStorArea2[17u] ) && ( 0xA5u== m_auStorArea2[18u] ) && ( 0xA5u== m_auStorArea2[19u] ) &&
-            ( 0xA7u== m_auStorArea2[20u] ) && ( 0x02u== m_auStorArea2[21u] ) && ( 0x00u== m_auStorArea2[22u] ) &&
-            ( 0x00u== m_auStorArea2[23u] ) &&
-            ( 0x00u== m_auStorArea1[0u] )  && ( 0x00u== m_auStorArea1[1u] )  && ( 0x00u== m_auStorArea1[2u] ) &&
-            ( 0x00u== m_auStorArea1[3u] )  && ( 0x00u== m_auStorArea1[4u] )  &&
-            ( 0x00u== m_auStorArea1[5u] )  && ( 0x00u== m_auStorArea1[6u] )  && ( 0x00u== m_auStorArea1[7u] ) &&
-            ( 0x00u== m_auStorArea1[8u] )  && ( 0x00u== m_auStorArea1[9u] )  && ( 0x00u== m_auStorArea1[10u] ) &&
-            ( 0x00u== m_auStorArea1[11u] ) && ( 0x00u== m_auStorArea1[12u] ) && ( 0x00u== m_auStorArea1[13u] ) &&
-            ( 0x00u== m_auStorArea1[14u] ) && ( 0x00u== m_auStorArea1[15u] ) && ( 0x00u== m_auStorArea1[16u] ) &&
-            ( 0x00u== m_auStorArea1[17u] ) && ( 0x00u== m_auStorArea1[18u] ) && ( 0x00u== m_auStorArea1[19u] ) &&
-            ( 0x00u== m_auStorArea1[20u] ) && ( 0x00u== m_auStorArea1[21u] ) && ( 0x00u== m_auStorArea1[22u] ) &&
-            ( 0x00u== m_auStorArea1[23u] ) )
+        if( ( 0x01u== m_auStorArea[p_uPageToWrite][0u] )  && ( 0x02u== m_auStorArea[p_uPageToWrite][1u] )  && ( 0x03u== m_auStorArea[p_uPageToWrite][2u] ) &&
+            ( 0x04u== m_auStorArea[p_uPageToWrite][3u] )  && ( 0x05u== m_auStorArea[p_uPageToWrite][4u] )  &&
+            ( 0x01u== m_auStorArea[p_uPageToWrite][5u] )  && ( 0x00u== m_auStorArea[p_uPageToWrite][6u] )  && ( 0x00u== m_auStorArea[p_uPageToWrite][7u] ) &&
+            ( 0x00u== m_auStorArea[p_uPageToWrite][8u] )  && ( 0x01u== m_auStorArea[p_uPageToWrite][9u] )  && ( 0x01u== m_auStorArea[p_uPageToWrite][10u] ) &&
+            ( 0x00u== m_auStorArea[p_uPageToWrite][11u] ) && ( 0x02u== m_auStorArea[p_uPageToWrite][12u] ) && ( 0x00u== m_auStorArea[p_uPageToWrite][13u] ) &&
+            ( 0x00u== m_auStorArea[p_uPageToWrite][14u] ) && ( 0x00u== m_auStorArea[p_uPageToWrite][15u] ) && ( 0xA5u== m_auStorArea[p_uPageToWrite][16u] ) &&
+            ( 0xA5u== m_auStorArea[p_uPageToWrite][17u] ) && ( 0xA5u== m_auStorArea[p_uPageToWrite][18u] ) && ( 0xA5u== m_auStorArea[p_uPageToWrite][19u] ) &&
+            ( 0xA7u== m_auStorArea[p_uPageToWrite][20u] ) && ( 0x02u== m_auStorArea[p_uPageToWrite][21u] ) && ( 0x00u== m_auStorArea[p_uPageToWrite][22u] ) &&
+            ( 0x00u== m_auStorArea[p_uPageToWrite][23u] ) &&
+            ( 0x00u== m_auStorArea[p_uPageToWrite][0u] )  && ( 0x00u== m_auStorArea[p_uPageToWrite][1u] )  && ( 0x00u== m_auStorArea[p_uPageToWrite][2u] ) &&
+            ( 0x00u== m_auStorArea[p_uPageToWrite][3u] )  && ( 0x00u== m_auStorArea[p_uPageToWrite][4u] )  &&
+            ( 0x00u== m_auStorArea[p_uPageToWrite][5u] )  && ( 0x00u== m_auStorArea[p_uPageToWrite][6u] )  && ( 0x00u== m_auStorArea[p_uPageToWrite][7u] ) &&
+            ( 0x00u== m_auStorArea[p_uPageToWrite][8u] )  && ( 0x00u== m_auStorArea[p_uPageToWrite][9u] )  && ( 0x00u== m_auStorArea[p_uPageToWrite][10u] ) &&
+            ( 0x00u== m_auStorArea[p_uPageToWrite][11u] ) && ( 0x00u== m_auStorArea[p_uPageToWrite][12u] ) && ( 0x00u== m_auStorArea[p_uPageToWrite][13u] ) &&
+            ( 0x00u== m_auStorArea[p_uPageToWrite][14u] ) && ( 0x00u== m_auStorArea[p_uPageToWrite][15u] ) && ( 0x00u== m_auStorArea[p_uPageToWrite][16u] ) &&
+            ( 0x00u== m_auStorArea[p_uPageToWrite][17u] ) && ( 0x00u== m_auStorArea[p_uPageToWrite][18u] ) && ( 0x00u== m_auStorArea[p_uPageToWrite][19u] ) &&
+            ( 0x00u== m_auStorArea[p_uPageToWrite][20u] ) && ( 0x00u== m_auStorArea[p_uPageToWrite][21u] ) && ( 0x00u== m_auStorArea[p_uPageToWrite][22u] ) &&
+            ( 0x00u== m_auStorArea[p_uPageToWrite][23u] ) )
         {
             if( ( 0x01u== l_ltUseBuff.puBuf[0u] )  && ( 0x02u== l_ltUseBuff.puBuf[1u] )  && ( 0x03u== l_ltUseBuff.puBuf[2u] ) &&
                 ( 0x04u== l_ltUseBuff.puBuf[3u] )  && ( 0x05u== l_ltUseBuff.puBuf[4u] )  &&
@@ -5725,8 +5790,8 @@ static void eFSS_LOGCTST_WriteCacheTest(void)
     l_ltUseBuff2.puBuf = &l_auStor[24];
 
     /* Setup storage area */
-    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    (void)memset(m_auStorArea2, 0xFF, sizeof(m_auStorArea2));
+    (void)memset(m_auStorArea[p_uPageToWrite], 0, sizeof(m_auStorArea[p_uPageToWrite]));
+    (void)memset(m_auStorArea[p_uPageToWrite], 0xFF, sizeof(m_auStorArea[p_uPageToWrite]));
 
     /* Setup buffer */
     l_ltUseBuff.puBuf[0u] = 0x01u;
@@ -5751,8 +5816,8 @@ static void eFSS_LOGCTST_WriteCacheTest(void)
     }
 
     /* Setup storage area */
-    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    (void)memset(m_auStorArea2, 0xFF, sizeof(m_auStorArea2));
+    (void)memset(m_auStorArea[p_uPageToWrite], 0, sizeof(m_auStorArea[p_uPageToWrite]));
+    (void)memset(m_auStorArea[p_uPageToWrite], 0xFF, sizeof(m_auStorArea[p_uPageToWrite]));
 
     /* Setup buffer */
     l_ltUseBuff.puBuf[0u] = 0x01u;
@@ -5871,8 +5936,8 @@ static void eFSS_LOGCTST_LoadTest(void)
     l_ltUseBuff2.puBuf = &l_auStor[24];
 
     /* Setup storage area */
-    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    (void)memset(m_auStorArea2, 0xFF, sizeof(m_auStorArea2));
+    (void)memset(m_auStorArea[p_uPageToWrite], 0, sizeof(m_auStorArea[p_uPageToWrite]));
+    (void)memset(m_auStorArea[p_uPageToWrite], 0xFF, sizeof(m_auStorArea[p_uPageToWrite]));
 
     /* Setup buffer */
     l_uSubTypeRead = 0u;
@@ -5942,17 +6007,17 @@ static void eFSS_LOGCTST_LoadTest(void)
     }
 
     /* Setup storage area */
-    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    m_auStorArea1[20u] = 0xFFu;
-    m_auStorArea1[21u] = 0xFFu;
-    m_auStorArea1[22u] = 0xFFu;
-    m_auStorArea1[23u] = 0xFFu;
+    (void)memset(m_auStorArea[p_uPageToWrite], 0, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][20u] = 0xFFu;
+    m_auStorArea[p_uPageToWrite][21u] = 0xFFu;
+    m_auStorArea[p_uPageToWrite][22u] = 0xFFu;
+    m_auStorArea[p_uPageToWrite][23u] = 0xFFu;
 
-    (void)memset(m_auStorArea2, 0x10, sizeof(m_auStorArea2));
-    m_auStorArea2[20u] = 0x3Fu;
-    m_auStorArea2[21u] = 0x01u;
-    m_auStorArea2[22u] = 0x00u;
-    m_auStorArea2[23u] = 0x00u;
+    (void)memset(m_auStorArea[p_uPageToWrite], 0x10, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][20u] = 0x3Fu;
+    m_auStorArea[p_uPageToWrite][21u] = 0x01u;
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u;
 
     /* Setup buffer */
     l_ltUseBuff.puBuf[0u] = 0x01u;
@@ -6021,25 +6086,25 @@ static void eFSS_LOGCTST_LoadTest(void)
     }
 
     /* Setup storage area */
-    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    m_auStorArea1[16u] = 0xA5u;
-    m_auStorArea1[17u] = 0xA5u;
-    m_auStorArea1[18u] = 0xA5u;
-    m_auStorArea1[19u] = 0xA5u;
-    m_auStorArea1[20u] = 0x93u;
-    m_auStorArea1[21u] = 0x02u;
-    m_auStorArea1[22u] = 0x00u;
-    m_auStorArea1[23u] = 0x00u;
+    (void)memset(m_auStorArea[p_uPageToWrite], 0, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][20u] = 0x93u;
+    m_auStorArea[p_uPageToWrite][21u] = 0x02u;
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u;
 
-    (void)memset(m_auStorArea2, 0x10, sizeof(m_auStorArea2));
-    m_auStorArea2[16u] = 0xA5u;
-    m_auStorArea2[17u] = 0xA5u;
-    m_auStorArea2[18u] = 0xA5u;
-    m_auStorArea2[19u] = 0xA5u;
-    m_auStorArea2[20u] = 0x93u;
-    m_auStorArea2[21u] = 0x03u;
-    m_auStorArea2[22u] = 0x00u;
-    m_auStorArea2[23u] = 0x00u;
+    (void)memset(m_auStorArea[p_uPageToWrite], 0x10, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][20u] = 0x93u;
+    m_auStorArea[p_uPageToWrite][21u] = 0x03u;
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u;
 
     /* Setup buffer */
     l_ltUseBuff.puBuf[0u] = 0x01u;
@@ -6081,33 +6146,33 @@ static void eFSS_LOGCTST_LoadTest(void)
     }
 
     /* Setup storage area */
-    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    m_auStorArea1[12u] = 0x02u;
-    m_auStorArea1[13u] = 0x00u;
-    m_auStorArea1[14u] = 0x00u;
-    m_auStorArea1[15u] = 0x00u;
-    m_auStorArea1[16u] = 0xA5u;
-    m_auStorArea1[17u] = 0xA5u;
-    m_auStorArea1[18u] = 0xA5u;
-    m_auStorArea1[19u] = 0xA5u;
-    m_auStorArea1[20u] = 0x95u;
-    m_auStorArea1[21u] = 0x02u;
-    m_auStorArea1[22u] = 0x00u;
-    m_auStorArea1[23u] = 0x00u;
+    (void)memset(m_auStorArea[p_uPageToWrite], 0, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u;
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][20u] = 0x95u;
+    m_auStorArea[p_uPageToWrite][21u] = 0x02u;
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u;
 
-    (void)memset(m_auStorArea2, 0x10, sizeof(m_auStorArea2));
-    m_auStorArea2[12u] = 0x02u;
-    m_auStorArea2[13u] = 0x00u;
-    m_auStorArea2[14u] = 0x00u;
-    m_auStorArea2[15u] = 0x00u;
-    m_auStorArea2[16u] = 0xA5u;
-    m_auStorArea2[17u] = 0xA5u;
-    m_auStorArea2[18u] = 0xA5u;
-    m_auStorArea2[19u] = 0xA5u;
-    m_auStorArea2[20u] = 0x55u;
-    m_auStorArea2[21u] = 0x03u;
-    m_auStorArea2[22u] = 0x00u;
-    m_auStorArea2[23u] = 0x00u;
+    (void)memset(m_auStorArea[p_uPageToWrite], 0x10, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u;
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][20u] = 0x55u;
+    m_auStorArea[p_uPageToWrite][21u] = 0x03u;
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u;
 
     /* Setup buffer */
     l_ltUseBuff.puBuf[0u] = 0x01u;
@@ -6149,37 +6214,37 @@ static void eFSS_LOGCTST_LoadTest(void)
     }
 
     /* Setup storage area */
-    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    m_auStorArea1[10u] = 0x01u;
-    m_auStorArea1[11u] = 0x00u;
-    m_auStorArea1[12u] = 0x02u;
-    m_auStorArea1[13u] = 0x00u;
-    m_auStorArea1[14u] = 0x00u;
-    m_auStorArea1[15u] = 0x00u;
-    m_auStorArea1[16u] = 0xA5u;
-    m_auStorArea1[17u] = 0xA5u;
-    m_auStorArea1[18u] = 0xA5u;
-    m_auStorArea1[19u] = 0xA5u;
-    m_auStorArea1[20u] = 0x96u;
-    m_auStorArea1[21u] = 0x02u;
-    m_auStorArea1[22u] = 0x00u;
-    m_auStorArea1[23u] = 0x00u;
+    (void)memset(m_auStorArea[p_uPageToWrite], 0, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][10u] = 0x01u;
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u;
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][20u] = 0x96u;
+    m_auStorArea[p_uPageToWrite][21u] = 0x02u;
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u;
 
-    (void)memset(m_auStorArea2, 0x10, sizeof(m_auStorArea2));
-    m_auStorArea2[10u] = 0x01u;
-    m_auStorArea2[11u] = 0x00u;
-    m_auStorArea2[12u] = 0x02u;
-    m_auStorArea2[13u] = 0x00u;
-    m_auStorArea2[14u] = 0x00u;
-    m_auStorArea2[15u] = 0x00u;
-    m_auStorArea2[16u] = 0xA5u;
-    m_auStorArea2[17u] = 0xA5u;
-    m_auStorArea2[18u] = 0xA5u;
-    m_auStorArea2[19u] = 0xA5u;
-    m_auStorArea2[20u] = 0x36u;
-    m_auStorArea2[21u] = 0x03u;
-    m_auStorArea2[22u] = 0x00u;
-    m_auStorArea2[23u] = 0x00u;
+    (void)memset(m_auStorArea[p_uPageToWrite], 0x10, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][10u] = 0x01u;
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u;
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][20u] = 0x36u;
+    m_auStorArea[p_uPageToWrite][21u] = 0x03u;
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u;
 
     /* Setup buffer */
     l_ltUseBuff.puBuf[0u] = 0x01u;
@@ -6221,39 +6286,39 @@ static void eFSS_LOGCTST_LoadTest(void)
     }
 
     /* Setup storage area */
-    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    m_auStorArea1[9u] = 0x01u;
-    m_auStorArea1[10u] = 0x01u;
-    m_auStorArea1[11u] = 0x00u;
-    m_auStorArea1[12u] = 0x02u;
-    m_auStorArea1[13u] = 0x00u;
-    m_auStorArea1[14u] = 0x00u;
-    m_auStorArea1[15u] = 0x00u;
-    m_auStorArea1[16u] = 0xA5u;
-    m_auStorArea1[17u] = 0xA5u;
-    m_auStorArea1[18u] = 0xA5u;
-    m_auStorArea1[19u] = 0xA5u;
-    m_auStorArea1[20u] = 0x97u;
-    m_auStorArea1[21u] = 0x02u;
-    m_auStorArea1[22u] = 0x00u;
-    m_auStorArea1[23u] = 0x00u;
+    (void)memset(m_auStorArea[p_uPageToWrite], 0, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][9u] = 0x01u;
+    m_auStorArea[p_uPageToWrite][10u] = 0x01u;
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u;
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][20u] = 0x97u;
+    m_auStorArea[p_uPageToWrite][21u] = 0x02u;
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u;
 
-    (void)memset(m_auStorArea2, 0x10, sizeof(m_auStorArea2));
-    m_auStorArea2[9u] = 0x01u;
-    m_auStorArea2[10u] = 0x01u;
-    m_auStorArea2[11u] = 0x00u;
-    m_auStorArea2[12u] = 0x02u;
-    m_auStorArea2[13u] = 0x00u;
-    m_auStorArea2[14u] = 0x00u;
-    m_auStorArea2[15u] = 0x00u;
-    m_auStorArea2[16u] = 0xA5u;
-    m_auStorArea2[17u] = 0xA5u;
-    m_auStorArea2[18u] = 0xA5u;
-    m_auStorArea2[19u] = 0xA5u;
-    m_auStorArea2[20u] = 0x27u;
-    m_auStorArea2[21u] = 0x03u;
-    m_auStorArea2[22u] = 0x00u;
-    m_auStorArea2[23u] = 0x00u;
+    (void)memset(m_auStorArea[p_uPageToWrite], 0x10, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][9u] = 0x01u;
+    m_auStorArea[p_uPageToWrite][10u] = 0x01u;
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u;
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][20u] = 0x27u;
+    m_auStorArea[p_uPageToWrite][21u] = 0x03u;
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u;
 
     /* Setup buffer */
     l_ltUseBuff.puBuf[0u] = 0x01u;
@@ -6295,48 +6360,48 @@ static void eFSS_LOGCTST_LoadTest(void)
     }
 
     /* Setup storage area */
-    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    m_auStorArea1[5u] = 0x01u;
-    m_auStorArea1[6u] = 0x00u;
-    m_auStorArea1[7u] = 0x00u;
-    m_auStorArea1[8u] = 0x00u;
-    m_auStorArea1[9u] = 0x01u;
-    m_auStorArea1[10u] = 0x01u;
-    m_auStorArea1[11u] = 0x00u;
-    m_auStorArea1[12u] = 0x02u;
-    m_auStorArea1[13u] = 0x00u;
-    m_auStorArea1[14u] = 0x00u;
-    m_auStorArea1[15u] = 0x00u;
-    m_auStorArea1[16u] = 0xA5u;
-    m_auStorArea1[17u] = 0xA5u;
-    m_auStorArea1[18u] = 0xA5u;
-    m_auStorArea1[19u] = 0xA5u;
-    m_auStorArea1[20u] = 0x98u;
-    m_auStorArea1[21u] = 0x02u;
-    m_auStorArea1[22u] = 0x00u;
-    m_auStorArea1[23u] = 0x00u;
+    (void)memset(m_auStorArea[p_uPageToWrite], 0, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][5u] = 0x01u;
+    m_auStorArea[p_uPageToWrite][6u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][7u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][8u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][9u] = 0x01u;
+    m_auStorArea[p_uPageToWrite][10u] = 0x01u;
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u;
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][20u] = 0x98u;
+    m_auStorArea[p_uPageToWrite][21u] = 0x02u;
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u;
 
-    (void)memset(m_auStorArea2, 0x10, sizeof(m_auStorArea2));
+    (void)memset(m_auStorArea[p_uPageToWrite], 0x10, sizeof(m_auStorArea[p_uPageToWrite]));
 
-    m_auStorArea2[5u] = 0x01u;
-    m_auStorArea2[6u] = 0x00u;
-    m_auStorArea2[7u] = 0x00u;
-    m_auStorArea2[8u] = 0x00u;
-    m_auStorArea2[9u] = 0x01u;
-    m_auStorArea2[10u] = 0x01u;
-    m_auStorArea2[11u] = 0x00u;
-    m_auStorArea2[12u] = 0x02u;
-    m_auStorArea2[13u] = 0x00u;
-    m_auStorArea2[14u] = 0x00u;
-    m_auStorArea2[15u] = 0x00u;
-    m_auStorArea2[16u] = 0xA5u;
-    m_auStorArea2[17u] = 0xA5u;
-    m_auStorArea2[18u] = 0xA5u;
-    m_auStorArea2[19u] = 0xA5u;
-    m_auStorArea2[20u] = 0xE8u;
-    m_auStorArea2[21u] = 0x02u;
-    m_auStorArea2[22u] = 0x00u;
-    m_auStorArea2[23u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][5u] = 0x01u;
+    m_auStorArea[p_uPageToWrite][6u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][7u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][8u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][9u] = 0x01u;
+    m_auStorArea[p_uPageToWrite][10u] = 0x01u;
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u;
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][20u] = 0xE8u;
+    m_auStorArea[p_uPageToWrite][21u] = 0x02u;
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u;
 
     /* Setup buffer */
     l_ltUseBuff.puBuf[0u] = 0x01u;
@@ -6378,48 +6443,48 @@ static void eFSS_LOGCTST_LoadTest(void)
     }
 
     /* Setup storage area */
-    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    m_auStorArea1[5u] = 0x00u;
-    m_auStorArea1[6u] = 0x00u;
-    m_auStorArea1[7u] = 0x00u;
-    m_auStorArea1[8u] = 0x00u;
-    m_auStorArea1[9u] = 0x01u;
-    m_auStorArea1[10u] = 0x00u;
-    m_auStorArea1[11u] = 0x00u;
-    m_auStorArea1[12u] = 0x02u;
-    m_auStorArea1[13u] = 0x00u;
-    m_auStorArea1[14u] = 0x00u;
-    m_auStorArea1[15u] = 0x00u;
-    m_auStorArea1[16u] = 0xA5u;
-    m_auStorArea1[17u] = 0xA5u;
-    m_auStorArea1[18u] = 0xA5u;
-    m_auStorArea1[19u] = 0xA5u;
-    m_auStorArea1[20u] = 0x96u;
-    m_auStorArea1[21u] = 0x02u;
-    m_auStorArea1[22u] = 0x00u;
-    m_auStorArea1[23u] = 0x00u;
+    (void)memset(m_auStorArea[p_uPageToWrite], 0, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][5u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][6u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][7u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][8u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][9u] = 0x01u;
+    m_auStorArea[p_uPageToWrite][10u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u;
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][20u] = 0x96u;
+    m_auStorArea[p_uPageToWrite][21u] = 0x02u;
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u;
 
-    (void)memset(m_auStorArea2, 0x10, sizeof(m_auStorArea2));
+    (void)memset(m_auStorArea[p_uPageToWrite], 0x10, sizeof(m_auStorArea[p_uPageToWrite]));
 
-    m_auStorArea2[5u] = 0x01u;
-    m_auStorArea2[6u] = 0x00u;
-    m_auStorArea2[7u] = 0x00u;
-    m_auStorArea2[8u] = 0x00u;
-    m_auStorArea2[9u] = 0x01u;
-    m_auStorArea2[10u] = 0x02u;
-    m_auStorArea2[11u] = 0x00u;
-    m_auStorArea2[12u] = 0x02u;
-    m_auStorArea2[13u] = 0x00u;
-    m_auStorArea2[14u] = 0x00u;
-    m_auStorArea2[15u] = 0x00u;
-    m_auStorArea2[16u] = 0xA5u;
-    m_auStorArea2[17u] = 0xA5u;
-    m_auStorArea2[18u] = 0xA5u;
-    m_auStorArea2[19u] = 0xA5u;
-    m_auStorArea2[20u] = 0xE9u;
-    m_auStorArea2[21u] = 0x02u;
-    m_auStorArea2[22u] = 0x00u;
-    m_auStorArea2[23u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][5u] = 0x01u;
+    m_auStorArea[p_uPageToWrite][6u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][7u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][8u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][9u] = 0x01u;
+    m_auStorArea[p_uPageToWrite][10u] = 0x02u;
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u;
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u;
+    m_auStorArea[p_uPageToWrite][20u] = 0xE9u;
+    m_auStorArea[p_uPageToWrite][21u] = 0x02u;
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u;
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u;
 
     /* Setup buffer */
     l_ltUseBuff.puBuf[0u] = 0x01u;
@@ -6464,49 +6529,49 @@ static void eFSS_LOGCTST_LoadTest(void)
     l_uSubTypeRead = 0u;
 
     /* Setup storage area */
-    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    m_auStorArea1[4u] = 0x00u;  /* Page SUBTYPE */
-    m_auStorArea1[5u] = 0x00u;  /* Page index */
-    m_auStorArea1[6u] = 0x00u;  /* Page index */
-    m_auStorArea1[7u] = 0x00u;  /* Page index */
-    m_auStorArea1[8u] = 0x00u;  /* Page index */
-    m_auStorArea1[9u] = 0x01u;  /* Page type */
-    m_auStorArea1[10u] = 0x01u; /* Page version */
-    m_auStorArea1[11u] = 0x00u; /* Page version */
-    m_auStorArea1[12u] = 0x02u; /* Total page */
-    m_auStorArea1[13u] = 0x00u; /* Total page */
-    m_auStorArea1[14u] = 0x00u; /* Total page */
-    m_auStorArea1[15u] = 0x00u; /* Total page */
-    m_auStorArea1[16u] = 0xA5u; /* Magic number */
-    m_auStorArea1[17u] = 0xA5u; /* Magic number */
-    m_auStorArea1[18u] = 0xA5u; /* Magic number */
-    m_auStorArea1[19u] = 0xA5u; /* Magic number */
-    m_auStorArea1[20u] = 0x97u; /* CRC */
-    m_auStorArea1[21u] = 0x02u; /* CRC */
-    m_auStorArea1[22u] = 0x00u; /* CRC */
-    m_auStorArea1[23u] = 0x00u; /* CRC */
+    (void)memset(m_auStorArea[p_uPageToWrite], 0, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][4u] = 0x00u;  /* Page SUBTYPE */
+    m_auStorArea[p_uPageToWrite][5u] = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][6u] = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][7u] = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][8u] = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][9u] = 0x01u;  /* Page type */
+    m_auStorArea[p_uPageToWrite][10u] = 0x01u; /* Page version */
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u; /* Page version */
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u; /* Total page */
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][20u] = 0x97u; /* CRC */
+    m_auStorArea[p_uPageToWrite][21u] = 0x02u; /* CRC */
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u; /* CRC */
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u; /* CRC */
 
-    (void)memset(m_auStorArea2, 0x10, sizeof(m_auStorArea2));
-    m_auStorArea2[4u] = 0x00u;  /* Page SUBTYPE */
-    m_auStorArea2[5u] = 0x01u;  /* Page index */
-    m_auStorArea2[6u] = 0x00u;  /* Page index */
-    m_auStorArea2[7u] = 0x00u;  /* Page index */
-    m_auStorArea2[8u] = 0x00u;  /* Page index */
-    m_auStorArea2[9u] = 0x01u;  /* Page type */
-    m_auStorArea2[10u] = 0x01u; /* Page version */
-    m_auStorArea2[11u] = 0x00u; /* Page version */
-    m_auStorArea2[12u] = 0x02u; /* Total page */
-    m_auStorArea2[13u] = 0x00u; /* Total page */
-    m_auStorArea2[14u] = 0x00u; /* Total page */
-    m_auStorArea2[15u] = 0x00u; /* Total page */
-    m_auStorArea2[16u] = 0xA5u; /* Magic number */
-    m_auStorArea2[17u] = 0xA5u; /* Magic number */
-    m_auStorArea2[18u] = 0xA5u; /* Magic number */
-    m_auStorArea2[19u] = 0xA5u; /* Magic number */
-    m_auStorArea2[20u] = 0xD8u; /* CRC */
-    m_auStorArea2[21u] = 0x02u; /* CRC */
-    m_auStorArea2[22u] = 0x00u; /* CRC */
-    m_auStorArea2[23u] = 0x00u; /* CRC */
+    (void)memset(m_auStorArea[p_uPageToWrite], 0x10, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][4u] = 0x00u;  /* Page SUBTYPE */
+    m_auStorArea[p_uPageToWrite][5u] = 0x01u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][6u] = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][7u] = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][8u] = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][9u] = 0x01u;  /* Page type */
+    m_auStorArea[p_uPageToWrite][10u] = 0x01u; /* Page version */
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u; /* Page version */
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u; /* Total page */
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][20u] = 0xD8u; /* CRC */
+    m_auStorArea[p_uPageToWrite][21u] = 0x02u; /* CRC */
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u; /* CRC */
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u; /* CRC */
 
     if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_LoadBufferAs(&l_tCtx, 0u, &l_uSubTypeRead) )
     {
@@ -6546,49 +6611,49 @@ static void eFSS_LOGCTST_LoadTest(void)
     l_uSubTypeRead = 0u;
 
     /* Setup storage area */
-    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    m_auStorArea1[4u] = 0x03u;  /* Page SUBTYPE */
-    m_auStorArea1[5u] = 0x00u;  /* Page index */
-    m_auStorArea1[6u] = 0x00u;  /* Page index */
-    m_auStorArea1[7u] = 0x00u;  /* Page index */
-    m_auStorArea1[8u] = 0x00u;  /* Page index */
-    m_auStorArea1[9u] = 0x01u;  /* Page type */
-    m_auStorArea1[10u] = 0x01u; /* Page version */
-    m_auStorArea1[11u] = 0x00u; /* Page version */
-    m_auStorArea1[12u] = 0x02u; /* Total page */
-    m_auStorArea1[13u] = 0x00u; /* Total page */
-    m_auStorArea1[14u] = 0x00u; /* Total page */
-    m_auStorArea1[15u] = 0x00u; /* Total page */
-    m_auStorArea1[16u] = 0xA5u; /* Magic number */
-    m_auStorArea1[17u] = 0xA5u; /* Magic number */
-    m_auStorArea1[18u] = 0xA5u; /* Magic number */
-    m_auStorArea1[19u] = 0xA5u; /* Magic number */
-    m_auStorArea1[20u] = 0x9Au; /* CRC */
-    m_auStorArea1[21u] = 0x02u; /* CRC */
-    m_auStorArea1[22u] = 0x00u; /* CRC */
-    m_auStorArea1[23u] = 0x00u; /* CRC */
+    (void)memset(m_auStorArea[p_uPageToWrite], 0, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][4u] = 0x03u;  /* Page SUBTYPE */
+    m_auStorArea[p_uPageToWrite][5u] = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][6u] = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][7u] = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][8u] = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][9u] = 0x01u;  /* Page type */
+    m_auStorArea[p_uPageToWrite][10u] = 0x01u; /* Page version */
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u; /* Page version */
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u; /* Total page */
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][20u] = 0x9Au; /* CRC */
+    m_auStorArea[p_uPageToWrite][21u] = 0x02u; /* CRC */
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u; /* CRC */
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u; /* CRC */
 
-    (void)memset(m_auStorArea2, 0x10, sizeof(m_auStorArea2));
-    m_auStorArea2[4u] = 0x04u;  /* Page SUBTYPE */
-    m_auStorArea2[5u] = 0x01u;  /* Page index */
-    m_auStorArea2[6u] = 0x00u;  /* Page index */
-    m_auStorArea2[7u] = 0x00u;  /* Page index */
-    m_auStorArea2[8u] = 0x00u;  /* Page index */
-    m_auStorArea2[9u] = 0x01u;  /* Page type */
-    m_auStorArea2[10u] = 0x01u; /* Page version */
-    m_auStorArea2[11u] = 0x00u; /* Page version */
-    m_auStorArea2[12u] = 0x02u; /* Total page */
-    m_auStorArea2[13u] = 0x00u; /* Total page */
-    m_auStorArea2[14u] = 0x00u; /* Total page */
-    m_auStorArea2[15u] = 0x00u; /* Total page */
-    m_auStorArea2[16u] = 0xA5u; /* Magic number */
-    m_auStorArea2[17u] = 0xA5u; /* Magic number */
-    m_auStorArea2[18u] = 0xA5u; /* Magic number */
-    m_auStorArea2[19u] = 0xA5u; /* Magic number */
-    m_auStorArea2[20u] = 0xDCu; /* CRC */
-    m_auStorArea2[21u] = 0x02u; /* CRC */
-    m_auStorArea2[22u] = 0x00u; /* CRC */
-    m_auStorArea2[23u] = 0x00u; /* CRC */
+    (void)memset(m_auStorArea[p_uPageToWrite], 0x10, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][4u] = 0x04u;  /* Page SUBTYPE */
+    m_auStorArea[p_uPageToWrite][5u] = 0x01u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][6u] = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][7u] = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][8u] = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][9u] = 0x01u;  /* Page type */
+    m_auStorArea[p_uPageToWrite][10u] = 0x01u; /* Page version */
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u; /* Page version */
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u; /* Total page */
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][20u] = 0xDCu; /* CRC */
+    m_auStorArea[p_uPageToWrite][21u] = 0x02u; /* CRC */
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u; /* CRC */
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u; /* CRC */
 
     if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_LoadBufferAs(&l_tCtx, 0u, &l_uSubTypeRead) )
     {
@@ -6716,8 +6781,8 @@ static void eFSS_LOGCTST_FlushTest(void)
     l_ltUseBuff2.puBuf = &l_auStor[24];
 
     /* Setup storage area */
-    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    (void)memset(m_auStorArea2, 0xFF, sizeof(m_auStorArea2));
+    (void)memset(m_auStorArea[p_uPageToWrite], 0, sizeof(m_auStorArea[p_uPageToWrite]));
+    (void)memset(m_auStorArea[p_uPageToWrite], 0xFF, sizeof(m_auStorArea[p_uPageToWrite]));
 
     /* Setup buffer */
     l_ltUseBuff.puBuf[0u] = 0x01u;
@@ -6734,24 +6799,24 @@ static void eFSS_LOGCTST_FlushTest(void)
     l_uSubTypeWrite = 0x05u;
     if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_FlushBufferAs(&l_tCtx, 0u, l_uSubTypeWrite) )
     {
-        if( ( 0x01u== m_auStorArea1[0u] )  && ( 0x02u== m_auStorArea1[1u] )  && ( 0x03u== m_auStorArea1[2u] ) &&
-            ( 0x04u== m_auStorArea1[3u] )  && ( 0x05u== m_auStorArea1[4u] )  &&
-            ( 0x00u== m_auStorArea1[5u] )  && ( 0x00u== m_auStorArea1[6u] )  && ( 0x00u== m_auStorArea1[7u] ) &&
-            ( 0x00u== m_auStorArea1[8u] )  && ( 0x01u== m_auStorArea1[9u] )  && ( 0x01u== m_auStorArea1[10u] ) &&
-            ( 0x00u== m_auStorArea1[11u] ) && ( 0x02u== m_auStorArea1[12u] ) && ( 0x00u== m_auStorArea1[13u] ) &&
-            ( 0x00u== m_auStorArea1[14u] ) && ( 0x00u== m_auStorArea1[15u] ) && ( 0xA5u== m_auStorArea1[16u] ) &&
-            ( 0xA5u== m_auStorArea1[17u] ) && ( 0xA5u== m_auStorArea1[18u] ) && ( 0xA5u== m_auStorArea1[19u] ) &&
-            ( 0xA6u== m_auStorArea1[20u] ) && ( 0x02u== m_auStorArea1[21u] ) && ( 0x00u== m_auStorArea1[22u] ) &&
-            ( 0x00u== m_auStorArea1[23u] ) &&
-            ( 0xFFu== m_auStorArea2[0u] )  && ( 0xFFu== m_auStorArea2[1u] )  && ( 0xFFu== m_auStorArea2[2u] ) &&
-            ( 0xFFu== m_auStorArea2[3u] )  && ( 0xFFu== m_auStorArea2[4u] )  &&
-            ( 0xFFu== m_auStorArea2[5u] )  && ( 0xFFu== m_auStorArea2[6u] )  && ( 0xFFu== m_auStorArea2[7u] ) &&
-            ( 0xFFu== m_auStorArea2[8u] )  && ( 0xFFu== m_auStorArea2[9u] )  && ( 0xFFu== m_auStorArea2[10u] ) &&
-            ( 0xFFu== m_auStorArea2[11u] ) && ( 0xFFu== m_auStorArea2[12u] ) && ( 0xFFu== m_auStorArea2[13u] ) &&
-            ( 0xFFu== m_auStorArea2[14u] ) && ( 0xFFu== m_auStorArea2[15u] ) && ( 0xFFu== m_auStorArea2[16u] ) &&
-            ( 0xFFu== m_auStorArea2[17u] ) && ( 0xFFu== m_auStorArea2[18u] ) && ( 0xFFu== m_auStorArea2[19u] ) &&
-            ( 0xFFu== m_auStorArea2[20u] ) && ( 0xFFu== m_auStorArea2[21u] ) && ( 0xFFu== m_auStorArea2[22u] ) &&
-            ( 0xFFu== m_auStorArea2[23u] ) )
+        if( ( 0x01u== m_auStorArea[p_uPageToWrite][0u] )  && ( 0x02u== m_auStorArea[p_uPageToWrite][1u] )  && ( 0x03u== m_auStorArea[p_uPageToWrite][2u] ) &&
+            ( 0x04u== m_auStorArea[p_uPageToWrite][3u] )  && ( 0x05u== m_auStorArea[p_uPageToWrite][4u] )  &&
+            ( 0x00u== m_auStorArea[p_uPageToWrite][5u] )  && ( 0x00u== m_auStorArea[p_uPageToWrite][6u] )  && ( 0x00u== m_auStorArea[p_uPageToWrite][7u] ) &&
+            ( 0x00u== m_auStorArea[p_uPageToWrite][8u] )  && ( 0x01u== m_auStorArea[p_uPageToWrite][9u] )  && ( 0x01u== m_auStorArea[p_uPageToWrite][10u] ) &&
+            ( 0x00u== m_auStorArea[p_uPageToWrite][11u] ) && ( 0x02u== m_auStorArea[p_uPageToWrite][12u] ) && ( 0x00u== m_auStorArea[p_uPageToWrite][13u] ) &&
+            ( 0x00u== m_auStorArea[p_uPageToWrite][14u] ) && ( 0x00u== m_auStorArea[p_uPageToWrite][15u] ) && ( 0xA5u== m_auStorArea[p_uPageToWrite][16u] ) &&
+            ( 0xA5u== m_auStorArea[p_uPageToWrite][17u] ) && ( 0xA5u== m_auStorArea[p_uPageToWrite][18u] ) && ( 0xA5u== m_auStorArea[p_uPageToWrite][19u] ) &&
+            ( 0xA6u== m_auStorArea[p_uPageToWrite][20u] ) && ( 0x02u== m_auStorArea[p_uPageToWrite][21u] ) && ( 0x00u== m_auStorArea[p_uPageToWrite][22u] ) &&
+            ( 0x00u== m_auStorArea[p_uPageToWrite][23u] ) &&
+            ( 0xFFu== m_auStorArea[p_uPageToWrite][0u] )  && ( 0xFFu== m_auStorArea[p_uPageToWrite][1u] )  && ( 0xFFu== m_auStorArea[p_uPageToWrite][2u] ) &&
+            ( 0xFFu== m_auStorArea[p_uPageToWrite][3u] )  && ( 0xFFu== m_auStorArea[p_uPageToWrite][4u] )  &&
+            ( 0xFFu== m_auStorArea[p_uPageToWrite][5u] )  && ( 0xFFu== m_auStorArea[p_uPageToWrite][6u] )  && ( 0xFFu== m_auStorArea[p_uPageToWrite][7u] ) &&
+            ( 0xFFu== m_auStorArea[p_uPageToWrite][8u] )  && ( 0xFFu== m_auStorArea[p_uPageToWrite][9u] )  && ( 0xFFu== m_auStorArea[p_uPageToWrite][10u] ) &&
+            ( 0xFFu== m_auStorArea[p_uPageToWrite][11u] ) && ( 0xFFu== m_auStorArea[p_uPageToWrite][12u] ) && ( 0xFFu== m_auStorArea[p_uPageToWrite][13u] ) &&
+            ( 0xFFu== m_auStorArea[p_uPageToWrite][14u] ) && ( 0xFFu== m_auStorArea[p_uPageToWrite][15u] ) && ( 0xFFu== m_auStorArea[p_uPageToWrite][16u] ) &&
+            ( 0xFFu== m_auStorArea[p_uPageToWrite][17u] ) && ( 0xFFu== m_auStorArea[p_uPageToWrite][18u] ) && ( 0xFFu== m_auStorArea[p_uPageToWrite][19u] ) &&
+            ( 0xFFu== m_auStorArea[p_uPageToWrite][20u] ) && ( 0xFFu== m_auStorArea[p_uPageToWrite][21u] ) && ( 0xFFu== m_auStorArea[p_uPageToWrite][22u] ) &&
+            ( 0xFFu== m_auStorArea[p_uPageToWrite][23u] ) )
         {
             if( ( 0x01u== l_ltUseBuff.puBuf[0u] )  && ( 0x02u== l_ltUseBuff.puBuf[1u] )  && ( 0x03u== l_ltUseBuff.puBuf[2u] ) &&
                 ( 0x04u== l_ltUseBuff.puBuf[3u] )  && ( 0x05u== l_ltUseBuff.puBuf[4u] )  &&
@@ -6776,8 +6841,8 @@ static void eFSS_LOGCTST_FlushTest(void)
     }
 
     /* Setup storage area */
-    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    (void)memset(m_auStorArea2, 0xFF, sizeof(m_auStorArea2));
+    (void)memset(m_auStorArea[p_uPageToWrite], 0, sizeof(m_auStorArea[p_uPageToWrite]));
+    (void)memset(m_auStorArea[p_uPageToWrite], 0xFF, sizeof(m_auStorArea[p_uPageToWrite]));
 
     /* Setup buffer */
     l_ltUseBuff.puBuf[0u] = 0x01u;
@@ -6794,24 +6859,24 @@ static void eFSS_LOGCTST_FlushTest(void)
     l_uSubTypeWrite = 0x05u;
     if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_FlushBufferAs(&l_tCtx, 1u, l_uSubTypeWrite) )
     {
-        if( ( 0x01u== m_auStorArea2[0u] )  && ( 0x02u== m_auStorArea2[1u] )  && ( 0x03u== m_auStorArea2[2u] ) &&
-            ( 0x04u== m_auStorArea2[3u] )  && ( 0x05u== m_auStorArea2[4u] )  &&
-            ( 0x01u== m_auStorArea2[5u] )  && ( 0x00u== m_auStorArea2[6u] )  && ( 0x00u== m_auStorArea2[7u] ) &&
-            ( 0x00u== m_auStorArea2[8u] )  && ( 0x01u== m_auStorArea2[9u] )  && ( 0x01u== m_auStorArea2[10u] ) &&
-            ( 0x00u== m_auStorArea2[11u] ) && ( 0x02u== m_auStorArea2[12u] ) && ( 0x00u== m_auStorArea2[13u] ) &&
-            ( 0x00u== m_auStorArea2[14u] ) && ( 0x00u== m_auStorArea2[15u] ) && ( 0xA5u== m_auStorArea2[16u] ) &&
-            ( 0xA5u== m_auStorArea2[17u] ) && ( 0xA5u== m_auStorArea2[18u] ) && ( 0xA5u== m_auStorArea2[19u] ) &&
-            ( 0xA7u== m_auStorArea2[20u] ) && ( 0x02u== m_auStorArea2[21u] ) && ( 0x00u== m_auStorArea2[22u] ) &&
-            ( 0x00u== m_auStorArea2[23u] ) &&
-            ( 0x00u== m_auStorArea1[0u] )  && ( 0x00u== m_auStorArea1[1u] )  && ( 0x00u== m_auStorArea1[2u] ) &&
-            ( 0x00u== m_auStorArea1[3u] )  && ( 0x00u== m_auStorArea1[4u] )  &&
-            ( 0x00u== m_auStorArea1[5u] )  && ( 0x00u== m_auStorArea1[6u] )  && ( 0x00u== m_auStorArea1[7u] ) &&
-            ( 0x00u== m_auStorArea1[8u] )  && ( 0x00u== m_auStorArea1[9u] )  && ( 0x00u== m_auStorArea1[10u] ) &&
-            ( 0x00u== m_auStorArea1[11u] ) && ( 0x00u== m_auStorArea1[12u] ) && ( 0x00u== m_auStorArea1[13u] ) &&
-            ( 0x00u== m_auStorArea1[14u] ) && ( 0x00u== m_auStorArea1[15u] ) && ( 0x00u== m_auStorArea1[16u] ) &&
-            ( 0x00u== m_auStorArea1[17u] ) && ( 0x00u== m_auStorArea1[18u] ) && ( 0x00u== m_auStorArea1[19u] ) &&
-            ( 0x00u== m_auStorArea1[20u] ) && ( 0x00u== m_auStorArea1[21u] ) && ( 0x00u== m_auStorArea1[22u] ) &&
-            ( 0x00u== m_auStorArea1[23u] ) )
+        if( ( 0x01u== m_auStorArea[p_uPageToWrite][0u] )  && ( 0x02u== m_auStorArea[p_uPageToWrite][1u] )  && ( 0x03u== m_auStorArea[p_uPageToWrite][2u] ) &&
+            ( 0x04u== m_auStorArea[p_uPageToWrite][3u] )  && ( 0x05u== m_auStorArea[p_uPageToWrite][4u] )  &&
+            ( 0x01u== m_auStorArea[p_uPageToWrite][5u] )  && ( 0x00u== m_auStorArea[p_uPageToWrite][6u] )  && ( 0x00u== m_auStorArea[p_uPageToWrite][7u] ) &&
+            ( 0x00u== m_auStorArea[p_uPageToWrite][8u] )  && ( 0x01u== m_auStorArea[p_uPageToWrite][9u] )  && ( 0x01u== m_auStorArea[p_uPageToWrite][10u] ) &&
+            ( 0x00u== m_auStorArea[p_uPageToWrite][11u] ) && ( 0x02u== m_auStorArea[p_uPageToWrite][12u] ) && ( 0x00u== m_auStorArea[p_uPageToWrite][13u] ) &&
+            ( 0x00u== m_auStorArea[p_uPageToWrite][14u] ) && ( 0x00u== m_auStorArea[p_uPageToWrite][15u] ) && ( 0xA5u== m_auStorArea[p_uPageToWrite][16u] ) &&
+            ( 0xA5u== m_auStorArea[p_uPageToWrite][17u] ) && ( 0xA5u== m_auStorArea[p_uPageToWrite][18u] ) && ( 0xA5u== m_auStorArea[p_uPageToWrite][19u] ) &&
+            ( 0xA7u== m_auStorArea[p_uPageToWrite][20u] ) && ( 0x02u== m_auStorArea[p_uPageToWrite][21u] ) && ( 0x00u== m_auStorArea[p_uPageToWrite][22u] ) &&
+            ( 0x00u== m_auStorArea[p_uPageToWrite][23u] ) &&
+            ( 0x00u== m_auStorArea[p_uPageToWrite][0u] )  && ( 0x00u== m_auStorArea[p_uPageToWrite][1u] )  && ( 0x00u== m_auStorArea[p_uPageToWrite][2u] ) &&
+            ( 0x00u== m_auStorArea[p_uPageToWrite][3u] )  && ( 0x00u== m_auStorArea[p_uPageToWrite][4u] )  &&
+            ( 0x00u== m_auStorArea[p_uPageToWrite][5u] )  && ( 0x00u== m_auStorArea[p_uPageToWrite][6u] )  && ( 0x00u== m_auStorArea[p_uPageToWrite][7u] ) &&
+            ( 0x00u== m_auStorArea[p_uPageToWrite][8u] )  && ( 0x00u== m_auStorArea[p_uPageToWrite][9u] )  && ( 0x00u== m_auStorArea[p_uPageToWrite][10u] ) &&
+            ( 0x00u== m_auStorArea[p_uPageToWrite][11u] ) && ( 0x00u== m_auStorArea[p_uPageToWrite][12u] ) && ( 0x00u== m_auStorArea[p_uPageToWrite][13u] ) &&
+            ( 0x00u== m_auStorArea[p_uPageToWrite][14u] ) && ( 0x00u== m_auStorArea[p_uPageToWrite][15u] ) && ( 0x00u== m_auStorArea[p_uPageToWrite][16u] ) &&
+            ( 0x00u== m_auStorArea[p_uPageToWrite][17u] ) && ( 0x00u== m_auStorArea[p_uPageToWrite][18u] ) && ( 0x00u== m_auStorArea[p_uPageToWrite][19u] ) &&
+            ( 0x00u== m_auStorArea[p_uPageToWrite][20u] ) && ( 0x00u== m_auStorArea[p_uPageToWrite][21u] ) && ( 0x00u== m_auStorArea[p_uPageToWrite][22u] ) &&
+            ( 0x00u== m_auStorArea[p_uPageToWrite][23u] ) )
         {
             if( ( 0x01u== l_ltUseBuff.puBuf[0u] )  && ( 0x02u== l_ltUseBuff.puBuf[1u] )  && ( 0x03u== l_ltUseBuff.puBuf[2u] ) &&
                 ( 0x04u== l_ltUseBuff.puBuf[3u] )  && ( 0x05u== l_ltUseBuff.puBuf[4u] )  &&
@@ -6874,8 +6939,8 @@ static void eFSS_LOGCTST_FlushTest(void)
     l_ltUseBuff2.puBuf = &l_auStor[24];
 
     /* Setup storage area */
-    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    (void)memset(m_auStorArea2, 0xFF, sizeof(m_auStorArea2));
+    (void)memset(m_auStorArea[p_uPageToWrite], 0, sizeof(m_auStorArea[p_uPageToWrite]));
+    (void)memset(m_auStorArea[p_uPageToWrite], 0xFF, sizeof(m_auStorArea[p_uPageToWrite]));
 
     /* Setup buffer */
     l_ltUseBuff.puBuf[0u] = 0x01u;
@@ -6900,8 +6965,8 @@ static void eFSS_LOGCTST_FlushTest(void)
     }
 
     /* Setup storage area */
-    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    (void)memset(m_auStorArea2, 0xFF, sizeof(m_auStorArea2));
+    (void)memset(m_auStorArea[p_uPageToWrite], 0, sizeof(m_auStorArea[p_uPageToWrite]));
+    (void)memset(m_auStorArea[p_uPageToWrite], 0xFF, sizeof(m_auStorArea[p_uPageToWrite]));
 
     /* Setup buffer */
     l_ltUseBuff.puBuf[0u] = 0x01u;
@@ -7026,49 +7091,49 @@ static void eFSS_LOGCTST_Compare(void)
     l_uSubTypeRead = 0u;
 
     /* Setup storage area */
-    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    m_auStorArea1[4u] = 0x00u;  /* Page SUBTYPE */
-    m_auStorArea1[5u] = 0x00u;  /* Page index */
-    m_auStorArea1[6u] = 0x00u;  /* Page index */
-    m_auStorArea1[7u] = 0x00u;  /* Page index */
-    m_auStorArea1[8u] = 0x00u;  /* Page index */
-    m_auStorArea1[9u] = 0x01u;  /* Page type */
-    m_auStorArea1[10u] = 0x01u; /* Page version */
-    m_auStorArea1[11u] = 0x00u; /* Page version */
-    m_auStorArea1[12u] = 0x02u; /* Total page */
-    m_auStorArea1[13u] = 0x00u; /* Total page */
-    m_auStorArea1[14u] = 0x00u; /* Total page */
-    m_auStorArea1[15u] = 0x00u; /* Total page */
-    m_auStorArea1[16u] = 0xA5u; /* Magic number */
-    m_auStorArea1[17u] = 0xA5u; /* Magic number */
-    m_auStorArea1[18u] = 0xA5u; /* Magic number */
-    m_auStorArea1[19u] = 0xA5u; /* Magic number */
-    m_auStorArea1[20u] = 0x97u; /* CRC */
-    m_auStorArea1[21u] = 0x02u; /* CRC */
-    m_auStorArea1[22u] = 0x00u; /* CRC */
-    m_auStorArea1[23u] = 0x00u; /* CRC */
+    (void)memset(m_auStorArea[p_uPageToWrite], 0, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][4u] = 0x00u;  /* Page SUBTYPE */
+    m_auStorArea[p_uPageToWrite][5u] = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][6u] = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][7u] = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][8u] = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][9u] = 0x01u;  /* Page type */
+    m_auStorArea[p_uPageToWrite][10u] = 0x01u; /* Page version */
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u; /* Page version */
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u; /* Total page */
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][20u] = 0x97u; /* CRC */
+    m_auStorArea[p_uPageToWrite][21u] = 0x02u; /* CRC */
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u; /* CRC */
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u; /* CRC */
 
-    (void)memset(m_auStorArea2, 0x10, sizeof(m_auStorArea2));
-    m_auStorArea2[4u] = 0x00u;  /* Page SUBTYPE */
-    m_auStorArea2[5u] = 0x01u;  /* Page index */
-    m_auStorArea2[6u] = 0x00u;  /* Page index */
-    m_auStorArea2[7u] = 0x00u;  /* Page index */
-    m_auStorArea2[8u] = 0x00u;  /* Page index */
-    m_auStorArea2[9u] = 0x01u;  /* Page type */
-    m_auStorArea2[10u] = 0x01u; /* Page version */
-    m_auStorArea2[11u] = 0x00u; /* Page version */
-    m_auStorArea2[12u] = 0x02u; /* Total page */
-    m_auStorArea2[13u] = 0x00u; /* Total page */
-    m_auStorArea2[14u] = 0x00u; /* Total page */
-    m_auStorArea2[15u] = 0x00u; /* Total page */
-    m_auStorArea2[16u] = 0xA5u; /* Magic number */
-    m_auStorArea2[17u] = 0xA5u; /* Magic number */
-    m_auStorArea2[18u] = 0xA5u; /* Magic number */
-    m_auStorArea2[19u] = 0xA5u; /* Magic number */
-    m_auStorArea2[20u] = 0xD8u; /* CRC */
-    m_auStorArea2[21u] = 0x02u; /* CRC */
-    m_auStorArea2[22u] = 0x00u; /* CRC */
-    m_auStorArea2[23u] = 0x00u; /* CRC */
+    (void)memset(m_auStorArea[p_uPageToWrite], 0x10, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][4u] = 0x00u;  /* Page SUBTYPE */
+    m_auStorArea[p_uPageToWrite][5u] = 0x01u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][6u] = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][7u] = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][8u] = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][9u] = 0x01u;  /* Page type */
+    m_auStorArea[p_uPageToWrite][10u] = 0x01u; /* Page version */
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u; /* Page version */
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u; /* Total page */
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][20u] = 0xD8u; /* CRC */
+    m_auStorArea[p_uPageToWrite][21u] = 0x02u; /* CRC */
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u; /* CRC */
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u; /* CRC */
 
     /* fill the buffer */
     l_ltUseBuff.puBuf[0u] = 0x00u;
@@ -7124,49 +7189,49 @@ static void eFSS_LOGCTST_Compare(void)
     l_uSubTypeRead = 0u;
 
     /* Setup storage area */
-    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    m_auStorArea1[4u] = 0x03u;  /* Page SUBTYPE */
-    m_auStorArea1[5u] = 0x00u;  /* Page index */
-    m_auStorArea1[6u] = 0x00u;  /* Page index */
-    m_auStorArea1[7u] = 0x00u;  /* Page index */
-    m_auStorArea1[8u] = 0x00u;  /* Page index */
-    m_auStorArea1[9u] = 0x01u;  /* Page type */
-    m_auStorArea1[10u] = 0x01u; /* Page version */
-    m_auStorArea1[11u] = 0x00u; /* Page version */
-    m_auStorArea1[12u] = 0x02u; /* Total page */
-    m_auStorArea1[13u] = 0x00u; /* Total page */
-    m_auStorArea1[14u] = 0x00u; /* Total page */
-    m_auStorArea1[15u] = 0x00u; /* Total page */
-    m_auStorArea1[16u] = 0xA5u; /* Magic number */
-    m_auStorArea1[17u] = 0xA5u; /* Magic number */
-    m_auStorArea1[18u] = 0xA5u; /* Magic number */
-    m_auStorArea1[19u] = 0xA5u; /* Magic number */
-    m_auStorArea1[20u] = 0x9Au; /* CRC */
-    m_auStorArea1[21u] = 0x02u; /* CRC */
-    m_auStorArea1[22u] = 0x00u; /* CRC */
-    m_auStorArea1[23u] = 0x00u; /* CRC */
+    (void)memset(m_auStorArea[p_uPageToWrite], 0, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][4u] = 0x03u;  /* Page SUBTYPE */
+    m_auStorArea[p_uPageToWrite][5u] = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][6u] = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][7u] = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][8u] = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][9u] = 0x01u;  /* Page type */
+    m_auStorArea[p_uPageToWrite][10u] = 0x01u; /* Page version */
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u; /* Page version */
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u; /* Total page */
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][20u] = 0x9Au; /* CRC */
+    m_auStorArea[p_uPageToWrite][21u] = 0x02u; /* CRC */
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u; /* CRC */
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u; /* CRC */
 
-    (void)memset(m_auStorArea2, 0x10, sizeof(m_auStorArea2));
-    m_auStorArea2[4u] = 0x04u;  /* Page SUBTYPE */
-    m_auStorArea2[5u] = 0x01u;  /* Page index */
-    m_auStorArea2[6u] = 0x00u;  /* Page index */
-    m_auStorArea2[7u] = 0x00u;  /* Page index */
-    m_auStorArea2[8u] = 0x00u;  /* Page index */
-    m_auStorArea2[9u] = 0x01u;  /* Page type */
-    m_auStorArea2[10u] = 0x01u; /* Page version */
-    m_auStorArea2[11u] = 0x00u; /* Page version */
-    m_auStorArea2[12u] = 0x02u; /* Total page */
-    m_auStorArea2[13u] = 0x00u; /* Total page */
-    m_auStorArea2[14u] = 0x00u; /* Total page */
-    m_auStorArea2[15u] = 0x00u; /* Total page */
-    m_auStorArea2[16u] = 0xA5u; /* Magic number */
-    m_auStorArea2[17u] = 0xA5u; /* Magic number */
-    m_auStorArea2[18u] = 0xA5u; /* Magic number */
-    m_auStorArea2[19u] = 0xA5u; /* Magic number */
-    m_auStorArea2[20u] = 0xDCu; /* CRC */
-    m_auStorArea2[21u] = 0x02u; /* CRC */
-    m_auStorArea2[22u] = 0x00u; /* CRC */
-    m_auStorArea2[23u] = 0x00u; /* CRC */
+    (void)memset(m_auStorArea[p_uPageToWrite], 0x10, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][4u] = 0x04u;  /* Page SUBTYPE */
+    m_auStorArea[p_uPageToWrite][5u] = 0x01u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][6u] = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][7u] = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][8u] = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][9u] = 0x01u;  /* Page type */
+    m_auStorArea[p_uPageToWrite][10u] = 0x01u; /* Page version */
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u; /* Page version */
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u; /* Total page */
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][20u] = 0xDCu; /* CRC */
+    m_auStorArea[p_uPageToWrite][21u] = 0x02u; /* CRC */
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u; /* CRC */
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u; /* CRC */
 
     /* fill the buffer */
     l_ltUseBuff.puBuf[0u] = 0x00u;
@@ -7223,49 +7288,49 @@ static void eFSS_LOGCTST_Compare(void)
     l_uSubTypeRead = 0u;
 
     /* Setup storage area */
-    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    m_auStorArea1[4u] = 0x03u;  /* Page SUBTYPE */
-    m_auStorArea1[5u] = 0x00u;  /* Page index */
-    m_auStorArea1[6u] = 0x00u;  /* Page index */
-    m_auStorArea1[7u] = 0x00u;  /* Page index */
-    m_auStorArea1[8u] = 0x00u;  /* Page index */
-    m_auStorArea1[9u] = 0x01u;  /* Page type */
-    m_auStorArea1[10u] = 0x01u; /* Page version */
-    m_auStorArea1[11u] = 0x00u; /* Page version */
-    m_auStorArea1[12u] = 0x02u; /* Total page */
-    m_auStorArea1[13u] = 0x00u; /* Total page */
-    m_auStorArea1[14u] = 0x00u; /* Total page */
-    m_auStorArea1[15u] = 0x00u; /* Total page */
-    m_auStorArea1[16u] = 0xA5u; /* Magic number */
-    m_auStorArea1[17u] = 0xA5u; /* Magic number */
-    m_auStorArea1[18u] = 0xA5u; /* Magic number */
-    m_auStorArea1[19u] = 0xA5u; /* Magic number */
-    m_auStorArea1[20u] = 0x9Au; /* CRC */
-    m_auStorArea1[21u] = 0x02u; /* CRC */
-    m_auStorArea1[22u] = 0x00u; /* CRC */
-    m_auStorArea1[23u] = 0x00u; /* CRC */
+    (void)memset(m_auStorArea[p_uPageToWrite], 0, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][4u] = 0x03u;  /* Page SUBTYPE */
+    m_auStorArea[p_uPageToWrite][5u] = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][6u] = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][7u] = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][8u] = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][9u] = 0x01u;  /* Page type */
+    m_auStorArea[p_uPageToWrite][10u] = 0x01u; /* Page version */
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u; /* Page version */
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u; /* Total page */
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][20u] = 0x9Au; /* CRC */
+    m_auStorArea[p_uPageToWrite][21u] = 0x02u; /* CRC */
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u; /* CRC */
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u; /* CRC */
 
-    (void)memset(m_auStorArea2, 0x10, sizeof(m_auStorArea2));
-    m_auStorArea2[4u] = 0x04u;  /* Page SUBTYPE */
-    m_auStorArea2[5u] = 0x01u;  /* Page index */
-    m_auStorArea2[6u] = 0x00u;  /* Page index */
-    m_auStorArea2[7u] = 0x00u;  /* Page index */
-    m_auStorArea2[8u] = 0x00u;  /* Page index */
-    m_auStorArea2[9u] = 0x01u;  /* Page type */
-    m_auStorArea2[10u] = 0x01u; /* Page version */
-    m_auStorArea2[11u] = 0x00u; /* Page version */
-    m_auStorArea2[12u] = 0x02u; /* Total page */
-    m_auStorArea2[13u] = 0x00u; /* Total page */
-    m_auStorArea2[14u] = 0x00u; /* Total page */
-    m_auStorArea2[15u] = 0x00u; /* Total page */
-    m_auStorArea2[16u] = 0xA5u; /* Magic number */
-    m_auStorArea2[17u] = 0xA5u; /* Magic number */
-    m_auStorArea2[18u] = 0xA5u; /* Magic number */
-    m_auStorArea2[19u] = 0xA5u; /* Magic number */
-    m_auStorArea2[20u] = 0xDCu; /* CRC */
-    m_auStorArea2[21u] = 0x02u; /* CRC */
-    m_auStorArea2[22u] = 0x00u; /* CRC */
-    m_auStorArea2[23u] = 0x00u; /* CRC */
+    (void)memset(m_auStorArea[p_uPageToWrite], 0x10, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][4u] = 0x04u;  /* Page SUBTYPE */
+    m_auStorArea[p_uPageToWrite][5u] = 0x01u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][6u] = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][7u] = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][8u] = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][9u] = 0x01u;  /* Page type */
+    m_auStorArea[p_uPageToWrite][10u] = 0x01u; /* Page version */
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u; /* Page version */
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u; /* Total page */
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][20u] = 0xDCu; /* CRC */
+    m_auStorArea[p_uPageToWrite][21u] = 0x02u; /* CRC */
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u; /* CRC */
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u; /* CRC */
 
     /* fill the buffer */
     l_ltUseBuff.puBuf[0u] = 0x00u;
@@ -7322,49 +7387,49 @@ static void eFSS_LOGCTST_Compare(void)
     l_uSubTypeRead = 0u;
 
     /* Setup storage area */
-    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    m_auStorArea1[4u] = 0x03u;  /* Page SUBTYPE */
-    m_auStorArea1[5u] = 0x00u;  /* Page index */
-    m_auStorArea1[6u] = 0x00u;  /* Page index */
-    m_auStorArea1[7u] = 0x00u;  /* Page index */
-    m_auStorArea1[8u] = 0x00u;  /* Page index */
-    m_auStorArea1[9u] = 0x01u;  /* Page type */
-    m_auStorArea1[10u] = 0x01u; /* Page version */
-    m_auStorArea1[11u] = 0x00u; /* Page version */
-    m_auStorArea1[12u] = 0x02u; /* Total page */
-    m_auStorArea1[13u] = 0x00u; /* Total page */
-    m_auStorArea1[14u] = 0x00u; /* Total page */
-    m_auStorArea1[15u] = 0x00u; /* Total page */
-    m_auStorArea1[16u] = 0xA5u; /* Magic number */
-    m_auStorArea1[17u] = 0xA5u; /* Magic number */
-    m_auStorArea1[18u] = 0xA5u; /* Magic number */
-    m_auStorArea1[19u] = 0xA5u; /* Magic number */
-    m_auStorArea1[20u] = 0x00u; /* CRC */
-    m_auStorArea1[21u] = 0x00u; /* CRC */
-    m_auStorArea1[22u] = 0x00u; /* CRC */
-    m_auStorArea1[23u] = 0x00u; /* CRC */
+    (void)memset(m_auStorArea[p_uPageToWrite], 0, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][4u] = 0x03u;  /* Page SUBTYPE */
+    m_auStorArea[p_uPageToWrite][5u] = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][6u] = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][7u] = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][8u] = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][9u] = 0x01u;  /* Page type */
+    m_auStorArea[p_uPageToWrite][10u] = 0x01u; /* Page version */
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u; /* Page version */
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u; /* Total page */
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][20u] = 0x00u; /* CRC */
+    m_auStorArea[p_uPageToWrite][21u] = 0x00u; /* CRC */
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u; /* CRC */
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u; /* CRC */
 
-    (void)memset(m_auStorArea2, 0x10, sizeof(m_auStorArea2));
-    m_auStorArea2[4u] = 0x04u;  /* Page SUBTYPE */
-    m_auStorArea2[5u] = 0x01u;  /* Page index */
-    m_auStorArea2[6u] = 0x00u;  /* Page index */
-    m_auStorArea2[7u] = 0x00u;  /* Page index */
-    m_auStorArea2[8u] = 0x00u;  /* Page index */
-    m_auStorArea2[9u] = 0x01u;  /* Page type */
-    m_auStorArea2[10u] = 0x01u; /* Page version */
-    m_auStorArea2[11u] = 0x00u; /* Page version */
-    m_auStorArea2[12u] = 0x02u; /* Total page */
-    m_auStorArea2[13u] = 0x00u; /* Total page */
-    m_auStorArea2[14u] = 0x00u; /* Total page */
-    m_auStorArea2[15u] = 0x00u; /* Total page */
-    m_auStorArea2[16u] = 0xA5u; /* Magic number */
-    m_auStorArea2[17u] = 0xA5u; /* Magic number */
-    m_auStorArea2[18u] = 0xA5u; /* Magic number */
-    m_auStorArea2[19u] = 0xA5u; /* Magic number */
-    m_auStorArea2[20u] = 0x00u; /* CRC */
-    m_auStorArea2[21u] = 0x00u; /* CRC */
-    m_auStorArea2[22u] = 0x00u; /* CRC */
-    m_auStorArea2[23u] = 0x00u; /* CRC */
+    (void)memset(m_auStorArea[p_uPageToWrite], 0x10, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][4u] = 0x04u;  /* Page SUBTYPE */
+    m_auStorArea[p_uPageToWrite][5u] = 0x01u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][6u] = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][7u] = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][8u] = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][9u] = 0x01u;  /* Page type */
+    m_auStorArea[p_uPageToWrite][10u] = 0x01u; /* Page version */
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u; /* Page version */
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u; /* Total page */
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][20u] = 0x00u; /* CRC */
+    m_auStorArea[p_uPageToWrite][21u] = 0x00u; /* CRC */
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u; /* CRC */
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u; /* CRC */
 
     /* fill the buffer */
     l_ltUseBuff.puBuf[0u] = 0x00u;
@@ -7418,26 +7483,26 @@ static void eFSS_LOGCTST_Compare(void)
     }
 
     /* Setup storage area */
-    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    m_auStorArea1[5u] = 0x00u;  /* Page index */
-    m_auStorArea1[6u] = 0x00u;  /* Page index */
-    m_auStorArea1[7u] = 0x00u;  /* Page index */
-    m_auStorArea1[8u] = 0x00u;  /* Page index */
-    m_auStorArea1[9u] = 0x01u;  /* Page type */
-    m_auStorArea1[10u] = 0x00u; /* Page version */
-    m_auStorArea1[11u] = 0x00u; /* Page version */
-    m_auStorArea1[12u] = 0x02u; /* Total page */
-    m_auStorArea1[13u] = 0x00u; /* Total page */
-    m_auStorArea1[14u] = 0x00u; /* Total page */
-    m_auStorArea1[15u] = 0x00u; /* Total page */
-    m_auStorArea1[16u] = 0xA5u; /* Magic number */
-    m_auStorArea1[17u] = 0xA5u; /* Magic number */
-    m_auStorArea1[18u] = 0xA5u; /* Magic number */
-    m_auStorArea1[19u] = 0xA5u; /* Magic number */
-    m_auStorArea1[20u] = 0x96u; /* CRC */
-    m_auStorArea1[21u] = 0x02u; /* CRC */
-    m_auStorArea1[22u] = 0x00u; /* CRC */
-    m_auStorArea1[23u] = 0x00u; /* CRC */
+    (void)memset(m_auStorArea[p_uPageToWrite], 0, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][5u] = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][6u] = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][7u] = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][8u] = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][9u] = 0x01u;  /* Page type */
+    m_auStorArea[p_uPageToWrite][10u] = 0x00u; /* Page version */
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u; /* Page version */
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u; /* Total page */
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][20u] = 0x96u; /* CRC */
+    m_auStorArea[p_uPageToWrite][21u] = 0x02u; /* CRC */
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u; /* CRC */
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u; /* CRC */
 
     /* Compare */
     l_ltUseBuff.puBuf[0u] = 0x10u;
@@ -7555,49 +7620,49 @@ static void eFSS_LOGCTST_LoadBkupTest(void)
 
     /* --------------------------------------------- All OK no backup generation */
     /* Setup storage area */
-    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    m_auStorArea1[4u]  = 0x03u; /* Page SUBTYPE */
-    m_auStorArea1[5u]  = 0x00u; /* Page index */
-    m_auStorArea1[6u]  = 0x00u; /* Page index */
-    m_auStorArea1[7u]  = 0x00u; /* Page index */
-    m_auStorArea1[8u]  = 0x00u; /* Page index */
-    m_auStorArea1[9u]  = 0x01u; /* Page type */
-    m_auStorArea1[10u] = 0x01u; /* Page version */
-    m_auStorArea1[11u] = 0x00u; /* Page version */
-    m_auStorArea1[12u] = 0x02u; /* Total page */
-    m_auStorArea1[13u] = 0x00u; /* Total page */
-    m_auStorArea1[14u] = 0x00u; /* Total page */
-    m_auStorArea1[15u] = 0x00u; /* Total page */
-    m_auStorArea1[16u] = 0xA5u; /* Magic number */
-    m_auStorArea1[17u] = 0xA5u; /* Magic number */
-    m_auStorArea1[18u] = 0xA5u; /* Magic number */
-    m_auStorArea1[19u] = 0xA5u; /* Magic number */
-    m_auStorArea1[20u] = 0x9Au; /* CRC */
-    m_auStorArea1[21u] = 0x02u; /* CRC */
-    m_auStorArea1[22u] = 0x00u; /* CRC */
-    m_auStorArea1[23u] = 0x00u; /* CRC */
+    (void)memset(m_auStorArea[p_uPageToWrite], 0, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][4u]  = 0x03u; /* Page SUBTYPE */
+    m_auStorArea[p_uPageToWrite][5u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][6u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][7u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][8u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][9u]  = 0x01u; /* Page type */
+    m_auStorArea[p_uPageToWrite][10u] = 0x01u; /* Page version */
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u; /* Page version */
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u; /* Total page */
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][20u] = 0x9Au; /* CRC */
+    m_auStorArea[p_uPageToWrite][21u] = 0x02u; /* CRC */
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u; /* CRC */
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u; /* CRC */
 
-    (void)memset(m_auStorArea2, 0, sizeof(m_auStorArea2));
-    m_auStorArea2[4u]  = 0x04u; /* Page SUBTYPE */
-    m_auStorArea2[5u]  = 0x01u; /* Page index */
-    m_auStorArea2[6u]  = 0x00u; /* Page index */
-    m_auStorArea2[7u]  = 0x00u; /* Page index */
-    m_auStorArea2[8u]  = 0x00u; /* Page index */
-    m_auStorArea2[9u]  = 0x01u; /* Page type */
-    m_auStorArea2[10u] = 0x01u; /* Page version */
-    m_auStorArea2[11u] = 0x00u; /* Page version */
-    m_auStorArea2[12u] = 0x02u; /* Total page */
-    m_auStorArea2[13u] = 0x00u; /* Total page */
-    m_auStorArea2[14u] = 0x00u; /* Total page */
-    m_auStorArea2[15u] = 0x00u; /* Total page */
-    m_auStorArea2[16u] = 0xA5u; /* Magic number */
-    m_auStorArea2[17u] = 0xA5u; /* Magic number */
-    m_auStorArea2[18u] = 0xA5u; /* Magic number */
-    m_auStorArea2[19u] = 0xA5u; /* Magic number */
-    m_auStorArea2[20u] = 0x9Cu; /* CRC */
-    m_auStorArea2[21u] = 0x02u; /* CRC */
-    m_auStorArea2[22u] = 0x00u; /* CRC */
-    m_auStorArea2[23u] = 0x00u; /* CRC */
+    (void)memset(m_auStorArea[p_uPageToWrite], 0, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][4u]  = 0x04u; /* Page SUBTYPE */
+    m_auStorArea[p_uPageToWrite][5u]  = 0x01u; /* Page index */
+    m_auStorArea[p_uPageToWrite][6u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][7u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][8u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][9u]  = 0x01u; /* Page type */
+    m_auStorArea[p_uPageToWrite][10u] = 0x01u; /* Page version */
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u; /* Page version */
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u; /* Total page */
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][20u] = 0x9Cu; /* CRC */
+    m_auStorArea[p_uPageToWrite][21u] = 0x02u; /* CRC */
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u; /* CRC */
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u; /* CRC */
 
     if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_LoadBufferAsNRipBkp(&l_tCtx, 0u, 1u, 0x03u, 0x04u) )
     {
@@ -7640,49 +7705,49 @@ static void eFSS_LOGCTST_LoadBkupTest(void)
 
     /* --------------------------------------------- All OK no backup generation */
     /* Setup storage area */
-    (void)memset(m_auStorArea1, 1, sizeof(m_auStorArea1));
-    m_auStorArea1[4u]  = 0x03u; /* Page SUBTYPE */
-    m_auStorArea1[5u]  = 0x00u; /* Page index */
-    m_auStorArea1[6u]  = 0x00u; /* Page index */
-    m_auStorArea1[7u]  = 0x00u; /* Page index */
-    m_auStorArea1[8u]  = 0x00u; /* Page index */
-    m_auStorArea1[9u]  = 0x01u; /* Page type */
-    m_auStorArea1[10u] = 0x01u; /* Page version */
-    m_auStorArea1[11u] = 0x00u; /* Page version */
-    m_auStorArea1[12u] = 0x02u; /* Total page */
-    m_auStorArea1[13u] = 0x00u; /* Total page */
-    m_auStorArea1[14u] = 0x00u; /* Total page */
-    m_auStorArea1[15u] = 0x00u; /* Total page */
-    m_auStorArea1[16u] = 0xA5u; /* Magic number */
-    m_auStorArea1[17u] = 0xA5u; /* Magic number */
-    m_auStorArea1[18u] = 0xA5u; /* Magic number */
-    m_auStorArea1[19u] = 0xA5u; /* Magic number */
-    m_auStorArea1[20u] = 0x9Eu; /* CRC */
-    m_auStorArea1[21u] = 0x02u; /* CRC */
-    m_auStorArea1[22u] = 0x00u; /* CRC */
-    m_auStorArea1[23u] = 0x00u; /* CRC */
+    (void)memset(m_auStorArea[p_uPageToWrite], 1, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][4u]  = 0x03u; /* Page SUBTYPE */
+    m_auStorArea[p_uPageToWrite][5u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][6u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][7u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][8u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][9u]  = 0x01u; /* Page type */
+    m_auStorArea[p_uPageToWrite][10u] = 0x01u; /* Page version */
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u; /* Page version */
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u; /* Total page */
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][20u] = 0x9Eu; /* CRC */
+    m_auStorArea[p_uPageToWrite][21u] = 0x02u; /* CRC */
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u; /* CRC */
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u; /* CRC */
 
-    (void)memset(m_auStorArea2, 1, sizeof(m_auStorArea2));
-    m_auStorArea2[4u]  = 0x04u; /* Page SUBTYPE */
-    m_auStorArea2[5u]  = 0x01u; /* Page index */
-    m_auStorArea2[6u]  = 0x00u; /* Page index */
-    m_auStorArea2[7u]  = 0x00u; /* Page index */
-    m_auStorArea2[8u]  = 0x00u; /* Page index */
-    m_auStorArea2[9u]  = 0x01u; /* Page type */
-    m_auStorArea2[10u] = 0x01u; /* Page version */
-    m_auStorArea2[11u] = 0x00u; /* Page version */
-    m_auStorArea2[12u] = 0x02u; /* Total page */
-    m_auStorArea2[13u] = 0x00u; /* Total page */
-    m_auStorArea2[14u] = 0x00u; /* Total page */
-    m_auStorArea2[15u] = 0x00u; /* Total page */
-    m_auStorArea2[16u] = 0xA5u; /* Magic number */
-    m_auStorArea2[17u] = 0xA5u; /* Magic number */
-    m_auStorArea2[18u] = 0xA5u; /* Magic number */
-    m_auStorArea2[19u] = 0xA5u; /* Magic number */
-    m_auStorArea2[20u] = 0xA0u; /* CRC */
-    m_auStorArea2[21u] = 0x02u; /* CRC */
-    m_auStorArea2[22u] = 0x00u; /* CRC */
-    m_auStorArea2[23u] = 0x00u; /* CRC */
+    (void)memset(m_auStorArea[p_uPageToWrite], 1, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][4u]  = 0x04u; /* Page SUBTYPE */
+    m_auStorArea[p_uPageToWrite][5u]  = 0x01u; /* Page index */
+    m_auStorArea[p_uPageToWrite][6u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][7u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][8u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][9u]  = 0x01u; /* Page type */
+    m_auStorArea[p_uPageToWrite][10u] = 0x01u; /* Page version */
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u; /* Page version */
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u; /* Total page */
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][20u] = 0xA0u; /* CRC */
+    m_auStorArea[p_uPageToWrite][21u] = 0x02u; /* CRC */
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u; /* CRC */
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u; /* CRC */
 
     if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_LoadBufferAsNRipBkp(&l_tCtx, 0u, 1u, 0x03u, 0x04u) )
     {
@@ -7723,49 +7788,49 @@ static void eFSS_LOGCTST_LoadBkupTest(void)
     }
 
     /* Setup storage area */
-    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    m_auStorArea1[4u]  = 0x03u;  /* Page SUBTYPE */
-    m_auStorArea1[5u]  = 0x00u;  /* Page index */
-    m_auStorArea1[6u]  = 0x00u;  /* Page index */
-    m_auStorArea1[7u]  = 0x00u;  /* Page index */
-    m_auStorArea1[8u]  = 0x00u;  /* Page index */
-    m_auStorArea1[9u]  = 0x01u;  /* Page type */
-    m_auStorArea1[10u] = 0x01u; /* Page version */
-    m_auStorArea1[11u] = 0x00u; /* Page version */
-    m_auStorArea1[12u] = 0x02u; /* Total page */
-    m_auStorArea1[13u] = 0x00u; /* Total page */
-    m_auStorArea1[14u] = 0x00u; /* Total page */
-    m_auStorArea1[15u] = 0x00u; /* Total page */
-    m_auStorArea1[16u] = 0xA5u; /* Magic number */
-    m_auStorArea1[17u] = 0xA5u; /* Magic number */
-    m_auStorArea1[18u] = 0xA5u; /* Magic number */
-    m_auStorArea1[19u] = 0xA5u; /* Magic number */
-    m_auStorArea1[20u] = 0x9Au; /* CRC */
-    m_auStorArea1[21u] = 0x02u; /* CRC */
-    m_auStorArea1[22u] = 0x00u; /* CRC */
-    m_auStorArea1[23u] = 0x00u; /* CRC */
+    (void)memset(m_auStorArea[p_uPageToWrite], 0, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][4u]  = 0x03u;  /* Page SUBTYPE */
+    m_auStorArea[p_uPageToWrite][5u]  = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][6u]  = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][7u]  = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][8u]  = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][9u]  = 0x01u;  /* Page type */
+    m_auStorArea[p_uPageToWrite][10u] = 0x01u; /* Page version */
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u; /* Page version */
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u; /* Total page */
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][20u] = 0x9Au; /* CRC */
+    m_auStorArea[p_uPageToWrite][21u] = 0x02u; /* CRC */
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u; /* CRC */
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u; /* CRC */
 
-    (void)memset(m_auStorArea2, 0x10, sizeof(m_auStorArea2));
-    m_auStorArea2[4u]  = 0x04u;  /* Page SUBTYPE */
-    m_auStorArea2[5u]  = 0x01u;  /* Page index */
-    m_auStorArea2[6u]  = 0x00u;  /* Page index */
-    m_auStorArea2[7u]  = 0x00u;  /* Page index */
-    m_auStorArea2[8u]  = 0x00u;  /* Page index */
-    m_auStorArea2[9u]  = 0x01u;  /* Page type */
-    m_auStorArea2[10u] = 0x01u; /* Page version */
-    m_auStorArea2[11u] = 0x00u; /* Page version */
-    m_auStorArea2[12u] = 0x02u; /* Total page */
-    m_auStorArea2[13u] = 0x00u; /* Total page */
-    m_auStorArea2[14u] = 0x00u; /* Total page */
-    m_auStorArea2[15u] = 0x00u; /* Total page */
-    m_auStorArea2[16u] = 0xA5u; /* Magic number */
-    m_auStorArea2[17u] = 0xA5u; /* Magic number */
-    m_auStorArea2[18u] = 0xA5u; /* Magic number */
-    m_auStorArea2[19u] = 0xA5u; /* Magic number */
-    m_auStorArea2[20u] = 0xDCu; /* CRC */
-    m_auStorArea2[21u] = 0x02u; /* CRC */
-    m_auStorArea2[22u] = 0x00u; /* CRC */
-    m_auStorArea2[23u] = 0x00u; /* CRC */
+    (void)memset(m_auStorArea[p_uPageToWrite], 0x10, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][4u]  = 0x04u;  /* Page SUBTYPE */
+    m_auStorArea[p_uPageToWrite][5u]  = 0x01u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][6u]  = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][7u]  = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][8u]  = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][9u]  = 0x01u;  /* Page type */
+    m_auStorArea[p_uPageToWrite][10u] = 0x01u; /* Page version */
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u; /* Page version */
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u; /* Total page */
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][20u] = 0xDCu; /* CRC */
+    m_auStorArea[p_uPageToWrite][21u] = 0x02u; /* CRC */
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u; /* CRC */
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u; /* CRC */
 
     if( e_eFSS_LOGC_RES_OK_BKP_RCVRD == eFSS_LOGC_LoadBufferAsNRipBkp(&l_tCtx, 0u, 1u, 0x03u, 0x04u) )
     {
@@ -7773,14 +7838,14 @@ static void eFSS_LOGCTST_LoadBkupTest(void)
             ( 0x00u == l_ltUseBuff.puBuf[3u] )  && ( 0x03u == l_ltUseBuff.puBuf[4u] )  &&
             ( 0x00u == l_ltUseBuff2.puBuf[0u] ) && ( 0x00u == l_ltUseBuff2.puBuf[1u] ) && ( 0x00u == l_ltUseBuff2.puBuf[2u] ) &&
             ( 0x00u == l_ltUseBuff2.puBuf[3u] ) && ( 0x04u == l_ltUseBuff2.puBuf[4u] ) &&
-            ( 0x00u == m_auStorArea1[0u] )  && ( 0x00u == m_auStorArea1[1u] ) && ( 0x00u == m_auStorArea1[2u] ) &&
-            ( 0x00u == m_auStorArea1[3u] )  && ( 0x03u == m_auStorArea1[4u] ) && ( 0x00u == m_auStorArea1[5u] ) &&
-            ( 0x9Au == m_auStorArea1[20u] )  && ( 0x02u == m_auStorArea1[21u] ) && ( 0x00u == m_auStorArea1[22u] ) &&
-            ( 0x00u == m_auStorArea1[23u] ) &&
-            ( 0x00u == m_auStorArea2[0u] )  && ( 0x00u == m_auStorArea2[1u] ) && ( 0x00u == m_auStorArea2[2u] ) &&
-            ( 0x00u == m_auStorArea2[3u] )  && ( 0x04u == m_auStorArea2[4u] ) && ( 0x01u == m_auStorArea2[5u] ) &&
-            ( 0x9Cu == m_auStorArea2[20u] )  && ( 0x02u == m_auStorArea2[21u] ) && ( 0x00u == m_auStorArea2[22u] ) &&
-            ( 0x00u == m_auStorArea2[23u] ) )
+            ( 0x00u == m_auStorArea[p_uPageToWrite][0u] )  && ( 0x00u == m_auStorArea[p_uPageToWrite][1u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][2u] ) &&
+            ( 0x00u == m_auStorArea[p_uPageToWrite][3u] )  && ( 0x03u == m_auStorArea[p_uPageToWrite][4u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][5u] ) &&
+            ( 0x9Au == m_auStorArea[p_uPageToWrite][20u] )  && ( 0x02u == m_auStorArea[p_uPageToWrite][21u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][22u] ) &&
+            ( 0x00u == m_auStorArea[p_uPageToWrite][23u] ) &&
+            ( 0x00u == m_auStorArea[p_uPageToWrite][0u] )  && ( 0x00u == m_auStorArea[p_uPageToWrite][1u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][2u] ) &&
+            ( 0x00u == m_auStorArea[p_uPageToWrite][3u] )  && ( 0x04u == m_auStorArea[p_uPageToWrite][4u] ) && ( 0x01u == m_auStorArea[p_uPageToWrite][5u] ) &&
+            ( 0x9Cu == m_auStorArea[p_uPageToWrite][20u] )  && ( 0x02u == m_auStorArea[p_uPageToWrite][21u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][22u] ) &&
+            ( 0x00u == m_auStorArea[p_uPageToWrite][23u] ) )
         {
             (void)printf("eFSS_LOGCTST_LoadBkupTest 7  -- OK \n");
         }
@@ -7795,49 +7860,49 @@ static void eFSS_LOGCTST_LoadBkupTest(void)
     }
 
     /* Setup storage area */
-    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    m_auStorArea1[4u]  = 0x03u;  /* Page SUBTYPE */
-    m_auStorArea1[5u]  = 0x00u;  /* Page index */
-    m_auStorArea1[6u]  = 0x00u;  /* Page index */
-    m_auStorArea1[7u]  = 0x00u;  /* Page index */
-    m_auStorArea1[8u]  = 0x00u;  /* Page index */
-    m_auStorArea1[9u]  = 0x01u;  /* Page type */
-    m_auStorArea1[10u] = 0x01u; /* Page version */
-    m_auStorArea1[11u] = 0x00u; /* Page version */
-    m_auStorArea1[12u] = 0x02u; /* Total page */
-    m_auStorArea1[13u] = 0x00u; /* Total page */
-    m_auStorArea1[14u] = 0x00u; /* Total page */
-    m_auStorArea1[15u] = 0x00u; /* Total page */
-    m_auStorArea1[16u] = 0xA5u; /* Magic number */
-    m_auStorArea1[17u] = 0xA5u; /* Magic number */
-    m_auStorArea1[18u] = 0xA5u; /* Magic number */
-    m_auStorArea1[19u] = 0xA5u; /* Magic number */
-    m_auStorArea1[20u] = 0x9Au; /* CRC */
-    m_auStorArea1[21u] = 0x02u; /* CRC */
-    m_auStorArea1[22u] = 0x00u; /* CRC */
-    m_auStorArea1[23u] = 0x00u; /* CRC */
+    (void)memset(m_auStorArea[p_uPageToWrite], 0, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][4u]  = 0x03u;  /* Page SUBTYPE */
+    m_auStorArea[p_uPageToWrite][5u]  = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][6u]  = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][7u]  = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][8u]  = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][9u]  = 0x01u;  /* Page type */
+    m_auStorArea[p_uPageToWrite][10u] = 0x01u; /* Page version */
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u; /* Page version */
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u; /* Total page */
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][20u] = 0x9Au; /* CRC */
+    m_auStorArea[p_uPageToWrite][21u] = 0x02u; /* CRC */
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u; /* CRC */
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u; /* CRC */
 
-    (void)memset(m_auStorArea2, 0x10, sizeof(m_auStorArea2));
-    m_auStorArea2[4u]  = 0x04u;  /* Page SUBTYPE */
-    m_auStorArea2[5u]  = 0x01u;  /* Page index */
-    m_auStorArea2[6u]  = 0x00u;  /* Page index */
-    m_auStorArea2[7u]  = 0x00u;  /* Page index */
-    m_auStorArea2[8u]  = 0x00u;  /* Page index */
-    m_auStorArea2[9u]  = 0x01u;  /* Page type */
-    m_auStorArea2[10u] = 0x01u; /* Page version */
-    m_auStorArea2[11u] = 0x00u; /* Page version */
-    m_auStorArea2[12u] = 0x02u; /* Total page */
-    m_auStorArea2[13u] = 0x00u; /* Total page */
-    m_auStorArea2[14u] = 0x00u; /* Total page */
-    m_auStorArea2[15u] = 0x00u; /* Total page */
-    m_auStorArea2[16u] = 0xA5u; /* Magic number */
-    m_auStorArea2[17u] = 0xA5u; /* Magic number */
-    m_auStorArea2[18u] = 0xA5u; /* Magic number */
-    m_auStorArea2[19u] = 0xA5u; /* Magic number */
-    m_auStorArea2[20u] = 0xDCu; /* CRC */
-    m_auStorArea2[21u] = 0x02u; /* CRC */
-    m_auStorArea2[22u] = 0x00u; /* CRC */
-    m_auStorArea2[23u] = 0x00u; /* CRC */
+    (void)memset(m_auStorArea[p_uPageToWrite], 0x10, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][4u]  = 0x04u;  /* Page SUBTYPE */
+    m_auStorArea[p_uPageToWrite][5u]  = 0x01u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][6u]  = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][7u]  = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][8u]  = 0x00u;  /* Page index */
+    m_auStorArea[p_uPageToWrite][9u]  = 0x01u;  /* Page type */
+    m_auStorArea[p_uPageToWrite][10u] = 0x01u; /* Page version */
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u; /* Page version */
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u; /* Total page */
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][20u] = 0xDCu; /* CRC */
+    m_auStorArea[p_uPageToWrite][21u] = 0x02u; /* CRC */
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u; /* CRC */
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u; /* CRC */
 
     if( e_eFSS_LOGC_RES_OK_BKP_RCVRD == eFSS_LOGC_LoadBufferAsNRipBkp(&l_tCtx, 1u, 0u, 0x04u, 0x03u) )
     {
@@ -7845,14 +7910,14 @@ static void eFSS_LOGCTST_LoadBkupTest(void)
             ( 0x10u == l_ltUseBuff.puBuf[3u] )  && ( 0x04u == l_ltUseBuff.puBuf[4u] )  &&
             ( 0x10u == l_ltUseBuff2.puBuf[0u] ) && ( 0x10u == l_ltUseBuff2.puBuf[1u] ) && ( 0x10u == l_ltUseBuff2.puBuf[2u] ) &&
             ( 0x10u == l_ltUseBuff2.puBuf[3u] ) && ( 0x03u == l_ltUseBuff2.puBuf[4u] ) &&
-            ( 0x10u == m_auStorArea1[0u] )  && ( 0x10u == m_auStorArea1[1u] ) && ( 0x10u == m_auStorArea1[2u] ) &&
-            ( 0x10u == m_auStorArea1[3u] )  && ( 0x03u == m_auStorArea1[4u] ) && ( 0x00u == m_auStorArea1[5u] ) &&
-            ( 0xDAu == m_auStorArea1[20u] )  && ( 0x02u == m_auStorArea1[21u] ) && ( 0x00u == m_auStorArea1[22u] ) &&
-            ( 0x00u == m_auStorArea1[23u] ) &&
-            ( 0x10u == m_auStorArea2[0u] )  && ( 0x10u == m_auStorArea2[1u] ) && ( 0x10u == m_auStorArea2[2u] ) &&
-            ( 0x10u == m_auStorArea2[3u] )  && ( 0x04u == m_auStorArea2[4u] ) && ( 0x01u == m_auStorArea2[5u] ) &&
-            ( 0xDCu == m_auStorArea2[20u] )  && ( 0x02u == m_auStorArea2[21u] ) && ( 0x00u == m_auStorArea2[22u] ) &&
-            ( 0x00u == m_auStorArea2[23u] ) )
+            ( 0x10u == m_auStorArea[p_uPageToWrite][0u] )  && ( 0x10u == m_auStorArea[p_uPageToWrite][1u] ) && ( 0x10u == m_auStorArea[p_uPageToWrite][2u] ) &&
+            ( 0x10u == m_auStorArea[p_uPageToWrite][3u] )  && ( 0x03u == m_auStorArea[p_uPageToWrite][4u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][5u] ) &&
+            ( 0xDAu == m_auStorArea[p_uPageToWrite][20u] )  && ( 0x02u == m_auStorArea[p_uPageToWrite][21u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][22u] ) &&
+            ( 0x00u == m_auStorArea[p_uPageToWrite][23u] ) &&
+            ( 0x10u == m_auStorArea[p_uPageToWrite][0u] )  && ( 0x10u == m_auStorArea[p_uPageToWrite][1u] ) && ( 0x10u == m_auStorArea[p_uPageToWrite][2u] ) &&
+            ( 0x10u == m_auStorArea[p_uPageToWrite][3u] )  && ( 0x04u == m_auStorArea[p_uPageToWrite][4u] ) && ( 0x01u == m_auStorArea[p_uPageToWrite][5u] ) &&
+            ( 0xDCu == m_auStorArea[p_uPageToWrite][20u] )  && ( 0x02u == m_auStorArea[p_uPageToWrite][21u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][22u] ) &&
+            ( 0x00u == m_auStorArea[p_uPageToWrite][23u] ) )
         {
             (void)printf("eFSS_LOGCTST_LoadBkupTest 8  -- OK \n");
         }
@@ -7868,49 +7933,49 @@ static void eFSS_LOGCTST_LoadBkupTest(void)
 
     /* Original corrupted, backup correct */
     /* Setup storage area */
-    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    m_auStorArea1[4u]  = 0x03u; /* Page SUBTYPE */
-    m_auStorArea1[5u]  = 0x00u; /* Page index */
-    m_auStorArea1[6u]  = 0x00u; /* Page index */
-    m_auStorArea1[7u]  = 0x00u; /* Page index */
-    m_auStorArea1[8u]  = 0x00u; /* Page index */
-    m_auStorArea1[9u]  = 0x01u; /* Page type */
-    m_auStorArea1[10u] = 0x01u; /* Page version */
-    m_auStorArea1[11u] = 0x00u; /* Page version */
-    m_auStorArea1[12u] = 0x02u; /* Total page */
-    m_auStorArea1[13u] = 0x00u; /* Total page */
-    m_auStorArea1[14u] = 0x00u; /* Total page */
-    m_auStorArea1[15u] = 0x00u; /* Total page */
-    m_auStorArea1[16u] = 0xA5u; /* Magic number */
-    m_auStorArea1[17u] = 0xA5u; /* Magic number */
-    m_auStorArea1[18u] = 0xA5u; /* Magic number */
-    m_auStorArea1[19u] = 0xA5u; /* Magic number */
-    m_auStorArea1[20u] = 0xFFu; /* CRC */ /* Correct = 0x9Au */
-    m_auStorArea1[21u] = 0xFFu; /* CRC */ /* Correct = 0x02u */
-    m_auStorArea1[22u] = 0xFFu; /* CRC */ /* Correct = 0x00u */
-    m_auStorArea1[23u] = 0xFFu; /* CRC */ /* Correct = 0x00u */
+    (void)memset(m_auStorArea[p_uPageToWrite], 0, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][4u]  = 0x03u; /* Page SUBTYPE */
+    m_auStorArea[p_uPageToWrite][5u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][6u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][7u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][8u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][9u]  = 0x01u; /* Page type */
+    m_auStorArea[p_uPageToWrite][10u] = 0x01u; /* Page version */
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u; /* Page version */
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u; /* Total page */
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][20u] = 0xFFu; /* CRC */ /* Correct = 0x9Au */
+    m_auStorArea[p_uPageToWrite][21u] = 0xFFu; /* CRC */ /* Correct = 0x02u */
+    m_auStorArea[p_uPageToWrite][22u] = 0xFFu; /* CRC */ /* Correct = 0x00u */
+    m_auStorArea[p_uPageToWrite][23u] = 0xFFu; /* CRC */ /* Correct = 0x00u */
 
-    (void)memset(m_auStorArea2, 0x10, sizeof(m_auStorArea2));
-    m_auStorArea2[4u]  = 0x04u; /* Page SUBTYPE */
-    m_auStorArea2[5u]  = 0x01u; /* Page index */
-    m_auStorArea2[6u]  = 0x00u; /* Page index */
-    m_auStorArea2[7u]  = 0x00u; /* Page index */
-    m_auStorArea2[8u]  = 0x00u; /* Page index */
-    m_auStorArea2[9u]  = 0x01u; /* Page type */
-    m_auStorArea2[10u] = 0x01u; /* Page version */
-    m_auStorArea2[11u] = 0x00u; /* Page version */
-    m_auStorArea2[12u] = 0x02u; /* Total page */
-    m_auStorArea2[13u] = 0x00u; /* Total page */
-    m_auStorArea2[14u] = 0x00u; /* Total page */
-    m_auStorArea2[15u] = 0x00u; /* Total page */
-    m_auStorArea2[16u] = 0xA5u; /* Magic number */
-    m_auStorArea2[17u] = 0xA5u; /* Magic number */
-    m_auStorArea2[18u] = 0xA5u; /* Magic number */
-    m_auStorArea2[19u] = 0xA5u; /* Magic number */
-    m_auStorArea2[20u] = 0xDCu; /* CRC */
-    m_auStorArea2[21u] = 0x02u; /* CRC */
-    m_auStorArea2[22u] = 0x00u; /* CRC */
-    m_auStorArea2[23u] = 0x00u; /* CRC */
+    (void)memset(m_auStorArea[p_uPageToWrite], 0x10, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][4u]  = 0x04u; /* Page SUBTYPE */
+    m_auStorArea[p_uPageToWrite][5u]  = 0x01u; /* Page index */
+    m_auStorArea[p_uPageToWrite][6u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][7u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][8u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][9u]  = 0x01u; /* Page type */
+    m_auStorArea[p_uPageToWrite][10u] = 0x01u; /* Page version */
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u; /* Page version */
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u; /* Total page */
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][20u] = 0xDCu; /* CRC */
+    m_auStorArea[p_uPageToWrite][21u] = 0x02u; /* CRC */
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u; /* CRC */
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u; /* CRC */
 
     if( e_eFSS_LOGC_RES_OK_BKP_RCVRD == eFSS_LOGC_LoadBufferAsNRipBkp(&l_tCtx, 0u, 1u, 0x03u, 0x04u) )
     {
@@ -7918,14 +7983,14 @@ static void eFSS_LOGCTST_LoadBkupTest(void)
             ( 0x10u == l_ltUseBuff.puBuf[3u] )  && ( 0x03u == l_ltUseBuff.puBuf[4u] )  &&
             ( 0x10u == l_ltUseBuff2.puBuf[0u] ) && ( 0x10u == l_ltUseBuff2.puBuf[1u] ) && ( 0x10u == l_ltUseBuff2.puBuf[2u] ) &&
             ( 0x10u == l_ltUseBuff2.puBuf[3u] ) && ( 0x04u == l_ltUseBuff2.puBuf[4u] ) &&
-            ( 0x10u == m_auStorArea1[0u] )  && ( 0x10u == m_auStorArea1[1u] ) && ( 0x10u == m_auStorArea1[2u] ) &&
-            ( 0x10u == m_auStorArea1[3u] )  && ( 0x03u == m_auStorArea1[4u] ) && ( 0x00u == m_auStorArea1[5u] ) &&
-            ( 0xDAu == m_auStorArea1[20u] )  && ( 0x02u == m_auStorArea1[21u] ) && ( 0x00u == m_auStorArea1[22u] ) &&
-            ( 0x00u == m_auStorArea1[23u] ) &&
-            ( 0x10u == m_auStorArea2[0u] )  && ( 0x10u == m_auStorArea2[1u] ) && ( 0x10u == m_auStorArea2[2u] ) &&
-            ( 0x10u == m_auStorArea2[3u] )  && ( 0x04u == m_auStorArea2[4u] ) && ( 0x01u == m_auStorArea2[5u] ) &&
-            ( 0xDCu == m_auStorArea2[20u] )  && ( 0x02u == m_auStorArea2[21u] ) && ( 0x00u == m_auStorArea2[22u] ) &&
-            ( 0x00u == m_auStorArea2[23u] ) )
+            ( 0x10u == m_auStorArea[p_uPageToWrite][0u] )  && ( 0x10u == m_auStorArea[p_uPageToWrite][1u] ) && ( 0x10u == m_auStorArea[p_uPageToWrite][2u] ) &&
+            ( 0x10u == m_auStorArea[p_uPageToWrite][3u] )  && ( 0x03u == m_auStorArea[p_uPageToWrite][4u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][5u] ) &&
+            ( 0xDAu == m_auStorArea[p_uPageToWrite][20u] )  && ( 0x02u == m_auStorArea[p_uPageToWrite][21u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][22u] ) &&
+            ( 0x00u == m_auStorArea[p_uPageToWrite][23u] ) &&
+            ( 0x10u == m_auStorArea[p_uPageToWrite][0u] )  && ( 0x10u == m_auStorArea[p_uPageToWrite][1u] ) && ( 0x10u == m_auStorArea[p_uPageToWrite][2u] ) &&
+            ( 0x10u == m_auStorArea[p_uPageToWrite][3u] )  && ( 0x04u == m_auStorArea[p_uPageToWrite][4u] ) && ( 0x01u == m_auStorArea[p_uPageToWrite][5u] ) &&
+            ( 0xDCu == m_auStorArea[p_uPageToWrite][20u] )  && ( 0x02u == m_auStorArea[p_uPageToWrite][21u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][22u] ) &&
+            ( 0x00u == m_auStorArea[p_uPageToWrite][23u] ) )
         {
             (void)printf("eFSS_LOGCTST_LoadBkupTest 9  -- OK \n");
         }
@@ -7941,49 +8006,49 @@ static void eFSS_LOGCTST_LoadBkupTest(void)
 
     /* Original corrupted, backup correct */
     /* Setup storage area */
-    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    m_auStorArea1[4u]  = 0x03u; /* Page SUBTYPE */
-    m_auStorArea1[5u]  = 0x00u; /* Page index */
-    m_auStorArea1[6u]  = 0x00u; /* Page index */
-    m_auStorArea1[7u]  = 0x00u; /* Page index */
-    m_auStorArea1[8u]  = 0x00u; /* Page index */
-    m_auStorArea1[9u]  = 0x01u; /* Page type */
-    m_auStorArea1[10u] = 0x01u; /* Page version */
-    m_auStorArea1[11u] = 0x00u; /* Page version */
-    m_auStorArea1[12u] = 0x02u; /* Total page */
-    m_auStorArea1[13u] = 0x00u; /* Total page */
-    m_auStorArea1[14u] = 0x00u; /* Total page */
-    m_auStorArea1[15u] = 0x00u; /* Total page */
-    m_auStorArea1[16u] = 0xA5u; /* Magic number */
-    m_auStorArea1[17u] = 0xA5u; /* Magic number */
-    m_auStorArea1[18u] = 0xA5u; /* Magic number */
-    m_auStorArea1[19u] = 0xA5u; /* Magic number */
-    m_auStorArea1[20u] = 0x9Au; /* CRC */
-    m_auStorArea1[21u] = 0x02u; /* CRC */
-    m_auStorArea1[22u] = 0x00u; /* CRC */
-    m_auStorArea1[23u] = 0x00u; /* CRC */
+    (void)memset(m_auStorArea[p_uPageToWrite], 0, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][4u]  = 0x03u; /* Page SUBTYPE */
+    m_auStorArea[p_uPageToWrite][5u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][6u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][7u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][8u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][9u]  = 0x01u; /* Page type */
+    m_auStorArea[p_uPageToWrite][10u] = 0x01u; /* Page version */
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u; /* Page version */
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u; /* Total page */
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][20u] = 0x9Au; /* CRC */
+    m_auStorArea[p_uPageToWrite][21u] = 0x02u; /* CRC */
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u; /* CRC */
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u; /* CRC */
 
-    (void)memset(m_auStorArea2, 0x10, sizeof(m_auStorArea2));
-    m_auStorArea2[4u]  = 0x04u; /* Page SUBTYPE */
-    m_auStorArea2[5u]  = 0x01u; /* Page index */
-    m_auStorArea2[6u]  = 0x00u; /* Page index */
-    m_auStorArea2[7u]  = 0x00u; /* Page index */
-    m_auStorArea2[8u]  = 0x00u; /* Page index */
-    m_auStorArea2[9u]  = 0x01u; /* Page type */
-    m_auStorArea2[10u] = 0x01u; /* Page version */
-    m_auStorArea2[11u] = 0x00u; /* Page version */
-    m_auStorArea2[12u] = 0x02u; /* Total page */
-    m_auStorArea2[13u] = 0x00u; /* Total page */
-    m_auStorArea2[14u] = 0x00u; /* Total page */
-    m_auStorArea2[15u] = 0x00u; /* Total page */
-    m_auStorArea2[16u] = 0xA5u; /* Magic number */
-    m_auStorArea2[17u] = 0xA5u; /* Magic number */
-    m_auStorArea2[18u] = 0xA5u; /* Magic number */
-    m_auStorArea2[19u] = 0xA5u; /* Magic number */
-    m_auStorArea2[20u] = 0xDCu; /* CRC */
-    m_auStorArea2[21u] = 0x02u; /* CRC */
-    m_auStorArea2[22u] = 0x00u; /* CRC */
-    m_auStorArea2[23u] = 0x00u; /* CRC */
+    (void)memset(m_auStorArea[p_uPageToWrite], 0x10, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][4u]  = 0x04u; /* Page SUBTYPE */
+    m_auStorArea[p_uPageToWrite][5u]  = 0x01u; /* Page index */
+    m_auStorArea[p_uPageToWrite][6u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][7u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][8u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][9u]  = 0x01u; /* Page type */
+    m_auStorArea[p_uPageToWrite][10u] = 0x01u; /* Page version */
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u; /* Page version */
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u; /* Total page */
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][20u] = 0xDCu; /* CRC */
+    m_auStorArea[p_uPageToWrite][21u] = 0x02u; /* CRC */
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u; /* CRC */
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u; /* CRC */
 
     if( e_eFSS_LOGC_RES_OK_BKP_RCVRD == eFSS_LOGC_LoadBufferAsNRipBkp(&l_tCtx, 1u, 0u, 0xFFu, 0x03u) )
     {
@@ -7991,14 +8056,14 @@ static void eFSS_LOGCTST_LoadBkupTest(void)
             ( 0x00u == l_ltUseBuff.puBuf[3u] )  && ( 0xFFu == l_ltUseBuff.puBuf[4u] )  &&
             ( 0x00u == l_ltUseBuff2.puBuf[0u] ) && ( 0x00u == l_ltUseBuff2.puBuf[1u] ) && ( 0x00u == l_ltUseBuff2.puBuf[2u] ) &&
             ( 0x00u == l_ltUseBuff2.puBuf[3u] ) && ( 0x03u == l_ltUseBuff2.puBuf[4u] ) &&
-            ( 0x00u == m_auStorArea1[0u] )  && ( 0x00u == m_auStorArea1[1u] ) && ( 0x00u == m_auStorArea1[2u] ) &&
-            ( 0x00u == m_auStorArea1[3u] )  && ( 0x03u == m_auStorArea1[4u] ) && ( 0x00u == m_auStorArea1[5u] ) &&
-            ( 0x9Au == m_auStorArea1[20u] )  && ( 0x02u == m_auStorArea1[21u] ) && ( 0x00u == m_auStorArea1[22u] ) &&
-            ( 0x00u == m_auStorArea1[23u] )  &&
-            ( 0x00u == m_auStorArea2[0u] )   && ( 0x00u == m_auStorArea2[1u] ) && ( 0x00u == m_auStorArea2[2u] ) &&
-            ( 0x00u == m_auStorArea2[3u] )   && ( 0xFFu == m_auStorArea2[4u] ) && ( 0x01u == m_auStorArea2[5u] ) &&
-            ( 0x97u == m_auStorArea2[20u] )  && ( 0x03u == m_auStorArea2[21u] ) && ( 0x00u == m_auStorArea2[22u] ) &&
-            ( 0x00u == m_auStorArea2[23u] ) )
+            ( 0x00u == m_auStorArea[p_uPageToWrite][0u] )  && ( 0x00u == m_auStorArea[p_uPageToWrite][1u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][2u] ) &&
+            ( 0x00u == m_auStorArea[p_uPageToWrite][3u] )  && ( 0x03u == m_auStorArea[p_uPageToWrite][4u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][5u] ) &&
+            ( 0x9Au == m_auStorArea[p_uPageToWrite][20u] )  && ( 0x02u == m_auStorArea[p_uPageToWrite][21u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][22u] ) &&
+            ( 0x00u == m_auStorArea[p_uPageToWrite][23u] )  &&
+            ( 0x00u == m_auStorArea[p_uPageToWrite][0u] )   && ( 0x00u == m_auStorArea[p_uPageToWrite][1u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][2u] ) &&
+            ( 0x00u == m_auStorArea[p_uPageToWrite][3u] )   && ( 0xFFu == m_auStorArea[p_uPageToWrite][4u] ) && ( 0x01u == m_auStorArea[p_uPageToWrite][5u] ) &&
+            ( 0x97u == m_auStorArea[p_uPageToWrite][20u] )  && ( 0x03u == m_auStorArea[p_uPageToWrite][21u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][22u] ) &&
+            ( 0x00u == m_auStorArea[p_uPageToWrite][23u] ) )
         {
             (void)printf("eFSS_LOGCTST_LoadBkupTest 10 -- OK \n");
         }
@@ -8014,49 +8079,49 @@ static void eFSS_LOGCTST_LoadBkupTest(void)
 
     /* Backup corrupted, original correct */
     /* Setup storage area */
-    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    m_auStorArea1[4u]  = 0x03u; /* Page SUBTYPE */
-    m_auStorArea1[5u]  = 0x00u; /* Page index */
-    m_auStorArea1[6u]  = 0x00u; /* Page index */
-    m_auStorArea1[7u]  = 0x00u; /* Page index */
-    m_auStorArea1[8u]  = 0x00u; /* Page index */
-    m_auStorArea1[9u]  = 0x01u; /* Page type */
-    m_auStorArea1[10u] = 0x01u; /* Page version */
-    m_auStorArea1[11u] = 0x00u; /* Page version */
-    m_auStorArea1[12u] = 0x02u; /* Total page */
-    m_auStorArea1[13u] = 0x00u; /* Total page */
-    m_auStorArea1[14u] = 0x00u; /* Total page */
-    m_auStorArea1[15u] = 0x00u; /* Total page */
-    m_auStorArea1[16u] = 0xA5u; /* Magic number */
-    m_auStorArea1[17u] = 0xA5u; /* Magic number */
-    m_auStorArea1[18u] = 0xA5u; /* Magic number */
-    m_auStorArea1[19u] = 0xA5u; /* Magic number */
-    m_auStorArea1[20u] = 0xFFu; /* CRC */
-    m_auStorArea1[21u] = 0xFFu; /* CRC */
-    m_auStorArea1[22u] = 0xFFu; /* CRC */
-    m_auStorArea1[23u] = 0xFFu; /* CRC */
+    (void)memset(m_auStorArea[p_uPageToWrite], 0, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][4u]  = 0x03u; /* Page SUBTYPE */
+    m_auStorArea[p_uPageToWrite][5u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][6u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][7u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][8u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][9u]  = 0x01u; /* Page type */
+    m_auStorArea[p_uPageToWrite][10u] = 0x01u; /* Page version */
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u; /* Page version */
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u; /* Total page */
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][20u] = 0xFFu; /* CRC */
+    m_auStorArea[p_uPageToWrite][21u] = 0xFFu; /* CRC */
+    m_auStorArea[p_uPageToWrite][22u] = 0xFFu; /* CRC */
+    m_auStorArea[p_uPageToWrite][23u] = 0xFFu; /* CRC */
 
-    (void)memset(m_auStorArea2, 0x10, sizeof(m_auStorArea2));
-    m_auStorArea2[4u]  = 0x04u; /* Page SUBTYPE */
-    m_auStorArea2[5u]  = 0x01u; /* Page index */
-    m_auStorArea2[6u]  = 0x00u; /* Page index */
-    m_auStorArea2[7u]  = 0x00u; /* Page index */
-    m_auStorArea2[8u]  = 0x00u; /* Page index */
-    m_auStorArea2[9u]  = 0x01u; /* Page type */
-    m_auStorArea2[10u] = 0x01u; /* Page version */
-    m_auStorArea2[11u] = 0x00u; /* Page version */
-    m_auStorArea2[12u] = 0x02u; /* Total page */
-    m_auStorArea2[13u] = 0x00u; /* Total page */
-    m_auStorArea2[14u] = 0x00u; /* Total page */
-    m_auStorArea2[15u] = 0x00u; /* Total page */
-    m_auStorArea2[16u] = 0xA5u; /* Magic number */
-    m_auStorArea2[17u] = 0xA5u; /* Magic number */
-    m_auStorArea2[18u] = 0xA5u; /* Magic number */
-    m_auStorArea2[19u] = 0xA5u; /* Magic number */
-    m_auStorArea2[20u] = 0xDCu; /* CRC */
-    m_auStorArea2[21u] = 0x02u; /* CRC */
-    m_auStorArea2[22u] = 0x00u; /* CRC */
-    m_auStorArea2[23u] = 0x00u; /* CRC */
+    (void)memset(m_auStorArea[p_uPageToWrite], 0x10, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][4u]  = 0x04u; /* Page SUBTYPE */
+    m_auStorArea[p_uPageToWrite][5u]  = 0x01u; /* Page index */
+    m_auStorArea[p_uPageToWrite][6u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][7u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][8u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][9u]  = 0x01u; /* Page type */
+    m_auStorArea[p_uPageToWrite][10u] = 0x01u; /* Page version */
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u; /* Page version */
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u; /* Total page */
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][20u] = 0xDCu; /* CRC */
+    m_auStorArea[p_uPageToWrite][21u] = 0x02u; /* CRC */
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u; /* CRC */
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u; /* CRC */
 
     if( e_eFSS_LOGC_RES_OK_BKP_RCVRD == eFSS_LOGC_LoadBufferAsNRipBkp(&l_tCtx, 1u, 0u, 0x04u, 0x03u) )
     {
@@ -8064,14 +8129,14 @@ static void eFSS_LOGCTST_LoadBkupTest(void)
             ( 0x10u == l_ltUseBuff.puBuf[3u] )  && ( 0x04u == l_ltUseBuff.puBuf[4u] )  &&
             ( 0x10u == l_ltUseBuff2.puBuf[0u] ) && ( 0x10u == l_ltUseBuff2.puBuf[1u] ) && ( 0x10u == l_ltUseBuff2.puBuf[2u] ) &&
             ( 0x10u == l_ltUseBuff2.puBuf[3u] ) && ( 0x03u == l_ltUseBuff2.puBuf[4u] ) &&
-            ( 0x10u == m_auStorArea1[0u] )  && ( 0x10u == m_auStorArea1[1u] ) && ( 0x10u == m_auStorArea1[2u] ) &&
-            ( 0x10u == m_auStorArea1[3u] )  && ( 0x03u == m_auStorArea1[4u] ) && ( 0x00u == m_auStorArea1[5u] ) &&
-            ( 0xDAu == m_auStorArea1[20u] )  && ( 0x02u == m_auStorArea1[21u] ) && ( 0x00u == m_auStorArea1[22u] ) &&
-            ( 0x00u == m_auStorArea1[23u] ) &&
-            ( 0x10u == m_auStorArea2[0u] )  && ( 0x10u == m_auStorArea2[1u] ) && ( 0x10u == m_auStorArea2[2u] ) &&
-            ( 0x10u == m_auStorArea2[3u] )  && ( 0x04u == m_auStorArea2[4u] ) && ( 0x01u == m_auStorArea2[5u] ) &&
-            ( 0xDCu == m_auStorArea2[20u] )  && ( 0x02u == m_auStorArea2[21u] ) && ( 0x00u == m_auStorArea2[22u] ) &&
-            ( 0x00u == m_auStorArea2[23u] ) )
+            ( 0x10u == m_auStorArea[p_uPageToWrite][0u] )  && ( 0x10u == m_auStorArea[p_uPageToWrite][1u] ) && ( 0x10u == m_auStorArea[p_uPageToWrite][2u] ) &&
+            ( 0x10u == m_auStorArea[p_uPageToWrite][3u] )  && ( 0x03u == m_auStorArea[p_uPageToWrite][4u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][5u] ) &&
+            ( 0xDAu == m_auStorArea[p_uPageToWrite][20u] )  && ( 0x02u == m_auStorArea[p_uPageToWrite][21u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][22u] ) &&
+            ( 0x00u == m_auStorArea[p_uPageToWrite][23u] ) &&
+            ( 0x10u == m_auStorArea[p_uPageToWrite][0u] )  && ( 0x10u == m_auStorArea[p_uPageToWrite][1u] ) && ( 0x10u == m_auStorArea[p_uPageToWrite][2u] ) &&
+            ( 0x10u == m_auStorArea[p_uPageToWrite][3u] )  && ( 0x04u == m_auStorArea[p_uPageToWrite][4u] ) && ( 0x01u == m_auStorArea[p_uPageToWrite][5u] ) &&
+            ( 0xDCu == m_auStorArea[p_uPageToWrite][20u] )  && ( 0x02u == m_auStorArea[p_uPageToWrite][21u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][22u] ) &&
+            ( 0x00u == m_auStorArea[p_uPageToWrite][23u] ) )
         {
             (void)printf("eFSS_LOGCTST_LoadBkupTest 11 -- OK \n");
         }
@@ -8087,49 +8152,49 @@ static void eFSS_LOGCTST_LoadBkupTest(void)
 
     /* Original corrupted, backup correct */
     /* Setup storage area */
-    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    m_auStorArea1[4u]  = 0x03u; /* Page SUBTYPE */
-    m_auStorArea1[5u]  = 0x00u; /* Page index */
-    m_auStorArea1[6u]  = 0x00u; /* Page index */
-    m_auStorArea1[7u]  = 0x00u; /* Page index */
-    m_auStorArea1[8u]  = 0x00u; /* Page index */
-    m_auStorArea1[9u]  = 0x01u; /* Page type */
-    m_auStorArea1[10u] = 0x01u; /* Page version */
-    m_auStorArea1[11u] = 0x00u; /* Page version */
-    m_auStorArea1[12u] = 0x02u; /* Total page */
-    m_auStorArea1[13u] = 0x00u; /* Total page */
-    m_auStorArea1[14u] = 0x00u; /* Total page */
-    m_auStorArea1[15u] = 0x00u; /* Total page */
-    m_auStorArea1[16u] = 0xA5u; /* Magic number */
-    m_auStorArea1[17u] = 0xA5u; /* Magic number */
-    m_auStorArea1[18u] = 0xA5u; /* Magic number */
-    m_auStorArea1[19u] = 0xA5u; /* Magic number */
-    m_auStorArea1[20u] = 0x9Au; /* CRC */
-    m_auStorArea1[21u] = 0x02u; /* CRC */
-    m_auStorArea1[22u] = 0x00u; /* CRC */
-    m_auStorArea1[23u] = 0x00u; /* CRC */
+    (void)memset(m_auStorArea[p_uPageToWrite], 0, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][4u]  = 0x03u; /* Page SUBTYPE */
+    m_auStorArea[p_uPageToWrite][5u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][6u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][7u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][8u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][9u]  = 0x01u; /* Page type */
+    m_auStorArea[p_uPageToWrite][10u] = 0x01u; /* Page version */
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u; /* Page version */
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u; /* Total page */
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][20u] = 0x9Au; /* CRC */
+    m_auStorArea[p_uPageToWrite][21u] = 0x02u; /* CRC */
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u; /* CRC */
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u; /* CRC */
 
-    (void)memset(m_auStorArea2, 0x10, sizeof(m_auStorArea2));
-    m_auStorArea2[4u]  = 0x04u; /* Page SUBTYPE */
-    m_auStorArea2[5u]  = 0x01u; /* Page index */
-    m_auStorArea2[6u]  = 0x00u; /* Page index */
-    m_auStorArea2[7u]  = 0x00u; /* Page index */
-    m_auStorArea2[8u]  = 0x00u; /* Page index */
-    m_auStorArea2[9u]  = 0x01u; /* Page type */
-    m_auStorArea2[10u] = 0x01u; /* Page version */
-    m_auStorArea2[11u] = 0x00u; /* Page version */
-    m_auStorArea2[12u] = 0x02u; /* Total page */
-    m_auStorArea2[13u] = 0x00u; /* Total page */
-    m_auStorArea2[14u] = 0x00u; /* Total page */
-    m_auStorArea2[15u] = 0x00u; /* Total page */
-    m_auStorArea2[16u] = 0xA5u; /* Magic number */
-    m_auStorArea2[17u] = 0xA5u; /* Magic number */
-    m_auStorArea2[18u] = 0xA5u; /* Magic number */
-    m_auStorArea2[19u] = 0xA5u; /* Magic number */
-    m_auStorArea2[20u] = 0xDCu; /* CRC */
-    m_auStorArea2[21u] = 0x02u; /* CRC */
-    m_auStorArea2[22u] = 0x00u; /* CRC */
-    m_auStorArea2[23u] = 0x00u; /* CRC */
+    (void)memset(m_auStorArea[p_uPageToWrite], 0x10, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][4u]  = 0x04u; /* Page SUBTYPE */
+    m_auStorArea[p_uPageToWrite][5u]  = 0x01u; /* Page index */
+    m_auStorArea[p_uPageToWrite][6u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][7u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][8u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][9u]  = 0x01u; /* Page type */
+    m_auStorArea[p_uPageToWrite][10u] = 0x01u; /* Page version */
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u; /* Page version */
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u; /* Total page */
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][20u] = 0xDCu; /* CRC */
+    m_auStorArea[p_uPageToWrite][21u] = 0x02u; /* CRC */
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u; /* CRC */
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u; /* CRC */
 
     if( e_eFSS_LOGC_RES_OK_BKP_RCVRD == eFSS_LOGC_LoadBufferAsNRipBkp(&l_tCtx, 0u, 1u, 0x03u, 0xFFu) )
     {
@@ -8137,14 +8202,14 @@ static void eFSS_LOGCTST_LoadBkupTest(void)
             ( 0x00u == l_ltUseBuff.puBuf[3u] )  && ( 0x03u == l_ltUseBuff.puBuf[4u] )  &&
             ( 0x00u == l_ltUseBuff2.puBuf[0u] ) && ( 0x00u == l_ltUseBuff2.puBuf[1u] ) && ( 0x00u == l_ltUseBuff2.puBuf[2u] ) &&
             ( 0x00u == l_ltUseBuff2.puBuf[3u] ) && ( 0xFFu == l_ltUseBuff2.puBuf[4u] ) &&
-            ( 0x00u == m_auStorArea1[0u] )  && ( 0x00u == m_auStorArea1[1u] ) && ( 0x00u == m_auStorArea1[2u] ) &&
-            ( 0x00u == m_auStorArea1[3u] )  && ( 0x03u == m_auStorArea1[4u] ) && ( 0x00u == m_auStorArea1[5u] ) &&
-            ( 0x9Au == m_auStorArea1[20u] )  && ( 0x02u == m_auStorArea1[21u] ) && ( 0x00u == m_auStorArea1[22u] ) &&
-            ( 0x00u == m_auStorArea1[23u] )  &&
-            ( 0x00u == m_auStorArea2[0u] )   && ( 0x00u == m_auStorArea2[1u] ) && ( 0x00u == m_auStorArea2[2u] ) &&
-            ( 0x00u == m_auStorArea2[3u] )   && ( 0xFFu == m_auStorArea2[4u] ) && ( 0x01u == m_auStorArea2[5u] ) &&
-            ( 0x97u == m_auStorArea2[20u] )  && ( 0x03u == m_auStorArea2[21u] ) && ( 0x00u == m_auStorArea2[22u] ) &&
-            ( 0x00u == m_auStorArea2[23u] ) )
+            ( 0x00u == m_auStorArea[p_uPageToWrite][0u] )  && ( 0x00u == m_auStorArea[p_uPageToWrite][1u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][2u] ) &&
+            ( 0x00u == m_auStorArea[p_uPageToWrite][3u] )  && ( 0x03u == m_auStorArea[p_uPageToWrite][4u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][5u] ) &&
+            ( 0x9Au == m_auStorArea[p_uPageToWrite][20u] )  && ( 0x02u == m_auStorArea[p_uPageToWrite][21u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][22u] ) &&
+            ( 0x00u == m_auStorArea[p_uPageToWrite][23u] )  &&
+            ( 0x00u == m_auStorArea[p_uPageToWrite][0u] )   && ( 0x00u == m_auStorArea[p_uPageToWrite][1u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][2u] ) &&
+            ( 0x00u == m_auStorArea[p_uPageToWrite][3u] )   && ( 0xFFu == m_auStorArea[p_uPageToWrite][4u] ) && ( 0x01u == m_auStorArea[p_uPageToWrite][5u] ) &&
+            ( 0x97u == m_auStorArea[p_uPageToWrite][20u] )  && ( 0x03u == m_auStorArea[p_uPageToWrite][21u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][22u] ) &&
+            ( 0x00u == m_auStorArea[p_uPageToWrite][23u] ) )
         {
             (void)printf("eFSS_LOGCTST_LoadBkupTest 12 -- OK \n");
         }
@@ -8160,49 +8225,49 @@ static void eFSS_LOGCTST_LoadBkupTest(void)
 
     /* Nothing OK, but new  */
     /* Setup storage area */
-    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    m_auStorArea1[4u]  = 0x03u; /* Page SUBTYPE */
-    m_auStorArea1[5u]  = 0x00u; /* Page index */
-    m_auStorArea1[6u]  = 0x00u; /* Page index */
-    m_auStorArea1[7u]  = 0x00u; /* Page index */
-    m_auStorArea1[8u]  = 0x00u; /* Page index */
-    m_auStorArea1[9u]  = 0x01u; /* Page type */
-    m_auStorArea1[10u] = 0x02u; /* Page version */
-    m_auStorArea1[11u] = 0x00u; /* Page version */
-    m_auStorArea1[12u] = 0x02u; /* Total page */
-    m_auStorArea1[13u] = 0x00u; /* Total page */
-    m_auStorArea1[14u] = 0x00u; /* Total page */
-    m_auStorArea1[15u] = 0x00u; /* Total page */
-    m_auStorArea1[16u] = 0xA5u; /* Magic number */
-    m_auStorArea1[17u] = 0xA5u; /* Magic number */
-    m_auStorArea1[18u] = 0xA5u; /* Magic number */
-    m_auStorArea1[19u] = 0xA5u; /* Magic number */
-    m_auStorArea1[20u] = 0x9Bu; /* CRC */
-    m_auStorArea1[21u] = 0x02u; /* CRC */
-    m_auStorArea1[22u] = 0x00u; /* CRC */
-    m_auStorArea1[23u] = 0x00u; /* CRC */
+    (void)memset(m_auStorArea[p_uPageToWrite], 0, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][4u]  = 0x03u; /* Page SUBTYPE */
+    m_auStorArea[p_uPageToWrite][5u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][6u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][7u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][8u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][9u]  = 0x01u; /* Page type */
+    m_auStorArea[p_uPageToWrite][10u] = 0x02u; /* Page version */
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u; /* Page version */
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u; /* Total page */
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][20u] = 0x9Bu; /* CRC */
+    m_auStorArea[p_uPageToWrite][21u] = 0x02u; /* CRC */
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u; /* CRC */
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u; /* CRC */
 
-    (void)memset(m_auStorArea2, 0x10, sizeof(m_auStorArea2));
-    m_auStorArea2[4u]  = 0x04u; /* Page SUBTYPE */
-    m_auStorArea2[5u]  = 0x01u; /* Page index */
-    m_auStorArea2[6u]  = 0x00u; /* Page index */
-    m_auStorArea2[7u]  = 0x00u; /* Page index */
-    m_auStorArea2[8u]  = 0x00u; /* Page index */
-    m_auStorArea2[9u]  = 0x01u; /* Page type */
-    m_auStorArea2[10u] = 0x02u; /* Page version */
-    m_auStorArea2[11u] = 0x00u; /* Page version */
-    m_auStorArea2[12u] = 0x02u; /* Total page */
-    m_auStorArea2[13u] = 0x00u; /* Total page */
-    m_auStorArea2[14u] = 0x00u; /* Total page */
-    m_auStorArea2[15u] = 0x00u; /* Total page */
-    m_auStorArea2[16u] = 0xA5u; /* Magic number */
-    m_auStorArea2[17u] = 0xA5u; /* Magic number */
-    m_auStorArea2[18u] = 0xA5u; /* Magic number */
-    m_auStorArea2[19u] = 0xA5u; /* Magic number */
-    m_auStorArea2[20u] = 0xDDu; /* CRC */
-    m_auStorArea2[21u] = 0x02u; /* CRC */
-    m_auStorArea2[22u] = 0x00u; /* CRC */
-    m_auStorArea2[23u] = 0x00u; /* CRC */
+    (void)memset(m_auStorArea[p_uPageToWrite], 0x10, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][4u]  = 0x04u; /* Page SUBTYPE */
+    m_auStorArea[p_uPageToWrite][5u]  = 0x01u; /* Page index */
+    m_auStorArea[p_uPageToWrite][6u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][7u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][8u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][9u]  = 0x01u; /* Page type */
+    m_auStorArea[p_uPageToWrite][10u] = 0x02u; /* Page version */
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u; /* Page version */
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u; /* Total page */
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][20u] = 0xDDu; /* CRC */
+    m_auStorArea[p_uPageToWrite][21u] = 0x02u; /* CRC */
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u; /* CRC */
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u; /* CRC */
 
     if( e_eFSS_LOGC_RES_NEWVERSIONFOUND == eFSS_LOGC_LoadBufferAsNRipBkp(&l_tCtx, 0u, 1u, 0x03u, 0x04u) )
     {
@@ -8210,14 +8275,14 @@ static void eFSS_LOGCTST_LoadBkupTest(void)
             ( 0x00u == l_ltUseBuff.puBuf[3u] )  && ( 0x03u == l_ltUseBuff.puBuf[4u] )  &&
             ( 0x10u == l_ltUseBuff2.puBuf[0u] ) && ( 0x10u == l_ltUseBuff2.puBuf[1u] ) && ( 0x10u == l_ltUseBuff2.puBuf[2u] ) &&
             ( 0x10u == l_ltUseBuff2.puBuf[3u] ) && ( 0x04u == l_ltUseBuff2.puBuf[4u] ) &&
-            ( 0x00u == m_auStorArea1[0u] )  && ( 0x00u == m_auStorArea1[1u] ) && ( 0x00u == m_auStorArea1[2u] ) &&
-            ( 0x00u == m_auStorArea1[3u] )  && ( 0x03u == m_auStorArea1[4u] ) && ( 0x00u == m_auStorArea1[5u] ) &&
-            ( 0x9Bu == m_auStorArea1[20u] )  && ( 0x02u == m_auStorArea1[21u] ) && ( 0x00u == m_auStorArea1[22u] ) &&
-            ( 0x00u == m_auStorArea1[23u] )  &&
-            ( 0x10u == m_auStorArea2[0u] )   && ( 0x10u == m_auStorArea2[1u] ) && ( 0x10u == m_auStorArea2[2u] ) &&
-            ( 0x10u == m_auStorArea2[3u] )   && ( 0x04u == m_auStorArea2[4u] ) && ( 0x01u == m_auStorArea2[5u] ) &&
-            ( 0xDDu == m_auStorArea2[20u] )  && ( 0x02u == m_auStorArea2[21u] ) && ( 0x00u == m_auStorArea2[22u] ) &&
-            ( 0x00u == m_auStorArea2[23u] ) )
+            ( 0x00u == m_auStorArea[p_uPageToWrite][0u] )  && ( 0x00u == m_auStorArea[p_uPageToWrite][1u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][2u] ) &&
+            ( 0x00u == m_auStorArea[p_uPageToWrite][3u] )  && ( 0x03u == m_auStorArea[p_uPageToWrite][4u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][5u] ) &&
+            ( 0x9Bu == m_auStorArea[p_uPageToWrite][20u] )  && ( 0x02u == m_auStorArea[p_uPageToWrite][21u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][22u] ) &&
+            ( 0x00u == m_auStorArea[p_uPageToWrite][23u] )  &&
+            ( 0x10u == m_auStorArea[p_uPageToWrite][0u] )   && ( 0x10u == m_auStorArea[p_uPageToWrite][1u] ) && ( 0x10u == m_auStorArea[p_uPageToWrite][2u] ) &&
+            ( 0x10u == m_auStorArea[p_uPageToWrite][3u] )   && ( 0x04u == m_auStorArea[p_uPageToWrite][4u] ) && ( 0x01u == m_auStorArea[p_uPageToWrite][5u] ) &&
+            ( 0xDDu == m_auStorArea[p_uPageToWrite][20u] )  && ( 0x02u == m_auStorArea[p_uPageToWrite][21u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][22u] ) &&
+            ( 0x00u == m_auStorArea[p_uPageToWrite][23u] ) )
         {
             (void)printf("eFSS_LOGCTST_LoadBkupTest 13 -- OK \n");
         }
@@ -8233,49 +8298,49 @@ static void eFSS_LOGCTST_LoadBkupTest(void)
 
     /* Original corrupted, backup correct */
     /* Setup storage area */
-    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    m_auStorArea1[4u]  = 0x03u; /* Page SUBTYPE */
-    m_auStorArea1[5u]  = 0x00u; /* Page index */
-    m_auStorArea1[6u]  = 0x00u; /* Page index */
-    m_auStorArea1[7u]  = 0x00u; /* Page index */
-    m_auStorArea1[8u]  = 0x00u; /* Page index */
-    m_auStorArea1[9u]  = 0x01u; /* Page type */
-    m_auStorArea1[10u] = 0x02u; /* Page version */
-    m_auStorArea1[11u] = 0x00u; /* Page version */
-    m_auStorArea1[12u] = 0x02u; /* Total page */
-    m_auStorArea1[13u] = 0x00u; /* Total page */
-    m_auStorArea1[14u] = 0x00u; /* Total page */
-    m_auStorArea1[15u] = 0x00u; /* Total page */
-    m_auStorArea1[16u] = 0xA5u; /* Magic number */
-    m_auStorArea1[17u] = 0xA5u; /* Magic number */
-    m_auStorArea1[18u] = 0xA5u; /* Magic number */
-    m_auStorArea1[19u] = 0xA5u; /* Magic number */
-    m_auStorArea1[20u] = 0x9Bu; /* CRC */
-    m_auStorArea1[21u] = 0x02u; /* CRC */
-    m_auStorArea1[22u] = 0x00u; /* CRC */
-    m_auStorArea1[23u] = 0x00u; /* CRC */
+    (void)memset(m_auStorArea[p_uPageToWrite], 0, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][4u]  = 0x03u; /* Page SUBTYPE */
+    m_auStorArea[p_uPageToWrite][5u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][6u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][7u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][8u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][9u]  = 0x01u; /* Page type */
+    m_auStorArea[p_uPageToWrite][10u] = 0x02u; /* Page version */
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u; /* Page version */
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u; /* Total page */
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][20u] = 0x9Bu; /* CRC */
+    m_auStorArea[p_uPageToWrite][21u] = 0x02u; /* CRC */
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u; /* CRC */
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u; /* CRC */
 
-    (void)memset(m_auStorArea2, 0x10, sizeof(m_auStorArea2));
-    m_auStorArea2[4u]  = 0x04u; /* Page SUBTYPE */
-    m_auStorArea2[5u]  = 0x01u; /* Page index */
-    m_auStorArea2[6u]  = 0x00u; /* Page index */
-    m_auStorArea2[7u]  = 0x00u; /* Page index */
-    m_auStorArea2[8u]  = 0x00u; /* Page index */
-    m_auStorArea2[9u]  = 0x01u; /* Page type */
-    m_auStorArea2[10u] = 0x01u; /* Page version */
-    m_auStorArea2[11u] = 0x00u; /* Page version */
-    m_auStorArea2[12u] = 0x02u; /* Total page */
-    m_auStorArea2[13u] = 0x00u; /* Total page */
-    m_auStorArea2[14u] = 0x00u; /* Total page */
-    m_auStorArea2[15u] = 0x00u; /* Total page */
-    m_auStorArea2[16u] = 0xA5u; /* Magic number */
-    m_auStorArea2[17u] = 0xA5u; /* Magic number */
-    m_auStorArea2[18u] = 0xA5u; /* Magic number */
-    m_auStorArea2[19u] = 0xA5u; /* Magic number */
-    m_auStorArea2[20u] = 0xDCu; /* CRC */
-    m_auStorArea2[21u] = 0x02u; /* CRC */
-    m_auStorArea2[22u] = 0x00u; /* CRC */
-    m_auStorArea2[23u] = 0x00u; /* CRC */
+    (void)memset(m_auStorArea[p_uPageToWrite], 0x10, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][4u]  = 0x04u; /* Page SUBTYPE */
+    m_auStorArea[p_uPageToWrite][5u]  = 0x01u; /* Page index */
+    m_auStorArea[p_uPageToWrite][6u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][7u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][8u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][9u]  = 0x01u; /* Page type */
+    m_auStorArea[p_uPageToWrite][10u] = 0x01u; /* Page version */
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u; /* Page version */
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u; /* Total page */
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][20u] = 0xDCu; /* CRC */
+    m_auStorArea[p_uPageToWrite][21u] = 0x02u; /* CRC */
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u; /* CRC */
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u; /* CRC */
 
     if( e_eFSS_LOGC_RES_OK_BKP_RCVRD == eFSS_LOGC_LoadBufferAsNRipBkp(&l_tCtx, 0u, 1u, 0x03u, 0x04u) )
     {
@@ -8283,14 +8348,14 @@ static void eFSS_LOGCTST_LoadBkupTest(void)
             ( 0x10u == l_ltUseBuff.puBuf[3u] )  && ( 0x03u == l_ltUseBuff.puBuf[4u] )  &&
             ( 0x10u == l_ltUseBuff2.puBuf[0u] ) && ( 0x10u == l_ltUseBuff2.puBuf[1u] ) && ( 0x10u == l_ltUseBuff2.puBuf[2u] ) &&
             ( 0x10u == l_ltUseBuff2.puBuf[3u] ) && ( 0x04u == l_ltUseBuff2.puBuf[4u] ) &&
-            ( 0x10u == m_auStorArea1[0u] )  && ( 0x10u == m_auStorArea1[1u] ) && ( 0x10u == m_auStorArea1[2u] ) &&
-            ( 0x10u == m_auStorArea1[3u] )  && ( 0x03u == m_auStorArea1[4u] ) && ( 0x00u == m_auStorArea1[5u] ) &&
-            ( 0xDAu == m_auStorArea1[20u] )  && ( 0x02u == m_auStorArea1[21u] ) && ( 0x00u == m_auStorArea1[22u] ) &&
-            ( 0x00u == m_auStorArea1[23u] ) &&
-            ( 0x10u == m_auStorArea2[0u] )  && ( 0x10u == m_auStorArea2[1u] ) && ( 0x10u == m_auStorArea2[2u] ) &&
-            ( 0x10u == m_auStorArea2[3u] )  && ( 0x04u == m_auStorArea2[4u] ) && ( 0x01u == m_auStorArea2[5u] ) &&
-            ( 0xDCu == m_auStorArea2[20u] )  && ( 0x02u == m_auStorArea2[21u] ) && ( 0x00u == m_auStorArea2[22u] ) &&
-            ( 0x00u == m_auStorArea2[23u] ) )
+            ( 0x10u == m_auStorArea[p_uPageToWrite][0u] )  && ( 0x10u == m_auStorArea[p_uPageToWrite][1u] ) && ( 0x10u == m_auStorArea[p_uPageToWrite][2u] ) &&
+            ( 0x10u == m_auStorArea[p_uPageToWrite][3u] )  && ( 0x03u == m_auStorArea[p_uPageToWrite][4u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][5u] ) &&
+            ( 0xDAu == m_auStorArea[p_uPageToWrite][20u] )  && ( 0x02u == m_auStorArea[p_uPageToWrite][21u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][22u] ) &&
+            ( 0x00u == m_auStorArea[p_uPageToWrite][23u] ) &&
+            ( 0x10u == m_auStorArea[p_uPageToWrite][0u] )  && ( 0x10u == m_auStorArea[p_uPageToWrite][1u] ) && ( 0x10u == m_auStorArea[p_uPageToWrite][2u] ) &&
+            ( 0x10u == m_auStorArea[p_uPageToWrite][3u] )  && ( 0x04u == m_auStorArea[p_uPageToWrite][4u] ) && ( 0x01u == m_auStorArea[p_uPageToWrite][5u] ) &&
+            ( 0xDCu == m_auStorArea[p_uPageToWrite][20u] )  && ( 0x02u == m_auStorArea[p_uPageToWrite][21u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][22u] ) &&
+            ( 0x00u == m_auStorArea[p_uPageToWrite][23u] ) )
         {
             (void)printf("eFSS_LOGCTST_LoadBkupTest 14 -- OK \n");
         }
@@ -8306,49 +8371,49 @@ static void eFSS_LOGCTST_LoadBkupTest(void)
 
     /* Backup corrupted, original correct */
     /* Setup storage area */
-    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    m_auStorArea1[4u]  = 0x03u; /* Page SUBTYPE */
-    m_auStorArea1[5u]  = 0x00u; /* Page index */
-    m_auStorArea1[6u]  = 0x00u; /* Page index */
-    m_auStorArea1[7u]  = 0x00u; /* Page index */
-    m_auStorArea1[8u]  = 0x00u; /* Page index */
-    m_auStorArea1[9u]  = 0x01u; /* Page type */
-    m_auStorArea1[10u] = 0x02u; /* Page version */
-    m_auStorArea1[11u] = 0x00u; /* Page version */
-    m_auStorArea1[12u] = 0x02u; /* Total page */
-    m_auStorArea1[13u] = 0x00u; /* Total page */
-    m_auStorArea1[14u] = 0x00u; /* Total page */
-    m_auStorArea1[15u] = 0x00u; /* Total page */
-    m_auStorArea1[16u] = 0xA5u; /* Magic number */
-    m_auStorArea1[17u] = 0xA5u; /* Magic number */
-    m_auStorArea1[18u] = 0xA5u; /* Magic number */
-    m_auStorArea1[19u] = 0xA5u; /* Magic number */
-    m_auStorArea1[20u] = 0x9Bu; /* CRC */
-    m_auStorArea1[21u] = 0x02u; /* CRC */
-    m_auStorArea1[22u] = 0x00u; /* CRC */
-    m_auStorArea1[23u] = 0x00u; /* CRC */
+    (void)memset(m_auStorArea[p_uPageToWrite], 0, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][4u]  = 0x03u; /* Page SUBTYPE */
+    m_auStorArea[p_uPageToWrite][5u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][6u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][7u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][8u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][9u]  = 0x01u; /* Page type */
+    m_auStorArea[p_uPageToWrite][10u] = 0x02u; /* Page version */
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u; /* Page version */
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u; /* Total page */
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][20u] = 0x9Bu; /* CRC */
+    m_auStorArea[p_uPageToWrite][21u] = 0x02u; /* CRC */
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u; /* CRC */
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u; /* CRC */
 
-    (void)memset(m_auStorArea2, 0x10, sizeof(m_auStorArea2));
-    m_auStorArea2[4u]  = 0x04u; /* Page SUBTYPE */
-    m_auStorArea2[5u]  = 0x01u; /* Page index */
-    m_auStorArea2[6u]  = 0x00u; /* Page index */
-    m_auStorArea2[7u]  = 0x00u; /* Page index */
-    m_auStorArea2[8u]  = 0x00u; /* Page index */
-    m_auStorArea2[9u]  = 0x01u; /* Page type */
-    m_auStorArea2[10u] = 0x01u; /* Page version */
-    m_auStorArea2[11u] = 0x00u; /* Page version */
-    m_auStorArea2[12u] = 0x02u; /* Total page */
-    m_auStorArea2[13u] = 0x00u; /* Total page */
-    m_auStorArea2[14u] = 0x00u; /* Total page */
-    m_auStorArea2[15u] = 0x00u; /* Total page */
-    m_auStorArea2[16u] = 0xA5u; /* Magic number */
-    m_auStorArea2[17u] = 0xA5u; /* Magic number */
-    m_auStorArea2[18u] = 0xA5u; /* Magic number */
-    m_auStorArea2[19u] = 0xA5u; /* Magic number */
-    m_auStorArea2[20u] = 0xDCu; /* CRC */
-    m_auStorArea2[21u] = 0x02u; /* CRC */
-    m_auStorArea2[22u] = 0x00u; /* CRC */
-    m_auStorArea2[23u] = 0x00u; /* CRC */
+    (void)memset(m_auStorArea[p_uPageToWrite], 0x10, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][4u]  = 0x04u; /* Page SUBTYPE */
+    m_auStorArea[p_uPageToWrite][5u]  = 0x01u; /* Page index */
+    m_auStorArea[p_uPageToWrite][6u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][7u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][8u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][9u]  = 0x01u; /* Page type */
+    m_auStorArea[p_uPageToWrite][10u] = 0x01u; /* Page version */
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u; /* Page version */
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u; /* Total page */
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][20u] = 0xDCu; /* CRC */
+    m_auStorArea[p_uPageToWrite][21u] = 0x02u; /* CRC */
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u; /* CRC */
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u; /* CRC */
 
     if( e_eFSS_LOGC_RES_OK_BKP_RCVRD == eFSS_LOGC_LoadBufferAsNRipBkp(&l_tCtx, 1u, 0u, 0x04u, 0x03u) )
     {
@@ -8356,14 +8421,14 @@ static void eFSS_LOGCTST_LoadBkupTest(void)
             ( 0x10u == l_ltUseBuff.puBuf[3u] )  && ( 0x04u == l_ltUseBuff.puBuf[4u] )  &&
             ( 0x10u == l_ltUseBuff2.puBuf[0u] ) && ( 0x10u == l_ltUseBuff2.puBuf[1u] ) && ( 0x10u == l_ltUseBuff2.puBuf[2u] ) &&
             ( 0x10u == l_ltUseBuff2.puBuf[3u] ) && ( 0x03u == l_ltUseBuff2.puBuf[4u] ) &&
-            ( 0x10u == m_auStorArea1[0u] )  && ( 0x10u == m_auStorArea1[1u] ) && ( 0x10u == m_auStorArea1[2u] ) &&
-            ( 0x10u == m_auStorArea1[3u] )  && ( 0x03u == m_auStorArea1[4u] ) && ( 0x00u == m_auStorArea1[5u] ) &&
-            ( 0xDAu == m_auStorArea1[20u] )  && ( 0x02u == m_auStorArea1[21u] ) && ( 0x00u == m_auStorArea1[22u] ) &&
-            ( 0x00u == m_auStorArea1[23u] ) &&
-            ( 0x10u == m_auStorArea2[0u] )  && ( 0x10u == m_auStorArea2[1u] ) && ( 0x10u == m_auStorArea2[2u] ) &&
-            ( 0x10u == m_auStorArea2[3u] )  && ( 0x04u == m_auStorArea2[4u] ) && ( 0x01u == m_auStorArea2[5u] ) &&
-            ( 0xDCu == m_auStorArea2[20u] )  && ( 0x02u == m_auStorArea2[21u] ) && ( 0x00u == m_auStorArea2[22u] ) &&
-            ( 0x00u == m_auStorArea2[23u] ) )
+            ( 0x10u == m_auStorArea[p_uPageToWrite][0u] )  && ( 0x10u == m_auStorArea[p_uPageToWrite][1u] ) && ( 0x10u == m_auStorArea[p_uPageToWrite][2u] ) &&
+            ( 0x10u == m_auStorArea[p_uPageToWrite][3u] )  && ( 0x03u == m_auStorArea[p_uPageToWrite][4u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][5u] ) &&
+            ( 0xDAu == m_auStorArea[p_uPageToWrite][20u] )  && ( 0x02u == m_auStorArea[p_uPageToWrite][21u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][22u] ) &&
+            ( 0x00u == m_auStorArea[p_uPageToWrite][23u] ) &&
+            ( 0x10u == m_auStorArea[p_uPageToWrite][0u] )  && ( 0x10u == m_auStorArea[p_uPageToWrite][1u] ) && ( 0x10u == m_auStorArea[p_uPageToWrite][2u] ) &&
+            ( 0x10u == m_auStorArea[p_uPageToWrite][3u] )  && ( 0x04u == m_auStorArea[p_uPageToWrite][4u] ) && ( 0x01u == m_auStorArea[p_uPageToWrite][5u] ) &&
+            ( 0xDCu == m_auStorArea[p_uPageToWrite][20u] )  && ( 0x02u == m_auStorArea[p_uPageToWrite][21u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][22u] ) &&
+            ( 0x00u == m_auStorArea[p_uPageToWrite][23u] ) )
         {
             (void)printf("eFSS_LOGCTST_LoadBkupTest 14 -- OK \n");
         }
@@ -8379,49 +8444,49 @@ static void eFSS_LOGCTST_LoadBkupTest(void)
 
     /* Nothing OK, but new  */
     /* Setup storage area */
-    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    m_auStorArea1[4u]  = 0x03u; /* Page SUBTYPE */
-    m_auStorArea1[5u]  = 0x00u; /* Page index */
-    m_auStorArea1[6u]  = 0x00u; /* Page index */
-    m_auStorArea1[7u]  = 0x00u; /* Page index */
-    m_auStorArea1[8u]  = 0x00u; /* Page index */
-    m_auStorArea1[9u]  = 0x01u; /* Page type */
-    m_auStorArea1[10u] = 0x02u; /* Page version */
-    m_auStorArea1[11u] = 0x00u; /* Page version */
-    m_auStorArea1[12u] = 0x02u; /* Total page */
-    m_auStorArea1[13u] = 0x00u; /* Total page */
-    m_auStorArea1[14u] = 0x00u; /* Total page */
-    m_auStorArea1[15u] = 0x00u; /* Total page */
-    m_auStorArea1[16u] = 0xA5u; /* Magic number */
-    m_auStorArea1[17u] = 0xA5u; /* Magic number */
-    m_auStorArea1[18u] = 0xA5u; /* Magic number */
-    m_auStorArea1[19u] = 0xA5u; /* Magic number */
-    m_auStorArea1[20u] = 0x9Bu; /* CRC */
-    m_auStorArea1[21u] = 0x02u; /* CRC */
-    m_auStorArea1[22u] = 0x00u; /* CRC */
-    m_auStorArea1[23u] = 0x00u; /* CRC */
+    (void)memset(m_auStorArea[p_uPageToWrite], 0, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][4u]  = 0x03u; /* Page SUBTYPE */
+    m_auStorArea[p_uPageToWrite][5u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][6u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][7u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][8u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][9u]  = 0x01u; /* Page type */
+    m_auStorArea[p_uPageToWrite][10u] = 0x02u; /* Page version */
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u; /* Page version */
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u; /* Total page */
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][20u] = 0x9Bu; /* CRC */
+    m_auStorArea[p_uPageToWrite][21u] = 0x02u; /* CRC */
+    m_auStorArea[p_uPageToWrite][22u] = 0x00u; /* CRC */
+    m_auStorArea[p_uPageToWrite][23u] = 0x00u; /* CRC */
 
-    (void)memset(m_auStorArea2, 0x10, sizeof(m_auStorArea2));
-    m_auStorArea2[4u]  = 0x04u; /* Page SUBTYPE */
-    m_auStorArea2[5u]  = 0x01u; /* Page index */
-    m_auStorArea2[6u]  = 0x00u; /* Page index */
-    m_auStorArea2[7u]  = 0x00u; /* Page index */
-    m_auStorArea2[8u]  = 0x00u; /* Page index */
-    m_auStorArea2[9u]  = 0x01u; /* Page type */
-    m_auStorArea2[10u] = 0x02u; /* Page version */
-    m_auStorArea2[11u] = 0x00u; /* Page version */
-    m_auStorArea2[12u] = 0x02u; /* Total page */
-    m_auStorArea2[13u] = 0x00u; /* Total page */
-    m_auStorArea2[14u] = 0x00u; /* Total page */
-    m_auStorArea2[15u] = 0x00u; /* Total page */
-    m_auStorArea2[16u] = 0xA5u; /* Magic number */
-    m_auStorArea2[17u] = 0xA5u; /* Magic number */
-    m_auStorArea2[18u] = 0xA5u; /* Magic number */
-    m_auStorArea2[19u] = 0xA5u; /* Magic number */
-    m_auStorArea2[20u] = 0xFFu; /* CRC */
-    m_auStorArea2[21u] = 0xFFu; /* CRC */
-    m_auStorArea2[22u] = 0xFFu; /* CRC */
-    m_auStorArea2[23u] = 0xFFu; /* CRC */
+    (void)memset(m_auStorArea[p_uPageToWrite], 0x10, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][4u]  = 0x04u; /* Page SUBTYPE */
+    m_auStorArea[p_uPageToWrite][5u]  = 0x01u; /* Page index */
+    m_auStorArea[p_uPageToWrite][6u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][7u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][8u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][9u]  = 0x01u; /* Page type */
+    m_auStorArea[p_uPageToWrite][10u] = 0x02u; /* Page version */
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u; /* Page version */
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u; /* Total page */
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][20u] = 0xFFu; /* CRC */
+    m_auStorArea[p_uPageToWrite][21u] = 0xFFu; /* CRC */
+    m_auStorArea[p_uPageToWrite][22u] = 0xFFu; /* CRC */
+    m_auStorArea[p_uPageToWrite][23u] = 0xFFu; /* CRC */
 
     if( e_eFSS_LOGC_RES_NEWVERSIONFOUND == eFSS_LOGC_LoadBufferAsNRipBkp(&l_tCtx, 0u, 1u, 0x03u, 0x04u) )
     {
@@ -8429,14 +8494,14 @@ static void eFSS_LOGCTST_LoadBkupTest(void)
             ( 0x00u == l_ltUseBuff.puBuf[3u] )  && ( 0x03u == l_ltUseBuff.puBuf[4u] )  &&
             ( 0x10u == l_ltUseBuff2.puBuf[0u] ) && ( 0x10u == l_ltUseBuff2.puBuf[1u] ) && ( 0x10u == l_ltUseBuff2.puBuf[2u] ) &&
             ( 0x10u == l_ltUseBuff2.puBuf[3u] ) && ( 0x04u == l_ltUseBuff2.puBuf[4u] ) &&
-            ( 0x00u == m_auStorArea1[0u] )  && ( 0x00u == m_auStorArea1[1u] ) && ( 0x00u == m_auStorArea1[2u] ) &&
-            ( 0x00u == m_auStorArea1[3u] )  && ( 0x03u == m_auStorArea1[4u] ) && ( 0x00u == m_auStorArea1[5u] ) &&
-            ( 0x9Bu == m_auStorArea1[20u] )  && ( 0x02u == m_auStorArea1[21u] ) && ( 0x00u == m_auStorArea1[22u] ) &&
-            ( 0x00u == m_auStorArea1[23u] )  &&
-            ( 0x10u == m_auStorArea2[0u] )   && ( 0x10u == m_auStorArea2[1u] ) && ( 0x10u == m_auStorArea2[2u] ) &&
-            ( 0x10u == m_auStorArea2[3u] )   && ( 0x04u == m_auStorArea2[4u] ) && ( 0x01u == m_auStorArea2[5u] ) &&
-            ( 0xFFu == m_auStorArea2[20u] )  && ( 0xFFu == m_auStorArea2[21u] ) && ( 0xFFu == m_auStorArea2[22u] ) &&
-            ( 0xFFu == m_auStorArea2[23u] ) )
+            ( 0x00u == m_auStorArea[p_uPageToWrite][0u] )  && ( 0x00u == m_auStorArea[p_uPageToWrite][1u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][2u] ) &&
+            ( 0x00u == m_auStorArea[p_uPageToWrite][3u] )  && ( 0x03u == m_auStorArea[p_uPageToWrite][4u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][5u] ) &&
+            ( 0x9Bu == m_auStorArea[p_uPageToWrite][20u] )  && ( 0x02u == m_auStorArea[p_uPageToWrite][21u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][22u] ) &&
+            ( 0x00u == m_auStorArea[p_uPageToWrite][23u] )  &&
+            ( 0x10u == m_auStorArea[p_uPageToWrite][0u] )   && ( 0x10u == m_auStorArea[p_uPageToWrite][1u] ) && ( 0x10u == m_auStorArea[p_uPageToWrite][2u] ) &&
+            ( 0x10u == m_auStorArea[p_uPageToWrite][3u] )   && ( 0x04u == m_auStorArea[p_uPageToWrite][4u] ) && ( 0x01u == m_auStorArea[p_uPageToWrite][5u] ) &&
+            ( 0xFFu == m_auStorArea[p_uPageToWrite][20u] )  && ( 0xFFu == m_auStorArea[p_uPageToWrite][21u] ) && ( 0xFFu == m_auStorArea[p_uPageToWrite][22u] ) &&
+            ( 0xFFu == m_auStorArea[p_uPageToWrite][23u] ) )
         {
             (void)printf("eFSS_LOGCTST_LoadBkupTest 15 -- OK \n");
         }
@@ -8452,49 +8517,49 @@ static void eFSS_LOGCTST_LoadBkupTest(void)
 
     /* Nothing OK, but new  */
     /* Setup storage area */
-    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    m_auStorArea1[4u]  = 0x03u; /* Page SUBTYPE */
-    m_auStorArea1[5u]  = 0x00u; /* Page index */
-    m_auStorArea1[6u]  = 0x00u; /* Page index */
-    m_auStorArea1[7u]  = 0x00u; /* Page index */
-    m_auStorArea1[8u]  = 0x00u; /* Page index */
-    m_auStorArea1[9u]  = 0x01u; /* Page type */
-    m_auStorArea1[10u] = 0x02u; /* Page version */
-    m_auStorArea1[11u] = 0x00u; /* Page version */
-    m_auStorArea1[12u] = 0x02u; /* Total page */
-    m_auStorArea1[13u] = 0x00u; /* Total page */
-    m_auStorArea1[14u] = 0x00u; /* Total page */
-    m_auStorArea1[15u] = 0x00u; /* Total page */
-    m_auStorArea1[16u] = 0xA5u; /* Magic number */
-    m_auStorArea1[17u] = 0xA5u; /* Magic number */
-    m_auStorArea1[18u] = 0xA5u; /* Magic number */
-    m_auStorArea1[19u] = 0xA5u; /* Magic number */
-    m_auStorArea1[20u] = 0xFFu; /* CRC */
-    m_auStorArea1[21u] = 0xFFu; /* CRC */
-    m_auStorArea1[22u] = 0xFFu; /* CRC */
-    m_auStorArea1[23u] = 0xFFu; /* CRC */
+    (void)memset(m_auStorArea[p_uPageToWrite], 0, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][4u]  = 0x03u; /* Page SUBTYPE */
+    m_auStorArea[p_uPageToWrite][5u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][6u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][7u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][8u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][9u]  = 0x01u; /* Page type */
+    m_auStorArea[p_uPageToWrite][10u] = 0x02u; /* Page version */
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u; /* Page version */
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u; /* Total page */
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][20u] = 0xFFu; /* CRC */
+    m_auStorArea[p_uPageToWrite][21u] = 0xFFu; /* CRC */
+    m_auStorArea[p_uPageToWrite][22u] = 0xFFu; /* CRC */
+    m_auStorArea[p_uPageToWrite][23u] = 0xFFu; /* CRC */
 
-    (void)memset(m_auStorArea2, 0x10, sizeof(m_auStorArea2));
-    m_auStorArea2[4u]  = 0x04u; /* Page SUBTYPE */
-    m_auStorArea2[5u]  = 0x01u; /* Page index */
-    m_auStorArea2[6u]  = 0x00u; /* Page index */
-    m_auStorArea2[7u]  = 0x00u; /* Page index */
-    m_auStorArea2[8u]  = 0x00u; /* Page index */
-    m_auStorArea2[9u]  = 0x01u; /* Page type */
-    m_auStorArea2[10u] = 0x02u; /* Page version */
-    m_auStorArea2[11u] = 0x00u; /* Page version */
-    m_auStorArea2[12u] = 0x02u; /* Total page */
-    m_auStorArea2[13u] = 0x00u; /* Total page */
-    m_auStorArea2[14u] = 0x00u; /* Total page */
-    m_auStorArea2[15u] = 0x00u; /* Total page */
-    m_auStorArea2[16u] = 0xA5u; /* Magic number */
-    m_auStorArea2[17u] = 0xA5u; /* Magic number */
-    m_auStorArea2[18u] = 0xA5u; /* Magic number */
-    m_auStorArea2[19u] = 0xA5u; /* Magic number */
-    m_auStorArea2[20u] = 0xFFu; /* CRC */
-    m_auStorArea2[21u] = 0xFFu; /* CRC */
-    m_auStorArea2[22u] = 0xFFu; /* CRC */
-    m_auStorArea2[23u] = 0xFFu; /* CRC */
+    (void)memset(m_auStorArea[p_uPageToWrite], 0x10, sizeof(m_auStorArea[p_uPageToWrite]));
+    m_auStorArea[p_uPageToWrite][4u]  = 0x04u; /* Page SUBTYPE */
+    m_auStorArea[p_uPageToWrite][5u]  = 0x01u; /* Page index */
+    m_auStorArea[p_uPageToWrite][6u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][7u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][8u]  = 0x00u; /* Page index */
+    m_auStorArea[p_uPageToWrite][9u]  = 0x01u; /* Page type */
+    m_auStorArea[p_uPageToWrite][10u] = 0x02u; /* Page version */
+    m_auStorArea[p_uPageToWrite][11u] = 0x00u; /* Page version */
+    m_auStorArea[p_uPageToWrite][12u] = 0x02u; /* Total page */
+    m_auStorArea[p_uPageToWrite][13u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][14u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][15u] = 0x00u; /* Total page */
+    m_auStorArea[p_uPageToWrite][16u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][17u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][18u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][19u] = 0xA5u; /* Magic number */
+    m_auStorArea[p_uPageToWrite][20u] = 0xFFu; /* CRC */
+    m_auStorArea[p_uPageToWrite][21u] = 0xFFu; /* CRC */
+    m_auStorArea[p_uPageToWrite][22u] = 0xFFu; /* CRC */
+    m_auStorArea[p_uPageToWrite][23u] = 0xFFu; /* CRC */
 
     if( e_eFSS_LOGC_RES_NOTVALIDPAGE == eFSS_LOGC_LoadBufferAsNRipBkp(&l_tCtx, 0u, 1u, 0x03u, 0x04u) )
     {
@@ -8502,14 +8567,14 @@ static void eFSS_LOGCTST_LoadBkupTest(void)
             ( 0x00u == l_ltUseBuff.puBuf[3u] )  && ( 0x03u == l_ltUseBuff.puBuf[4u] )  &&
             ( 0x10u == l_ltUseBuff2.puBuf[0u] ) && ( 0x10u == l_ltUseBuff2.puBuf[1u] ) && ( 0x10u == l_ltUseBuff2.puBuf[2u] ) &&
             ( 0x10u == l_ltUseBuff2.puBuf[3u] ) && ( 0x04u == l_ltUseBuff2.puBuf[4u] ) &&
-            ( 0x00u == m_auStorArea1[0u] )  && ( 0x00u == m_auStorArea1[1u] ) && ( 0x00u == m_auStorArea1[2u] ) &&
-            ( 0x00u == m_auStorArea1[3u] )  && ( 0x03u == m_auStorArea1[4u] ) && ( 0x00u == m_auStorArea1[5u] ) &&
-            ( 0xFFu == m_auStorArea1[20u] )  && ( 0xFFu == m_auStorArea1[21u] ) && ( 0xFFu == m_auStorArea1[22u] ) &&
-            ( 0xFFu == m_auStorArea1[23u] )  &&
-            ( 0x10u == m_auStorArea2[0u] )   && ( 0x10u == m_auStorArea2[1u] ) && ( 0x10u == m_auStorArea2[2u] ) &&
-            ( 0x10u == m_auStorArea2[3u] )   && ( 0x04u == m_auStorArea2[4u] ) && ( 0x01u == m_auStorArea2[5u] ) &&
-            ( 0xFFu == m_auStorArea2[20u] )  && ( 0xFFu == m_auStorArea2[21u] ) && ( 0xFFu == m_auStorArea2[22u] ) &&
-            ( 0xFFu == m_auStorArea2[23u] ) )
+            ( 0x00u == m_auStorArea[p_uPageToWrite][0u] )  && ( 0x00u == m_auStorArea[p_uPageToWrite][1u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][2u] ) &&
+            ( 0x00u == m_auStorArea[p_uPageToWrite][3u] )  && ( 0x03u == m_auStorArea[p_uPageToWrite][4u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][5u] ) &&
+            ( 0xFFu == m_auStorArea[p_uPageToWrite][20u] )  && ( 0xFFu == m_auStorArea[p_uPageToWrite][21u] ) && ( 0xFFu == m_auStorArea[p_uPageToWrite][22u] ) &&
+            ( 0xFFu == m_auStorArea[p_uPageToWrite][23u] )  &&
+            ( 0x10u == m_auStorArea[p_uPageToWrite][0u] )   && ( 0x10u == m_auStorArea[p_uPageToWrite][1u] ) && ( 0x10u == m_auStorArea[p_uPageToWrite][2u] ) &&
+            ( 0x10u == m_auStorArea[p_uPageToWrite][3u] )   && ( 0x04u == m_auStorArea[p_uPageToWrite][4u] ) && ( 0x01u == m_auStorArea[p_uPageToWrite][5u] ) &&
+            ( 0xFFu == m_auStorArea[p_uPageToWrite][20u] )  && ( 0xFFu == m_auStorArea[p_uPageToWrite][21u] ) && ( 0xFFu == m_auStorArea[p_uPageToWrite][22u] ) &&
+            ( 0xFFu == m_auStorArea[p_uPageToWrite][23u] ) )
         {
             (void)printf("eFSS_LOGCTST_LoadBkupTest 16 -- OK \n");
         }
@@ -8615,8 +8680,8 @@ static void eFSS_LOGCTST_FlushBkupTest(void)
 
 
     /* Setup storage area */
-    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    (void)memset(m_auStorArea2, 0, sizeof(m_auStorArea2));
+    (void)memset(m_auStorArea[p_uPageToWrite], 0, sizeof(m_auStorArea[p_uPageToWrite]));
+    (void)memset(m_auStorArea[p_uPageToWrite], 0, sizeof(m_auStorArea[p_uPageToWrite]));
     (void)memset(l_ltUseBuff.puBuf, 0x10, l_ltUseBuff.uBufL);
 
 
@@ -8627,22 +8692,22 @@ static void eFSS_LOGCTST_FlushBkupTest(void)
             ( 0x10u == l_ltUseBuff2.puBuf[0u] ) && ( 0x10u == l_ltUseBuff2.puBuf[1u] ) && ( 0x10u == l_ltUseBuff2.puBuf[2u] ) &&
             ( 0x10u == l_ltUseBuff2.puBuf[3u] ) && ( 0x04u == l_ltUseBuff2.puBuf[4u] ) )
         {
-            if( ( m_auStorArea1[0u]  == 0x10u ) && ( m_auStorArea1[1u]  == 0x10u ) && ( m_auStorArea1[2u]  == 0x10u ) &&
-                ( m_auStorArea1[3u]  == 0x10u ) && ( m_auStorArea1[4u]  == 0x03u ) && ( m_auStorArea1[5u]  == 0x00u ) &&
-                ( m_auStorArea1[6u]  == 0x00u ) && ( m_auStorArea1[7u]  == 0x00u ) && ( m_auStorArea1[8u]  == 0x00u ) &&
-                ( m_auStorArea1[9u]  == 0x01u ) && ( m_auStorArea1[10u] == 0x01u ) && ( m_auStorArea1[11u] == 0x00u ) &&
-                ( m_auStorArea1[12u] == 0x02u ) && ( m_auStorArea1[13u] == 0x00u ) && ( m_auStorArea1[14u] == 0x00u ) &&
-                ( m_auStorArea1[15u] == 0x00u ) && ( m_auStorArea1[16u] == 0xA5u ) && ( m_auStorArea1[17u] == 0xA5u ) &&
-                ( m_auStorArea1[18u] == 0xA5u ) && ( m_auStorArea1[19u] == 0xA5u ) && ( m_auStorArea1[20u] == 0xDAu ) &&
-                ( m_auStorArea1[21u] == 0x02u ) && ( m_auStorArea1[22u] == 0x00u ) && ( m_auStorArea1[23u] == 0x00u ) &&
-                ( m_auStorArea2[0u]  == 0x10u ) && ( m_auStorArea2[1u]  == 0x10u ) && ( m_auStorArea2[2u]  == 0x10u ) &&
-                ( m_auStorArea2[3u]  == 0x10u ) && ( m_auStorArea2[4u]  == 0x04u ) && ( m_auStorArea2[5u]  == 0x01u ) &&
-                ( m_auStorArea2[6u]  == 0x00u ) && ( m_auStorArea2[7u]  == 0x00u ) && ( m_auStorArea2[8u]  == 0x00u ) &&
-                ( m_auStorArea2[9u]  == 0x01u ) && ( m_auStorArea2[10u] == 0x01u ) && ( m_auStorArea2[11u] == 0x00u ) &&
-                ( m_auStorArea2[12u] == 0x02u ) && ( m_auStorArea2[13u] == 0x00u ) && ( m_auStorArea2[14u] == 0x00u ) &&
-                ( m_auStorArea2[15u] == 0x00u ) && ( m_auStorArea2[16u] == 0xA5u ) && ( m_auStorArea2[17u] == 0xA5u ) &&
-                ( m_auStorArea2[18u] == 0xA5u ) && ( m_auStorArea2[19u] == 0xA5u ) && ( m_auStorArea2[20u] == 0xDCu ) &&
-                ( m_auStorArea2[21u] == 0x02u ) && ( m_auStorArea2[22u] == 0x00u ) && ( m_auStorArea2[23u] == 0x00u ) )
+            if( ( m_auStorArea[p_uPageToWrite][0u]  == 0x10u ) && ( m_auStorArea[p_uPageToWrite][1u]  == 0x10u ) && ( m_auStorArea[p_uPageToWrite][2u]  == 0x10u ) &&
+                ( m_auStorArea[p_uPageToWrite][3u]  == 0x10u ) && ( m_auStorArea[p_uPageToWrite][4u]  == 0x03u ) && ( m_auStorArea[p_uPageToWrite][5u]  == 0x00u ) &&
+                ( m_auStorArea[p_uPageToWrite][6u]  == 0x00u ) && ( m_auStorArea[p_uPageToWrite][7u]  == 0x00u ) && ( m_auStorArea[p_uPageToWrite][8u]  == 0x00u ) &&
+                ( m_auStorArea[p_uPageToWrite][9u]  == 0x01u ) && ( m_auStorArea[p_uPageToWrite][10u] == 0x01u ) && ( m_auStorArea[p_uPageToWrite][11u] == 0x00u ) &&
+                ( m_auStorArea[p_uPageToWrite][12u] == 0x02u ) && ( m_auStorArea[p_uPageToWrite][13u] == 0x00u ) && ( m_auStorArea[p_uPageToWrite][14u] == 0x00u ) &&
+                ( m_auStorArea[p_uPageToWrite][15u] == 0x00u ) && ( m_auStorArea[p_uPageToWrite][16u] == 0xA5u ) && ( m_auStorArea[p_uPageToWrite][17u] == 0xA5u ) &&
+                ( m_auStorArea[p_uPageToWrite][18u] == 0xA5u ) && ( m_auStorArea[p_uPageToWrite][19u] == 0xA5u ) && ( m_auStorArea[p_uPageToWrite][20u] == 0xDAu ) &&
+                ( m_auStorArea[p_uPageToWrite][21u] == 0x02u ) && ( m_auStorArea[p_uPageToWrite][22u] == 0x00u ) && ( m_auStorArea[p_uPageToWrite][23u] == 0x00u ) &&
+                ( m_auStorArea[p_uPageToWrite][0u]  == 0x10u ) && ( m_auStorArea[p_uPageToWrite][1u]  == 0x10u ) && ( m_auStorArea[p_uPageToWrite][2u]  == 0x10u ) &&
+                ( m_auStorArea[p_uPageToWrite][3u]  == 0x10u ) && ( m_auStorArea[p_uPageToWrite][4u]  == 0x04u ) && ( m_auStorArea[p_uPageToWrite][5u]  == 0x01u ) &&
+                ( m_auStorArea[p_uPageToWrite][6u]  == 0x00u ) && ( m_auStorArea[p_uPageToWrite][7u]  == 0x00u ) && ( m_auStorArea[p_uPageToWrite][8u]  == 0x00u ) &&
+                ( m_auStorArea[p_uPageToWrite][9u]  == 0x01u ) && ( m_auStorArea[p_uPageToWrite][10u] == 0x01u ) && ( m_auStorArea[p_uPageToWrite][11u] == 0x00u ) &&
+                ( m_auStorArea[p_uPageToWrite][12u] == 0x02u ) && ( m_auStorArea[p_uPageToWrite][13u] == 0x00u ) && ( m_auStorArea[p_uPageToWrite][14u] == 0x00u ) &&
+                ( m_auStorArea[p_uPageToWrite][15u] == 0x00u ) && ( m_auStorArea[p_uPageToWrite][16u] == 0xA5u ) && ( m_auStorArea[p_uPageToWrite][17u] == 0xA5u ) &&
+                ( m_auStorArea[p_uPageToWrite][18u] == 0xA5u ) && ( m_auStorArea[p_uPageToWrite][19u] == 0xA5u ) && ( m_auStorArea[p_uPageToWrite][20u] == 0xDCu ) &&
+                ( m_auStorArea[p_uPageToWrite][21u] == 0x02u ) && ( m_auStorArea[p_uPageToWrite][22u] == 0x00u ) && ( m_auStorArea[p_uPageToWrite][23u] == 0x00u ) )
               {
                   (void)printf("eFSS_LOGCTST_FlushBkupTest 3  -- OK \n");
               }
@@ -8662,8 +8727,8 @@ static void eFSS_LOGCTST_FlushBkupTest(void)
     }
 
     /* Setup storage area */
-    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    (void)memset(m_auStorArea2, 0, sizeof(m_auStorArea2));
+    (void)memset(m_auStorArea[p_uPageToWrite], 0, sizeof(m_auStorArea[p_uPageToWrite]));
+    (void)memset(m_auStorArea[p_uPageToWrite], 0, sizeof(m_auStorArea[p_uPageToWrite]));
     (void)memset(l_ltUseBuff.puBuf, 0x10, l_ltUseBuff.uBufL);
 
 
@@ -8674,22 +8739,22 @@ static void eFSS_LOGCTST_FlushBkupTest(void)
             ( 0x10u == l_ltUseBuff2.puBuf[0u] ) && ( 0x10u == l_ltUseBuff2.puBuf[1u] ) && ( 0x10u == l_ltUseBuff2.puBuf[2u] ) &&
             ( 0x10u == l_ltUseBuff2.puBuf[3u] ) && ( 0x03u == l_ltUseBuff2.puBuf[4u] ) )
         {
-            if( ( m_auStorArea2[0u]  == 0x10u ) && ( m_auStorArea2[1u]  == 0x10u ) && ( m_auStorArea2[2u]  == 0x10u ) &&
-                ( m_auStorArea2[3u]  == 0x10u ) && ( m_auStorArea2[4u]  == 0x04u ) && ( m_auStorArea2[5u]  == 0x01u ) &&
-                ( m_auStorArea2[6u]  == 0x00u ) && ( m_auStorArea2[7u]  == 0x00u ) && ( m_auStorArea2[8u]  == 0x00u ) &&
-                ( m_auStorArea2[9u]  == 0x01u ) && ( m_auStorArea2[10u] == 0x01u ) && ( m_auStorArea2[11u] == 0x00u ) &&
-                ( m_auStorArea2[12u] == 0x02u ) && ( m_auStorArea2[13u] == 0x00u ) && ( m_auStorArea2[14u] == 0x00u ) &&
-                ( m_auStorArea2[15u] == 0x00u ) && ( m_auStorArea2[16u] == 0xA5u ) && ( m_auStorArea2[17u] == 0xA5u ) &&
-                ( m_auStorArea2[18u] == 0xA5u ) && ( m_auStorArea2[19u] == 0xA5u ) && ( m_auStorArea2[20u] == 0xDCu ) &&
-                ( m_auStorArea2[21u] == 0x02u ) && ( m_auStorArea2[22u] == 0x00u ) && ( m_auStorArea2[23u] == 0x00u ) &&
-                ( m_auStorArea1[0u]  == 0x10u ) && ( m_auStorArea1[1u]  == 0x10u ) && ( m_auStorArea1[2u]  == 0x10u ) &&
-                ( m_auStorArea1[3u]  == 0x10u ) && ( m_auStorArea1[4u]  == 0x03u ) && ( m_auStorArea1[5u]  == 0x00u ) &&
-                ( m_auStorArea1[6u]  == 0x00u ) && ( m_auStorArea1[7u]  == 0x00u ) && ( m_auStorArea1[8u]  == 0x00u ) &&
-                ( m_auStorArea1[9u]  == 0x01u ) && ( m_auStorArea1[10u] == 0x01u ) && ( m_auStorArea1[11u] == 0x00u ) &&
-                ( m_auStorArea1[12u] == 0x02u ) && ( m_auStorArea1[13u] == 0x00u ) && ( m_auStorArea1[14u] == 0x00u ) &&
-                ( m_auStorArea1[15u] == 0x00u ) && ( m_auStorArea1[16u] == 0xA5u ) && ( m_auStorArea1[17u] == 0xA5u ) &&
-                ( m_auStorArea1[18u] == 0xA5u ) && ( m_auStorArea1[19u] == 0xA5u ) && ( m_auStorArea1[20u] == 0xDAu ) &&
-                ( m_auStorArea1[21u] == 0x02u ) && ( m_auStorArea1[22u] == 0x00u ) && ( m_auStorArea1[23u] == 0x00u ) )
+            if( ( m_auStorArea[p_uPageToWrite][0u]  == 0x10u ) && ( m_auStorArea[p_uPageToWrite][1u]  == 0x10u ) && ( m_auStorArea[p_uPageToWrite][2u]  == 0x10u ) &&
+                ( m_auStorArea[p_uPageToWrite][3u]  == 0x10u ) && ( m_auStorArea[p_uPageToWrite][4u]  == 0x04u ) && ( m_auStorArea[p_uPageToWrite][5u]  == 0x01u ) &&
+                ( m_auStorArea[p_uPageToWrite][6u]  == 0x00u ) && ( m_auStorArea[p_uPageToWrite][7u]  == 0x00u ) && ( m_auStorArea[p_uPageToWrite][8u]  == 0x00u ) &&
+                ( m_auStorArea[p_uPageToWrite][9u]  == 0x01u ) && ( m_auStorArea[p_uPageToWrite][10u] == 0x01u ) && ( m_auStorArea[p_uPageToWrite][11u] == 0x00u ) &&
+                ( m_auStorArea[p_uPageToWrite][12u] == 0x02u ) && ( m_auStorArea[p_uPageToWrite][13u] == 0x00u ) && ( m_auStorArea[p_uPageToWrite][14u] == 0x00u ) &&
+                ( m_auStorArea[p_uPageToWrite][15u] == 0x00u ) && ( m_auStorArea[p_uPageToWrite][16u] == 0xA5u ) && ( m_auStorArea[p_uPageToWrite][17u] == 0xA5u ) &&
+                ( m_auStorArea[p_uPageToWrite][18u] == 0xA5u ) && ( m_auStorArea[p_uPageToWrite][19u] == 0xA5u ) && ( m_auStorArea[p_uPageToWrite][20u] == 0xDCu ) &&
+                ( m_auStorArea[p_uPageToWrite][21u] == 0x02u ) && ( m_auStorArea[p_uPageToWrite][22u] == 0x00u ) && ( m_auStorArea[p_uPageToWrite][23u] == 0x00u ) &&
+                ( m_auStorArea[p_uPageToWrite][0u]  == 0x10u ) && ( m_auStorArea[p_uPageToWrite][1u]  == 0x10u ) && ( m_auStorArea[p_uPageToWrite][2u]  == 0x10u ) &&
+                ( m_auStorArea[p_uPageToWrite][3u]  == 0x10u ) && ( m_auStorArea[p_uPageToWrite][4u]  == 0x03u ) && ( m_auStorArea[p_uPageToWrite][5u]  == 0x00u ) &&
+                ( m_auStorArea[p_uPageToWrite][6u]  == 0x00u ) && ( m_auStorArea[p_uPageToWrite][7u]  == 0x00u ) && ( m_auStorArea[p_uPageToWrite][8u]  == 0x00u ) &&
+                ( m_auStorArea[p_uPageToWrite][9u]  == 0x01u ) && ( m_auStorArea[p_uPageToWrite][10u] == 0x01u ) && ( m_auStorArea[p_uPageToWrite][11u] == 0x00u ) &&
+                ( m_auStorArea[p_uPageToWrite][12u] == 0x02u ) && ( m_auStorArea[p_uPageToWrite][13u] == 0x00u ) && ( m_auStorArea[p_uPageToWrite][14u] == 0x00u ) &&
+                ( m_auStorArea[p_uPageToWrite][15u] == 0x00u ) && ( m_auStorArea[p_uPageToWrite][16u] == 0xA5u ) && ( m_auStorArea[p_uPageToWrite][17u] == 0xA5u ) &&
+                ( m_auStorArea[p_uPageToWrite][18u] == 0xA5u ) && ( m_auStorArea[p_uPageToWrite][19u] == 0xA5u ) && ( m_auStorArea[p_uPageToWrite][20u] == 0xDAu ) &&
+                ( m_auStorArea[p_uPageToWrite][21u] == 0x02u ) && ( m_auStorArea[p_uPageToWrite][22u] == 0x00u ) && ( m_auStorArea[p_uPageToWrite][23u] == 0x00u ) )
               {
                   (void)printf("eFSS_LOGCTST_FlushBkupTest 4  -- OK \n");
               }
@@ -8781,8 +8846,8 @@ static void eFSS_LOGCTST_GenTest(void)
     l_tCtxCrc32.eLastEr = e_eFSS_LOGC_RES_OK;
 
     /* Setup storage area */
-    (void)memset(m_auStorArea1, 0, sizeof(m_auStorArea1));
-    (void)memset(m_auStorArea2, 0, sizeof(m_auStorArea2));
+    (void)memset(m_auStorArea[p_uPageToWrite], 0, sizeof(m_auStorArea[p_uPageToWrite]));
+    (void)memset(m_auStorArea[p_uPageToWrite], 0, sizeof(m_auStorArea[p_uPageToWrite]));
 
     if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_uStorType, l_auStor, sizeof(l_auStor) ) )
     {
