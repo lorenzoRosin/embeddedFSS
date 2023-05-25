@@ -114,7 +114,6 @@ static void eFSS_LOGCTST_Basic(void);
 static void eFSS_LOGCTST_BadClBckNRetry(void);
 
 #if 0
-static void eFSS_LOGCTST_CrcTest(void);
 static void eFSS_LOGCTST_ReadCacheTest(void);
 static void eFSS_LOGCTST_WriteCacheTest(void);
 static void eFSS_LOGCTST_LoadTest(void);
@@ -141,7 +140,6 @@ void eFSS_LOGCTST_ExeTest(void)
     eFSS_LOGCTST_BadClBckNRetry();
 
 #if 0
-    eFSS_LOGCTST_CrcTest();
     eFSS_LOGCTST_ReadCacheTest();
     eFSS_LOGCTST_WriteCacheTest();
     eFSS_LOGCTST_LoadTest();
@@ -3257,6 +3255,66 @@ void eFSS_LOGCTST_BadClBckNRetry(void)
         (void)printf("eFSS_LOGCTST_BadClBckNRetry 14 -- FAIL \n");
     }
 
+    /* Function */
+    l_tCtxCb.fErase = &eFSS_LOGCTST_EraseTst1Adapt;
+    l_tCtxCb.fWrite = &eFSS_LOGCTST_WriteTst1Adapt;
+    l_tCtxCb.fRead = &eFSS_LOGCTST_ReadTst2Adapt;
+    l_tCtxCb.fCrc32 = &eFSS_LOGCTST_CrcAdapt;
+    l_tCtxCrc32.uTimeUsed = 0u;
+    l_tCtxCrc32.eLastEr = e_eFSS_LOGC_RES_OK;
+    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_auStor, sizeof(l_auStor), true, false ) )
+    {
+        (void)printf("eFSS_LOGCTST_BadClBckNRetry 15 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_BadClBckNRetry 15 -- FAIL \n");
+    }
+
+    /* Function */
+    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_GetBuffNUsable(&l_tCtx, &l_ltUseBuff, &l_uPageUsable) )
+    {
+        (void)printf("eFSS_LOGCTST_BadClBckNRetry 16 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_BadClBckNRetry 16 -- FAIL \n");
+    }
+
+    /* Test LOAD */
+    l_tCtxRead.uTimeUsed = 0u;
+    l_tCtxRead.eLastEr = e_eFSS_LOGC_RES_OK;
+    l_tCtxCrc32.uTimeUsed = 0u;
+    l_tCtxCrc32.eLastEr = e_eFSS_LOGC_RES_OK;
+    l_tCtxWrite.uTimeUsed = 0u;
+    l_tCtxWrite.eLastEr = e_eFSS_LOGC_RES_OK;
+    l_tCtxErase.uTimeUsed = 0u;
+    l_tCtxErase.eLastEr = e_eFSS_LOGC_RES_OK;
+
+    if( e_eFSS_LOGC_RES_WRITENOMATCHREAD == eFSS_LOGC_WriteCache(&l_tCtx, 0u, 0u) )
+    {
+        if( ( 3u == l_tCtxRead.uTimeUsed ) && ( e_eFSS_LOGC_RES_OK == l_tCtxRead.eLastEr ) &&
+            ( 1u == l_tCtxCrc32.uTimeUsed ) && ( e_eFSS_LOGC_RES_OK == l_tCtxCrc32.eLastEr ) &&
+            ( 3u == l_tCtxErase.uTimeUsed ) && ( e_eFSS_LOGC_RES_OK == l_tCtxErase.eLastEr ))
+        {
+            if( ( 3u == l_tCtxWrite.uTimeUsed ) && ( e_eFSS_LOGC_RES_OK == l_tCtxWrite.eLastEr ) )
+            {
+                (void)printf("eFSS_LOGCTST_BadClBckNRetry 17 -- OK \n");
+            }
+            else
+            {
+                (void)printf("eFSS_LOGCTST_BadClBckNRetry 17 -- FAIL \n");
+            }
+        }
+        else
+        {
+            (void)printf("eFSS_LOGCTST_BadClBckNRetry 17 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_BadClBckNRetry 17 -- FAIL \n");
+    }
 
 
 
@@ -3276,7 +3334,13 @@ void eFSS_LOGCTST_BadClBckNRetry(void)
 
 
 
-#if 0
+
+
+
+
+
+
+
     /* ----------------------------------------------------------------------------------------- TEST WRITE CACHE CALL BACK */
     /* Function */
     l_tCtxCb.fErase = &eFSS_LOGCTST_EraseAdapt;
@@ -3761,7 +3825,7 @@ void eFSS_LOGCTST_BadClBckNRetry(void)
 
 
 
-
+#if 0
     /* Function */
     l_tCtxCb.fErase = &eFSS_LOGCTST_EraseAdapt;
     l_tCtxCb.fWrite = &eFSS_LOGCTST_WriteAdapt;
@@ -4342,369 +4406,6 @@ void eFSS_LOGCTST_BadClBckNRetry(void)
 }
 
 #if 0
-
-static void eFSS_LOGCTST_CrcTest(void)
-{
-    /* Local variable */
-    t_eFSS_LOGC_Ctx l_tCtx;
-    t_eFSS_TYPE_CbStorCtx l_tCtxCb;
-    t_eFSS_TYPE_StorSet l_tStorSet;
-    uint8_t l_uStorType;
-    uint8_t l_auStor[56u];
-    t_eFSS_TYPE_EraseCtx  l_tCtxErase;
-	t_eFSS_TYPE_WriteCtx  l_tCtxWrite;
-	t_eFSS_TYPE_ReadCtx   l_tCtxRead;
-	t_eFSS_TYPE_CrcCtx    l_tCtxCrc32;
-    t_eFSS_LOGC_StorBuf l_ltUseBuff;
-    uint32_t l_uCrcGetted;
-    uint32_t l_uByteInPage;
-    uint32_t l_uPageUsable;
-    uint32_t l_uNewPIx;
-    uint32_t l_uFillPIdx;
-
-    /* Init callback var */
-    l_tCtxCb.ptCtxErase = &l_tCtxErase;
-    l_tCtxCb.fErase = &eFSS_LOGCTST_EraseAdapt;
-	l_tCtxCb.ptCtxWrite = &l_tCtxWrite;
-    l_tCtxCb.fWrite = &eFSS_LOGCTST_WriteAdapt;
-	l_tCtxCb.ptCtxRead = &l_tCtxRead;
-    l_tCtxCb.fRead = &eFSS_LOGCTST_ReadErrAdapt;
-	l_tCtxCb.ptCtxCrc32 = &l_tCtxCrc32;
-    l_tCtxCb.fCrc32 = &eFSS_LOGCTST_CrcAdapt;
-
-    /* Init storage settings */
-    l_tStorSet.uTotPages = 14;
-    l_tStorSet.uPagesLen = 28u;
-    l_tStorSet.uRWERetry = 3u;
-    l_tStorSet.uPageVersion = 1u;
-    l_uStorType = 1u;
-    l_uByteInPage = 0u;
-    l_uPageUsable = 0u;
-    l_uNewPIx = 0u;
-    l_uFillPIdx = 0u;
-
-    /* ------------------------------------------------------------------------------------------- TEST CRC CALL BACK */
-    /* Function */
-    l_tCtxCb.fErase = &eFSS_LOGCTST_EraseAdapt;
-    l_tCtxCb.fWrite = &eFSS_LOGCTST_WriteAdapt;
-    l_tCtxCb.fRead = &eFSS_LOGCTST_ReadAdapt;
-    l_tCtxCb.fCrc32 = &eFSS_LOGCTST_CrcTst1Adapt;
-
-    l_tCtxErase.uTimeUsed = 0u;
-    l_tCtxErase.eLastEr = e_eFSS_LOGC_RES_OK;
-    l_tCtxWrite.uTimeUsed = 0u;
-    l_tCtxWrite.eLastEr = e_eFSS_LOGC_RES_OK;
-    l_tCtxRead.uTimeUsed = 0u;
-    l_tCtxRead.eLastEr = e_eFSS_LOGC_RES_OK;
-    l_tCtxCrc32.uTimeUsed = 0u;
-    l_tCtxCrc32.eLastEr = e_eFSS_LOGC_RES_OK;
-
-    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_uStorType, l_auStor, sizeof(l_auStor) ) )
-    {
-        (void)printf("eFSS_LOGCTST_CrcTest 1 -- OK \n");
-    }
-    else
-    {
-        (void)printf("eFSS_LOGCTST_CrcTest 1 -- FAIL \n");
-    }
-
-    /* Function */
-    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_GetBuff(&l_tCtx, &l_ltUseBuff) )
-    {
-        (void)printf("eFSS_LOGCTST_CrcTest 2 -- OK \n");
-    }
-    else
-    {
-        (void)printf("eFSS_LOGCTST_CrcTest 2 -- FAIL \n");
-    }
-
-    /* Setup buffer */
-    l_ltUseBuff.puBuf[0u] = 0x01u;
-    l_ltUseBuff.puBuf[1u] = 0x00u;
-    l_ltUseBuff.puBuf[2u] = 0x00u;
-    l_ltUseBuff.puBuf[3u] = 0x00u;
-
-    /* Function */
-    l_tCtxErase.uTimeUsed = 0u;
-    l_tCtxErase.eLastEr = e_eFSS_LOGC_RES_OK;
-    l_tCtxWrite.uTimeUsed = 0u;
-    l_tCtxWrite.eLastEr = e_eFSS_LOGC_RES_OK;
-    l_tCtxRead.uTimeUsed = 0u;
-    l_tCtxRead.eLastEr = e_eFSS_LOGC_RES_OK;
-    l_tCtxCrc32.uTimeUsed = 0u;
-    l_tCtxCrc32.eLastEr = e_eFSS_LOGC_RES_OK;
-    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_CalcCrcInBuff(&l_tCtx, 0u, l_ltUseBuff.uBufL, &l_uCrcGetted) )
-    {
-        if( ( 1u == l_tCtxCrc32.uTimeUsed ) && ( e_eFSS_LOGC_RES_OK == l_tCtxCrc32.eLastEr ) )
-        {
-            if( 4u == l_ltUseBuff.uBufL )
-            {
-                if( 1u == l_uCrcGetted )
-                {
-                    (void)printf("eFSS_LOGCTST_CrcTest 3 -- OK \n");
-                }
-                else
-                {
-                    (void)printf("eFSS_LOGCTST_CrcTest 3 -- FAIL \n");
-                }
-            }
-            else
-            {
-                (void)printf("eFSS_LOGCTST_CrcTest 3 -- FAIL \n");
-            }
-        }
-        else
-        {
-            (void)printf("eFSS_LOGCTST_CrcTest 3 -- FAIL \n");
-        }
-    }
-    else
-    {
-        (void)printf("eFSS_LOGCTST_CrcTest 3 -- FAIL \n");
-    }
-
-    /* Setup buffer */
-    l_ltUseBuff.puBuf[0u] = 0x01u;
-    l_ltUseBuff.puBuf[1u] = 0x00u;
-    l_ltUseBuff.puBuf[2u] = 0x00u;
-    l_ltUseBuff.puBuf[3u] = 0x00u;
-    l_ltUseBuff.puBuf[4u] = 0x10u;
-
-    /* Function */
-    l_tCtxErase.uTimeUsed = 0u;
-    l_tCtxErase.eLastEr = e_eFSS_LOGC_RES_OK;
-    l_tCtxWrite.uTimeUsed = 0u;
-    l_tCtxWrite.eLastEr = e_eFSS_LOGC_RES_OK;
-    l_tCtxRead.uTimeUsed = 0u;
-    l_tCtxRead.eLastEr = e_eFSS_LOGC_RES_OK;
-    l_tCtxCrc32.uTimeUsed = 0u;
-    l_tCtxCrc32.eLastEr = e_eFSS_LOGC_RES_OK;
-    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_CalcCrcInBuff(&l_tCtx, 0u, l_ltUseBuff.uBufL, &l_uCrcGetted) )
-    {
-        if( ( 1u == l_tCtxCrc32.uTimeUsed ) && ( e_eFSS_LOGC_RES_OK == l_tCtxCrc32.eLastEr ) )
-        {
-            if( 4u == l_ltUseBuff.uBufL )
-            {
-                if( 1u == l_uCrcGetted )
-                {
-                    (void)printf("eFSS_LOGCTST_CrcTest 4 -- OK \n");
-                }
-                else
-                {
-                    (void)printf("eFSS_LOGCTST_CrcTest 4 -- FAIL \n");
-                }
-            }
-            else
-            {
-                (void)printf("eFSS_LOGCTST_CrcTest 4 -- FAIL \n");
-            }
-        }
-        else
-        {
-            (void)printf("eFSS_LOGCTST_CrcTest 4 -- FAIL \n");
-        }
-    }
-    else
-    {
-        (void)printf("eFSS_LOGCTST_CrcTest 4 -- FAIL \n");
-    }
-
-    /* Function */
-    l_tCtxErase.uTimeUsed = 0u;
-    l_tCtxErase.eLastEr = e_eFSS_LOGC_RES_OK;
-    l_tCtxWrite.uTimeUsed = 0u;
-    l_tCtxWrite.eLastEr = e_eFSS_LOGC_RES_OK;
-    l_tCtxRead.uTimeUsed = 0u;
-    l_tCtxRead.eLastEr = e_eFSS_LOGC_RES_OK;
-    l_tCtxCrc32.uTimeUsed = 0u;
-    l_tCtxCrc32.eLastEr = e_eFSS_LOGC_RES_OK;
-    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_CalcCrcInBuff(&l_tCtx, 0x10u, l_ltUseBuff.uBufL, &l_uCrcGetted) )
-    {
-        if( ( 1u == l_tCtxCrc32.uTimeUsed ) && ( e_eFSS_LOGC_RES_OK == l_tCtxCrc32.eLastEr ) )
-        {
-            if( 4u == l_ltUseBuff.uBufL )
-            {
-                if( 0x11u == l_uCrcGetted )
-                {
-                    (void)printf("eFSS_LOGCTST_CrcTest 5 -- OK \n");
-                }
-                else
-                {
-                    (void)printf("eFSS_LOGCTST_CrcTest 5 -- FAIL \n");
-                }
-            }
-            else
-            {
-                (void)printf("eFSS_LOGCTST_CrcTest 5 -- FAIL \n");
-            }
-        }
-        else
-        {
-            (void)printf("eFSS_LOGCTST_CrcTest 5 -- FAIL \n");
-        }
-    }
-    else
-    {
-        (void)printf("eFSS_LOGCTST_CrcTest 5 -- FAIL \n");
-    }
-
-    /* Setup buffer */
-    l_ltUseBuff.puBuf[0u] = 0x01u;
-    l_ltUseBuff.puBuf[1u] = 0x02u;
-    l_ltUseBuff.puBuf[2u] = 0x03u;
-    l_ltUseBuff.puBuf[3u] = 0x04u;
-    l_ltUseBuff.puBuf[4u] = 0x05u;
-
-    /* Function */
-    l_tCtxErase.uTimeUsed = 0u;
-    l_tCtxErase.eLastEr = e_eFSS_LOGC_RES_OK;
-    l_tCtxWrite.uTimeUsed = 0u;
-    l_tCtxWrite.eLastEr = e_eFSS_LOGC_RES_OK;
-    l_tCtxRead.uTimeUsed = 0u;
-    l_tCtxRead.eLastEr = e_eFSS_LOGC_RES_OK;
-    l_tCtxCrc32.uTimeUsed = 0u;
-    l_tCtxCrc32.eLastEr = e_eFSS_LOGC_RES_OK;
-    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_CalcCrcInBuff(&l_tCtx, 0u, l_ltUseBuff.uBufL, &l_uCrcGetted) )
-    {
-        if( ( 1u == l_tCtxCrc32.uTimeUsed ) && ( e_eFSS_LOGC_RES_OK == l_tCtxCrc32.eLastEr ) )
-        {
-            if( 4u == l_ltUseBuff.uBufL )
-            {
-                if( 0x0Au == l_uCrcGetted )
-                {
-                    (void)printf("eFSS_LOGCTST_CrcTest 6 -- OK \n");
-                }
-                else
-                {
-                    (void)printf("eFSS_LOGCTST_CrcTest 6 -- FAIL \n");
-                }
-            }
-            else
-            {
-                (void)printf("eFSS_LOGCTST_CrcTest 6 -- FAIL \n");
-            }
-        }
-        else
-        {
-            (void)printf("eFSS_LOGCTST_CrcTest 6 -- FAIL \n");
-        }
-    }
-    else
-    {
-        (void)printf("eFSS_LOGCTST_CrcTest 6 -- FAIL \n");
-    }
-
-    /* Setup buffer */
-    l_ltUseBuff.puBuf[0u] = 0x01u;
-    l_ltUseBuff.puBuf[1u] = 0x02u;
-    l_ltUseBuff.puBuf[2u] = 0x03u;
-    l_ltUseBuff.puBuf[3u] = 0x04u;
-    l_ltUseBuff.puBuf[4u] = 0x05u;
-
-    /* Function */
-    l_tCtxErase.uTimeUsed = 0u;
-    l_tCtxErase.eLastEr = e_eFSS_LOGC_RES_OK;
-    l_tCtxWrite.uTimeUsed = 0u;
-    l_tCtxWrite.eLastEr = e_eFSS_LOGC_RES_OK;
-    l_tCtxRead.uTimeUsed = 0u;
-    l_tCtxRead.eLastEr = e_eFSS_LOGC_RES_OK;
-    l_tCtxCrc32.uTimeUsed = 0u;
-    l_tCtxCrc32.eLastEr = e_eFSS_LOGC_RES_OK;
-    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_CalcCrcInBuff(&l_tCtx, 0u, 2u, &l_uCrcGetted) )
-    {
-        if( ( 1u == l_tCtxCrc32.uTimeUsed ) && ( e_eFSS_LOGC_RES_OK == l_tCtxCrc32.eLastEr ) )
-        {
-            if( 4u == l_ltUseBuff.uBufL )
-            {
-                if( 0x03u == l_uCrcGetted )
-                {
-                    (void)printf("eFSS_LOGCTST_CrcTest 7 -- OK \n");
-                }
-                else
-                {
-                    (void)printf("eFSS_LOGCTST_CrcTest 7 -- FAIL \n");
-                }
-            }
-            else
-            {
-                (void)printf("eFSS_LOGCTST_CrcTest 7 -- FAIL \n");
-            }
-        }
-        else
-        {
-            (void)printf("eFSS_LOGCTST_CrcTest 7 -- FAIL \n");
-        }
-    }
-    else
-    {
-        (void)printf("eFSS_LOGCTST_CrcTest 7 -- FAIL \n");
-    }
-
-    /* Setup buffer */
-    l_ltUseBuff.puBuf[0u] = 0x01u;
-    l_ltUseBuff.puBuf[1u] = 0x02u;
-    l_ltUseBuff.puBuf[2u] = 0x03u;
-    l_ltUseBuff.puBuf[3u] = 0x04u;
-    l_ltUseBuff.puBuf[4u] = 0x05u;
-
-    /* Function */
-    l_tCtxErase.uTimeUsed = 0u;
-    l_tCtxErase.eLastEr = e_eFSS_LOGC_RES_OK;
-    l_tCtxWrite.uTimeUsed = 0u;
-    l_tCtxWrite.eLastEr = e_eFSS_LOGC_RES_OK;
-    l_tCtxRead.uTimeUsed = 0u;
-    l_tCtxRead.eLastEr = e_eFSS_LOGC_RES_OK;
-    l_tCtxCrc32.uTimeUsed = 0u;
-    l_tCtxCrc32.eLastEr = e_eFSS_LOGC_RES_OK;
-    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_CalcCrcInBuff(&l_tCtx, 0u, 1u, &l_uCrcGetted) )
-    {
-        if( ( 1u == l_tCtxCrc32.uTimeUsed ) && ( e_eFSS_LOGC_RES_OK == l_tCtxCrc32.eLastEr ) )
-        {
-            if( 4u == l_ltUseBuff.uBufL )
-            {
-                if( 0x01u == l_uCrcGetted )
-                {
-                    (void)printf("eFSS_LOGCTST_CrcTest 8 -- OK \n");
-                }
-                else
-                {
-                    (void)printf("eFSS_LOGCTST_CrcTest 8 -- FAIL \n");
-                }
-            }
-            else
-            {
-                (void)printf("eFSS_LOGCTST_CrcTest 8 -- FAIL \n");
-            }
-        }
-        else
-        {
-            (void)printf("eFSS_LOGCTST_CrcTest 8 -- FAIL \n");
-        }
-    }
-    else
-    {
-        (void)printf("eFSS_LOGCTST_CrcTest 8 -- FAIL \n");
-    }
-
-    if( e_eFSS_LOGC_RES_BADPARAM == eFSS_LOGC_CalcCrcInBuff(&l_tCtx, 0u, 5u, &l_uCrcGetted) )
-    {
-        (void)printf("eFSS_LOGCTST_CrcTest 9 -- OK \n");
-    }
-    else
-    {
-        (void)printf("eFSS_LOGCTST_CrcTest 9 -- FAIL \n");
-    }
-
-    /* Misra complaiant */
-    (void)l_tCtxErase.eLastEr;
-    (void)l_tCtxErase.uTimeUsed;
-    (void)l_tCtxWrite.eLastEr;
-    (void)l_tCtxWrite.uTimeUsed;
-    (void)l_tCtxRead.eLastEr;
-    (void)l_tCtxRead.uTimeUsed;
-    (void)l_tCtxCrc32.eLastEr;
-    (void)l_tCtxCrc32.uTimeUsed;
-}
 
 static void eFSS_LOGCTST_ReadCacheTest(void)
 {
