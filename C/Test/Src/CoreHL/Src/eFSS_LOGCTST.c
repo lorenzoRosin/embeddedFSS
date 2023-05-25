@@ -112,9 +112,9 @@ static void eFSS_LOGCTST_BadParamEntr(void);
 static void eFSS_LOGCTST_CorruptedCtx(void);
 static void eFSS_LOGCTST_Basic(void);
 static void eFSS_LOGCTST_BadClBckNRetry(void);
+static void eFSS_LOGCTST_ReadCacheTest(void);
 
 #if 0
-static void eFSS_LOGCTST_ReadCacheTest(void);
 static void eFSS_LOGCTST_WriteCacheTest(void);
 static void eFSS_LOGCTST_LoadTest(void);
 static void eFSS_LOGCTST_FlushTest(void);
@@ -137,10 +137,10 @@ void eFSS_LOGCTST_ExeTest(void)
     // eFSS_LOGCTST_BadParamEntr();
     // eFSS_LOGCTST_CorruptedCtx();
     // eFSS_LOGCTST_Basic();
-    eFSS_LOGCTST_BadClBckNRetry();
+    // eFSS_LOGCTST_BadClBckNRetry();
+    eFSS_LOGCTST_ReadCacheTest();
 
 #if 0
-    eFSS_LOGCTST_ReadCacheTest();
     eFSS_LOGCTST_WriteCacheTest();
     eFSS_LOGCTST_LoadTest();
     eFSS_LOGCTST_FlushTest();
@@ -3074,8 +3074,6 @@ void eFSS_LOGCTST_BadClBckNRetry(void)
         (void)printf("eFSS_LOGCTST_BadClBckNRetry 4  -- FAIL \n");
     }
 
-#if 0
-
     /* Function */
     if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_IsFlashCacheUsed(&l_tCtx, &l_bIsInit ) )
     {
@@ -4108,69 +4106,6 @@ void eFSS_LOGCTST_BadClBckNRetry(void)
         (void)printf("eFSS_LOGCTST_BadClBckNRetry 46 -- FAIL \n");
     }
 
-#endif
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     /* ----------------------------------------------------------------------------------------- TEST IS PAGE NEW OR BKP AS CALL BACK */
     /* Init */
     l_tStorSet.uPageVersion = 0u;
@@ -4812,28 +4747,6 @@ void eFSS_LOGCTST_BadClBckNRetry(void)
         (void)printf("eFSS_LOGCTST_BadClBckNRetry 61 -- FAIL \n");
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     /* ----------------------------------------------------------------------------------------- TEST FLUSHIFNOTEQUAL AS CALL BACK */
     /* Init */
     l_tStorSet.uPageVersion = 0u;
@@ -4966,28 +4879,6 @@ void eFSS_LOGCTST_BadClBckNRetry(void)
     {
         (void)printf("eFSS_LOGCTST_BadClBckNRetry 64 -- FAIL \n");
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     /* Init */
     l_tStorSet.uPageVersion = 0u;
@@ -5127,40 +5018,6 @@ void eFSS_LOGCTST_BadClBckNRetry(void)
         (void)printf("eFSS_LOGCTST_BadClBckNRetry 67 -- FAIL \n");
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     /* Init */
     l_tStorSet.uPageVersion = 0u;
 
@@ -5270,11 +5127,11 @@ void eFSS_LOGCTST_BadClBckNRetry(void)
 
     memset(l_auStor, 0x00, sizeof(l_auStor));
 
-    if( e_eFSS_LOGC_RES_CLBCKREADERR == eFSS_LOGC_FlushBuffIfNotEquals(&l_tCtx, 0u, e_eFSS_LOGC_PAGETYPE_LOG) )
+    if( e_eFSS_LOGC_RES_CLBCKWRITEERR == eFSS_LOGC_FlushBuffIfNotEquals(&l_tCtx, 0u, e_eFSS_LOGC_PAGETYPE_LOG) )
     {
-        if( ( 2u == l_tCtxCrc32.uTimeUsed ) &&  ( e_eFSS_LOGC_RES_OK == l_tCtxCrc32.eLastEr ) &&
+        if( ( 3u == l_tCtxCrc32.uTimeUsed ) &&  ( e_eFSS_LOGC_RES_OK == l_tCtxCrc32.eLastEr ) &&
             ( 3u == l_tCtxErase.uTimeUsed ) &&  ( e_eFSS_LOGC_RES_OK == l_tCtxErase.eLastEr ) &&
-            ( 1u == l_tCtxRead.uTimeUsed )  && ( e_eFSS_LOGC_RES_OK == l_tCtxRead.eLastEr ) )
+            ( 2u == l_tCtxRead.uTimeUsed )  && ( e_eFSS_LOGC_RES_OK == l_tCtxRead.eLastEr ) )
         {
             if( ( 3u == l_tCtxWrite.uTimeUsed ) && ( e_eFSS_LOGC_RES_BADPOINTER == l_tCtxWrite.eLastEr ) )
             {
@@ -5295,94 +5152,138 @@ void eFSS_LOGCTST_BadClBckNRetry(void)
         (void)printf("eFSS_LOGCTST_BadClBckNRetry 70 -- FAIL \n");
     }
 
-
-
-
-
-
-
-
-dkeiuyfgasmyfbask
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    /* Init */
+    l_tStorSet.uPageVersion = 0u;
+
+    /* Function */
+    l_tCtxCb.fErase = &eFSS_LOGCTST_EraseTst1Adapt;
+    l_tCtxCb.fWrite = &eFSS_LOGCTST_WriteTst1Adapt;
+    l_tCtxCb.fRead = &eFSS_LOGCTST_ReadErrSecAdapt;
+    l_tCtxCb.fCrc32 = &eFSS_LOGCTST_CrcTst1Adapt;
+
+    l_tCtxErase.uTimeUsed = 0u;
+    l_tCtxErase.eLastEr = e_eFSS_LOGC_RES_OK;
+    l_tCtxWrite.uTimeUsed = 0u;
+    l_tCtxWrite.eLastEr = e_eFSS_LOGC_RES_OK;
+    l_tCtxRead.uTimeUsed = 0u;
+    l_tCtxRead.eLastEr = e_eFSS_LOGC_RES_OK;
+    l_tCtxCrc32.uTimeUsed = 0u;
+    l_tCtxCrc32.eLastEr = e_eFSS_LOGC_RES_OK;
+
+    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_auStor, sizeof(l_auStor), false, true ) )
+    {
+        (void)printf("eFSS_LOGCTST_BadClBckNRetry 71 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_BadClBckNRetry 71 -- FAIL \n");
+    }
+
+    /* Function */
+    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_GetBuffNUsable(&l_tCtx, &l_ltUseBuff, &l_uPageUsable) )
+    {
+        (void)printf("eFSS_LOGCTST_BadClBckNRetry 72 -- OK \n");
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_BadClBckNRetry 72 -- FAIL \n");
+    }
+
+    /* Setup storage area */
+    (void)memset(m_auStorArea[0u], 0, sizeof(m_auStorArea[0u]));
+    (void)memset(m_auStorArea[7u], 0xFF, sizeof(m_auStorArea[7u]));
+
+    /* Fill the two storage page */
+
+
+    /* Setup storage area */
+    (void)memset(m_auStorArea[0u], 0, sizeof(m_auStorArea[0u]));
+    m_auStorArea[0u][8u]  = 0x00u;  /* BYTE IN PAGE */
+    m_auStorArea[0u][9u]  = 0x00u;  /* BYTE IN PAGE */
+    m_auStorArea[0u][10u] = 0x00u;  /* BYTE IN PAGE */
+    m_auStorArea[0u][11u] = 0x00u;  /* BYTE IN PAGE */
+    m_auStorArea[0u][12u] = 0x01u;  /* Page SUBTYPE */
+    m_auStorArea[0u][13u] = 0x00u;  /* Page index */
+    m_auStorArea[0u][14u] = 0x00u;  /* Page index */
+    m_auStorArea[0u][15u] = 0x00u;  /* Page index */
+    m_auStorArea[0u][16u] = 0x00u;  /* Page index */
+    m_auStorArea[0u][17u] = 0x02u;  /* Page type */
+    m_auStorArea[0u][18u] = 0x00u;  /* Page version */
+    m_auStorArea[0u][19u] = 0x00u;  /* Page version */
+    m_auStorArea[0u][20u] = 0x0Eu;  /* Total page */
+    m_auStorArea[0u][21u] = 0x00u;  /* Total page */
+    m_auStorArea[0u][22u] = 0x00u;  /* Total page */
+    m_auStorArea[0u][23u] = 0x00u;  /* Total page */
+    m_auStorArea[0u][24u] = 0xA5u;  /* Magic number */
+    m_auStorArea[0u][25u] = 0xA5u;  /* Magic number */
+    m_auStorArea[0u][26u] = 0xA5u;  /* Magic number */
+    m_auStorArea[0u][27u] = 0xA5u;  /* Magic number */
+    m_auStorArea[0u][28u] = 0xA4u;  /* CRC */
+    m_auStorArea[0u][29u] = 0x02u;  /* CRC */
+    m_auStorArea[0u][30u] = 0x00u;  /* CRC */
+    m_auStorArea[0u][31u] = 0x00u;  /* CRC */
+
+    (void)memset(m_auStorArea[1u], 0x10, sizeof(m_auStorArea[1u]));
+    m_auStorArea[7u][8u]  = 0x00u;  /* BYTE IN PAGE */
+    m_auStorArea[7u][9u]  = 0x00u;  /* BYTE IN PAGE */
+    m_auStorArea[7u][10u] = 0x00u;  /* BYTE IN PAGE */
+    m_auStorArea[7u][11u] = 0x00u;  /* BYTE IN PAGE */
+    m_auStorArea[7u][12u] = 0x01u;  /* Page SUBTYPE */
+    m_auStorArea[7u][13u] = 0x07u;  /* Page index */
+    m_auStorArea[7u][14u] = 0x00u;  /* Page index */
+    m_auStorArea[7u][15u] = 0x00u;  /* Page index */
+    m_auStorArea[7u][16u] = 0x00u;  /* Page index */
+    m_auStorArea[7u][17u] = 0x02u;  /* Page type */
+    m_auStorArea[7u][18u] = 0x00u;  /* Page version */
+    m_auStorArea[7u][19u] = 0x00u;  /* Page version */
+    m_auStorArea[7u][20u] = 0x0eu;  /* Total page */
+    m_auStorArea[7u][21u] = 0x00u;  /* Total page */
+    m_auStorArea[7u][22u] = 0x00u;  /* Total page */
+    m_auStorArea[7u][23u] = 0x00u;  /* Total page */
+    m_auStorArea[7u][24u] = 0xA5u;  /* Magic number */
+    m_auStorArea[7u][25u] = 0xA5u;  /* Magic number */
+    m_auStorArea[7u][26u] = 0xA5u;  /* Magic number */
+    m_auStorArea[7u][27u] = 0xA5u;  /* Magic number */
+    m_auStorArea[7u][28u] = 0xF5u;  /* CRC */
+    m_auStorArea[7u][29u] = 0x02u;  /* CRC */
+    m_auStorArea[7u][30u] = 0x00u;  /* CRC */
+    m_auStorArea[7u][31u] = 0x00u;  /* CRC */
+
+    /* Test FLUSH */
+    l_tCtxErase.uTimeUsed = 0u;
+    l_tCtxErase.eLastEr = e_eFSS_LOGC_RES_OK;
+    l_tCtxWrite.uTimeUsed = 0u;
+    l_tCtxWrite.eLastEr = e_eFSS_LOGC_RES_OK;
+    l_tCtxRead.uTimeUsed = 0u;
+    l_tCtxRead.eLastEr = e_eFSS_LOGC_RES_OK;
+    l_tCtxCrc32.uTimeUsed = 0u;
+    l_tCtxCrc32.eLastEr = e_eFSS_LOGC_RES_OK;
+
+    if( e_eFSS_LOGC_RES_CLBCKREADERR == eFSS_LOGC_FlushBuffIfNotEquals(&l_tCtx, 0u, e_eFSS_LOGC_PAGETYPE_LOG) )
+    {
+        if( ( 1u == l_tCtxCrc32.uTimeUsed ) &&  ( e_eFSS_LOGC_RES_OK == l_tCtxCrc32.eLastEr ) &&
+            ( 0u == l_tCtxErase.uTimeUsed ) &&  ( e_eFSS_LOGC_RES_OK == l_tCtxErase.eLastEr ) &&
+            ( 1u == l_tCtxRead.uTimeUsed )  && ( e_eFSS_LOGC_RES_BADPOINTER == l_tCtxRead.eLastEr ) )
+        {
+            if( ( 0u == l_tCtxWrite.uTimeUsed ) && ( e_eFSS_LOGC_RES_OK == l_tCtxWrite.eLastEr ) )
+            {
+                (void)printf("eFSS_LOGCTST_BadClBckNRetry 73 -- OK \n");
+            }
+            else
+            {
+                (void)printf("eFSS_LOGCTST_BadClBckNRetry 73 -- FAIL \n");
+            }
+        }
+        else
+        {
+            (void)printf("eFSS_LOGCTST_BadClBckNRetry 73 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_BadClBckNRetry 73 -- FAIL \n");
+    }
 }
-
-#if 0
 
 static void eFSS_LOGCTST_ReadCacheTest(void)
 {
@@ -6228,6 +6129,8 @@ static void eFSS_LOGCTST_ReadCacheTest(void)
     (void)l_tCtxCrc32.eLastEr;
     (void)l_tCtxCrc32.uTimeUsed;
 }
+
+#if 0
 
 static void eFSS_LOGCTST_WriteCacheTest(void)
 {
