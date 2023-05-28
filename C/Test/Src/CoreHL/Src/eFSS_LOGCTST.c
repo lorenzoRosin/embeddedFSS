@@ -6838,27 +6838,27 @@ static void eFSS_LOGCTST_WriteCacheTest(void)
 
     if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_WriteCache(&l_tCtx, 0u, 0u) )
     {
-        if( ( 0x10u == l_ltUseBuff.puBuf[0u] )  && ( 0x10u == l_ltUseBuff.puBuf[1u] ) && ( 0x10u == l_ltUseBuff.puBuf[2u] ) &&
-            ( 0x10u == l_ltUseBuff.puBuf[3u] )  && ( 0x01u == l_ltUseBuff.puBuf[4u] )  &&
-            ( 0x10u == l_ltUseBuff2.puBuf[0u] ) && ( 0x10u == l_ltUseBuff2.puBuf[1u] ) && ( 0x10u == l_ltUseBuff2.puBuf[2u] ) &&
-            ( 0x10u == l_ltUseBuff2.puBuf[3u] ) && ( 0x02u == l_ltUseBuff2.puBuf[4u] ) )
+        if( ( 0x00u == l_ltUseBuff.puBuf[0u] ) && ( 0x00u == l_ltUseBuff.puBuf[1u] )  && ( 0x00u == l_ltUseBuff.puBuf[2u] ) &&
+            ( 0x00u == l_ltUseBuff.puBuf[3u] ) && ( 0x00u == l_ltUseBuff.puBuf[4u] )  && ( 0x00u == l_ltUseBuff.puBuf[5u] ) &&
+            ( 0x00u == l_ltUseBuff.puBuf[6u] ) && ( 0x00u == l_ltUseBuff.puBuf[7u] )  && ( 0x08u == l_ltUseBuff.puBuf[8u] ) &&
+            ( 0x00u == l_ltUseBuff.puBuf[9u] ) && ( 0x00u == l_ltUseBuff.puBuf[10u] ) && ( 0x00u == l_ltUseBuff.puBuf[11u] ) )
         {
-            if( ( m_auStorArea1[0u]  == 0x10u ) && ( m_auStorArea1[1u]  == 0x10u ) && ( m_auStorArea1[2u]  == 0x10u ) &&
-                ( m_auStorArea1[3u]  == 0x10u ) && ( m_auStorArea1[4u]  == 0x01u ) && ( m_auStorArea1[5u]  == 0x00u ) &&
-                ( m_auStorArea1[6u]  == 0x00u ) && ( m_auStorArea1[7u]  == 0x00u ) && ( m_auStorArea1[8u]  == 0x00u ) &&
-                ( m_auStorArea1[9u]  == 0x03u ) && ( m_auStorArea1[10u] == 0x01u ) && ( m_auStorArea1[11u] == 0x00u ) &&
-                ( m_auStorArea1[12u] == 0x02u ) && ( m_auStorArea1[13u] == 0x00u ) && ( m_auStorArea1[14u] == 0x00u ) &&
-                ( m_auStorArea1[15u] == 0x00u ) && ( m_auStorArea1[16u] == 0xA5u ) && ( m_auStorArea1[17u] == 0xA5u ) &&
-                ( m_auStorArea1[18u] == 0xA5u ) && ( m_auStorArea1[19u] == 0xA5u ) && ( m_auStorArea1[20u] == 0xDAu ) &&
-                ( m_auStorArea1[21u] == 0x02u ) && ( m_auStorArea1[22u] == 0x00u ) && ( m_auStorArea1[23u] == 0x00u ) &&
-                ( m_auStorArea2[0u]  == 0x10u ) && ( m_auStorArea2[1u]  == 0x10u ) && ( m_auStorArea2[2u]  == 0x10u ) &&
-                ( m_auStorArea2[3u]  == 0x10u ) && ( m_auStorArea2[4u]  == 0x02u ) && ( m_auStorArea2[5u]  == 0x01u ) &&
-                ( m_auStorArea2[6u]  == 0x00u ) && ( m_auStorArea2[7u]  == 0x00u ) && ( m_auStorArea2[8u]  == 0x00u ) &&
-                ( m_auStorArea2[9u]  == 0x03u ) && ( m_auStorArea2[10u] == 0x01u ) && ( m_auStorArea2[11u] == 0x00u ) &&
-                ( m_auStorArea2[12u] == 0x02u ) && ( m_auStorArea2[13u] == 0x00u ) && ( m_auStorArea2[14u] == 0x00u ) &&
-                ( m_auStorArea2[15u] == 0x00u ) && ( m_auStorArea2[16u] == 0xA5u ) && ( m_auStorArea2[17u] == 0xA5u ) &&
-                ( m_auStorArea2[18u] == 0xA5u ) && ( m_auStorArea2[19u] == 0xA5u ) && ( m_auStorArea2[20u] == 0xDCu ) &&
-                ( m_auStorArea2[21u] == 0x02u ) && ( m_auStorArea2[22u] == 0x00u ) && ( m_auStorArea2[23u] == 0x00u ) )
+            if( ( m_auStorArea[12u][0u]  == 0x00u ) && ( m_auStorArea[12u][1u]  == 0x00u ) && ( m_auStorArea[12u][2u]  == 0x00u ) && ( m_auStorArea[12u][3u]  == 0x00u ) &&
+                ( m_auStorArea[12u][4u]  == 0x00u ) && ( m_auStorArea[12u][5u]  == 0x00u ) && ( m_auStorArea[12u][6u]  == 0x00u ) && ( m_auStorArea[12u][7u]  == 0x00u ) &&
+                ( m_auStorArea[12u][8u]  == 0x08u ) && ( m_auStorArea[12u][9u]  == 0x00u ) && ( m_auStorArea[12u][10u] == 0x00u ) && ( m_auStorArea[12u][11u] == 0x00u ) &&
+                ( m_auStorArea[12u][12u] == 0x07u ) && ( m_auStorArea[12u][13u] == 0x0Cu ) && ( m_auStorArea[12u][14u] == 0x00u ) && ( m_auStorArea[12u][15u] == 0x00u ) &&
+                ( m_auStorArea[12u][16u] == 0x00u ) && ( m_auStorArea[12u][17u] == 0x02u ) && ( m_auStorArea[12u][18u] == 0x01u ) && ( m_auStorArea[12u][19u] == 0x00u ) &&
+                ( m_auStorArea[12u][20u] == 0x0Eu ) && ( m_auStorArea[12u][21u] == 0x00u ) && ( m_auStorArea[12u][22u] == 0x00u ) && ( m_auStorArea[12u][23u] == 0x00u ) &&
+                ( m_auStorArea[12u][24u] == 0xA5u ) && ( m_auStorArea[12u][25u] == 0xA5u ) && ( m_auStorArea[12u][26u] == 0xA5u ) && ( m_auStorArea[12u][27u] == 0xA5u ) &&
+                ( m_auStorArea[12u][28u] == 0xBFu ) && ( m_auStorArea[12u][29u] == 0x02u ) && ( m_auStorArea[12u][30u] == 0x00u ) && ( m_auStorArea[12u][31u] == 0x00u ) &&
+                ( m_auStorArea[13u][0u]  == 0x00u ) && ( m_auStorArea[13u][1u]  == 0x00u ) && ( m_auStorArea[13u][2u]  == 0x00u ) && ( m_auStorArea[13u][3u]  == 0x00u ) &&
+                ( m_auStorArea[13u][4u]  == 0x00u ) && ( m_auStorArea[13u][5u]  == 0x00u ) && ( m_auStorArea[13u][6u]  == 0x00u ) && ( m_auStorArea[13u][7u]  == 0x00u ) &&
+                ( m_auStorArea[13u][8u]  == 0x08u ) && ( m_auStorArea[13u][9u]  == 0x00u ) && ( m_auStorArea[13u][10u] == 0x00u ) && ( m_auStorArea[13u][11u] == 0x00u ) &&
+                ( m_auStorArea[13u][12u] == 0x08u ) && ( m_auStorArea[13u][13u] == 0x0Du ) && ( m_auStorArea[13u][14u] == 0x00u ) && ( m_auStorArea[13u][15u] == 0x00u ) &&
+                ( m_auStorArea[13u][16u] == 0x00u ) && ( m_auStorArea[13u][17u] == 0x02u ) && ( m_auStorArea[13u][18u] == 0x01u ) && ( m_auStorArea[13u][19u] == 0x00u ) &&
+                ( m_auStorArea[13u][20u] == 0x0Eu ) && ( m_auStorArea[13u][21u] == 0x00u ) && ( m_auStorArea[13u][22u] == 0x00u ) && ( m_auStorArea[13u][23u] == 0x00u ) &&
+                ( m_auStorArea[13u][24u] == 0xA5u ) && ( m_auStorArea[13u][25u] == 0xA5u ) && ( m_auStorArea[13u][26u] == 0xA5u ) && ( m_auStorArea[13u][27u] == 0xA5u ) &&
+                ( m_auStorArea[13u][28u] == 0xC1u ) && ( m_auStorArea[13u][29u] == 0x02u ) && ( m_auStorArea[13u][30u] == 0x00u ) && ( m_auStorArea[13u][31u] == 0x00u ) )
               {
                   (void)printf("eFSS_LOGCTST_WriteCacheTest 3  -- OK \n");
               }
