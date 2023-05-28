@@ -5603,14 +5603,14 @@ static void eFSS_LOGCTST_ReadCacheTest(void)
             ( 0x00u == l_ltUseBuff.puBuf[3u] )  && ( 0x03u == l_ltUseBuff.puBuf[4u] )  &&
             ( 0x00u == l_ltUseBuff2.puBuf[0u] ) && ( 0x00u == l_ltUseBuff2.puBuf[1u] ) && ( 0x00u == l_ltUseBuff2.puBuf[2u] ) &&
             ( 0x00u == l_ltUseBuff2.puBuf[3u] ) && ( 0x04u == l_ltUseBuff2.puBuf[4u] ) &&
-            ( 0x00u == m_auStorArea[p_uPageToWrite][0u] )  && ( 0x00u == m_auStorArea[p_uPageToWrite][1u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][2u] ) &&
-            ( 0x00u == m_auStorArea[p_uPageToWrite][3u] )  && ( 0x03u == m_auStorArea[p_uPageToWrite][4u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][5u] ) &&
-            ( 0x9Au == m_auStorArea[p_uPageToWrite][20u] )  && ( 0x02u == m_auStorArea[p_uPageToWrite][21u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][22u] ) &&
-            ( 0x00u == m_auStorArea[p_uPageToWrite][23u] ) &&
-            ( 0x00u == m_auStorArea[p_uPageToWrite][0u] )  && ( 0x00u == m_auStorArea[p_uPageToWrite][1u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][2u] ) &&
-            ( 0x00u == m_auStorArea[p_uPageToWrite][3u] )  && ( 0x04u == m_auStorArea[p_uPageToWrite][4u] ) && ( 0x01u == m_auStorArea[p_uPageToWrite][5u] ) &&
-            ( 0x9Cu == m_auStorArea[p_uPageToWrite][20u] )  && ( 0x02u == m_auStorArea[p_uPageToWrite][21u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][22u] ) &&
-            ( 0x00u == m_auStorArea[p_uPageToWrite][23u] ) )
+            ( 0x00u == m_auStorArea[12u][0u] )  && ( 0x00u == m_auStorArea[12u][1u] ) && ( 0x00u == m_auStorArea[12u][2u] ) &&
+            ( 0x00u == m_auStorArea[12u][3u] )  && ( 0x03u == m_auStorArea[12u][4u] ) && ( 0x00u == m_auStorArea[12u][5u] ) &&
+            ( 0x9Au == m_auStorArea[12u][20u] )  && ( 0x02u == m_auStorArea[12u][21u] ) && ( 0x00u == m_auStorArea[12u][22u] ) &&
+            ( 0x00u == m_auStorArea[12u][23u] ) &&
+            ( 0x00u == m_auStorArea[13u][0u] )  && ( 0x00u == m_auStorArea[13u][1u] ) && ( 0x00u == m_auStorArea[13u][2u] ) &&
+            ( 0x00u == m_auStorArea[13u][3u] )  && ( 0x04u == m_auStorArea[13u][4u] ) && ( 0x01u == m_auStorArea[13u][5u] ) &&
+            ( 0x9Cu == m_auStorArea[13u][20u] )  && ( 0x02u == m_auStorArea[13u][21u] ) && ( 0x00u == m_auStorArea[13u][22u] ) &&
+            ( 0x00u == m_auStorArea[13u][23u] ) )
         {
             (void)printf("eFSS_LOGCTST_LoadBkupTest 7  -- OK \n");
         }
@@ -5675,14 +5675,14 @@ static void eFSS_LOGCTST_ReadCacheTest(void)
             ( 0x10u == l_ltUseBuff.puBuf[3u] )  && ( 0x04u == l_ltUseBuff.puBuf[4u] )  &&
             ( 0x10u == l_ltUseBuff2.puBuf[0u] ) && ( 0x10u == l_ltUseBuff2.puBuf[1u] ) && ( 0x10u == l_ltUseBuff2.puBuf[2u] ) &&
             ( 0x10u == l_ltUseBuff2.puBuf[3u] ) && ( 0x03u == l_ltUseBuff2.puBuf[4u] ) &&
-            ( 0x10u == m_auStorArea[p_uPageToWrite][0u] )  && ( 0x10u == m_auStorArea[p_uPageToWrite][1u] ) && ( 0x10u == m_auStorArea[p_uPageToWrite][2u] ) &&
-            ( 0x10u == m_auStorArea[p_uPageToWrite][3u] )  && ( 0x03u == m_auStorArea[p_uPageToWrite][4u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][5u] ) &&
-            ( 0xDAu == m_auStorArea[p_uPageToWrite][20u] )  && ( 0x02u == m_auStorArea[p_uPageToWrite][21u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][22u] ) &&
-            ( 0x00u == m_auStorArea[p_uPageToWrite][23u] ) &&
-            ( 0x10u == m_auStorArea[p_uPageToWrite][0u] )  && ( 0x10u == m_auStorArea[p_uPageToWrite][1u] ) && ( 0x10u == m_auStorArea[p_uPageToWrite][2u] ) &&
-            ( 0x10u == m_auStorArea[p_uPageToWrite][3u] )  && ( 0x04u == m_auStorArea[p_uPageToWrite][4u] ) && ( 0x01u == m_auStorArea[p_uPageToWrite][5u] ) &&
-            ( 0xDCu == m_auStorArea[p_uPageToWrite][20u] )  && ( 0x02u == m_auStorArea[p_uPageToWrite][21u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][22u] ) &&
-            ( 0x00u == m_auStorArea[p_uPageToWrite][23u] ) )
+            ( 0x10u == m_auStorArea[12u][0u] )  && ( 0x10u == m_auStorArea[12u][1u] ) && ( 0x10u == m_auStorArea[12u][2u] ) &&
+            ( 0x10u == m_auStorArea[12u][3u] )  && ( 0x03u == m_auStorArea[12u][4u] ) && ( 0x00u == m_auStorArea[12u][5u] ) &&
+            ( 0xDAu == m_auStorArea[12u][20u] )  && ( 0x02u == m_auStorArea[12u][21u] ) && ( 0x00u == m_auStorArea[12u][22u] ) &&
+            ( 0x00u == m_auStorArea[12u][23u] ) &&
+            ( 0x10u == m_auStorArea[13u][0u] )  && ( 0x10u == m_auStorArea[13u][1u] ) && ( 0x10u == m_auStorArea[13u][2u] ) &&
+            ( 0x10u == m_auStorArea[13u][3u] )  && ( 0x04u == m_auStorArea[13u][4u] ) && ( 0x01u == m_auStorArea[13u][5u] ) &&
+            ( 0xDCu == m_auStorArea[13u][20u] )  && ( 0x02u == m_auStorArea[13u][21u] ) && ( 0x00u == m_auStorArea[13u][22u] ) &&
+            ( 0x00u == m_auStorArea[13u][23u] ) )
         {
             (void)printf("eFSS_LOGCTST_ReadCacheTest 8  -- OK \n");
         }
@@ -5748,14 +5748,14 @@ static void eFSS_LOGCTST_ReadCacheTest(void)
             ( 0x10u == l_ltUseBuff.puBuf[3u] )  && ( 0x03u == l_ltUseBuff.puBuf[4u] )  &&
             ( 0x10u == l_ltUseBuff2.puBuf[0u] ) && ( 0x10u == l_ltUseBuff2.puBuf[1u] ) && ( 0x10u == l_ltUseBuff2.puBuf[2u] ) &&
             ( 0x10u == l_ltUseBuff2.puBuf[3u] ) && ( 0x04u == l_ltUseBuff2.puBuf[4u] ) &&
-            ( 0x10u == m_auStorArea[p_uPageToWrite][0u] )  && ( 0x10u == m_auStorArea[p_uPageToWrite][1u] ) && ( 0x10u == m_auStorArea[p_uPageToWrite][2u] ) &&
-            ( 0x10u == m_auStorArea[p_uPageToWrite][3u] )  && ( 0x03u == m_auStorArea[p_uPageToWrite][4u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][5u] ) &&
-            ( 0xDAu == m_auStorArea[p_uPageToWrite][20u] )  && ( 0x02u == m_auStorArea[p_uPageToWrite][21u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][22u] ) &&
-            ( 0x00u == m_auStorArea[p_uPageToWrite][23u] ) &&
-            ( 0x10u == m_auStorArea[p_uPageToWrite][0u] )  && ( 0x10u == m_auStorArea[p_uPageToWrite][1u] ) && ( 0x10u == m_auStorArea[p_uPageToWrite][2u] ) &&
-            ( 0x10u == m_auStorArea[p_uPageToWrite][3u] )  && ( 0x04u == m_auStorArea[p_uPageToWrite][4u] ) && ( 0x01u == m_auStorArea[p_uPageToWrite][5u] ) &&
-            ( 0xDCu == m_auStorArea[p_uPageToWrite][20u] )  && ( 0x02u == m_auStorArea[p_uPageToWrite][21u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][22u] ) &&
-            ( 0x00u == m_auStorArea[p_uPageToWrite][23u] ) )
+            ( 0x10u == m_auStorArea[12u][0u] )  && ( 0x10u == m_auStorArea[12u][1u] ) && ( 0x10u == m_auStorArea[12u][2u] ) &&
+            ( 0x10u == m_auStorArea[12u][3u] )  && ( 0x03u == m_auStorArea[12u][4u] ) && ( 0x00u == m_auStorArea[12u][5u] ) &&
+            ( 0xDAu == m_auStorArea[12u][20u] )  && ( 0x02u == m_auStorArea[12u][21u] ) && ( 0x00u == m_auStorArea[12u][22u] ) &&
+            ( 0x00u == m_auStorArea[12u][23u] ) &&
+            ( 0x10u == m_auStorArea[13u][0u] )  && ( 0x10u == m_auStorArea[13u][1u] ) && ( 0x10u == m_auStorArea[13u][2u] ) &&
+            ( 0x10u == m_auStorArea[13u][3u] )  && ( 0x04u == m_auStorArea[13u][4u] ) && ( 0x01u == m_auStorArea[13u][5u] ) &&
+            ( 0xDCu == m_auStorArea[13u][20u] )  && ( 0x02u == m_auStorArea[13u][21u] ) && ( 0x00u == m_auStorArea[13u][22u] ) &&
+            ( 0x00u == m_auStorArea[13u][23u] ) )
         {
             (void)printf("eFSS_LOGCTST_ReadCacheTest 9  -- OK \n");
         }
@@ -5821,14 +5821,14 @@ static void eFSS_LOGCTST_ReadCacheTest(void)
             ( 0x00u == l_ltUseBuff.puBuf[3u] )  && ( 0xFFu == l_ltUseBuff.puBuf[4u] )  &&
             ( 0x00u == l_ltUseBuff2.puBuf[0u] ) && ( 0x00u == l_ltUseBuff2.puBuf[1u] ) && ( 0x00u == l_ltUseBuff2.puBuf[2u] ) &&
             ( 0x00u == l_ltUseBuff2.puBuf[3u] ) && ( 0x03u == l_ltUseBuff2.puBuf[4u] ) &&
-            ( 0x00u == m_auStorArea[p_uPageToWrite][0u] )  && ( 0x00u == m_auStorArea[p_uPageToWrite][1u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][2u] ) &&
-            ( 0x00u == m_auStorArea[p_uPageToWrite][3u] )  && ( 0x03u == m_auStorArea[p_uPageToWrite][4u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][5u] ) &&
-            ( 0x9Au == m_auStorArea[p_uPageToWrite][20u] )  && ( 0x02u == m_auStorArea[p_uPageToWrite][21u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][22u] ) &&
-            ( 0x00u == m_auStorArea[p_uPageToWrite][23u] )  &&
-            ( 0x00u == m_auStorArea[p_uPageToWrite][0u] )   && ( 0x00u == m_auStorArea[p_uPageToWrite][1u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][2u] ) &&
-            ( 0x00u == m_auStorArea[p_uPageToWrite][3u] )   && ( 0xFFu == m_auStorArea[p_uPageToWrite][4u] ) && ( 0x01u == m_auStorArea[p_uPageToWrite][5u] ) &&
-            ( 0x97u == m_auStorArea[p_uPageToWrite][20u] )  && ( 0x03u == m_auStorArea[p_uPageToWrite][21u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][22u] ) &&
-            ( 0x00u == m_auStorArea[p_uPageToWrite][23u] ) )
+            ( 0x00u == m_auStorArea[12u][0u] )  && ( 0x00u == m_auStorArea[12u][1u] ) && ( 0x00u == m_auStorArea[12u][2u] ) &&
+            ( 0x00u == m_auStorArea[12u][3u] )  && ( 0x03u == m_auStorArea[12u][4u] ) && ( 0x00u == m_auStorArea[12u][5u] ) &&
+            ( 0x9Au == m_auStorArea[12u][20u] )  && ( 0x02u == m_auStorArea[12u][21u] ) && ( 0x00u == m_auStorArea[12u][22u] ) &&
+            ( 0x00u == m_auStorArea[12u][23u] )  &&
+            ( 0x00u == m_auStorArea[13u][0u] )   && ( 0x00u == m_auStorArea[13u][1u] ) && ( 0x00u == m_auStorArea[13u][2u] ) &&
+            ( 0x00u == m_auStorArea[13u][3u] )   && ( 0xFFu == m_auStorArea[13u][4u] ) && ( 0x01u == m_auStorArea[13u][5u] ) &&
+            ( 0x97u == m_auStorArea[13u][20u] )  && ( 0x03u == m_auStorArea[13u][21u] ) && ( 0x00u == m_auStorArea[13u][22u] ) &&
+            ( 0x00u == m_auStorArea[13u][23u] ) )
         {
             (void)printf("eFSS_LOGCTST_ReadCacheTest 10 -- OK \n");
         }
@@ -5894,14 +5894,14 @@ static void eFSS_LOGCTST_ReadCacheTest(void)
             ( 0x10u == l_ltUseBuff.puBuf[3u] )  && ( 0x04u == l_ltUseBuff.puBuf[4u] )  &&
             ( 0x10u == l_ltUseBuff2.puBuf[0u] ) && ( 0x10u == l_ltUseBuff2.puBuf[1u] ) && ( 0x10u == l_ltUseBuff2.puBuf[2u] ) &&
             ( 0x10u == l_ltUseBuff2.puBuf[3u] ) && ( 0x03u == l_ltUseBuff2.puBuf[4u] ) &&
-            ( 0x10u == m_auStorArea[p_uPageToWrite][0u] )  && ( 0x10u == m_auStorArea[p_uPageToWrite][1u] ) && ( 0x10u == m_auStorArea[p_uPageToWrite][2u] ) &&
-            ( 0x10u == m_auStorArea[p_uPageToWrite][3u] )  && ( 0x03u == m_auStorArea[p_uPageToWrite][4u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][5u] ) &&
-            ( 0xDAu == m_auStorArea[p_uPageToWrite][20u] )  && ( 0x02u == m_auStorArea[p_uPageToWrite][21u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][22u] ) &&
-            ( 0x00u == m_auStorArea[p_uPageToWrite][23u] ) &&
-            ( 0x10u == m_auStorArea[p_uPageToWrite][0u] )  && ( 0x10u == m_auStorArea[p_uPageToWrite][1u] ) && ( 0x10u == m_auStorArea[p_uPageToWrite][2u] ) &&
-            ( 0x10u == m_auStorArea[p_uPageToWrite][3u] )  && ( 0x04u == m_auStorArea[p_uPageToWrite][4u] ) && ( 0x01u == m_auStorArea[p_uPageToWrite][5u] ) &&
-            ( 0xDCu == m_auStorArea[p_uPageToWrite][20u] )  && ( 0x02u == m_auStorArea[p_uPageToWrite][21u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][22u] ) &&
-            ( 0x00u == m_auStorArea[p_uPageToWrite][23u] ) )
+            ( 0x10u == m_auStorArea[12u][0u] )  && ( 0x10u == m_auStorArea[12u][1u] ) && ( 0x10u == m_auStorArea[12u][2u] ) &&
+            ( 0x10u == m_auStorArea[12u][3u] )  && ( 0x03u == m_auStorArea[12u][4u] ) && ( 0x00u == m_auStorArea[12u][5u] ) &&
+            ( 0xDAu == m_auStorArea[12u][20u] )  && ( 0x02u == m_auStorArea[12u][21u] ) && ( 0x00u == m_auStorArea[12u][22u] ) &&
+            ( 0x00u == m_auStorArea[12u][23u] ) &&
+            ( 0x10u == m_auStorArea[13u][0u] )  && ( 0x10u == m_auStorArea[13u][1u] ) && ( 0x10u == m_auStorArea[13u][2u] ) &&
+            ( 0x10u == m_auStorArea[13u][3u] )  && ( 0x04u == m_auStorArea[13u][4u] ) && ( 0x01u == m_auStorArea[13u][5u] ) &&
+            ( 0xDCu == m_auStorArea[13u][20u] )  && ( 0x02u == m_auStorArea[13u][21u] ) && ( 0x00u == m_auStorArea[13u][22u] ) &&
+            ( 0x00u == m_auStorArea[13u][23u] ) )
         {
             (void)printf("eFSS_LOGCTST_ReadCacheTest 11 -- OK \n");
         }
@@ -5967,14 +5967,14 @@ static void eFSS_LOGCTST_ReadCacheTest(void)
             ( 0x00u == l_ltUseBuff.puBuf[3u] )  && ( 0x03u == l_ltUseBuff.puBuf[4u] )  &&
             ( 0x00u == l_ltUseBuff2.puBuf[0u] ) && ( 0x00u == l_ltUseBuff2.puBuf[1u] ) && ( 0x00u == l_ltUseBuff2.puBuf[2u] ) &&
             ( 0x00u == l_ltUseBuff2.puBuf[3u] ) && ( 0xFFu == l_ltUseBuff2.puBuf[4u] ) &&
-            ( 0x00u == m_auStorArea[p_uPageToWrite][0u] )  && ( 0x00u == m_auStorArea[p_uPageToWrite][1u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][2u] ) &&
-            ( 0x00u == m_auStorArea[p_uPageToWrite][3u] )  && ( 0x03u == m_auStorArea[p_uPageToWrite][4u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][5u] ) &&
-            ( 0x9Au == m_auStorArea[p_uPageToWrite][20u] )  && ( 0x02u == m_auStorArea[p_uPageToWrite][21u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][22u] ) &&
-            ( 0x00u == m_auStorArea[p_uPageToWrite][23u] )  &&
-            ( 0x00u == m_auStorArea[p_uPageToWrite][0u] )   && ( 0x00u == m_auStorArea[p_uPageToWrite][1u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][2u] ) &&
-            ( 0x00u == m_auStorArea[p_uPageToWrite][3u] )   && ( 0xFFu == m_auStorArea[p_uPageToWrite][4u] ) && ( 0x01u == m_auStorArea[p_uPageToWrite][5u] ) &&
-            ( 0x97u == m_auStorArea[p_uPageToWrite][20u] )  && ( 0x03u == m_auStorArea[p_uPageToWrite][21u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][22u] ) &&
-            ( 0x00u == m_auStorArea[p_uPageToWrite][23u] ) )
+            ( 0x00u == m_auStorArea[12u][0u] )  && ( 0x00u == m_auStorArea[12u][1u] ) && ( 0x00u == m_auStorArea[12u][2u] ) &&
+            ( 0x00u == m_auStorArea[12u][3u] )  && ( 0x03u == m_auStorArea[12u][4u] ) && ( 0x00u == m_auStorArea[12u][5u] ) &&
+            ( 0x9Au == m_auStorArea[12u][20u] )  && ( 0x02u == m_auStorArea[12u][21u] ) && ( 0x00u == m_auStorArea[12u][22u] ) &&
+            ( 0x00u == m_auStorArea[12u][23u] )  &&
+            ( 0x00u == m_auStorArea[13u][0u] )   && ( 0x00u == m_auStorArea[13u][1u] ) && ( 0x00u == m_auStorArea[13u][2u] ) &&
+            ( 0x00u == m_auStorArea[13u][3u] )   && ( 0xFFu == m_auStorArea[13u][4u] ) && ( 0x01u == m_auStorArea[13u][5u] ) &&
+            ( 0x97u == m_auStorArea[13u][20u] )  && ( 0x03u == m_auStorArea[13u][21u] ) && ( 0x00u == m_auStorArea[13u][22u] ) &&
+            ( 0x00u == m_auStorArea[13u][23u] ) )
         {
             (void)printf("eFSS_LOGCTST_ReadCacheTest 12 -- OK \n");
         }
@@ -6040,14 +6040,14 @@ static void eFSS_LOGCTST_ReadCacheTest(void)
             ( 0x00u == l_ltUseBuff.puBuf[3u] )  && ( 0x03u == l_ltUseBuff.puBuf[4u] )  &&
             ( 0x10u == l_ltUseBuff2.puBuf[0u] ) && ( 0x10u == l_ltUseBuff2.puBuf[1u] ) && ( 0x10u == l_ltUseBuff2.puBuf[2u] ) &&
             ( 0x10u == l_ltUseBuff2.puBuf[3u] ) && ( 0x04u == l_ltUseBuff2.puBuf[4u] ) &&
-            ( 0x00u == m_auStorArea[p_uPageToWrite][0u] )  && ( 0x00u == m_auStorArea[p_uPageToWrite][1u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][2u] ) &&
-            ( 0x00u == m_auStorArea[p_uPageToWrite][3u] )  && ( 0x03u == m_auStorArea[p_uPageToWrite][4u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][5u] ) &&
-            ( 0x9Bu == m_auStorArea[p_uPageToWrite][20u] )  && ( 0x02u == m_auStorArea[p_uPageToWrite][21u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][22u] ) &&
-            ( 0x00u == m_auStorArea[p_uPageToWrite][23u] )  &&
-            ( 0x10u == m_auStorArea[p_uPageToWrite][0u] )   && ( 0x10u == m_auStorArea[p_uPageToWrite][1u] ) && ( 0x10u == m_auStorArea[p_uPageToWrite][2u] ) &&
-            ( 0x10u == m_auStorArea[p_uPageToWrite][3u] )   && ( 0x04u == m_auStorArea[p_uPageToWrite][4u] ) && ( 0x01u == m_auStorArea[p_uPageToWrite][5u] ) &&
-            ( 0xDDu == m_auStorArea[p_uPageToWrite][20u] )  && ( 0x02u == m_auStorArea[p_uPageToWrite][21u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][22u] ) &&
-            ( 0x00u == m_auStorArea[p_uPageToWrite][23u] ) )
+            ( 0x00u == m_auStorArea[12u][0u] )  && ( 0x00u == m_auStorArea[12u][1u] ) && ( 0x00u == m_auStorArea[12u][2u] ) &&
+            ( 0x00u == m_auStorArea[12u][3u] )  && ( 0x03u == m_auStorArea[12u][4u] ) && ( 0x00u == m_auStorArea[12u][5u] ) &&
+            ( 0x9Bu == m_auStorArea[12u][20u] )  && ( 0x02u == m_auStorArea[12u][21u] ) && ( 0x00u == m_auStorArea[12u][22u] ) &&
+            ( 0x00u == m_auStorArea[12u][23u] )  &&
+            ( 0x10u == m_auStorArea[13u][0u] )   && ( 0x10u == m_auStorArea[13u][1u] ) && ( 0x10u == m_auStorArea[13u][2u] ) &&
+            ( 0x10u == m_auStorArea[13u][3u] )   && ( 0x04u == m_auStorArea[13u][4u] ) && ( 0x01u == m_auStorArea[13u][5u] ) &&
+            ( 0xDDu == m_auStorArea[13u][20u] )  && ( 0x02u == m_auStorArea[13u][21u] ) && ( 0x00u == m_auStorArea[13u][22u] ) &&
+            ( 0x00u == m_auStorArea[13u][23u] ) )
         {
             (void)printf("eFSS_LOGCTST_ReadCacheTest 13 -- OK \n");
         }
@@ -6113,14 +6113,14 @@ static void eFSS_LOGCTST_ReadCacheTest(void)
             ( 0x10u == l_ltUseBuff.puBuf[3u] )  && ( 0x03u == l_ltUseBuff.puBuf[4u] )  &&
             ( 0x10u == l_ltUseBuff2.puBuf[0u] ) && ( 0x10u == l_ltUseBuff2.puBuf[1u] ) && ( 0x10u == l_ltUseBuff2.puBuf[2u] ) &&
             ( 0x10u == l_ltUseBuff2.puBuf[3u] ) && ( 0x04u == l_ltUseBuff2.puBuf[4u] ) &&
-            ( 0x10u == m_auStorArea[p_uPageToWrite][0u] )  && ( 0x10u == m_auStorArea[p_uPageToWrite][1u] ) && ( 0x10u == m_auStorArea[p_uPageToWrite][2u] ) &&
-            ( 0x10u == m_auStorArea[p_uPageToWrite][3u] )  && ( 0x03u == m_auStorArea[p_uPageToWrite][4u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][5u] ) &&
-            ( 0xDAu == m_auStorArea[p_uPageToWrite][20u] )  && ( 0x02u == m_auStorArea[p_uPageToWrite][21u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][22u] ) &&
-            ( 0x00u == m_auStorArea[p_uPageToWrite][23u] ) &&
-            ( 0x10u == m_auStorArea[p_uPageToWrite][0u] )  && ( 0x10u == m_auStorArea[p_uPageToWrite][1u] ) && ( 0x10u == m_auStorArea[p_uPageToWrite][2u] ) &&
-            ( 0x10u == m_auStorArea[p_uPageToWrite][3u] )  && ( 0x04u == m_auStorArea[p_uPageToWrite][4u] ) && ( 0x01u == m_auStorArea[p_uPageToWrite][5u] ) &&
-            ( 0xDCu == m_auStorArea[p_uPageToWrite][20u] )  && ( 0x02u == m_auStorArea[p_uPageToWrite][21u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][22u] ) &&
-            ( 0x00u == m_auStorArea[p_uPageToWrite][23u] ) )
+            ( 0x10u == m_auStorArea[12u][0u] )  && ( 0x10u == m_auStorArea[12u][1u] ) && ( 0x10u == m_auStorArea[12u][2u] ) &&
+            ( 0x10u == m_auStorArea[12u][3u] )  && ( 0x03u == m_auStorArea[12u][4u] ) && ( 0x00u == m_auStorArea[12u][5u] ) &&
+            ( 0xDAu == m_auStorArea[12u][20u] )  && ( 0x02u == m_auStorArea[12u][21u] ) && ( 0x00u == m_auStorArea[12u][22u] ) &&
+            ( 0x00u == m_auStorArea[12u][23u] ) &&
+            ( 0x10u == m_auStorArea[13u][0u] )  && ( 0x10u == m_auStorArea[13u][1u] ) && ( 0x10u == m_auStorArea[13u][2u] ) &&
+            ( 0x10u == m_auStorArea[13u][3u] )  && ( 0x04u == m_auStorArea[13u][4u] ) && ( 0x01u == m_auStorArea[13u][5u] ) &&
+            ( 0xDCu == m_auStorArea[13u][20u] )  && ( 0x02u == m_auStorArea[13u][21u] ) && ( 0x00u == m_auStorArea[13u][22u] ) &&
+            ( 0x00u == m_auStorArea[13u][23u] ) )
         {
             (void)printf("eFSS_LOGCTST_ReadCacheTest 14 -- OK \n");
         }
@@ -6186,14 +6186,14 @@ static void eFSS_LOGCTST_ReadCacheTest(void)
             ( 0x10u == l_ltUseBuff.puBuf[3u] )  && ( 0x04u == l_ltUseBuff.puBuf[4u] )  &&
             ( 0x10u == l_ltUseBuff2.puBuf[0u] ) && ( 0x10u == l_ltUseBuff2.puBuf[1u] ) && ( 0x10u == l_ltUseBuff2.puBuf[2u] ) &&
             ( 0x10u == l_ltUseBuff2.puBuf[3u] ) && ( 0x03u == l_ltUseBuff2.puBuf[4u] ) &&
-            ( 0x10u == m_auStorArea[p_uPageToWrite][0u] )  && ( 0x10u == m_auStorArea[p_uPageToWrite][1u] ) && ( 0x10u == m_auStorArea[p_uPageToWrite][2u] ) &&
-            ( 0x10u == m_auStorArea[p_uPageToWrite][3u] )  && ( 0x03u == m_auStorArea[p_uPageToWrite][4u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][5u] ) &&
-            ( 0xDAu == m_auStorArea[p_uPageToWrite][20u] )  && ( 0x02u == m_auStorArea[p_uPageToWrite][21u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][22u] ) &&
-            ( 0x00u == m_auStorArea[p_uPageToWrite][23u] ) &&
-            ( 0x10u == m_auStorArea[p_uPageToWrite][0u] )  && ( 0x10u == m_auStorArea[p_uPageToWrite][1u] ) && ( 0x10u == m_auStorArea[p_uPageToWrite][2u] ) &&
-            ( 0x10u == m_auStorArea[p_uPageToWrite][3u] )  && ( 0x04u == m_auStorArea[p_uPageToWrite][4u] ) && ( 0x01u == m_auStorArea[p_uPageToWrite][5u] ) &&
-            ( 0xDCu == m_auStorArea[p_uPageToWrite][20u] )  && ( 0x02u == m_auStorArea[p_uPageToWrite][21u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][22u] ) &&
-            ( 0x00u == m_auStorArea[p_uPageToWrite][23u] ) )
+            ( 0x10u == m_auStorArea[12u][0u] )  && ( 0x10u == m_auStorArea[12u][1u] ) && ( 0x10u == m_auStorArea[12u][2u] ) &&
+            ( 0x10u == m_auStorArea[12u][3u] )  && ( 0x03u == m_auStorArea[12u][4u] ) && ( 0x00u == m_auStorArea[12u][5u] ) &&
+            ( 0xDAu == m_auStorArea[12u][20u] )  && ( 0x02u == m_auStorArea[12u][21u] ) && ( 0x00u == m_auStorArea[12u][22u] ) &&
+            ( 0x00u == m_auStorArea[12u][23u] ) &&
+            ( 0x10u == m_auStorArea[13u][0u] )  && ( 0x10u == m_auStorArea[13u][1u] ) && ( 0x10u == m_auStorArea[13u][2u] ) &&
+            ( 0x10u == m_auStorArea[13u][3u] )  && ( 0x04u == m_auStorArea[13u][4u] ) && ( 0x01u == m_auStorArea[13u][5u] ) &&
+            ( 0xDCu == m_auStorArea[13u][20u] )  && ( 0x02u == m_auStorArea[13u][21u] ) && ( 0x00u == m_auStorArea[13u][22u] ) &&
+            ( 0x00u == m_auStorArea[13u][23u] ) )
         {
             (void)printf("eFSS_LOGCTST_ReadCacheTest 14 -- OK \n");
         }
@@ -6259,14 +6259,14 @@ static void eFSS_LOGCTST_ReadCacheTest(void)
             ( 0x00u == l_ltUseBuff.puBuf[3u] )  && ( 0x03u == l_ltUseBuff.puBuf[4u] )  &&
             ( 0x10u == l_ltUseBuff2.puBuf[0u] ) && ( 0x10u == l_ltUseBuff2.puBuf[1u] ) && ( 0x10u == l_ltUseBuff2.puBuf[2u] ) &&
             ( 0x10u == l_ltUseBuff2.puBuf[3u] ) && ( 0x04u == l_ltUseBuff2.puBuf[4u] ) &&
-            ( 0x00u == m_auStorArea[p_uPageToWrite][0u] )  && ( 0x00u == m_auStorArea[p_uPageToWrite][1u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][2u] ) &&
-            ( 0x00u == m_auStorArea[p_uPageToWrite][3u] )  && ( 0x03u == m_auStorArea[p_uPageToWrite][4u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][5u] ) &&
-            ( 0x9Bu == m_auStorArea[p_uPageToWrite][20u] )  && ( 0x02u == m_auStorArea[p_uPageToWrite][21u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][22u] ) &&
-            ( 0x00u == m_auStorArea[p_uPageToWrite][23u] )  &&
-            ( 0x10u == m_auStorArea[p_uPageToWrite][0u] )   && ( 0x10u == m_auStorArea[p_uPageToWrite][1u] ) && ( 0x10u == m_auStorArea[p_uPageToWrite][2u] ) &&
-            ( 0x10u == m_auStorArea[p_uPageToWrite][3u] )   && ( 0x04u == m_auStorArea[p_uPageToWrite][4u] ) && ( 0x01u == m_auStorArea[p_uPageToWrite][5u] ) &&
-            ( 0xFFu == m_auStorArea[p_uPageToWrite][20u] )  && ( 0xFFu == m_auStorArea[p_uPageToWrite][21u] ) && ( 0xFFu == m_auStorArea[p_uPageToWrite][22u] ) &&
-            ( 0xFFu == m_auStorArea[p_uPageToWrite][23u] ) )
+            ( 0x00u == m_auStorArea[12u][0u] )  && ( 0x00u == m_auStorArea[12u][1u] ) && ( 0x00u == m_auStorArea[12u][2u] ) &&
+            ( 0x00u == m_auStorArea[12u][3u] )  && ( 0x03u == m_auStorArea[12u][4u] ) && ( 0x00u == m_auStorArea[12u][5u] ) &&
+            ( 0x9Bu == m_auStorArea[12u][20u] )  && ( 0x02u == m_auStorArea[12u][21u] ) && ( 0x00u == m_auStorArea[12u][22u] ) &&
+            ( 0x00u == m_auStorArea[12u][23u] )  &&
+            ( 0x10u == m_auStorArea[13u][0u] )   && ( 0x10u == m_auStorArea[13u][1u] ) && ( 0x10u == m_auStorArea[13u][2u] ) &&
+            ( 0x10u == m_auStorArea[13u][3u] )   && ( 0x04u == m_auStorArea[13u][4u] ) && ( 0x01u == m_auStorArea[13u][5u] ) &&
+            ( 0xFFu == m_auStorArea[13u][20u] )  && ( 0xFFu == m_auStorArea[13u][21u] ) && ( 0xFFu == m_auStorArea[13u][22u] ) &&
+            ( 0xFFu == m_auStorArea[13u][23u] ) )
         {
             (void)printf("eFSS_LOGCTST_ReadCacheTest 15 -- OK \n");
         }
@@ -6332,14 +6332,14 @@ static void eFSS_LOGCTST_ReadCacheTest(void)
             ( 0x00u == l_ltUseBuff.puBuf[3u] )  && ( 0x03u == l_ltUseBuff.puBuf[4u] )  &&
             ( 0x10u == l_ltUseBuff2.puBuf[0u] ) && ( 0x10u == l_ltUseBuff2.puBuf[1u] ) && ( 0x10u == l_ltUseBuff2.puBuf[2u] ) &&
             ( 0x10u == l_ltUseBuff2.puBuf[3u] ) && ( 0x04u == l_ltUseBuff2.puBuf[4u] ) &&
-            ( 0x00u == m_auStorArea[p_uPageToWrite][0u] )  && ( 0x00u == m_auStorArea[p_uPageToWrite][1u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][2u] ) &&
-            ( 0x00u == m_auStorArea[p_uPageToWrite][3u] )  && ( 0x03u == m_auStorArea[p_uPageToWrite][4u] ) && ( 0x00u == m_auStorArea[p_uPageToWrite][5u] ) &&
-            ( 0xFFu == m_auStorArea[p_uPageToWrite][20u] )  && ( 0xFFu == m_auStorArea[p_uPageToWrite][21u] ) && ( 0xFFu == m_auStorArea[p_uPageToWrite][22u] ) &&
-            ( 0xFFu == m_auStorArea[p_uPageToWrite][23u] )  &&
-            ( 0x10u == m_auStorArea[p_uPageToWrite][0u] )   && ( 0x10u == m_auStorArea[p_uPageToWrite][1u] ) && ( 0x10u == m_auStorArea[p_uPageToWrite][2u] ) &&
-            ( 0x10u == m_auStorArea[p_uPageToWrite][3u] )   && ( 0x04u == m_auStorArea[p_uPageToWrite][4u] ) && ( 0x01u == m_auStorArea[p_uPageToWrite][5u] ) &&
-            ( 0xFFu == m_auStorArea[p_uPageToWrite][20u] )  && ( 0xFFu == m_auStorArea[p_uPageToWrite][21u] ) && ( 0xFFu == m_auStorArea[p_uPageToWrite][22u] ) &&
-            ( 0xFFu == m_auStorArea[p_uPageToWrite][23u] ) )
+            ( 0x00u == m_auStorArea[12u][0u] )  && ( 0x00u == m_auStorArea[12u][1u] ) && ( 0x00u == m_auStorArea[12u][2u] ) &&
+            ( 0x00u == m_auStorArea[12u][3u] )  && ( 0x03u == m_auStorArea[12u][4u] ) && ( 0x00u == m_auStorArea[12u][5u] ) &&
+            ( 0xFFu == m_auStorArea[12u][20u] )  && ( 0xFFu == m_auStorArea[12u][21u] ) && ( 0xFFu == m_auStorArea[12u][22u] ) &&
+            ( 0xFFu == m_auStorArea[12u][23u] )  &&
+            ( 0x10u == m_auStorArea[13u][0u] )   && ( 0x10u == m_auStorArea[13u][1u] ) && ( 0x10u == m_auStorArea[13u][2u] ) &&
+            ( 0x10u == m_auStorArea[13u][3u] )   && ( 0x04u == m_auStorArea[13u][4u] ) && ( 0x01u == m_auStorArea[13u][5u] ) &&
+            ( 0xFFu == m_auStorArea[13u][20u] )  && ( 0xFFu == m_auStorArea[13u][21u] ) && ( 0xFFu == m_auStorArea[13u][22u] ) &&
+            ( 0xFFu == m_auStorArea[13u][23u] ) )
         {
             (void)printf("eFSS_LOGCTST_ReadCacheTest 16 -- OK \n");
         }
