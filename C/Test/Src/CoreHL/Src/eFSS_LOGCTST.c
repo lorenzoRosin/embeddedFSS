@@ -9718,6 +9718,266 @@ static void eFSS_LOGCTST_IsPageNewOrBkup(void)
     {
         (void)printf("eFSS_LOGCTST_IsPageNewOrBkup 3  -- FAIL \n");
     }
+
+    /* --------------------------------------------- All OK no backup generation */
+    /* Setup storage area */
+    (void)memset(m_auStorArea[12u], 0, sizeof(m_auStorArea[12u]));
+    m_auStorArea[13u][0u]  = 0x01u; /* User data */
+    m_auStorArea[13u][1u]  = 0x02u; /* User data */
+    m_auStorArea[13u][2u]  = 0x03u; /* User data */
+    m_auStorArea[13u][3u]  = 0x04u; /* User data */
+    m_auStorArea[13u][4u]  = 0x05u; /* User data */
+    m_auStorArea[13u][5u]  = 0x06u; /* User data */
+    m_auStorArea[13u][6u]  = 0x07u; /* User data */
+    m_auStorArea[13u][7u]  = 0x08u; /* User data */
+    m_auStorArea[13u][8u]  = 0x08u; /* Byte In Page */
+    m_auStorArea[13u][9u]  = 0x00u; /* Byte In Page */
+    m_auStorArea[13u][10u] = 0x00u; /* Byte In Page */
+    m_auStorArea[13u][11u] = 0x00u; /* Byte In Page */
+    m_auStorArea[13u][12u] = 0x05u; /* Page SUBTYPE */
+    m_auStorArea[13u][13u] = 0x0Du; /* Page index */
+    m_auStorArea[13u][14u] = 0x00u; /* Page index */
+    m_auStorArea[13u][15u] = 0x00u; /* Page index */
+    m_auStorArea[13u][16u] = 0x00u; /* Page index */
+    m_auStorArea[13u][17u] = 0x02u; /* Page type */
+    m_auStorArea[13u][18u] = 0x01u; /* Page version */
+    m_auStorArea[13u][19u] = 0x00u; /* Page version */
+    m_auStorArea[13u][20u] = 0x0Eu; /* Total page */
+    m_auStorArea[13u][21u] = 0x00u; /* Total page */
+    m_auStorArea[13u][22u] = 0x00u; /* Total page */
+    m_auStorArea[13u][23u] = 0x00u; /* Total page */
+    m_auStorArea[13u][24u] = 0xA5u; /* Magic number */
+    m_auStorArea[13u][25u] = 0xA5u; /* Magic number */
+    m_auStorArea[13u][26u] = 0xA5u; /* Magic number */
+    m_auStorArea[13u][27u] = 0xA5u; /* Magic number */
+    m_auStorArea[13u][28u] = 0xE2u; /* CRC */
+    m_auStorArea[13u][29u] = 0x02u; /* CRC */
+    m_auStorArea[13u][30u] = 0x00u; /* CRC */
+    m_auStorArea[13u][31u] = 0x00u; /* CRC */
+
+    /* Setup buffer */
+    l_ltUseBuff.puBuf[0u] = 0x00u;
+    l_ltUseBuff.puBuf[1u] = 0x00u;
+    l_ltUseBuff.puBuf[2u] = 0x00u;
+    l_ltUseBuff.puBuf[3u] = 0x00u;
+    l_ltUseBuff.puBuf[4u] = 0x00u;
+    l_ltUseBuff.puBuf[5u] = 0x00u;
+    l_ltUseBuff.puBuf[6u] = 0x00u;
+    l_ltUseBuff.puBuf[7u] = 0x00u;
+
+    l_bIsNewest = false;
+    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_IsPageNewOrBkup(&l_tCtx, 13u, &l_bIsNewest) )
+    {
+        if( ( false == l_bIsNewest ) &&
+            ( 0x01u == l_ltUseBuff.puBuf[0u] ) && ( 0x02u == l_ltUseBuff.puBuf[1u] ) && ( 0x03u == l_ltUseBuff.puBuf[2u] ) && ( 0x04u == l_ltUseBuff.puBuf[3u] ) &&
+            ( 0x05u == l_ltUseBuff.puBuf[4u] ) && ( 0x06u == l_ltUseBuff.puBuf[5u] ) && ( 0x07u == l_ltUseBuff.puBuf[6u] ) && ( 0x08u == l_ltUseBuff.puBuf[7u] ) )
+        {
+            (void)printf("eFSS_LOGCTST_IsPageNewOrBkup 4  -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_LOGCTST_IsPageNewOrBkup 4  -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_IsPageNewOrBkup 4  -- FAIL \n");
+    }
+
+    /* --------------------------------------------- All OK no backup generation */
+    /* Setup storage area */
+    (void)memset(m_auStorArea[12u], 0, sizeof(m_auStorArea[12u]));
+    m_auStorArea[13u][0u]  = 0x01u; /* User data */
+    m_auStorArea[13u][1u]  = 0x02u; /* User data */
+    m_auStorArea[13u][2u]  = 0x03u; /* User data */
+    m_auStorArea[13u][3u]  = 0x04u; /* User data */
+    m_auStorArea[13u][4u]  = 0x05u; /* User data */
+    m_auStorArea[13u][5u]  = 0x06u; /* User data */
+    m_auStorArea[13u][6u]  = 0x07u; /* User data */
+    m_auStorArea[13u][7u]  = 0x08u; /* User data */
+    m_auStorArea[13u][8u]  = 0x08u; /* Byte In Page */
+    m_auStorArea[13u][9u]  = 0x00u; /* Byte In Page */
+    m_auStorArea[13u][10u] = 0x00u; /* Byte In Page */
+    m_auStorArea[13u][11u] = 0x00u; /* Byte In Page */
+    m_auStorArea[13u][12u] = 0x06u; /* Page SUBTYPE */
+    m_auStorArea[13u][13u] = 0x0Du; /* Page index */
+    m_auStorArea[13u][14u] = 0x00u; /* Page index */
+    m_auStorArea[13u][15u] = 0x00u; /* Page index */
+    m_auStorArea[13u][16u] = 0x00u; /* Page index */
+    m_auStorArea[13u][17u] = 0x02u; /* Page type */
+    m_auStorArea[13u][18u] = 0x01u; /* Page version */
+    m_auStorArea[13u][19u] = 0x00u; /* Page version */
+    m_auStorArea[13u][20u] = 0x0Eu; /* Total page */
+    m_auStorArea[13u][21u] = 0x00u; /* Total page */
+    m_auStorArea[13u][22u] = 0x00u; /* Total page */
+    m_auStorArea[13u][23u] = 0x00u; /* Total page */
+    m_auStorArea[13u][24u] = 0xA5u; /* Magic number */
+    m_auStorArea[13u][25u] = 0xA5u; /* Magic number */
+    m_auStorArea[13u][26u] = 0xA5u; /* Magic number */
+    m_auStorArea[13u][27u] = 0xA5u; /* Magic number */
+    m_auStorArea[13u][28u] = 0xE3u; /* CRC */
+    m_auStorArea[13u][29u] = 0x02u; /* CRC */
+    m_auStorArea[13u][30u] = 0x00u; /* CRC */
+    m_auStorArea[13u][31u] = 0x00u; /* CRC */
+
+    /* Setup buffer */
+    l_ltUseBuff.puBuf[0u] = 0x00u;
+    l_ltUseBuff.puBuf[1u] = 0x00u;
+    l_ltUseBuff.puBuf[2u] = 0x00u;
+    l_ltUseBuff.puBuf[3u] = 0x00u;
+    l_ltUseBuff.puBuf[4u] = 0x00u;
+    l_ltUseBuff.puBuf[5u] = 0x00u;
+    l_ltUseBuff.puBuf[6u] = 0x00u;
+    l_ltUseBuff.puBuf[7u] = 0x00u;
+
+    l_bIsNewest = false;
+    if( e_eFSS_LOGC_RES_NOTVALIDLOG == eFSS_LOGC_IsPageNewOrBkup(&l_tCtx, 13u, &l_bIsNewest) )
+    {
+        if( ( false == l_bIsNewest ) &&
+            ( 0x01u == l_ltUseBuff.puBuf[0u] ) && ( 0x02u == l_ltUseBuff.puBuf[1u] ) && ( 0x03u == l_ltUseBuff.puBuf[2u] ) && ( 0x04u == l_ltUseBuff.puBuf[3u] ) &&
+            ( 0x05u == l_ltUseBuff.puBuf[4u] ) && ( 0x06u == l_ltUseBuff.puBuf[5u] ) && ( 0x07u == l_ltUseBuff.puBuf[6u] ) && ( 0x08u == l_ltUseBuff.puBuf[7u] ) )
+        {
+            (void)printf("eFSS_LOGCTST_IsPageNewOrBkup 5  -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_LOGCTST_IsPageNewOrBkup 5  -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_IsPageNewOrBkup 5  -- FAIL \n");
+    }
+
+    /* --------------------------------------------- All OK no backup generation */
+    /* Setup storage area */
+    (void)memset(m_auStorArea[12u], 0, sizeof(m_auStorArea[12u]));
+    m_auStorArea[13u][0u]  = 0x01u; /* User data */
+    m_auStorArea[13u][1u]  = 0x02u; /* User data */
+    m_auStorArea[13u][2u]  = 0x03u; /* User data */
+    m_auStorArea[13u][3u]  = 0x04u; /* User data */
+    m_auStorArea[13u][4u]  = 0x05u; /* User data */
+    m_auStorArea[13u][5u]  = 0x06u; /* User data */
+    m_auStorArea[13u][6u]  = 0x07u; /* User data */
+    m_auStorArea[13u][7u]  = 0x08u; /* User data */
+    m_auStorArea[13u][8u]  = 0x08u; /* Byte In Page */
+    m_auStorArea[13u][9u]  = 0x00u; /* Byte In Page */
+    m_auStorArea[13u][10u] = 0x00u; /* Byte In Page */
+    m_auStorArea[13u][11u] = 0x00u; /* Byte In Page */
+    m_auStorArea[13u][12u] = 0x06u; /* Page SUBTYPE */
+    m_auStorArea[13u][13u] = 0x0Du; /* Page index */
+    m_auStorArea[13u][14u] = 0x00u; /* Page index */
+    m_auStorArea[13u][15u] = 0x00u; /* Page index */
+    m_auStorArea[13u][16u] = 0x00u; /* Page index */
+    m_auStorArea[13u][17u] = 0x02u; /* Page type */
+    m_auStorArea[13u][18u] = 0x01u; /* Page version */
+    m_auStorArea[13u][19u] = 0x00u; /* Page version */
+    m_auStorArea[13u][20u] = 0x0Eu; /* Total page */
+    m_auStorArea[13u][21u] = 0x00u; /* Total page */
+    m_auStorArea[13u][22u] = 0x00u; /* Total page */
+    m_auStorArea[13u][23u] = 0x00u; /* Total page */
+    m_auStorArea[13u][24u] = 0xA5u; /* Magic number */
+    m_auStorArea[13u][25u] = 0xA5u; /* Magic number */
+    m_auStorArea[13u][26u] = 0xA5u; /* Magic number */
+    m_auStorArea[13u][27u] = 0xA5u; /* Magic number */
+    m_auStorArea[13u][28u] = 0xCC; /* CRC */
+    m_auStorArea[13u][29u] = 0xCC; /* CRC */
+    m_auStorArea[13u][30u] = 0xCC; /* CRC */
+    m_auStorArea[13u][31u] = 0xCC; /* CRC */
+
+    /* Setup buffer */
+    l_ltUseBuff.puBuf[0u] = 0x00u;
+    l_ltUseBuff.puBuf[1u] = 0x00u;
+    l_ltUseBuff.puBuf[2u] = 0x00u;
+    l_ltUseBuff.puBuf[3u] = 0x00u;
+    l_ltUseBuff.puBuf[4u] = 0x00u;
+    l_ltUseBuff.puBuf[5u] = 0x00u;
+    l_ltUseBuff.puBuf[6u] = 0x00u;
+    l_ltUseBuff.puBuf[7u] = 0x00u;
+
+    l_bIsNewest = false;
+    if( e_eFSS_LOGC_RES_NOTVALIDLOG == eFSS_LOGC_IsPageNewOrBkup(&l_tCtx, 13u, &l_bIsNewest) )
+    {
+        if( ( false == l_bIsNewest ) &&
+            ( 0x01u == l_ltUseBuff.puBuf[0u] ) && ( 0x02u == l_ltUseBuff.puBuf[1u] ) && ( 0x03u == l_ltUseBuff.puBuf[2u] ) && ( 0x04u == l_ltUseBuff.puBuf[3u] ) &&
+            ( 0x05u == l_ltUseBuff.puBuf[4u] ) && ( 0x06u == l_ltUseBuff.puBuf[5u] ) && ( 0x07u == l_ltUseBuff.puBuf[6u] ) && ( 0x08u == l_ltUseBuff.puBuf[7u] ) )
+        {
+            (void)printf("eFSS_LOGCTST_IsPageNewOrBkup 6  -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_LOGCTST_IsPageNewOrBkup 6  -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_IsPageNewOrBkup 6  -- FAIL \n");
+    }
+
+    /* --------------------------------------------- All OK no backup generation */
+    /* Setup storage area */
+    (void)memset(m_auStorArea[12u], 0, sizeof(m_auStorArea[12u]));
+    m_auStorArea[13u][0u]  = 0x01u; /* User data */
+    m_auStorArea[13u][1u]  = 0x02u; /* User data */
+    m_auStorArea[13u][2u]  = 0x03u; /* User data */
+    m_auStorArea[13u][3u]  = 0x04u; /* User data */
+    m_auStorArea[13u][4u]  = 0x05u; /* User data */
+    m_auStorArea[13u][5u]  = 0x06u; /* User data */
+    m_auStorArea[13u][6u]  = 0x07u; /* User data */
+    m_auStorArea[13u][7u]  = 0x08u; /* User data */
+    m_auStorArea[13u][8u]  = 0x09u; /* Byte In Page */
+    m_auStorArea[13u][9u]  = 0x00u; /* Byte In Page */
+    m_auStorArea[13u][10u] = 0x00u; /* Byte In Page */
+    m_auStorArea[13u][11u] = 0x00u; /* Byte In Page */
+    m_auStorArea[13u][12u] = 0x03u; /* Page SUBTYPE */
+    m_auStorArea[13u][13u] = 0x0Du; /* Page index */
+    m_auStorArea[13u][14u] = 0x00u; /* Page index */
+    m_auStorArea[13u][15u] = 0x00u; /* Page index */
+    m_auStorArea[13u][16u] = 0x00u; /* Page index */
+    m_auStorArea[13u][17u] = 0x02u; /* Page type */
+    m_auStorArea[13u][18u] = 0x01u; /* Page version */
+    m_auStorArea[13u][19u] = 0x00u; /* Page version */
+    m_auStorArea[13u][20u] = 0x0Eu; /* Total page */
+    m_auStorArea[13u][21u] = 0x00u; /* Total page */
+    m_auStorArea[13u][22u] = 0x00u; /* Total page */
+    m_auStorArea[13u][23u] = 0x00u; /* Total page */
+    m_auStorArea[13u][24u] = 0xA5u; /* Magic number */
+    m_auStorArea[13u][25u] = 0xA5u; /* Magic number */
+    m_auStorArea[13u][26u] = 0xA5u; /* Magic number */
+    m_auStorArea[13u][27u] = 0xA5u; /* Magic number */
+    m_auStorArea[13u][28u] = 0xE1u; /* CRC */
+    m_auStorArea[13u][29u] = 0x02u; /* CRC */
+    m_auStorArea[13u][30u] = 0x00u; /* CRC */
+    m_auStorArea[13u][31u] = 0x00u; /* CRC */
+
+    /* Setup buffer */
+    l_ltUseBuff.puBuf[0u] = 0x00u;
+    l_ltUseBuff.puBuf[1u] = 0x00u;
+    l_ltUseBuff.puBuf[2u] = 0x00u;
+    l_ltUseBuff.puBuf[3u] = 0x00u;
+    l_ltUseBuff.puBuf[4u] = 0x00u;
+    l_ltUseBuff.puBuf[5u] = 0x00u;
+    l_ltUseBuff.puBuf[6u] = 0x00u;
+    l_ltUseBuff.puBuf[7u] = 0x00u;
+
+    l_bIsNewest = false;
+    if( e_eFSS_LOGC_RES_NOTVALIDLOG == eFSS_LOGC_IsPageNewOrBkup(&l_tCtx, 13u, &l_bIsNewest) )
+    {
+        if( ( false == l_bIsNewest ) &&
+            ( 0x01u == l_ltUseBuff.puBuf[0u] ) && ( 0x02u == l_ltUseBuff.puBuf[1u] ) && ( 0x03u == l_ltUseBuff.puBuf[2u] ) && ( 0x04u == l_ltUseBuff.puBuf[3u] ) &&
+            ( 0x05u == l_ltUseBuff.puBuf[4u] ) && ( 0x06u == l_ltUseBuff.puBuf[5u] ) && ( 0x07u == l_ltUseBuff.puBuf[6u] ) && ( 0x08u == l_ltUseBuff.puBuf[7u] ) )
+        {
+            (void)printf("eFSS_LOGCTST_IsPageNewOrBkup 7  -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_LOGCTST_IsPageNewOrBkup 7  -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_IsPageNewOrBkup 7  -- FAIL \n");
+    }
 }
 
 
