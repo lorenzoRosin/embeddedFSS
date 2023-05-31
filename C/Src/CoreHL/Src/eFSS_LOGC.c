@@ -819,10 +819,7 @@ e_eFSS_LOGC_RES eFSS_LOGC_IsPageNewOrBkup(t_eFSS_LOGC_Ctx* const p_ptCtx, const 
                                         else
                                         {
                                             /* Check subtype */
-                                            if( ( EFSS_PAGESUBTYPE_LOGORI           != l_uPageSubTypeRed ) &&
-                                                ( EFSS_PAGESUBTYPE_LOGBKP           != l_uPageSubTypeRed ) &&
-                                                ( EFSS_PAGESUBTYPE_LOGNEWESTBKP     != l_uPageSubTypeRed ) &&
-                                                ( EFSS_PAGESUBTYPE_LOGNEWESTBKPBKP  != l_uPageSubTypeRed ) )
+                                            if( EFSS_PAGESUBTYPE_LOGORI != l_uPageSubTypeRed )
                                             {
                                                 /* Not valid Log, subtype dosent exist */
                                                 if( true == p_ptCtx->bFullBckup )
