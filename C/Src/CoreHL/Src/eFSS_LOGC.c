@@ -1017,8 +1017,6 @@ e_eFSS_LOGC_RES eFSS_LOGC_FlushBuffIfNotEquals(t_eFSS_LOGC_Ctx* const p_ptCtx, c
     bool_t l_bAreEquals;
     uint8_t l_uPagSubTOri;
     uint8_t l_uPagSubTBkp;
-    uint32_t l_uByteInPage;
-    uint32_t l_uBytInPOff;
     uint8_t l_uPageSubTypeRed;
 
 	/* Check pointer validity */
@@ -1097,18 +1095,19 @@ e_eFSS_LOGC_RES eFSS_LOGC_FlushBuffIfNotEquals(t_eFSS_LOGC_Ctx* const p_ptCtx, c
 
                             if( e_eFSS_LOGC_RES_OK == l_eRes )
                             {
-                                /* Before proceeding check if the buffer has some valid data */
-                                l_uBytInPOff = l_tBuff.uBufL - EFSS_LOGC_PAGEMIN_L;
-                                if( true != eFSS_Utils_RetriveU32(&l_tBuff.puBuf[l_uBytInPOff], &l_uByteInPage) )
+                                /* Before proceeding check parameter correctness */
+                                if( p_uFillInPage > ( l_tBuff.uBufL - EFSS_LOGC_PAGEMIN_L ) )
                                 {
-                                    l_eRes = e_eFSS_LOGC_RES_CORRUPTCTX;
+                                    /* Cannot fill more data than possible */
+                                    l_eRes = e_eFSS_LOGC_RES_BADPARAM;
                                 }
                                 else
                                 {
-                                    if( l_uByteInPage > ( l_tBuff.uBufL - EFSS_LOGC_PAGEMIN_L ) )
+                                    /* Insert the parameter in to the buffer so we can compare the page */
+                                    if( true != eFSS_Utils_InsertU32(&l_tBuff.puBuf[l_tBuff.uBufL - EFSS_LOGC_PAGEMIN_L],
+                                                                     p_uFillInPage) )
                                     {
-                                        /* Cannot fill more data than possible */
-                                        l_eRes = e_eFSS_LOGC_RES_BADPARAM;
+                                        l_eRes = e_eFSS_LOGC_RES_CORRUPTCTX;
                                     }
                                     else
                                     {
@@ -1124,7 +1123,7 @@ e_eFSS_LOGC_RES eFSS_LOGC_FlushBuffIfNotEquals(t_eFSS_LOGC_Ctx* const p_ptCtx, c
                                             ( e_eFSS_LOGC_RES_NEWVERSIONFOUND == l_eRes ) )
                                         {
                                             /* Not equal! Flush buffer here */
-                                            l_eRes = eFSS_LOGC_FlushBuff(p_ptCtx, p_ptCtx->bFullBckup, l_uByteInPage,
+                                            l_eRes = eFSS_LOGC_FlushBuff(p_ptCtx, p_ptCtx->bFullBckup, p_uFillInPage,
                                                                          p_uIdx, ( l_uNPageU + p_uIdx ), l_uPagSubTOri,
                                                                          l_uPagSubTBkp);
 
@@ -1183,6 +1182,7 @@ e_eFSS_LOGC_RES eFSS_LOGC_FlushBuffIfNotEquals(t_eFSS_LOGC_Ctx* const p_ptCtx, c
 
 	return l_eRes;
 }
+
 
 
 
