@@ -793,16 +793,55 @@ e_eFSS_LOGC_RES eFSS_LOGC_IsPageNewOrBkup(t_eFSS_LOGC_Ctx* const p_ptCtx, const 
                                 if( ( EFSS_PAGESUBTYPE_LOGNEWESTORI    != l_uPageSubTypeRed ) &&
                                     ( EFSS_PAGESUBTYPE_LOGNEWESTBKPORI != l_uPageSubTypeRed ) )
                                 {
-                                    if( true == p_ptCtx->bFullBckup )
+                                    /* Retrive parameter */
+                                    if( true != eFSS_Utils_RetriveU32(&l_tBuff.puBuf[l_uByteUsedOff], &l_uByteUsed) )
                                     {
-                                        /* Maybe backup pages hold the searched page */
-                                        l_bNeedCheckRec = true;
+                                        l_eRes = e_eFSS_LOGC_RES_CORRUPTCTX;
                                     }
                                     else
                                     {
-                                        /* Not what we are searching, declared as invalid for this pourpose only.
-                                        No need to check for backup */
-                                        l_eRes = e_eFSS_LOGC_RES_NOTVALIDLOG;
+                                        /* Check validity */
+                                        if( l_uByteUsed > ( l_tBuff.uBufL - EFSS_LOGC_PAGEMIN_L ) )
+                                        {
+                                            /* The page was written correctly, but the data is invalid, cannot
+                                               do other things. Check the backup just in case */
+                                            if( true == p_ptCtx->bFullBckup )
+                                            {
+                                                /* Maybe backup pages hold a valid page */
+                                                l_bNeedCheckRec = true;
+                                            }
+                                            else
+                                            {
+                                                /* Page saved with wrong data */
+                                                l_eRes = e_eFSS_LOGC_RES_NOTVALIDLOG;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            /* Check subtype */
+                                            if( ( EFSS_PAGESUBTYPE_LOGORI           != l_uPageSubTypeRed ) &&
+                                                ( EFSS_PAGESUBTYPE_LOGBKP           != l_uPageSubTypeRed ) &&
+                                                ( EFSS_PAGESUBTYPE_LOGNEWESTBKP     != l_uPageSubTypeRed ) &&
+                                                ( EFSS_PAGESUBTYPE_LOGNEWESTBKPBKP  != l_uPageSubTypeRed ) )
+                                            {
+                                                /* Not valid Log, subtype dosent exist */
+                                                if( true == p_ptCtx->bFullBckup )
+                                                {
+                                                    /* Maybe backup pages hold the searched page */
+                                                    l_bNeedCheckRec = true;
+                                                }
+                                                else
+                                                {
+                                                    /* We dont have backup pages  */
+                                                    l_eRes = e_eFSS_LOGC_RES_NOTVALIDLOG;
+                                                }
+                                            }
+                                            else
+                                            {
+                                                /* Valid log, but not what we are searching for */
+                                                l_eRes = e_eFSS_LOGC_RES_NOTVALIDLOG;
+                                            }
+                                        }
                                     }
                                 }
                                 else
