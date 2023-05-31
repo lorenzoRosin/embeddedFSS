@@ -1001,7 +1001,7 @@ e_eFSS_LOGC_RES eFSS_LOGC_IsPageNewOrBkup(t_eFSS_LOGC_Ctx* const p_ptCtx, const 
 }
 
 e_eFSS_LOGC_RES eFSS_LOGC_FlushBuffIfNotEquals(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint32_t p_uIdx,
-                                               const e_eFSS_LOGC_PAGETYPE p_eTypeFlush)
+                                               const uint32_t p_uFillInPage, const e_eFSS_LOGC_PAGETYPE p_eTypeFlush)
 {
 	/* Local return variable */
 	e_eFSS_LOGC_RES l_eRes;

@@ -11631,9 +11631,6 @@ static void eFSS_LOGCTST_IsPageNewOrBkup(void)
     }
 }
 
-
-
-
 static void eFSS_LOGCTST_FlushBuffIfNotEquals(void)
 {
     /* Local variable */
@@ -11751,17 +11748,17 @@ static void eFSS_LOGCTST_FlushBuffIfNotEquals(void)
     m_auStorArea[13u][31u] = 0x00u; /* CRC */
 
     /* Setup buffer */
-    l_ltUseBuff.puBuf[0u] = 0x00u;
-    l_ltUseBuff.puBuf[1u] = 0x00u;
-    l_ltUseBuff.puBuf[2u] = 0x00u;
-    l_ltUseBuff.puBuf[3u] = 0x00u;
-    l_ltUseBuff.puBuf[4u] = 0x00u;
-    l_ltUseBuff.puBuf[5u] = 0x00u;
-    l_ltUseBuff.puBuf[6u] = 0x00u;
-    l_ltUseBuff.puBuf[7u] = 0x00u;
+    l_ltUseBuff.puBuf[0u] = 0x01u;
+    l_ltUseBuff.puBuf[1u] = 0x02u;
+    l_ltUseBuff.puBuf[2u] = 0x03u;
+    l_ltUseBuff.puBuf[3u] = 0x04u;
+    l_ltUseBuff.puBuf[4u] = 0x05u;
+    l_ltUseBuff.puBuf[5u] = 0x06u;
+    l_ltUseBuff.puBuf[6u] = 0x07u;
+    l_ltUseBuff.puBuf[7u] = 0x08u;
 
     l_bIsNewest = false;
-    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_IsPageNewOrBkup(&l_tCtx, 13u, &l_bIsNewest) )
+    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_FlushBuffIfNotEquals(&l_tCtx, 13u, e_eFSS_LOGC_PAGETYPE_LOG) )
     {
         if( ( true == l_bIsNewest ) &&
             ( 0x01u == l_ltUseBuff.puBuf[0u] ) && ( 0x02u == l_ltUseBuff.puBuf[1u] ) && ( 0x03u == l_ltUseBuff.puBuf[2u] ) && ( 0x04u == l_ltUseBuff.puBuf[3u] ) &&

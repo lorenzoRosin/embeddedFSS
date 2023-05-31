@@ -287,14 +287,18 @@ e_eFSS_LOGC_RES eFSS_LOGC_IsPageNewOrBkup(t_eFSS_LOGC_Ctx* const p_ptCtx, const 
  *              index p_uIdx, if the data are not equals flush the internal buffer data in to the pointed page.
  *              If pages are equals do nothing.
  *              If page pointed by p_uIdx is invalid or is valid but the subtype of the page itself is different
- *              from p_eTypeFlush, flush anyway the data present in to the internal buffer.
- *              Keep in mind that subtype are not compared, the comparsion is only done using raw data (so we
- *              are comparing numbersofbyteinpage also).
- *              Th previusly present data in buffer is not modified after this call.
+ *              from p_eTypeFlush, or the p_uFillInPage is different from the stored page, flush anyway the data
+ *              present in to the internal buffer. Keep in mind that subtype and numbers of byte in page are not
+ *              compared, the comparsion is only done using raw data.
+ *              The previusly present data in buffer is not modified after this call (only raw data, byte in page and
+ *              subtype are modified if needed)
  *              If fullbackup is enabled this page will take care of backup pages.
  *
  * @param[in]   p_ptCtx         - Log Core context
  * @param[in]   p_uIdx          - uint32_t index rappresenting the page that we want to compare and eventualy flush
+ * @param[in]   p_uFillInPage   - Number of filled byte in page, this value dosent comprend the space needed to store
+ *                                this parameter. So the max value can be the size of the buffer returned by
+ *                                eFSS_LOGC_GetBuffNUsable minus the sizeof(uint32_t)
  * @param[in]   p_eTypeFlush    - Subtype that the pointe page need to have to be considered a valid page. If page
  *                                is valid but subtype dosent page the flush operation will be performed even if
  *                                data present in buffer match the one present in to the page
@@ -314,7 +318,7 @@ e_eFSS_LOGC_RES eFSS_LOGC_IsPageNewOrBkup(t_eFSS_LOGC_Ctx* const p_ptCtx, const 
  *              e_eFSS_LOGC_RES_OK                - Operation ended correctly, no flush operation performed
  */
 e_eFSS_LOGC_RES eFSS_LOGC_FlushBuffIfNotEquals(t_eFSS_LOGC_Ctx* const p_ptCtx, const uint32_t p_uIdx,
-                                               const e_eFSS_LOGC_PAGETYPE p_eTypeFlush);
+                                               const uint32_t p_uFillInPage, const e_eFSS_LOGC_PAGETYPE p_eTypeFlush);
 
 #ifdef __cplusplus
 } /* extern "C" */
