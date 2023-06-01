@@ -129,18 +129,18 @@ void eFSS_LOGCTST_ExeTest(void)
 {
 	(void)printf("\n\nLOG CORE TEST START \n\n");
 
-    // eFSS_LOGCTST_BadPointer();
-    // eFSS_LOGCTST_BadInit();
-    // eFSS_LOGCTST_BadParamEntr();
-    // eFSS_LOGCTST_CorruptedCtx();
-    // eFSS_LOGCTST_Basic();
-    // eFSS_LOGCTST_BadClBckNRetry();
-    // eFSS_LOGCTST_ReadCacheTest();
-    // eFSS_LOGCTST_WriteCacheTest();
-    // eFSS_LOGCTST_LoadTest();
-    // eFSS_LOGCTST_FlushTest();
-    // eFSS_LOGCTST_IsPageNewOrBkup();
-    // eFSS_LOGCTST_FlushBuffIfNotEquals();
+    eFSS_LOGCTST_BadPointer();
+    eFSS_LOGCTST_BadInit();
+    eFSS_LOGCTST_BadParamEntr();
+    eFSS_LOGCTST_CorruptedCtx();
+    eFSS_LOGCTST_Basic();
+    eFSS_LOGCTST_BadClBckNRetry();
+    eFSS_LOGCTST_ReadCacheTest();
+    eFSS_LOGCTST_WriteCacheTest();
+    eFSS_LOGCTST_LoadTest();
+    eFSS_LOGCTST_FlushTest();
+    eFSS_LOGCTST_IsPageNewOrBkup();
+    eFSS_LOGCTST_FlushBuffIfNotEquals();
     eFSS_LOGCTST_GenTest();
 
     (void)printf("\n\nLOG CORE TEST END \n\n");
@@ -15660,6 +15660,9 @@ static void eFSS_LOGCTST_GenTest(void)
     uint32_t l_uPageUsable;
     uint32_t l_uNewPIx;
     uint32_t l_uFillPIdx;
+    bool_t isInit;
+    bool_t isFlashCaaceh;
+    bool_t isNewest;
 
     /* Init callback var */
     l_tCtxCb.ptCtxErase = &l_tCtxErase;
@@ -15681,6 +15684,9 @@ static void eFSS_LOGCTST_GenTest(void)
     l_uPageUsable = 0u;
     l_uNewPIx = 0u;
     l_uFillPIdx = 0u;
+    isInit = false;
+    isFlashCaaceh = false;
+    isNewest = false;
 
     /* ------------------------------------------------------------------------------------------- TEST CRC CALL BACK */
     /* Function */
@@ -15758,6 +15764,956 @@ static void eFSS_LOGCTST_GenTest(void)
     else
     {
         (void)printf("eFSS_LOGCTST_GenTest 5  -- FAIL \n");
+    }
+
+    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_IsInit(&l_tCtx, &isInit) )
+    {
+        /* Function */
+        if( true == isInit)
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 6  -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 6  -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_GenTest 6  -- FAIL \n");
+    }
+
+    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_IsFlashCacheUsed(&l_tCtx, &isFlashCaaceh) )
+    {
+        /* Function */
+        if( true == isFlashCaaceh)
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 7  -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 7  -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_GenTest 7  -- FAIL \n");
+    }
+
+    l_uByteInPage = 0u;
+    if( e_eFSS_LOGC_RES_NOTVALIDLOG == eFSS_LOGC_LoadBufferAs(&l_tCtx, e_eFSS_LOGC_PAGETYPE_LOG, 0u, &l_uByteInPage) )
+    {
+        /* Function */
+        if( 0u == l_uByteInPage)
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 8  -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 8  -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_GenTest 8  -- FAIL \n");
+    }
+
+    l_uByteInPage = 0u;
+    if( e_eFSS_LOGC_RES_NOTVALIDLOG == eFSS_LOGC_LoadBufferAs(&l_tCtx, e_eFSS_LOGC_PAGETYPE_LOG, 1u, &l_uByteInPage) )
+    {
+        /* Function */
+        if( 0u == l_uByteInPage)
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 9  -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 9  -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_GenTest 9  -- FAIL \n");
+    }
+
+    l_uByteInPage = 0u;
+    if( e_eFSS_LOGC_RES_NOTVALIDLOG == eFSS_LOGC_LoadBufferAs(&l_tCtx, e_eFSS_LOGC_PAGETYPE_LOG, 2u, &l_uByteInPage) )
+    {
+        /* Function */
+        if( 0u == l_uByteInPage)
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 10 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 10 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_GenTest 10 -- FAIL \n");
+    }
+
+    l_uByteInPage = 0u;
+    if( e_eFSS_LOGC_RES_NOTVALIDLOG == eFSS_LOGC_LoadBufferAs(&l_tCtx, e_eFSS_LOGC_PAGETYPE_LOG, 3u, &l_uByteInPage) )
+    {
+        /* Function */
+        if( 0u == l_uByteInPage)
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 11 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 11 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_GenTest 11 -- FAIL \n");
+    }
+
+    l_uByteInPage = 0u;
+    if( e_eFSS_LOGC_RES_NOTVALIDLOG == eFSS_LOGC_LoadBufferAs(&l_tCtx, e_eFSS_LOGC_PAGETYPE_LOG, 4u, &l_uByteInPage) )
+    {
+        /* Function */
+        if( 0u == l_uByteInPage)
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 12 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 12 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_GenTest 12 -- FAIL \n");
+    }
+
+    l_uByteInPage = 0u;
+    if( e_eFSS_LOGC_RES_NOTVALIDLOG == eFSS_LOGC_LoadBufferAs(&l_tCtx, e_eFSS_LOGC_PAGETYPE_LOG, 5u, &l_uByteInPage) )
+    {
+        /* Function */
+        if( 0u == l_uByteInPage)
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 13 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 13 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_GenTest 13 -- FAIL \n");
+    }
+
+    l_uByteInPage = 0u;
+    if( e_eFSS_LOGC_RES_NOTVALIDLOG == eFSS_LOGC_LoadBufferAs(&l_tCtx, e_eFSS_LOGC_PAGETYPE_NEWEST, 0u, &l_uByteInPage) )
+    {
+        /* Function */
+        if( 0u == l_uByteInPage)
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 14 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 14 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_GenTest 14 -- FAIL \n");
+    }
+
+    l_uByteInPage = 0u;
+    if( e_eFSS_LOGC_RES_NOTVALIDLOG == eFSS_LOGC_LoadBufferAs(&l_tCtx, e_eFSS_LOGC_PAGETYPE_NEWEST, 1u, &l_uByteInPage) )
+    {
+        /* Function */
+        if( 0u == l_uByteInPage)
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 15 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 15 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_GenTest 15 -- FAIL \n");
+    }
+
+    l_uByteInPage = 0u;
+    if( e_eFSS_LOGC_RES_NOTVALIDLOG == eFSS_LOGC_LoadBufferAs(&l_tCtx, e_eFSS_LOGC_PAGETYPE_NEWEST, 2u, &l_uByteInPage) )
+    {
+        /* Function */
+        if( 0u == l_uByteInPage)
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 16 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 16 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_GenTest 16 -- FAIL \n");
+    }
+
+    l_uByteInPage = 0u;
+    if( e_eFSS_LOGC_RES_NOTVALIDLOG == eFSS_LOGC_LoadBufferAs(&l_tCtx, e_eFSS_LOGC_PAGETYPE_NEWEST, 3u, &l_uByteInPage) )
+    {
+        /* Function */
+        if( 0u == l_uByteInPage)
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 17 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 17 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_GenTest 17 -- FAIL \n");
+    }
+
+    l_uByteInPage = 0u;
+    if( e_eFSS_LOGC_RES_NOTVALIDLOG == eFSS_LOGC_LoadBufferAs(&l_tCtx, e_eFSS_LOGC_PAGETYPE_NEWEST, 4u, &l_uByteInPage) )
+    {
+        /* Function */
+        if( 0u == l_uByteInPage)
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 18 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 18 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_GenTest 18 -- FAIL \n");
+    }
+
+    l_uByteInPage = 0u;
+    if( e_eFSS_LOGC_RES_NOTVALIDLOG == eFSS_LOGC_LoadBufferAs(&l_tCtx, e_eFSS_LOGC_PAGETYPE_NEWEST, 5u, &l_uByteInPage) )
+    {
+        /* Function */
+        if( 0u == l_uByteInPage)
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 19 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 19 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_GenTest 19 -- FAIL \n");
+    }
+
+    l_uByteInPage = 0u;
+    if( e_eFSS_LOGC_RES_NOTVALIDLOG == eFSS_LOGC_LoadBufferAs(&l_tCtx, e_eFSS_LOGC_PAGETYPE_NEWEST_BKUP, 0u, &l_uByteInPage) )
+    {
+        /* Function */
+        if( 0u == l_uByteInPage)
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 20 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 20 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_GenTest 20 -- FAIL \n");
+    }
+
+    l_uByteInPage = 0u;
+    if( e_eFSS_LOGC_RES_NOTVALIDLOG == eFSS_LOGC_LoadBufferAs(&l_tCtx, e_eFSS_LOGC_PAGETYPE_NEWEST_BKUP, 1u, &l_uByteInPage) )
+    {
+        /* Function */
+        if( 0u == l_uByteInPage)
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 21 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 21 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_GenTest 21 -- FAIL \n");
+    }
+
+    l_uByteInPage = 0u;
+    if( e_eFSS_LOGC_RES_NOTVALIDLOG == eFSS_LOGC_LoadBufferAs(&l_tCtx, e_eFSS_LOGC_PAGETYPE_NEWEST_BKUP, 2u, &l_uByteInPage) )
+    {
+        /* Function */
+        if( 0u == l_uByteInPage)
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 22 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 22 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_GenTest 22 -- FAIL \n");
+    }
+
+    l_uByteInPage = 0u;
+    if( e_eFSS_LOGC_RES_NOTVALIDLOG == eFSS_LOGC_LoadBufferAs(&l_tCtx, e_eFSS_LOGC_PAGETYPE_NEWEST_BKUP, 3u, &l_uByteInPage) )
+    {
+        /* Function */
+        if( 0u == l_uByteInPage)
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 23 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 23 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_GenTest 23 -- FAIL \n");
+    }
+
+    l_uByteInPage = 0u;
+    if( e_eFSS_LOGC_RES_NOTVALIDLOG == eFSS_LOGC_LoadBufferAs(&l_tCtx, e_eFSS_LOGC_PAGETYPE_NEWEST_BKUP, 4u, &l_uByteInPage) )
+    {
+        /* Function */
+        if( 0u == l_uByteInPage)
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 24 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 24 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_GenTest 24 -- FAIL \n");
+    }
+
+    l_uByteInPage = 0u;
+    if( e_eFSS_LOGC_RES_NOTVALIDLOG == eFSS_LOGC_LoadBufferAs(&l_tCtx, e_eFSS_LOGC_PAGETYPE_NEWEST_BKUP, 5u, &l_uByteInPage) )
+    {
+        /* Function */
+        if( 0u == l_uByteInPage)
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 25 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 25 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_GenTest 25 -- FAIL \n");
+    }
+
+    /* Setup buffer */
+    l_ltUseBuff.puBuf[0u] = 0x01u;
+    l_ltUseBuff.puBuf[1u] = 0x02u;
+    l_ltUseBuff.puBuf[2u] = 0x03u;
+    l_ltUseBuff.puBuf[3u] = 0x04u;
+    l_ltUseBuff.puBuf[4u] = 0x05u;
+    l_ltUseBuff.puBuf[5u] = 0x06u;
+    l_ltUseBuff.puBuf[6u] = 0x07u;
+    l_ltUseBuff.puBuf[7u] = 0x08u;
+
+    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_FlushBufferAs(&l_tCtx, e_eFSS_LOGC_PAGETYPE_NEWEST, 0u, 8u) )
+    {
+        /* Function */
+        if( 0u == l_uByteInPage)
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 26 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 26 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_GenTest 26 -- FAIL \n");
+    }
+
+    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_FlushBufferAs(&l_tCtx, e_eFSS_LOGC_PAGETYPE_NEWEST_BKUP, 1u, 8u) )
+    {
+        /* Function */
+        if( 0u == l_uByteInPage)
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 27 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 27 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_GenTest 27 -- FAIL \n");
+    }
+
+    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_FlushBufferAs(&l_tCtx, e_eFSS_LOGC_PAGETYPE_LOG, 2u, 8u) )
+    {
+        /* Function */
+        if( 0u == l_uByteInPage)
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 28 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 28 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_GenTest 28 -- FAIL \n");
+    }
+
+    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_FlushBufferAs(&l_tCtx, e_eFSS_LOGC_PAGETYPE_LOG, 3u, 8u) )
+    {
+        /* Function */
+        if( 0u == l_uByteInPage)
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 29 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 29 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_GenTest 29 -- FAIL \n");
+    }
+
+    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_FlushBufferAs(&l_tCtx, e_eFSS_LOGC_PAGETYPE_LOG, 4u, 8u) )
+    {
+        /* Function */
+        if( 0u == l_uByteInPage)
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 30 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 30 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_GenTest 30 -- FAIL \n");
+    }
+
+    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_FlushBufferAs(&l_tCtx, e_eFSS_LOGC_PAGETYPE_LOG, 5u, 8u) )
+    {
+        /* Function */
+        if( 0u == l_uByteInPage)
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 31 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 31 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_GenTest 31 -- FAIL \n");
+    }
+
+    /* Setup buffer */
+    l_ltUseBuff.puBuf[0u] = 0x00u;
+    l_ltUseBuff.puBuf[1u] = 0x00u;
+    l_ltUseBuff.puBuf[2u] = 0x00u;
+    l_ltUseBuff.puBuf[3u] = 0x00u;
+    l_ltUseBuff.puBuf[4u] = 0x00u;
+    l_ltUseBuff.puBuf[5u] = 0x00u;
+    l_ltUseBuff.puBuf[6u] = 0x00u;
+    l_ltUseBuff.puBuf[7u] = 0x00u;
+
+    l_uByteInPage = 0u;
+    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_LoadBufferAs(&l_tCtx, e_eFSS_LOGC_PAGETYPE_NEWEST, 0u, &l_uByteInPage) )
+    {
+        /* Function */
+        if( ( 0x01u == l_ltUseBuff.puBuf[0u] ) && ( 0x02u == l_ltUseBuff.puBuf[1u] ) && ( 0x03u == l_ltUseBuff.puBuf[2u] ) && ( 0x04u == l_ltUseBuff.puBuf[3u] ) &&
+            ( 0x05u == l_ltUseBuff.puBuf[4u] ) && ( 0x06u == l_ltUseBuff.puBuf[5u] ) && ( 0x07u == l_ltUseBuff.puBuf[6u] ) && ( 0x08u == l_ltUseBuff.puBuf[7u] ) &&
+            ( 0x08u == l_uByteInPage) )
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 32 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 32 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_GenTest 32 -- FAIL \n");
+    }
+
+    l_uByteInPage = 0u;
+    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_LoadBufferAs(&l_tCtx, e_eFSS_LOGC_PAGETYPE_NEWEST_BKUP, 1u, &l_uByteInPage) )
+    {
+        /* Function */
+        if( ( 0x01u == l_ltUseBuff.puBuf[0u] ) && ( 0x02u == l_ltUseBuff.puBuf[1u] ) && ( 0x03u == l_ltUseBuff.puBuf[2u] ) && ( 0x04u == l_ltUseBuff.puBuf[3u] ) &&
+            ( 0x05u == l_ltUseBuff.puBuf[4u] ) && ( 0x06u == l_ltUseBuff.puBuf[5u] ) && ( 0x07u == l_ltUseBuff.puBuf[6u] ) && ( 0x08u == l_ltUseBuff.puBuf[7u] ) &&
+            ( 0x08u == l_uByteInPage) )
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 33 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 33 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_GenTest 33 -- FAIL \n");
+    }
+
+    l_uByteInPage = 0u;
+    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_LoadBufferAs(&l_tCtx, e_eFSS_LOGC_PAGETYPE_LOG, 2u, &l_uByteInPage) )
+    {
+        /* Function */
+        if( ( 0x01u == l_ltUseBuff.puBuf[0u] ) && ( 0x02u == l_ltUseBuff.puBuf[1u] ) && ( 0x03u == l_ltUseBuff.puBuf[2u] ) && ( 0x04u == l_ltUseBuff.puBuf[3u] ) &&
+            ( 0x05u == l_ltUseBuff.puBuf[4u] ) && ( 0x06u == l_ltUseBuff.puBuf[5u] ) && ( 0x07u == l_ltUseBuff.puBuf[6u] ) && ( 0x08u == l_ltUseBuff.puBuf[7u] ) &&
+            ( 0x08u == l_uByteInPage) )
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 34 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 34 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_GenTest 34 -- FAIL \n");
+    }
+
+    l_uByteInPage = 0u;
+    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_LoadBufferAs(&l_tCtx, e_eFSS_LOGC_PAGETYPE_LOG, 3u, &l_uByteInPage) )
+    {
+        /* Function */
+        if( ( 0x01u == l_ltUseBuff.puBuf[0u] ) && ( 0x02u == l_ltUseBuff.puBuf[1u] ) && ( 0x03u == l_ltUseBuff.puBuf[2u] ) && ( 0x04u == l_ltUseBuff.puBuf[3u] ) &&
+            ( 0x05u == l_ltUseBuff.puBuf[4u] ) && ( 0x06u == l_ltUseBuff.puBuf[5u] ) && ( 0x07u == l_ltUseBuff.puBuf[6u] ) && ( 0x08u == l_ltUseBuff.puBuf[7u] ) &&
+            ( 0x08u == l_uByteInPage) )
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 35 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 35 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_GenTest 35 -- FAIL \n");
+    }
+
+    l_uByteInPage = 0u;
+    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_LoadBufferAs(&l_tCtx, e_eFSS_LOGC_PAGETYPE_LOG, 4u, &l_uByteInPage) )
+    {
+        /* Function */
+        if( ( 0x01u == l_ltUseBuff.puBuf[0u] ) && ( 0x02u == l_ltUseBuff.puBuf[1u] ) && ( 0x03u == l_ltUseBuff.puBuf[2u] ) && ( 0x04u == l_ltUseBuff.puBuf[3u] ) &&
+            ( 0x05u == l_ltUseBuff.puBuf[4u] ) && ( 0x06u == l_ltUseBuff.puBuf[5u] ) && ( 0x07u == l_ltUseBuff.puBuf[6u] ) && ( 0x08u == l_ltUseBuff.puBuf[7u] ) &&
+            ( 0x08u == l_uByteInPage) )
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 36 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 36 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_GenTest 36 -- FAIL \n");
+    }
+
+    l_uByteInPage = 0u;
+    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_LoadBufferAs(&l_tCtx, e_eFSS_LOGC_PAGETYPE_LOG, 5u, &l_uByteInPage) )
+    {
+        /* Function */
+        if( ( 0x01u == l_ltUseBuff.puBuf[0u] ) && ( 0x02u == l_ltUseBuff.puBuf[1u] ) && ( 0x03u == l_ltUseBuff.puBuf[2u] ) && ( 0x04u == l_ltUseBuff.puBuf[3u] ) &&
+            ( 0x05u == l_ltUseBuff.puBuf[4u] ) && ( 0x06u == l_ltUseBuff.puBuf[5u] ) && ( 0x07u == l_ltUseBuff.puBuf[6u] ) && ( 0x08u == l_ltUseBuff.puBuf[7u] ) &&
+            ( 0x08u == l_uByteInPage) )
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 37 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 37 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_GenTest 37 -- FAIL \n");
+    }
+
+    /* Setup buffer */
+    l_ltUseBuff.puBuf[0u] = 0x01u;
+    l_ltUseBuff.puBuf[1u] = 0x01u;
+    l_ltUseBuff.puBuf[2u] = 0x03u;
+    l_ltUseBuff.puBuf[3u] = 0x04u;
+    l_ltUseBuff.puBuf[4u] = 0x05u;
+    l_ltUseBuff.puBuf[5u] = 0x06u;
+    l_ltUseBuff.puBuf[6u] = 0x07u;
+    l_ltUseBuff.puBuf[7u] = 0x08u;
+
+    if( e_eFSS_LOGC_RES_OK_BKP_RCVRD == eFSS_LOGC_FlushBuffIfNotEquals(&l_tCtx, 0u, 8u, e_eFSS_LOGC_PAGETYPE_NEWEST) )
+    {
+        /* Function */
+        if( 0x08u == l_uByteInPage)
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 38 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 38 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_GenTest 38 -- FAIL \n");
+    }
+
+    if( e_eFSS_LOGC_RES_OK_BKP_RCVRD == eFSS_LOGC_FlushBuffIfNotEquals(&l_tCtx, 1u, 8u, e_eFSS_LOGC_PAGETYPE_NEWEST_BKUP) )
+    {
+        /* Function */
+        if( 0x08u == l_uByteInPage)
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 39 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 39 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_GenTest 39 -- FAIL \n");
+    }
+
+    if( e_eFSS_LOGC_RES_OK_BKP_RCVRD == eFSS_LOGC_FlushBuffIfNotEquals(&l_tCtx, 2u, 8u, e_eFSS_LOGC_PAGETYPE_LOG) )
+    {
+        /* Function */
+        if( 0x08u == l_uByteInPage)
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 40 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 40 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_GenTest 40 -- FAIL \n");
+    }
+
+    if( e_eFSS_LOGC_RES_OK_BKP_RCVRD == eFSS_LOGC_FlushBuffIfNotEquals(&l_tCtx, 3u, 8u, e_eFSS_LOGC_PAGETYPE_LOG) )
+    {
+        /* Function */
+        if( 0x08u == l_uByteInPage)
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 41 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 41 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_GenTest 41 -- FAIL \n");
+    }
+
+    if( e_eFSS_LOGC_RES_OK_BKP_RCVRD == eFSS_LOGC_FlushBuffIfNotEquals(&l_tCtx, 4u, 8u, e_eFSS_LOGC_PAGETYPE_LOG) )
+    {
+        /* Function */
+        if( 0x08u == l_uByteInPage)
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 42 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 42 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_GenTest 42 -- FAIL \n");
+    }
+
+    if( e_eFSS_LOGC_RES_OK_BKP_RCVRD == eFSS_LOGC_FlushBuffIfNotEquals(&l_tCtx, 5u, 8u, e_eFSS_LOGC_PAGETYPE_LOG) )
+    {
+        /* Function */
+        if( 0x08u == l_uByteInPage)
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 43 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 43 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_GenTest 43 -- FAIL \n");
+    }
+
+    /* Setup buffer */
+    l_ltUseBuff.puBuf[0u] = 0x00u;
+    l_ltUseBuff.puBuf[1u] = 0x00u;
+    l_ltUseBuff.puBuf[2u] = 0x00u;
+    l_ltUseBuff.puBuf[3u] = 0x00u;
+    l_ltUseBuff.puBuf[4u] = 0x00u;
+    l_ltUseBuff.puBuf[5u] = 0x00u;
+    l_ltUseBuff.puBuf[6u] = 0x00u;
+    l_ltUseBuff.puBuf[7u] = 0x00u;
+
+    l_uByteInPage = 0u;
+    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_LoadBufferAs(&l_tCtx, e_eFSS_LOGC_PAGETYPE_NEWEST, 0u, &l_uByteInPage) )
+    {
+        /* Function */
+        if( ( 0x01u == l_ltUseBuff.puBuf[0u] ) && ( 0x01u == l_ltUseBuff.puBuf[1u] ) && ( 0x03u == l_ltUseBuff.puBuf[2u] ) && ( 0x04u == l_ltUseBuff.puBuf[3u] ) &&
+            ( 0x05u == l_ltUseBuff.puBuf[4u] ) && ( 0x06u == l_ltUseBuff.puBuf[5u] ) && ( 0x07u == l_ltUseBuff.puBuf[6u] ) && ( 0x08u == l_ltUseBuff.puBuf[7u] ) &&
+            ( 0x08u == l_uByteInPage) )
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 44 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 44 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_GenTest 44 -- FAIL \n");
+    }
+
+    l_uByteInPage = 0u;
+    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_LoadBufferAs(&l_tCtx, e_eFSS_LOGC_PAGETYPE_NEWEST_BKUP, 1u, &l_uByteInPage) )
+    {
+        /* Function */
+        if( ( 0x01u == l_ltUseBuff.puBuf[0u] ) && ( 0x01u == l_ltUseBuff.puBuf[1u] ) && ( 0x03u == l_ltUseBuff.puBuf[2u] ) && ( 0x04u == l_ltUseBuff.puBuf[3u] ) &&
+            ( 0x05u == l_ltUseBuff.puBuf[4u] ) && ( 0x06u == l_ltUseBuff.puBuf[5u] ) && ( 0x07u == l_ltUseBuff.puBuf[6u] ) && ( 0x08u == l_ltUseBuff.puBuf[7u] ) &&
+            ( 0x08u == l_uByteInPage) )
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 45 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 45 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_GenTest 45 -- FAIL \n");
+    }
+
+    l_uByteInPage = 0u;
+    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_LoadBufferAs(&l_tCtx, e_eFSS_LOGC_PAGETYPE_LOG, 2u, &l_uByteInPage) )
+    {
+        /* Function */
+        if( ( 0x01u == l_ltUseBuff.puBuf[0u] ) && ( 0x01u == l_ltUseBuff.puBuf[1u] ) && ( 0x03u == l_ltUseBuff.puBuf[2u] ) && ( 0x04u == l_ltUseBuff.puBuf[3u] ) &&
+            ( 0x05u == l_ltUseBuff.puBuf[4u] ) && ( 0x06u == l_ltUseBuff.puBuf[5u] ) && ( 0x07u == l_ltUseBuff.puBuf[6u] ) && ( 0x08u == l_ltUseBuff.puBuf[7u] ) &&
+            ( 0x08u == l_uByteInPage) )
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 46 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 46 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_GenTest 46 -- FAIL \n");
+    }
+
+    l_uByteInPage = 0u;
+    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_LoadBufferAs(&l_tCtx, e_eFSS_LOGC_PAGETYPE_LOG, 3u, &l_uByteInPage) )
+    {
+        /* Function */
+        if( ( 0x01u == l_ltUseBuff.puBuf[0u] ) && ( 0x01u == l_ltUseBuff.puBuf[1u] ) && ( 0x03u == l_ltUseBuff.puBuf[2u] ) && ( 0x04u == l_ltUseBuff.puBuf[3u] ) &&
+            ( 0x05u == l_ltUseBuff.puBuf[4u] ) && ( 0x06u == l_ltUseBuff.puBuf[5u] ) && ( 0x07u == l_ltUseBuff.puBuf[6u] ) && ( 0x08u == l_ltUseBuff.puBuf[7u] ) &&
+            ( 0x08u == l_uByteInPage) )
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 47 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 47 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_GenTest 47 -- FAIL \n");
+    }
+
+    l_uByteInPage = 0u;
+    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_LoadBufferAs(&l_tCtx, e_eFSS_LOGC_PAGETYPE_LOG, 4u, &l_uByteInPage) )
+    {
+        /* Function */
+        if( ( 0x01u == l_ltUseBuff.puBuf[0u] ) && ( 0x01u == l_ltUseBuff.puBuf[1u] ) && ( 0x03u == l_ltUseBuff.puBuf[2u] ) && ( 0x04u == l_ltUseBuff.puBuf[3u] ) &&
+            ( 0x05u == l_ltUseBuff.puBuf[4u] ) && ( 0x06u == l_ltUseBuff.puBuf[5u] ) && ( 0x07u == l_ltUseBuff.puBuf[6u] ) && ( 0x08u == l_ltUseBuff.puBuf[7u] ) &&
+            ( 0x08u == l_uByteInPage) )
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 48 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 48 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_GenTest 48 -- FAIL \n");
+    }
+
+    l_uByteInPage = 0u;
+    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_LoadBufferAs(&l_tCtx, e_eFSS_LOGC_PAGETYPE_LOG, 5u, &l_uByteInPage) )
+    {
+        /* Function */
+        if( ( 0x01u == l_ltUseBuff.puBuf[0u] ) && ( 0x01u == l_ltUseBuff.puBuf[1u] ) && ( 0x03u == l_ltUseBuff.puBuf[2u] ) && ( 0x04u == l_ltUseBuff.puBuf[3u] ) &&
+            ( 0x05u == l_ltUseBuff.puBuf[4u] ) && ( 0x06u == l_ltUseBuff.puBuf[5u] ) && ( 0x07u == l_ltUseBuff.puBuf[6u] ) && ( 0x08u == l_ltUseBuff.puBuf[7u] ) &&
+            ( 0x08u == l_uByteInPage) )
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 49 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 49 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_GenTest 49 -- FAIL \n");
+    }
+
+    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_IsPageNewOrBkup(&l_tCtx, 0u, &isNewest) )
+    {
+        if( ( true == isNewest ) &&
+            ( 0x01u == l_ltUseBuff.puBuf[0u] ) && ( 0x01u == l_ltUseBuff.puBuf[1u] ) && ( 0x03u == l_ltUseBuff.puBuf[2u] ) && ( 0x04u == l_ltUseBuff.puBuf[3u] ) &&
+            ( 0x05u == l_ltUseBuff.puBuf[4u] ) && ( 0x06u == l_ltUseBuff.puBuf[5u] ) && ( 0x07u == l_ltUseBuff.puBuf[6u] ) && ( 0x08u == l_ltUseBuff.puBuf[7u] ) )
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 50 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 50 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_GenTest 50 -- FAIL \n");
+    }
+
+    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_IsPageNewOrBkup(&l_tCtx, 1u, &isNewest) )
+    {
+        if( ( false == isNewest ) &&
+            ( 0x01u == l_ltUseBuff.puBuf[0u] ) && ( 0x01u == l_ltUseBuff.puBuf[1u] ) && ( 0x03u == l_ltUseBuff.puBuf[2u] ) && ( 0x04u == l_ltUseBuff.puBuf[3u] ) &&
+            ( 0x05u == l_ltUseBuff.puBuf[4u] ) && ( 0x06u == l_ltUseBuff.puBuf[5u] ) && ( 0x07u == l_ltUseBuff.puBuf[6u] ) && ( 0x08u == l_ltUseBuff.puBuf[7u] ) )
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 51 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 51 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_GenTest 51 -- FAIL \n");
+    }
+
+    if( e_eFSS_LOGC_RES_NOTVALIDLOG == eFSS_LOGC_IsPageNewOrBkup(&l_tCtx, 2u, &isNewest) )
+    {
+        if( ( false == isNewest ) &&
+            ( 0x01u == l_ltUseBuff.puBuf[0u] ) && ( 0x01u == l_ltUseBuff.puBuf[1u] ) && ( 0x03u == l_ltUseBuff.puBuf[2u] ) && ( 0x04u == l_ltUseBuff.puBuf[3u] ) &&
+            ( 0x05u == l_ltUseBuff.puBuf[4u] ) && ( 0x06u == l_ltUseBuff.puBuf[5u] ) && ( 0x07u == l_ltUseBuff.puBuf[6u] ) && ( 0x08u == l_ltUseBuff.puBuf[7u] ) )
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 52 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 52 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_GenTest 52 -- FAIL \n");
+    }
+
+    if( e_eFSS_LOGC_RES_NOTVALIDLOG == eFSS_LOGC_IsPageNewOrBkup(&l_tCtx, 3u, &isNewest) )
+    {
+        if( ( false == isNewest ) &&
+            ( 0x01u == l_ltUseBuff.puBuf[0u] ) && ( 0x01u == l_ltUseBuff.puBuf[1u] ) && ( 0x03u == l_ltUseBuff.puBuf[2u] ) && ( 0x04u == l_ltUseBuff.puBuf[3u] ) &&
+            ( 0x05u == l_ltUseBuff.puBuf[4u] ) && ( 0x06u == l_ltUseBuff.puBuf[5u] ) && ( 0x07u == l_ltUseBuff.puBuf[6u] ) && ( 0x08u == l_ltUseBuff.puBuf[7u] ) )
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 53 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 53 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_GenTest 53 -- FAIL \n");
+    }
+
+    if( e_eFSS_LOGC_RES_NOTVALIDLOG == eFSS_LOGC_IsPageNewOrBkup(&l_tCtx, 4u, &isNewest) )
+    {
+        if( ( false == isNewest ) &&
+            ( 0x01u == l_ltUseBuff.puBuf[0u] ) && ( 0x01u == l_ltUseBuff.puBuf[1u] ) && ( 0x03u == l_ltUseBuff.puBuf[2u] ) && ( 0x04u == l_ltUseBuff.puBuf[3u] ) &&
+            ( 0x05u == l_ltUseBuff.puBuf[4u] ) && ( 0x06u == l_ltUseBuff.puBuf[5u] ) && ( 0x07u == l_ltUseBuff.puBuf[6u] ) && ( 0x08u == l_ltUseBuff.puBuf[7u] ) )
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 54 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 54 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_GenTest 54 -- FAIL \n");
+    }
+
+    if( e_eFSS_LOGC_RES_NOTVALIDLOG == eFSS_LOGC_IsPageNewOrBkup(&l_tCtx, 5u, &isNewest) )
+    {
+        if( ( false == isNewest ) &&
+            ( 0x01u == l_ltUseBuff.puBuf[0u] ) && ( 0x01u == l_ltUseBuff.puBuf[1u] ) && ( 0x03u == l_ltUseBuff.puBuf[2u] ) && ( 0x04u == l_ltUseBuff.puBuf[3u] ) &&
+            ( 0x05u == l_ltUseBuff.puBuf[4u] ) && ( 0x06u == l_ltUseBuff.puBuf[5u] ) && ( 0x07u == l_ltUseBuff.puBuf[6u] ) && ( 0x08u == l_ltUseBuff.puBuf[7u] ) )
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 55 -- OK \n");
+        }
+        else
+        {
+            (void)printf("eFSS_LOGCTST_GenTest 55 -- FAIL \n");
+        }
+    }
+    else
+    {
+        (void)printf("eFSS_LOGCTST_GenTest 55 -- FAIL \n");
     }
 
 }
