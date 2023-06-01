@@ -158,7 +158,7 @@ static uint8_t m_auStorArea[14][32u];
  *   PRIVATE TEST FUNCTION DECLARATION
  **********************************************************************************************************************/
 #ifdef __IAR_SYSTEMS_ICC__
-    #pragma cstat_disable = "MISRAC2012-Rule-8.13"
+    #pragma cstat_disable = "MISRAC2012-Rule-8.13", "MISRAC2012-Rule-10.5"
     /* Suppressed for code clarity in test execution*/
 #endif
 
@@ -727,10 +727,6 @@ static bool_t eFSS_LOGCTST_CrcTst1Adapt(t_eFSS_TYPE_CrcCtx* const p_ptCtx, const
 
     return l_bRes;
 }
-
-#ifdef __IAR_SYSTEMS_ICC__
-    #pragma cstat_restore = "MISRAC2012-Rule-8.13"
-#endif
 
 /***********************************************************************************************************************
  *   PRIVATE FUNCTION
@@ -1444,7 +1440,7 @@ void eFSS_LOGCTST_BadParamEntr(void)
     }
 
     /* Function */
-    l_tStorSet.uPagesLen = 31;
+    l_tStorSet.uPagesLen = 31u;
     if( e_eFSS_LOGC_RES_BADPARAM == eFSS_LOGC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_auStor, l_tStorSet.uPagesLen * 2u, true, false  ) )
     {
         (void)printf("eFSS_LOGCTST_BadParamEntr 8  -- OK \n");
@@ -5272,8 +5268,6 @@ static void eFSS_LOGCTST_ReadCacheTest(void)
     l_tStorSet.uRWERetry = 3u;
     l_tStorSet.uPageVersion = 1u;
     l_uPageUsable = 0u;
-    l_uNewPIx = 0u;
-    l_uFillPIdx = 0u;
 
     /* ------------------------------------------------------------------------------------------- TEST CRC CALL BACK */
     /* Function */
@@ -6698,6 +6692,8 @@ static void eFSS_LOGCTST_ReadCacheTest(void)
     (void)l_tCtxRead.uTimeUsed;
     (void)l_tCtxCrc32.eLastEr;
     (void)l_tCtxCrc32.uTimeUsed;
+    (void)l_ltUseBuff.puBuf;
+    (void)l_ltUseBuff2.puBuf;
 }
 
 static void eFSS_LOGCTST_WriteCacheTest(void)
@@ -7002,7 +6998,6 @@ static void eFSS_LOGCTST_LoadTest(void)
     l_tStorSet.uPagesLen = 32u;
     l_tStorSet.uRWERetry = 3u;
     l_tStorSet.uPageVersion = 1u;
-    l_uByteInPage = 0u;
     l_uPageUsable = 0u;
 
     /* ------------------------------------------------------------------------------------------- TEST CRC CALL BACK */
@@ -11533,6 +11528,17 @@ static void eFSS_LOGCTST_IsPageNewOrBkup(void)
     {
         (void)printf("eFSS_LOGCTST_IsPageNewOrBkup 36 -- FAIL \n");
     }
+
+    /* Misra complaiant */
+    (void)l_tCtxErase.eLastEr;
+    (void)l_tCtxErase.uTimeUsed;
+    (void)l_tCtxWrite.eLastEr;
+    (void)l_tCtxWrite.uTimeUsed;
+    (void)l_tCtxRead.eLastEr;
+    (void)l_tCtxRead.uTimeUsed;
+    (void)l_tCtxCrc32.eLastEr;
+    (void)l_tCtxCrc32.uTimeUsed;
+    (void)l_ltUseBuff.puBuf;
 }
 
 static void eFSS_LOGCTST_FlushBuffIfNotEquals(void)
@@ -15524,6 +15530,16 @@ static void eFSS_LOGCTST_FlushBuffIfNotEquals(void)
         (void)printf("eFSS_LOGCTST_FlushBuffIfNotEquals 58 -- FAIL \n");
     }
 
+    /* Misra complaiant */
+    (void)l_tCtxErase.eLastEr;
+    (void)l_tCtxErase.uTimeUsed;
+    (void)l_tCtxWrite.eLastEr;
+    (void)l_tCtxWrite.uTimeUsed;
+    (void)l_tCtxRead.eLastEr;
+    (void)l_tCtxRead.uTimeUsed;
+    (void)l_tCtxCrc32.eLastEr;
+    (void)l_tCtxCrc32.uTimeUsed;
+    (void)l_ltUseBuff.puBuf;
 }
 
 
@@ -15566,7 +15582,6 @@ static void eFSS_LOGCTST_GenTest(void)
     l_tStorSet.uPagesLen = 32u;
     l_tStorSet.uRWERetry = 3u;
     l_tStorSet.uPageVersion = 1u;
-    l_uByteInPage = 0u;
     l_uPageUsable = 0u;
     l_uNewPIx = 0u;
     l_uFillPIdx = 0u;
@@ -16602,5 +16617,20 @@ static void eFSS_LOGCTST_GenTest(void)
         (void)printf("eFSS_LOGCTST_GenTest 55 -- FAIL \n");
     }
 
+    /* Misra complaiant */
+    (void)l_tCtxErase.eLastEr;
+    (void)l_tCtxErase.uTimeUsed;
+    (void)l_tCtxWrite.eLastEr;
+    (void)l_tCtxWrite.uTimeUsed;
+    (void)l_tCtxRead.eLastEr;
+    (void)l_tCtxRead.uTimeUsed;
+    (void)l_tCtxCrc32.eLastEr;
+    (void)l_tCtxCrc32.uTimeUsed;
+    (void)l_ltUseBuff.puBuf;
 }
+
+
+#ifdef __IAR_SYSTEMS_ICC__
+    #pragma cstat_restore = "MISRAC2012-Rule-8.13", "MISRAC2012-Rule-10.5"
+#endif
 
