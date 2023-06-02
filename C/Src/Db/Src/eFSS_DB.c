@@ -1,5 +1,5 @@
 /**
- * @file       eFSS_DB.h
+ * @file       eFSS_DB.c
  *
  * @brief      Database module
  *

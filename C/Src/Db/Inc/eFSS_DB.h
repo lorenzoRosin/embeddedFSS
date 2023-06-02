@@ -31,8 +31,12 @@ extern "C" {
 /* Every element in the database has this struct. Keep in mind that a stored element cannot change it's size in
  * it's life but instead, can change it's version. When the version of an entry is changed the first time that the
  * database is checked will delete the previously stored value and will save it's default value instead.
- * During the live of the database it's not possible to remove an entry or change an entry size. It's possible
- * to add new entry instead. */
+ * During the life time of the database it's not possible to remove an entry or change an entry size. It's possible
+ * to add new entry instead (only if we have enogth space to store the entry in the storage area).
+ * We are saving element in a single storage page and we are not able to have an element splitted between two page.
+ * If we need to remove element or change some element size the only safe way is to increase the version of the
+ * storage (not of the element), but in this way the default value of every element is ripristinated and all previously
+ * stored value are lost */
 typedef struct
 {
 	uint16_t uEleV;
