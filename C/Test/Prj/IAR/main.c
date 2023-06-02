@@ -15,7 +15,6 @@ int main(void)
 {
     /* Start testing */
     // eFSS_BLOBTST_ExeTest();
-    // eFSS_DBTST_ExeTest();
     // eFSS_LOGTST_ExeTest();
 
     // eFSS_UtilsTST_ExeTest();
@@ -23,7 +22,9 @@ int main(void)
     // eFSS_COREHLTST_ExeTest();
     // eFSS_DBCTST_ExeTest();
     // eFSS_BLOBCTST_ExeTest();
-    eFSS_LOGCTST_ExeTest();
+    // eFSS_LOGCTST_ExeTest();
+
+    eFSS_DBTST_ExeTest();
 
     return 0;
 }
