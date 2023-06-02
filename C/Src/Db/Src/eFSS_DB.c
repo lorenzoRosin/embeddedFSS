@@ -955,7 +955,7 @@ static e_eFSS_DB_RES eFSS_DB_DBCtoDBRes(const e_eFSS_DBC_RES p_eDBCRes)
 
         case e_eFSS_DBC_RES_NEWVERSIONFOUND:
         {
-            l_eRes = e_eFSS_DB_RES_NEWVERSIONDB;
+            l_eRes = e_eFSS_DB_RES_NEWVERSIONFOUND;
             break;
         }
 
