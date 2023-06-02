@@ -7016,6 +7016,8 @@ static void eFSS_LOGCTST_LoadTest(void)
     l_tCtxCrc32.uTimeUsed = 0u;
     l_tCtxCrc32.eLastEr = e_eFSS_LOGC_RES_OK;
 
+    (void)memset(m_auStorArea, 0, sizeof(m_auStorArea));
+
     if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_auStor, sizeof(l_auStor), false, false ) )
     {
         (void)printf("eFSS_LOGCTST_LoadTest 1  -- OK \n");
@@ -8922,6 +8924,8 @@ static void eFSS_LOGCTST_FlushTest(void)
     l_tCtxCrc32.uTimeUsed = 0u;
     l_tCtxCrc32.eLastEr = e_eFSS_LOGC_RES_OK;
 
+    (void)memset(m_auStorArea, 0, sizeof(m_auStorArea));
+
     if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_auStor, sizeof(l_auStor), false, true ) )
     {
         (void)printf("eFSS_LOGCTST_FlushTest 1  -- OK \n");
@@ -9546,6 +9550,8 @@ static void eFSS_LOGCTST_IsPageNewOrBkup(void)
     l_tCtxRead.eLastEr = e_eFSS_LOGC_RES_OK;
     l_tCtxCrc32.uTimeUsed = 0u;
     l_tCtxCrc32.eLastEr = e_eFSS_LOGC_RES_OK;
+
+    (void)memset(m_auStorArea, 0, sizeof(m_auStorArea));
 
     if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_auStor, sizeof(l_auStor), false, false ) )
     {
@@ -11587,6 +11593,8 @@ static void eFSS_LOGCTST_FlushBuffIfNotEquals(void)
     l_tCtxRead.eLastEr = e_eFSS_LOGC_RES_OK;
     l_tCtxCrc32.uTimeUsed = 0u;
     l_tCtxCrc32.eLastEr = e_eFSS_LOGC_RES_OK;
+
+    (void)memset(m_auStorArea, 0, sizeof(m_auStorArea));
 
     if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_auStor, sizeof(l_auStor), false, false ) )
     {
@@ -15311,7 +15319,7 @@ static void eFSS_LOGCTST_FlushBuffIfNotEquals(void)
     l_ltUseBuff.puBuf[6u] = 0x07u;
     l_ltUseBuff.puBuf[7u] = 0x08u;
 
-    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_FlushBuffIfNotEquals(&l_tCtx, 6u, 8u, e_eFSS_LOGC_PAGETYPE_LOG) )
+    if( e_eFSS_LOGC_RES_OK_BKP_RCVRD == eFSS_LOGC_FlushBuffIfNotEquals(&l_tCtx, 6u, 8u, e_eFSS_LOGC_PAGETYPE_LOG) )
     {
         if( ( 0x01u == l_ltUseBuff.puBuf[0u] ) && ( 0x02u == l_ltUseBuff.puBuf[1u] ) && ( 0x03u == l_ltUseBuff.puBuf[2u] ) && ( 0x04u == l_ltUseBuff.puBuf[3u] ) &&
             ( 0x05u == l_ltUseBuff.puBuf[4u] ) && ( 0x06u == l_ltUseBuff.puBuf[5u] ) && ( 0x07u == l_ltUseBuff.puBuf[6u] ) && ( 0x08u == l_ltUseBuff.puBuf[7u] ) &&
@@ -15411,7 +15419,7 @@ static void eFSS_LOGCTST_FlushBuffIfNotEquals(void)
     l_ltUseBuff.puBuf[6u] = 0x07u;
     l_ltUseBuff.puBuf[7u] = 0x08u;
 
-    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_FlushBuffIfNotEquals(&l_tCtx, 6u, 8u, e_eFSS_LOGC_PAGETYPE_NEWEST) )
+    if( e_eFSS_LOGC_RES_OK_BKP_RCVRD == eFSS_LOGC_FlushBuffIfNotEquals(&l_tCtx, 6u, 8u, e_eFSS_LOGC_PAGETYPE_NEWEST) )
     {
         if( ( 0x01u == l_ltUseBuff.puBuf[0u] ) && ( 0x02u == l_ltUseBuff.puBuf[1u] ) && ( 0x03u == l_ltUseBuff.puBuf[2u] ) && ( 0x04u == l_ltUseBuff.puBuf[3u] ) &&
             ( 0x05u == l_ltUseBuff.puBuf[4u] ) && ( 0x06u == l_ltUseBuff.puBuf[5u] ) && ( 0x07u == l_ltUseBuff.puBuf[6u] ) && ( 0x08u == l_ltUseBuff.puBuf[7u] ) &&
@@ -15511,7 +15519,7 @@ static void eFSS_LOGCTST_FlushBuffIfNotEquals(void)
     l_ltUseBuff.puBuf[6u] = 0x07u;
     l_ltUseBuff.puBuf[7u] = 0x08u;
 
-    if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_FlushBuffIfNotEquals(&l_tCtx, 6u, 8u, e_eFSS_LOGC_PAGETYPE_NEWEST_BKUP) )
+    if( e_eFSS_LOGC_RES_OK_BKP_RCVRD == eFSS_LOGC_FlushBuffIfNotEquals(&l_tCtx, 6u, 8u, e_eFSS_LOGC_PAGETYPE_NEWEST_BKUP) )
     {
         if( ( 0x01u == l_ltUseBuff.puBuf[0u] ) && ( 0x02u == l_ltUseBuff.puBuf[1u] ) && ( 0x03u == l_ltUseBuff.puBuf[2u] ) && ( 0x04u == l_ltUseBuff.puBuf[3u] ) &&
             ( 0x05u == l_ltUseBuff.puBuf[4u] ) && ( 0x06u == l_ltUseBuff.puBuf[5u] ) && ( 0x07u == l_ltUseBuff.puBuf[6u] ) && ( 0x08u == l_ltUseBuff.puBuf[7u] ) &&
@@ -15604,6 +15612,8 @@ static void eFSS_LOGCTST_GenTest(void)
     l_tCtxRead.eLastEr = e_eFSS_LOGC_RES_OK;
     l_tCtxCrc32.uTimeUsed = 0u;
     l_tCtxCrc32.eLastEr = e_eFSS_LOGC_RES_OK;
+
+    (void)memset(m_auStorArea, 0, sizeof(m_auStorArea));
 
     if( e_eFSS_LOGC_RES_OK == eFSS_LOGC_InitCtx(&l_tCtx, l_tCtxCb, l_tStorSet, l_auStor, sizeof(l_auStor), true, true ) )
     {
