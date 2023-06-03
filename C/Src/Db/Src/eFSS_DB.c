@@ -44,8 +44,8 @@ static e_eFSS_DB_RES eFSS_DB_GetEleRawInBuffer(const uint16_t p_uEleL, uint8_t* 
 
 static e_eFSS_DB_RES eFSS_DB_SetEleRawInBuffer(uint8_t* const p_puBuff, const t_eFSS_DB_DbElement p_tEleToSet);
 
-static e_eFSS_DB_RES eFSS_DB_FindElePageAndPos(const uint32_t p_uPageL, const t_eFSS_DB_DbStruct p_tDbStruct,
-                                               const uint32_t p_uEleIdx, uint32_t* const p_puPFound,
+static e_eFSS_DB_RES eFSS_DB_FindElePageAndPos(const uint32_t p_uPageL, const t_eFSS_DB_DbStruct p_tDbDefault,
+                                               const uint32_t p_uEleIdx, uint32_t* const p_puPageFound,
                                                uint32_t* const p_puOffSetFound);
 
 
@@ -1175,28 +1175,30 @@ static e_eFSS_DB_RES eFSS_DB_SetEleRawInBuffer(uint8_t* const p_puBuff, const t_
     return l_eRes;
 }
 
-static e_eFSS_DB_RES eFSS_DB_FindElePageAndPos(const uint32_t p_uPageL, const t_eFSS_DB_DbStruct p_tDbStruct,
-                                               const uint32_t p_uEleIdx, uint32_t* const p_puPFound,
+static e_eFSS_DB_RES eFSS_DB_FindElePageAndPos(const uint32_t p_uPageL, const t_eFSS_DB_DbStruct p_tDbDefault,
+                                               const uint32_t p_uEleIdx, uint32_t* const p_puPageFound,
                                                uint32_t* const p_puOffSetFound)
 {
     /* Local variable for result */
     e_eFSS_DB_RES l_eRes;
 
-    /* Local variable used for calculation */
+    /* Local variable used for index */
     uint32_t l_uCurPage;
-    uint32_t l_uCurPageUsed;
+    uint32_t l_uCurOff;
+
+    /* Local variable used for calculation */
     uint32_t l_uCurIndex;
     t_eFSS_DB_DbElement l_tCurEle;
 
     /* Check null pointer */
-    if( ( NULL == p_puPFound ) || ( NULL == p_puOffSetFound ) || ( NULL == p_tDbStruct.ptDefEle ) )
+    if( ( NULL == p_puPageFound ) || ( NULL == p_puOffSetFound ) || ( NULL == p_tDbDefault.ptDefEle ) )
     {
         l_eRes = e_eFSS_DB_RES_BADPOINTER;
     }
     else
     {
         /* Check element validity */
-        if( ( 0u == p_tDbStruct.uNEle ) || ( p_uPageL < EFSS_DB_MINPAGESIZE ) || ( p_uEleIdx >= p_tDbStruct.uNEle ) )
+        if( ( 0u == p_tDbDefault.uNEle ) || ( p_uPageL < EFSS_DB_MINPAGESIZE ) || ( p_uEleIdx >= p_tDbDefault.uNEle ) )
         {
             l_eRes = e_eFSS_DB_RES_BADPARAM;
         }
@@ -1207,34 +1209,35 @@ static e_eFSS_DB_RES eFSS_DB_FindElePageAndPos(const uint32_t p_uPageL, const t_
 
             /* Init local variable */
             l_uCurPage = 0u;
-            l_uCurPageUsed = 0u;
+            l_uCurOff = 0u;
             l_uCurIndex = 0u;
 
             /* Sum all other parameter of the DB till we reach the wanted one */
             while( ( l_uCurIndex < p_uEleIdx ) && ( e_eFSS_DB_RES_OK == l_eRes ) )
             {
                 /* Get current element */
-                l_tCurEle = p_tDbStruct.ptDefEle[l_uCurIndex];
+                l_tCurEle = p_tDbDefault.ptDefEle[l_uCurIndex];
 
-                /* Just check element validty, not needed but misra check */
+                /* Just check element validty, not needed because we check context validity every time, but
+                   who knows */
                 if( ( l_tCurEle.uEleL + EFSS_DB_RAWOFF ) > p_uPageL )
                 {
-                    /* This DB struct seems wrong */
+                    /* This DB struct seems invalid */
                     l_eRes = e_eFSS_DB_RES_BADPARAM;
                 }
                 else
                 {
-                    /* Check if can be placed in the current "page" */
-                    if( ( l_tCurEle.uEleL + EFSS_DB_RAWOFF ) > ( p_uPageL - l_uCurPageUsed ) )
+                    /* Check if the current element can be placed in the current "page" */
+                    if( ( l_uCurOff + l_tCurEle.uEleL + EFSS_DB_RAWOFF ) > p_uPageL )
                     {
-                        /* Cannot be placed in this page */
+                        /* current element cannot be placed in this page */
                         l_uCurPage++;
-                        l_uCurPageUsed = ( l_tCurEle.uEleL + EFSS_DB_RAWOFF );
+                        l_uCurOff = ( l_tCurEle.uEleL + EFSS_DB_RAWOFF );
                     }
                     else
                     {
                         /* can be placed in this "page " */
-                        l_uCurPageUsed += ( l_tCurEle.uEleL + EFSS_DB_RAWOFF );
+                        l_uCurOff += ( l_tCurEle.uEleL + EFSS_DB_RAWOFF );
                     }
 
                     /* Increase index */
@@ -1246,19 +1249,29 @@ static e_eFSS_DB_RES eFSS_DB_FindElePageAndPos(const uint32_t p_uPageL, const t_
             {
                 /* Now just check if the current element can be present in this page */
                 /* Get current element */
-                l_tCurEle = p_tDbStruct.ptDefEle[l_uCurIndex];
+                l_tCurEle = p_tDbDefault.ptDefEle[l_uCurIndex];
 
-                /* Check if can be placed in the current "page" */
-                if( ( l_tCurEle.uEleL + EFSS_DB_RAWOFF ) > ( p_uPageL - l_uCurPageUsed ) )
+                /* Just check element validty, not needed because we check context validity every time, but
+                   who knows */
+                if( ( l_tCurEle.uEleL + EFSS_DB_RAWOFF ) > p_uPageL )
                 {
-                    /* Cannot be placed in this page */
-                    l_uCurPage++;
-                    l_uCurPageUsed = 0u;
+                    /* This DB struct seems invalid */
+                    l_eRes = e_eFSS_DB_RES_BADPARAM;
                 }
+                else
+                {
+                    /* Check if the current element can be placed in the current "page" */
+                    if( ( l_uCurOff + l_tCurEle.uEleL + EFSS_DB_RAWOFF ) > p_uPageL )
+                    {
+                        /* Cannot be placed in this page */
+                        l_uCurPage++;
+                        l_uCurOff = 0u;
+                    }
 
-                /* Valorize ret value */
-                *p_puPFound = l_uCurPage;
-                *p_puOffSetFound = l_uCurPageUsed;
+                    /* Valorize ret value */
+                    *p_puPageFound = l_uCurPage;
+                    *p_puOffSetFound = l_uCurOff;
+                }
             }
         }
     }
