@@ -116,8 +116,10 @@ e_eFSS_DB_RES eFSS_DB_IsInit(t_eFSS_DB_Ctx* const p_ptCtx, bool_t* const p_pbIsI
 
 /**
  * @brief       Check the whole database status. This function should be called before doing anything else with the
- *              the database. In anycase this function is called automatically on the firt action against the db.
- *              This function is reading all the entry in to the database, so i can takes some times to execute.
+ *              the database. In any case this function is called automatically on the firt action against the db.
+ *              This function is reading all the entry of the database, so i can takes some times to execute.
+ *              If e_eFSS_DB_RES_NOTVALIDDB or e_eFSS_DB_RES_NEWVERSIONFOUND are returned it's means that the database
+ *              cannot be used untill we use the function called eFSS_DB_FormatToDefault.
  *
  * @param[in]   p_ptCtx          - Database context
  *
@@ -129,7 +131,7 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx);
 
 /**
  * @brief       Erase all the data present in the DB and restore default value. This function is the only function
- *              that is able to recover a corrupted database.
+ *              that is able to recover a corrupted database or start a new version of the database itself.
  *
  * @param[in]   p_ptCtx    - Database context
  *
