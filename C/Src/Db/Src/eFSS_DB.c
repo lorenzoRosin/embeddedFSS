@@ -39,7 +39,7 @@ static e_eFSS_DB_RES eFSS_DB_DBCtoDBRes(const e_eFSS_DBC_RES p_eDBCRes);
 static bool_t eFSS_DB_IsDbDefStructValid(const t_eFSS_DB_DbStruct p_tDefaultDb, const uint32_t p_uNPage,
                                          const uint32_t p_uPageL);
 
-static e_eFSS_DB_RES eFSS_DB_GetEleRawInBuffer(const uint16_t p_uEleL, uint8_t* const p_puBuff,
+static e_eFSS_DB_RES eFSS_DB_GetEleRawInBuffer(const uint16_t p_uExpEleL, uint8_t* const p_puSrcBuff,
                                                uint16_t* const p_puEleV, uint8_t** const p_puRawData);
 
 static e_eFSS_DB_RES eFSS_DB_SetEleRawInBuffer(uint8_t* const p_puBuff, const t_eFSS_DB_DbElement p_tEleToSet);
@@ -1000,11 +1000,13 @@ static bool_t eFSS_DB_IsDbDefStructValid(const t_eFSS_DB_DbStruct p_tDefaultDb, 
     /* Local variable for return */
     bool_t l_bRes;
 
+    /* Local variable used for index */
+    uint32_t l_uCurPage;
+    uint32_t l_uCurOff;
+
     /* Local variable for calculation */
     uint32_t l_uCurIndex;
     t_eFSS_DB_DbElement l_tCurEle;
-    uint32_t l_uCurPage;
-    uint32_t l_uCurPageUsed;
 
     /* Check pointer validity */
     if( NULL == p_tDefaultDb.ptDefEle )
@@ -1022,11 +1024,11 @@ static bool_t eFSS_DB_IsDbDefStructValid(const t_eFSS_DB_DbStruct p_tDefaultDb, 
             /* Init local */
             l_uCurIndex = 0u;
             l_uCurPage = 0u;
-            l_uCurPageUsed = 0u;
+            l_uCurOff = 0u;
             l_bRes = true;
 
             /* Check every parameter till an error is found */
-            while( ( true == l_bRes ) && ( l_uCurIndex < p_tDefaultDb.uNEle ) )
+            while( ( l_uCurIndex < p_tDefaultDb.uNEle ) && ( true == l_bRes ) )
             {
                 /* Get curr ele */
                 l_tCurEle = p_tDefaultDb.ptDefEle[l_uCurIndex];
@@ -1041,20 +1043,20 @@ static bool_t eFSS_DB_IsDbDefStructValid(const t_eFSS_DB_DbStruct p_tDefaultDb, 
                 else
                 {
                     /* Check if can be placed in the current "page" */
-                    if( ( l_tCurEle.uEleL + EFSS_DB_RAWOFF ) > ( p_uPageL - l_uCurPageUsed ) )
+                    if( ( l_uCurOff + l_tCurEle.uEleL + EFSS_DB_RAWOFF ) > p_uPageL )
                     {
                         /* Cannot be placed in this page */
                         l_uCurPage++;
-                        l_uCurPageUsed = ( l_tCurEle.uEleL + EFSS_DB_RAWOFF );
+                        l_uCurOff = ( l_tCurEle.uEleL + EFSS_DB_RAWOFF );
                     }
                     else
                     {
                         /* can be placed in this "page " */
-                        l_uCurPageUsed += ( l_tCurEle.uEleL + EFSS_DB_RAWOFF );
+                        l_uCurOff += ( l_tCurEle.uEleL + EFSS_DB_RAWOFF );
                     }
 
                     /* Check if all ok */
-                    if( l_uCurPageUsed > p_uNPage )
+                    if( l_uCurPage >= p_uNPage )
                     {
                         /* Cannot be */
                         l_bRes = false;
@@ -1072,7 +1074,7 @@ static bool_t eFSS_DB_IsDbDefStructValid(const t_eFSS_DB_DbStruct p_tDefaultDb, 
     return l_bRes;
 }
 
-static e_eFSS_DB_RES eFSS_DB_GetEleRawInBuffer(const uint16_t p_uEleL, uint8_t* const p_puBuff,
+static e_eFSS_DB_RES eFSS_DB_GetEleRawInBuffer(const uint16_t p_uExpEleL, uint8_t* const p_puSrcBuff,
                                                uint16_t* const p_puEleV, uint8_t** const p_puRawData)
 {
     /* Local variable for result */
@@ -1082,42 +1084,42 @@ static e_eFSS_DB_RES eFSS_DB_GetEleRawInBuffer(const uint16_t p_uEleL, uint8_t* 
     uint16_t l_uEleRedL;
 
     /* Check null pointer */
-    if( ( NULL == p_puBuff ) || ( NULL == p_puEleV ) || ( NULL == p_puRawData ) )
+    if( ( NULL == p_puSrcBuff ) || ( NULL == p_puEleV ) || ( NULL == p_puRawData ) )
     {
         l_eRes = e_eFSS_DB_RES_BADPOINTER;
     }
     else
     {
         /* Check parameter */
-        if( 0u == p_uEleL )
+        if( 0u == p_uExpEleL )
         {
             l_eRes = e_eFSS_DB_RES_BADPARAM;
         }
         else
         {
             /* can be retrived, for now */
-            if( true != eFSS_Utils_RetriveU16(&p_puBuff[EFSS_DB_VEROFF], p_puEleV) )
+            if( true != eFSS_Utils_RetriveU16(&p_puSrcBuff[EFSS_DB_VEROFF], p_puEleV) )
             {
                 l_eRes = e_eFSS_DB_RES_CORRUPTCTX;
             }
             else
             {
                 l_uEleRedL = 0u;
-                if( true != eFSS_Utils_RetriveU16(&p_puBuff[EFSS_DB_LENOFF], &l_uEleRedL) )
+                if( true != eFSS_Utils_RetriveU16(&p_puSrcBuff[EFSS_DB_LENOFF], &l_uEleRedL) )
                 {
                     l_eRes = e_eFSS_DB_RES_CORRUPTCTX;
                 }
                 else
                 {
-                    /* Check that the element has valid element */
-                    if( ( 0u == *p_puEleV ) || ( p_uEleL != l_uEleRedL ) )
+                    /* Check that the element has valid parameter */
+                    if( ( 0u == *p_puEleV ) || ( p_uExpEleL != l_uEleRedL ) )
                     {
                         l_eRes = e_eFSS_DB_RES_NOTVALIDDB;
                     }
                     else
                     {
                         /* Can be retrived, copy the raw data */
-                        *p_puRawData = &p_puBuff[EFSS_DB_RAWOFF];
+                        *p_puRawData = &p_puSrcBuff[EFSS_DB_RAWOFF];
 
                         /* All ok */
                         l_eRes = e_eFSS_DB_RES_OK;
