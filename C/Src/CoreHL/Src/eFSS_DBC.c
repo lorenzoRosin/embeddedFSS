@@ -55,7 +55,7 @@ e_eFSS_DBC_RES eFSS_DBC_InitCtx(t_eFSS_DBC_Ctx* const p_ptCtx, const t_eFSS_TYPE
 								const t_eFSS_TYPE_StorSet p_tStorSet, uint8_t* const p_puBuff,
                                 const uint32_t p_uBuffL)
 {
-     /* Return local var */
+    /* Return local var */
     e_eFSS_DBC_RES l_eRes;
     e_eFSS_COREHL_RES l_eResHL;
 

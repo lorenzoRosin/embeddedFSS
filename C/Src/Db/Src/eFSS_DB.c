@@ -57,14 +57,16 @@ e_eFSS_DB_RES eFSS_DB_InitCtx(t_eFSS_DB_Ctx* const p_ptCtx, const t_eFSS_TYPE_Cb
                               const t_eFSS_TYPE_StorSet p_tStorSet, uint8_t* const p_puBuff, const uint32_t p_uBuffL,
                               const t_eFSS_DB_DbStruct p_tDbStruct)
 {
-    /* Local return variable */
+    /* Return local var */
     e_eFSS_DB_RES l_eRes;
     e_eFSS_DBC_RES l_eDBCRes;
-    bool_t l_bIsDbStructValid;
 
-    /* Local storage variable */
+    /* Local variable for storage */
     t_eFSS_DBC_StorBuf l_tBuff;
-    uint32_t l_uUsePages;
+    uint32_t l_uTotPage;
+
+    /* Local var used for calculation */
+    bool_t l_bIsDbStructValid;
 
 	/* Check pointer validity */
 	if( NULL == p_ptCtx )
@@ -80,8 +82,8 @@ e_eFSS_DB_RES eFSS_DB_InitCtx(t_eFSS_DB_Ctx* const p_ptCtx, const t_eFSS_TYPE_Cb
         if( e_eFSS_DB_RES_OK == l_eRes )
         {
             /* Get usable pages and buffer length so we can check database default value validity */
-            l_uUsePages = 0u;
-            l_eDBCRes = eFSS_DBC_GetBuffNUsable(&p_ptCtx->tDbcCtx, &l_tBuff, &l_uUsePages);
+            l_uTotPage = 0u;
+            l_eDBCRes = eFSS_DBC_GetBuffNUsable(&p_ptCtx->tDbcCtx, &l_tBuff, &l_uTotPage);
             l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
 
             if( e_eFSS_DB_RES_OK == l_eRes )
@@ -94,16 +96,20 @@ e_eFSS_DB_RES eFSS_DB_InitCtx(t_eFSS_DB_Ctx* const p_ptCtx, const t_eFSS_TYPE_Cb
 
                     /* De init DBC */
                     (void)memset(&p_ptCtx->tDbcCtx, 0, sizeof(t_eFSS_DBC_Ctx));
+                    (void)memset(&p_ptCtx->tDB,     0, sizeof(t_eFSS_DB_DbStruct));
+                    p_ptCtx->bIsDbCheked = false;
                 }
                 else
                 {
                     /* Check validity of the passed db struct */
-                    l_bIsDbStructValid = eFSS_DB_IsDbDefStructValid(p_tDbStruct, l_uUsePages, l_tBuff.uBufL);
+                    l_bIsDbStructValid = eFSS_DB_IsDbDefStructValid(p_tDbStruct, l_uTotPage, l_tBuff.uBufL);
 
                     if( false == l_bIsDbStructValid )
                     {
                         /* De init DBC, we need a valid DB */
                         (void)memset(&p_ptCtx->tDbcCtx, 0, sizeof(t_eFSS_DBC_Ctx));
+                        (void)memset(&p_ptCtx->tDB,     0, sizeof(t_eFSS_DB_DbStruct));
+                        p_ptCtx->bIsDbCheked = false;
 
                         l_eRes = e_eFSS_DB_RES_BADPARAM;
                     }
@@ -121,6 +127,8 @@ e_eFSS_DB_RES eFSS_DB_InitCtx(t_eFSS_DB_Ctx* const p_ptCtx, const t_eFSS_TYPE_Cb
             {
                 /* De init DBC */
                 (void)memset(&p_ptCtx->tDbcCtx, 0, sizeof(t_eFSS_DBC_Ctx));
+                (void)memset(&p_ptCtx->tDB,     0, sizeof(t_eFSS_DB_DbStruct));
+                p_ptCtx->bIsDbCheked = false;
             }
         }
     }
@@ -150,14 +158,16 @@ e_eFSS_DB_RES eFSS_DB_IsInit(t_eFSS_DB_Ctx* const p_ptCtx, bool_t* const p_pbIsI
 
 e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
 {
-	/* Local return variable */
+	/* Return local var */
     e_eFSS_DB_RES l_eRes;
     e_eFSS_DBC_RES l_eDBCRes;
+
+    /* Local var for init */
     bool_t l_bIsInit;
 
     /* Local variable for storage */
     t_eFSS_DBC_StorBuf l_tBuff;
-    uint32_t l_uUsePages;
+    uint32_t l_uTotPage;
 
     /* Local variable for calculation */
     uint32_t l_uCurrPage;
@@ -198,8 +208,8 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
                 else
                 {
                     /* Get storage info */
-                    l_uUsePages = 0u;
-                    l_eDBCRes = eFSS_DBC_GetBuffNUsable(&p_ptCtx->tDbcCtx, &l_tBuff, &l_uUsePages);
+                    l_uTotPage = 0u;
+                    l_eDBCRes = eFSS_DBC_GetBuffNUsable(&p_ptCtx->tDbcCtx, &l_tBuff, &l_uTotPage);
                     l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
 
                     if( e_eFSS_DB_RES_OK == l_eRes )
@@ -232,7 +242,7 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
                         while( ( ( e_eFSS_DB_RES_OK == l_eRes ) ||
                                  ( e_eFSS_DB_RES_OK_BKP_RCVRD == l_eRes ) ||
                                  ( e_eFSS_DB_RES_PARAM_DEF_RESET == l_eRes ) ) &&
-                               ( l_uCurrPage < l_uUsePages ) )
+                               ( l_uCurrPage < l_uTotPage ) )
                         {
                             /* Init page check, so we know if the page need to be stored after a modification */
                             l_bIsPageMod = false;
@@ -458,14 +468,16 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
 
 e_eFSS_DB_RES eFSS_DB_FormatToDefault(t_eFSS_DB_Ctx* const p_ptCtx)
 {
-	/* Local return variable */
+	/* Return local var */
     e_eFSS_DB_RES l_eRes;
     e_eFSS_DBC_RES l_eDBCRes;
+
+    /* Local var for init */
     bool_t l_bIsInit;
 
     /* Local variable for storage */
     t_eFSS_DBC_StorBuf l_tBuff;
-    uint32_t l_uUsePages;
+    uint32_t l_uTotPage;
 
     /* Local variable for calculation */
     uint32_t l_uCurrPage;
@@ -500,8 +512,8 @@ e_eFSS_DB_RES eFSS_DB_FormatToDefault(t_eFSS_DB_Ctx* const p_ptCtx)
                 else
                 {
                     /* Get storage info */
-                    l_uUsePages = 0u;
-                    l_eDBCRes = eFSS_DBC_GetBuffNUsable(&p_ptCtx->tDbcCtx, &l_tBuff, &l_uUsePages);
+                    l_uTotPage = 0u;
+                    l_eDBCRes = eFSS_DBC_GetBuffNUsable(&p_ptCtx->tDbcCtx, &l_tBuff, &l_uTotPage);
                     l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
 
                     if( e_eFSS_DB_RES_OK == l_eRes )
@@ -513,7 +525,7 @@ e_eFSS_DB_RES eFSS_DB_FormatToDefault(t_eFSS_DB_Ctx* const p_ptCtx)
                         l_uCheckedElem = 0u;
 
                         /* Continue till we have setted all pages or an error occours */
-                        while( ( e_eFSS_DB_RES_OK == l_eRes ) || ( l_uCurrPage < l_uUsePages ) )
+                        while( ( l_uCurrPage < l_uTotPage ) && ( e_eFSS_DB_RES_OK == l_eRes ) )
                         {
                             /* Memset the current page */
                             (void)memset(&l_tBuff.puBuf, 0, l_tBuff.uBufL);
@@ -522,13 +534,13 @@ e_eFSS_DB_RES eFSS_DB_FormatToDefault(t_eFSS_DB_Ctx* const p_ptCtx)
                             l_uByteInPageDone = 0u;
 
                             /* Continue till the page is full, parameter are avaiable, or an error occours */
-                            while( ( e_eFSS_DB_RES_OK == l_eRes ) ||
-                                   ( l_uCheckedElem < p_ptCtx->tDB.uNEle ) ||
+                            while( ( e_eFSS_DB_RES_OK == l_eRes ) &&
+                                   ( l_uCheckedElem < p_ptCtx->tDB.uNEle ) &&
                                    ( l_uByteInPageDone < l_tBuff.uBufL ) )
                             {
                                 /* We have some element to set, can be placed here? */
-                                if( ( p_ptCtx->tDB.ptDefEle[l_uCheckedElem].uEleL + EFSS_DB_RAWOFF ) >
-                                    ( l_tBuff.uBufL - l_uByteInPageDone ) )
+                                if( ( l_uByteInPageDone + p_ptCtx->tDB.ptDefEle[l_uCheckedElem].uEleL +
+                                      EFSS_DB_RAWOFF ) > l_tBuff.uBufL )
                                 {
                                     /* No space, next page will be the one */
                                     l_uByteInPageDone = l_tBuff.uBufL;
@@ -577,14 +589,16 @@ e_eFSS_DB_RES eFSS_DB_FormatToDefault(t_eFSS_DB_Ctx* const p_ptCtx)
 e_eFSS_DB_RES eFSS_DB_SaveElemen(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_uPos, const uint16_t p_uElemL,
                                  uint8_t* const p_puRawVal)
 {
-	/* Local return variable */
+	/* Return local var */
     e_eFSS_DB_RES l_eRes;
     e_eFSS_DBC_RES l_eDBCRes;
+
+    /* Local var for init */
     bool_t l_bIsInit;
 
     /* Local variable for storage */
     t_eFSS_DBC_StorBuf l_tBuff;
-    uint32_t l_uUsePages;
+    uint32_t l_uTotPage;
 
     /* Local variable for calculation */
     uint32_t p_puPageIdx;
@@ -634,7 +648,7 @@ e_eFSS_DB_RES eFSS_DB_SaveElemen(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_
                         else
                         {
                             /* Get storage info */
-                            l_eDBCRes = eFSS_DBC_GetBuffNUsable(&p_ptCtx->tDbcCtx, &l_tBuff, &l_uUsePages);
+                            l_eDBCRes = eFSS_DBC_GetBuffNUsable(&p_ptCtx->tDbcCtx, &l_tBuff, &l_uTotPage);
                             l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
 
                             if( e_eFSS_DB_RES_OK == l_eRes )
@@ -701,14 +715,16 @@ e_eFSS_DB_RES eFSS_DB_SaveElemen(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_
 e_eFSS_DB_RES eFSS_DB_GetElement(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_uPos, const uint16_t p_uElemL,
                                  uint8_t* const p_puRawVal)
 {
-	/* Local return variable */
+	/* Return local var */
     e_eFSS_DB_RES l_eRes;
     e_eFSS_DBC_RES l_eDBCRes;
+
+    /* Local var for init */
     bool_t l_bIsInit;
 
     /* Local variable for storage */
     t_eFSS_DBC_StorBuf l_tBuff;
-    uint32_t l_uUsePages;
+    uint32_t l_uTotPage;
 
     /* Local variable for calculation */
     uint32_t l_uPageIdx;
@@ -758,7 +774,7 @@ e_eFSS_DB_RES eFSS_DB_GetElement(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_
                         else
                         {
                             /* Get storage info */
-                            l_eDBCRes = eFSS_DBC_GetBuffNUsable(&p_ptCtx->tDbcCtx, &l_tBuff, &l_uUsePages);
+                            l_eDBCRes = eFSS_DBC_GetBuffNUsable(&p_ptCtx->tDbcCtx, &l_tBuff, &l_uTotPage);
                             l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
 
                             if( e_eFSS_DB_RES_OK == l_eRes )
@@ -816,17 +832,17 @@ e_eFSS_DB_RES eFSS_DB_GetElement(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_
  **********************************************************************************************************************/
 static bool_t eFSS_DB_IsStatusStillCoherent(t_eFSS_DB_Ctx* const p_ptCtx)
 {
-    /* Local return variable */
+    /* Return local var */
     bool_t l_eRes;
     e_eFSS_DBC_RES l_eDBCRes;
 
-    /* Local storage variable */
+    /* Local variable for storage */
     t_eFSS_DBC_StorBuf l_tBuff;
-    uint32_t l_uUsePages;
+    uint32_t l_uTotPage;
 
     /* Get usable pages and buffer length so we can check database default value validity */
-    l_uUsePages = 0u;
-    l_eDBCRes = eFSS_DBC_GetBuffNUsable(&p_ptCtx->tDbcCtx, &l_tBuff, &l_uUsePages);
+    l_uTotPage = 0u;
+    l_eDBCRes = eFSS_DBC_GetBuffNUsable(&p_ptCtx->tDbcCtx, &l_tBuff, &l_uTotPage);
 
     if( e_eFSS_DBC_RES_OK != l_eDBCRes )
     {
@@ -835,14 +851,14 @@ static bool_t eFSS_DB_IsStatusStillCoherent(t_eFSS_DB_Ctx* const p_ptCtx)
     else
     {
         /* Check data validity */
-        if( ( l_uUsePages <= 0u ) || ( l_tBuff.uBufL < EFSS_DB_MINPAGESIZE ) )
+        if( ( l_uTotPage <= 0u ) || ( l_tBuff.uBufL < EFSS_DB_MINPAGESIZE ) )
         {
             l_eRes = false;
         }
         else
         {
             /* Check validity of the passed db struct */
-            l_eRes = eFSS_DB_IsDbDefStructValid(p_ptCtx->tDB, l_uUsePages, l_tBuff.uBufL);
+            l_eRes = eFSS_DB_IsDbDefStructValid(p_ptCtx->tDB, l_uTotPage, l_tBuff.uBufL);
         }
     }
 

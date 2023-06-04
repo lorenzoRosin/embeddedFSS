@@ -116,8 +116,8 @@ e_eFSS_DB_RES eFSS_DB_InitCtx(t_eFSS_DB_Ctx* const p_ptCtx, const t_eFSS_TYPE_Cb
 e_eFSS_DB_RES eFSS_DB_IsInit(t_eFSS_DB_Ctx* const p_ptCtx, bool_t* const p_pbIsInit);
 
 /**
- * @brief       Check the whole database status. This function should be called before doing anything else with the
- *              the database. In any case this function is called automatically on the firt action against the db.
+ * @brief       Check the whole database status. This function must be called before doing anything else with the
+ *              the database.
  *              This function is reading all the entry of the database, so i can takes some times to execute.
  *              If e_eFSS_DB_RES_NOTVALIDDB or e_eFSS_DB_RES_NEWVERSIONFOUND are returned it's means that the database
  *              cannot be used untill we use the function called eFSS_DB_FormatToDefault.
