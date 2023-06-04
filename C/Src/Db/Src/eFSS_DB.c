@@ -73,70 +73,54 @@ e_eFSS_DB_RES eFSS_DB_InitCtx(t_eFSS_DB_Ctx* const p_ptCtx, const t_eFSS_TYPE_Cb
 	}
 	else
 	{
-        /* Check pointer validity */
-        if( NULL == p_tDbStruct.ptDefEle )
-        {
-            l_eRes = e_eFSS_DB_RES_BADPOINTER;
-        }
-        else
-        {
-            /* Check data validity */
-            if( p_tDbStruct.uNEle <= 0u )
-            {
-                l_eRes = e_eFSS_DB_RES_BADPARAM;
-            }
-            else
-            {
-                /* Can init low level context, and after get the used space and check database validity */
-                l_eDBCRes = eFSS_DBC_InitCtx(&p_ptCtx->tDbcCtx, p_tCtxCb, p_tStorSet, p_puBuff, p_uBuffL);
-                l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
+        /* Can init low level context, and after get the used space and check database validity */
+        l_eDBCRes = eFSS_DBC_InitCtx(&p_ptCtx->tDbcCtx, p_tCtxCb, p_tStorSet, p_puBuff, p_uBuffL);
+        l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
 
-                if( e_eFSS_DB_RES_OK == l_eRes )
+        if( e_eFSS_DB_RES_OK == l_eRes )
+        {
+            /* Get usable pages and buffer length so we can check database default value validity */
+            l_uUsePages = 0u;
+            l_eDBCRes = eFSS_DBC_GetBuffNUsable(&p_ptCtx->tDbcCtx, &l_tBuff, &l_uUsePages);
+            l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
+
+            if( e_eFSS_DB_RES_OK == l_eRes )
+            {
+                /* Check if page length is OK */
+                if( l_tBuff.uBufL < EFSS_DB_MINPAGESIZE )
                 {
-                    /* Get usable pages and buffer length so we can check database default value validity */
-                    l_uUsePages = 0u;
-                    l_eDBCRes = eFSS_DBC_GetBuffNUsable(&p_ptCtx->tDbcCtx, &l_tBuff, &l_uUsePages);
-                    l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
+                    /* We need more space for the DB */
+                    l_eRes = e_eFSS_DB_RES_BADPARAM;
 
-                    if( e_eFSS_DB_RES_OK == l_eRes )
+                    /* De init DBC */
+                    (void)memset(&p_ptCtx->tDbcCtx, 0, sizeof(t_eFSS_DBC_Ctx));
+                }
+                else
+                {
+                    /* Check validity of the passed db struct */
+                    l_bIsDbStructValid = eFSS_DB_IsDbDefStructValid(p_tDbStruct, l_uUsePages, l_tBuff.uBufL);
+
+                    if( false == l_bIsDbStructValid )
                     {
-                        /* Check if page length is OK */
-                        if( l_tBuff.uBufL < EFSS_DB_MINPAGESIZE )
-                        {
-                            /* We need more space for the DB */
-                            l_eRes = e_eFSS_DB_RES_BADPARAM;
+                        /* De init DBC, we need a valid DB */
+                        (void)memset(&p_ptCtx->tDbcCtx, 0, sizeof(t_eFSS_DBC_Ctx));
 
-                            /* De init DBC */
-                            (void)memset(&p_ptCtx->tDbcCtx, 0, sizeof(t_eFSS_DBC_Ctx));
-                        }
-                        else
-                        {
-                            /* Check validity of the passed db struct */
-                            l_bIsDbStructValid = eFSS_DB_IsDbDefStructValid(p_tDbStruct, l_uUsePages, l_tBuff.uBufL);
-
-                            if( false == l_bIsDbStructValid )
-                            {
-                                /* De init DBC, we need a valid DB */
-                                (void)memset(&p_ptCtx->tDbcCtx, 0, sizeof(t_eFSS_DBC_Ctx));
-
-                                l_eRes = e_eFSS_DB_RES_BADPARAM;
-                            }
-                            else
-                            {
-                                /* All ok, fill context */
-                                p_ptCtx->tDB = p_tDbStruct;
-
-                                /* Set to false fo the first operation will trigger a stored DB check */
-                                p_ptCtx->bIsDbCheked = false;
-                            }
-                        }
+                        l_eRes = e_eFSS_DB_RES_BADPARAM;
                     }
                     else
                     {
-                        /* De init DBC */
-                        (void)memset(&p_ptCtx->tDbcCtx, 0, sizeof(t_eFSS_DBC_Ctx));
+                        /* All ok, fill context */
+                        p_ptCtx->tDB = p_tDbStruct;
+
+                        /* Set to false fo the first operation will trigger a stored DB check */
+                        p_ptCtx->bIsDbCheked = false;
                     }
                 }
+            }
+            else
+            {
+                /* De init DBC */
+                (void)memset(&p_ptCtx->tDbcCtx, 0, sizeof(t_eFSS_DBC_Ctx));
             }
         }
     }
@@ -634,23 +618,20 @@ e_eFSS_DB_RES eFSS_DB_SaveElemen(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_
                 }
                 else
                 {
-                    /* Verify if parameter is ok checked against the DB */
-                    if( ( p_uPos >= p_ptCtx->tDB.uNEle ) || ( p_uElemL != p_ptCtx->tDB.ptDefEle[p_uPos].uEleL ) )
+                    /* First time calling a function we need to check for the whole stored integrity */
+                    if( false == p_ptCtx->bIsDbCheked )
                     {
-                        l_eRes = e_eFSS_DB_RES_BADPARAM;
+                        /* Check status */
+                        l_eRes = e_eFSS_DB_RES_NOCHECKED;
                     }
                     else
                     {
-                        /* First time calling a function we need to check for the whole stored integrity */
-                        if( false == p_ptCtx->bIsDbCheked )
+                        /* Verify if parameter is ok checked against the DB */
+                        if( ( p_uPos >= p_ptCtx->tDB.uNEle ) || ( p_uElemL != p_ptCtx->tDB.ptDefEle[p_uPos].uEleL ) )
                         {
-                            /* Check status */
-                            l_eRes = eFSS_DB_GetDBStatus(p_ptCtx);
+                            l_eRes = e_eFSS_DB_RES_BADPARAM;
                         }
-
-                        /* If internal stored database seems ok continue */
-                        if( ( e_eFSS_DB_RES_OK == l_eRes ) || ( e_eFSS_DB_RES_OK_BKP_RCVRD == l_eRes ) ||
-                            ( e_eFSS_DB_RES_PARAM_DEF_RESET == l_eRes ) )
+                        else
                         {
                             /* Get storage info */
                             l_eDBCRes = eFSS_DBC_GetBuffNUsable(&p_ptCtx->tDbcCtx, &l_tBuff, &l_uUsePages);
@@ -731,7 +712,7 @@ e_eFSS_DB_RES eFSS_DB_GetElement(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_
 
     /* Local variable for calculation */
     uint32_t l_uPageIdx;
-    uint32_t l_uPagePos;
+    uint32_t l_uCurOff;
     t_eFSS_DB_DbElement l_tCurEle;
 
 	/* Check pointer validity */
@@ -761,23 +742,20 @@ e_eFSS_DB_RES eFSS_DB_GetElement(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_
                 }
                 else
                 {
-                    /* Verify if parameter is ok checked against the DB */
-                    if( ( p_uPos >= p_ptCtx->tDB.uNEle ) || ( p_uElemL != p_ptCtx->tDB.ptDefEle[p_uPos].uEleL ) )
+                    /* First time calling a function we need to check for the whole stored integrity */
+                    if( false == p_ptCtx->bIsDbCheked )
                     {
-                        l_eRes = e_eFSS_DB_RES_BADPARAM;
+                        /* Check status before executing action */
+                        l_eRes = e_eFSS_DB_RES_NOCHECKED;
                     }
                     else
                     {
-                        /* First time calling a function we need to check for the whole stored integrity */
-                        if( false == p_ptCtx->bIsDbCheked )
+                        /* Verify if parameter is ok checked against the DB */
+                        if( ( p_uPos >= p_ptCtx->tDB.uNEle ) || ( p_uElemL != p_ptCtx->tDB.ptDefEle[p_uPos].uEleL ) )
                         {
-                            /* Check status */
-                            l_eRes = eFSS_DB_GetDBStatus(p_ptCtx);
+                            l_eRes = e_eFSS_DB_RES_BADPARAM;
                         }
-
-                        /* If internal stored database seems ok continue */
-                        if( ( e_eFSS_DB_RES_OK == l_eRes ) || ( e_eFSS_DB_RES_OK_BKP_RCVRD == l_eRes ) ||
-                            ( e_eFSS_DB_RES_PARAM_DEF_RESET == l_eRes ) )
+                        else
                         {
                             /* Get storage info */
                             l_eDBCRes = eFSS_DBC_GetBuffNUsable(&p_ptCtx->tDbcCtx, &l_tBuff, &l_uUsePages);
@@ -787,7 +765,7 @@ e_eFSS_DB_RES eFSS_DB_GetElement(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_
                             {
                                 /* Find the page and page index where to get the data */
                                 l_eRes = eFSS_DB_FindElePageAndPos(l_tBuff.uBufL, p_ptCtx->tDB, p_uPos,
-                                                                   &l_uPageIdx, &l_uPagePos);
+                                                                   &l_uPageIdx, &l_uCurOff);
 
                                 if( e_eFSS_DB_RES_OK == l_eRes )
                                 {
@@ -800,7 +778,7 @@ e_eFSS_DB_RES eFSS_DB_GetElement(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_
                                         /* Verify if the already stroed element is correct */
                                         l_tCurEle.uEleL = p_ptCtx->tDB.ptDefEle[p_uPos].uEleL;
                                         l_eRes = eFSS_DB_GetEleRawInBuffer( p_ptCtx->tDB.ptDefEle[p_uPos].uEleL,
-                                                                            &l_tBuff.puBuf[l_uPagePos],
+                                                                            &l_tBuff.puBuf[l_uCurOff],
                                                                             &l_tCurEle.uEleV, &l_tCurEle.puEleRaw);
 
                                         if( e_eFSS_DB_RES_OK == l_eRes )
@@ -846,43 +824,27 @@ static bool_t eFSS_DB_IsStatusStillCoherent(t_eFSS_DB_Ctx* const p_ptCtx)
     t_eFSS_DBC_StorBuf l_tBuff;
     uint32_t l_uUsePages;
 
-	/* Check pointer validity */
-	if( NULL == p_ptCtx->tDB.ptDefEle )
-	{
-		l_eRes = false;
-	}
-	else
-	{
+    /* Get usable pages and buffer length so we can check database default value validity */
+    l_uUsePages = 0u;
+    l_eDBCRes = eFSS_DBC_GetBuffNUsable(&p_ptCtx->tDbcCtx, &l_tBuff, &l_uUsePages);
+
+    if( e_eFSS_DBC_RES_OK != l_eDBCRes )
+    {
+        l_eRes = false;
+    }
+    else
+    {
         /* Check data validity */
-        if( p_ptCtx->tDB.uNEle <= 0u )
+        if( ( l_uUsePages <= 0u ) || ( l_tBuff.uBufL < EFSS_DB_MINPAGESIZE ) )
         {
             l_eRes = false;
         }
         else
         {
-            /* Get usable pages and buffer length so we can check database default value validity */
-            l_uUsePages = 0u;
-            l_eDBCRes = eFSS_DBC_GetBuffNUsable(&p_ptCtx->tDbcCtx, &l_tBuff, &l_uUsePages);
-
-            if( e_eFSS_DBC_RES_OK != l_eDBCRes )
-            {
-                l_eRes = false;
-            }
-            else
-            {
-                /* Check data validity */
-                if( ( l_uUsePages <= 0u ) || ( l_tBuff.uBufL < EFSS_DB_MINPAGESIZE ) )
-                {
-                    l_eRes = false;
-                }
-                else
-                {
-                    /* Check validity of the passed db struct */
-                    l_eRes = eFSS_DB_IsDbDefStructValid(p_ptCtx->tDB, l_uUsePages, l_tBuff.uBufL);
-                }
-            }
+            /* Check validity of the passed db struct */
+            l_eRes = eFSS_DB_IsDbDefStructValid(p_ptCtx->tDB, l_uUsePages, l_tBuff.uBufL);
         }
-	}
+    }
 
     return l_eRes;
 }
@@ -1015,7 +977,7 @@ static bool_t eFSS_DB_IsDbDefStructValid(const t_eFSS_DB_DbStruct p_tDefaultDb, 
     }
     else
     {
-        if( 0u == p_tDefaultDb.uNEle )
+        if( p_tDefaultDb.uNEle <= 0u )
         {
             l_bRes = false;
         }
