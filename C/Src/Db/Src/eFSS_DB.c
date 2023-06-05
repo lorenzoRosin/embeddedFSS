@@ -813,6 +813,8 @@ e_eFSS_DB_RES eFSS_DB_GetElement(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_
                                     else
                                     {
                                         /* Verify if the already stored element is correct */
+                                        (void)memset(&l_tCurEle, 0u, sizeof(t_eFSS_DB_DbElement) );
+
                                         l_tCurEle.uEleL = p_ptCtx->tDB.ptDefEle[p_uPos].uEleL;
                                         l_eRes = eFSS_DB_GetEleRawInBuffer( p_ptCtx->tDB.ptDefEle[p_uPos].uEleL,
                                                                             &l_tBuff.puBuf[l_uCurOff],
