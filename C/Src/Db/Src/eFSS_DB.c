@@ -993,6 +993,7 @@ static bool_t eFSS_DB_IsDbDefStructValid(const t_eFSS_DB_DbStruct p_tDefaultDb, 
        3- An element length cannot be greater than page length
        4- All element must be able to be stored in database
        5- Numbers of element need to be different from zero
+       6- DB array must be valid and not NULL
      */
 
     /* Local variable for return */
@@ -1056,7 +1057,7 @@ static bool_t eFSS_DB_IsDbDefStructValid(const t_eFSS_DB_DbStruct p_tDefaultDb, 
                     /* Check if all ok */
                     if( l_uCurPage >= p_uNPage )
                     {
-                        /* Cannot be */
+                        /* Cannot be, we don't have space for storing all parameter */
                         l_bRes = false;
                     }
                     else
@@ -1198,7 +1199,7 @@ static e_eFSS_DB_RES eFSS_DB_FindElePageAndPos(const uint32_t p_uPageL, const t_
     else
     {
         /* Check element validity */
-        if( ( 0u == p_tDbDefault.uNEle ) || ( p_uPageL < EFSS_DB_MINPAGESIZE ) || ( p_uEleIdx >= p_tDbDefault.uNEle ) )
+        if( ( p_tDbDefault.uNEle <= 0u ) || ( p_uPageL < EFSS_DB_MINPAGESIZE ) || ( p_uEleIdx >= p_tDbDefault.uNEle ) )
         {
             l_eRes = e_eFSS_DB_RES_BADPARAM;
         }
@@ -1247,8 +1248,8 @@ static e_eFSS_DB_RES eFSS_DB_FindElePageAndPos(const uint32_t p_uPageL, const t_
 
             if( e_eFSS_DB_RES_OK == l_eRes )
             {
-                /* Now just check if the current element can be present in this page */
-                /* Get current element */
+                /* Finded the page and the offset of the index we were looking for. We just need to check if
+                   the findeded element can be present on the current pages, if not icnrease it */
                 l_tCurEle = p_tDbDefault.ptDefEle[l_uCurIndex];
 
                 /* Just check element validty, not needed because we check context validity every time, but
