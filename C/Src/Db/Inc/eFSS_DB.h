@@ -70,7 +70,7 @@ typedef enum
     e_eFSS_DB_RES_NEWVERSIONFOUND,
     e_eFSS_DB_RES_WRITENOMATCHREAD,
     e_eFSS_DB_RES_OK_BKP_RCVRD,
-    e_eFSS_DB_RES_NOCHECKED,
+    e_eFSS_DB_RES_DBNOTCHECKED,
     e_eFSS_DB_RES_PARAM_DEF_RESET
 }e_eFSS_DB_RES;
 
@@ -162,14 +162,14 @@ e_eFSS_DB_RES eFSS_DB_SaveElemen(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_
  *
  * @param[in]   p_ptCtx       - Database context
  * @param[in]   p_uPos        - Position of the element we want to read from the database
- * @param[in]   p_uElemL      - Length of the element
- * @param[out]  p_puRawVal    - Storage are of size p_uElemL were we will save the element
+ * @param[in]   p_uRawValL    - Length of the element
+ * @param[out]  p_puRawVal    - Storage are of size p_uRawValL were we will save the element
  *
  * @return      e_eFSS_DB_RES_BADPOINTER    - In case of bad pointer passed to the function
  *		        e_eFSS_DB_RES_BADPARAM      - In case of an invalid parameter passed to the function
  *              e_eFSS_DB_RES_OK            - Operation ended correctly
  */
-e_eFSS_DB_RES eFSS_DB_GetElement(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_uPos, const uint16_t p_uElemL,
+e_eFSS_DB_RES eFSS_DB_GetElement(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_uPos, const uint16_t p_uRawValL,
                                  uint8_t* const p_puRawVal);
 
 #ifdef __cplusplus

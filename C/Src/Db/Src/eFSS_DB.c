@@ -631,11 +631,14 @@ e_eFSS_DB_RES eFSS_DB_SaveElemen(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_
                 }
                 else
                 {
-                    /* First time calling a function we need to check for the whole stored integrity */
+                    /* First time calling a function we need to check for the whole stored integrity.
+                     * We need to do this check to be sure that the DB version is not increased, to be sure that
+                     * parameter with updated version are setted to default value and that new parameter are
+                     * initialized */
                     if( false == p_ptCtx->bIsDbCheked )
                     {
                         /* Check status */
-                        l_eRes = e_eFSS_DB_RES_NOCHECKED;
+                        l_eRes = e_eFSS_DB_RES_DBNOTCHECKED;
                     }
                     else
                     {
@@ -680,7 +683,8 @@ e_eFSS_DB_RES eFSS_DB_SaveElemen(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_
                                             /* Check if previous param has correct version */
                                             if( l_tCurEle.uEleV != p_ptCtx->tDB.ptDefEle[p_uPos].uEleV )
                                             {
-                                                /* The database is incoherent */
+                                                /* The database is incoherent, the version should match because
+                                                 * the function eFSS_DB_GetDBStatus was already called */
                                                 l_eRes = e_eFSS_DB_RES_NOTVALIDDB;
                                             }
                                             else
@@ -700,8 +704,7 @@ e_eFSS_DB_RES eFSS_DB_SaveElemen(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_
                                                                                          p_puPagePos);
                                                     l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
 
-                                                    if( ( e_eFSS_DB_RES_OK == l_eRes ) &&
-                                                        ( e_eFSS_DB_RES_OK_BKP_RCVRD == l_eResLoad )  )
+                                                    if( e_eFSS_DB_RES_OK_BKP_RCVRD == l_eResLoad )
                                                     {
                                                         l_eRes = e_eFSS_DB_RES_OK_BKP_RCVRD;
                                                     }
@@ -721,7 +724,7 @@ e_eFSS_DB_RES eFSS_DB_SaveElemen(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_
 	return l_eRes;
 }
 
-e_eFSS_DB_RES eFSS_DB_GetElement(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_uPos, const uint16_t p_uElemL,
+e_eFSS_DB_RES eFSS_DB_GetElement(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_uPos, const uint16_t p_uRawValL,
                                  uint8_t* const p_puRawVal)
 {
 	/* Return local var */
@@ -768,16 +771,19 @@ e_eFSS_DB_RES eFSS_DB_GetElement(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_
                 }
                 else
                 {
-                    /* First time calling a function we need to check for the whole stored integrity */
+                    /* First time calling a function we need to check for the whole stored integrity.
+                     * We need to do this check to be sure that the DB version is not increased, to be sure that
+                     * parameter with updated version are setted to default value and that new parameter are
+                     * initialized */
                     if( false == p_ptCtx->bIsDbCheked )
                     {
                         /* Check status before executing action */
-                        l_eRes = e_eFSS_DB_RES_NOCHECKED;
+                        l_eRes = e_eFSS_DB_RES_DBNOTCHECKED;
                     }
                     else
                     {
                         /* Verify if parameter is ok checked against the DB */
-                        if( ( p_uPos >= p_ptCtx->tDB.uNEle ) || ( p_uElemL != p_ptCtx->tDB.ptDefEle[p_uPos].uEleL ) )
+                        if( ( p_uPos >= p_ptCtx->tDB.uNEle ) || ( p_uRawValL != p_ptCtx->tDB.ptDefEle[p_uPos].uEleL ) )
                         {
                             l_eRes = e_eFSS_DB_RES_BADPARAM;
                         }
@@ -806,7 +812,7 @@ e_eFSS_DB_RES eFSS_DB_GetElement(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_
                                     }
                                     else
                                     {
-                                        /* Verify if the already stroed element is correct */
+                                        /* Verify if the already stored element is correct */
                                         l_tCurEle.uEleL = p_ptCtx->tDB.ptDefEle[p_uPos].uEleL;
                                         l_eRes = eFSS_DB_GetEleRawInBuffer( p_ptCtx->tDB.ptDefEle[p_uPos].uEleL,
                                                                             &l_tBuff.puBuf[l_uCurOff],
@@ -817,16 +823,16 @@ e_eFSS_DB_RES eFSS_DB_GetElement(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_
                                             /* Check if previous param has correct version and length */
                                             if( l_tCurEle.uEleV != p_ptCtx->tDB.ptDefEle[p_uPos].uEleV )
                                             {
-                                                /* The database is incoherent */
+                                                /* The database is incoherent, the version should match because
+                                                 * the function eFSS_DB_GetDBStatus was already called */
                                                 l_eRes = e_eFSS_DB_RES_NOTVALIDDB;
                                             }
                                             else
                                             {
                                                 /* Can copy the element */
-                                                (void)memcpy(p_puRawVal, l_tCurEle.puEleRaw, (uint32_t)p_uElemL);
+                                                (void)memcpy(p_puRawVal, l_tCurEle.puEleRaw, (uint32_t)p_uRawValL);
 
-                                                if( ( e_eFSS_DB_RES_OK == l_eRes ) &&
-                                                    ( e_eFSS_DB_RES_OK_BKP_RCVRD == l_eResLoad )  )
+                                                if( e_eFSS_DB_RES_OK_BKP_RCVRD == l_eResLoad )
                                                 {
                                                     l_eRes = e_eFSS_DB_RES_OK_BKP_RCVRD;
                                                 }
