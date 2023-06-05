@@ -584,7 +584,7 @@ e_eFSS_DB_RES eFSS_DB_FormatToDefault(t_eFSS_DB_Ctx* const p_ptCtx)
 	return l_eRes;
 }
 
-e_eFSS_DB_RES eFSS_DB_SaveElemen(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_uPos, const uint16_t p_uElemL,
+e_eFSS_DB_RES eFSS_DB_SaveElemen(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_uPos, const uint16_t p_uRawValL,
                                  uint8_t* const p_puRawVal)
 {
 	/* Return local var */
@@ -643,7 +643,7 @@ e_eFSS_DB_RES eFSS_DB_SaveElemen(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_
                     else
                     {
                         /* Verify if parameter is ok checked against the DB */
-                        if( ( p_uPos >= p_ptCtx->tDB.uNEle ) || ( p_uElemL != p_ptCtx->tDB.ptDefEle[p_uPos].uEleL ) )
+                        if( ( p_uPos >= p_ptCtx->tDB.uNEle ) || ( p_uRawValL != p_ptCtx->tDB.ptDefEle[p_uPos].uEleL ) )
                         {
                             l_eRes = e_eFSS_DB_RES_BADPARAM;
                         }
@@ -673,6 +673,8 @@ e_eFSS_DB_RES eFSS_DB_SaveElemen(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_
                                     else
                                     {
                                         /* Verify if the already stored element is correct */
+                                        (void)memset(&l_tCurEle, 0u, sizeof(t_eFSS_DB_DbElement) );
+
                                         l_tCurEle.uEleL = p_ptCtx->tDB.ptDefEle[p_uPos].uEleL;
                                         l_eRes = eFSS_DB_GetEleRawInBuffer( p_ptCtx->tDB.ptDefEle[p_uPos].uEleL,
                                                                             &l_tBuff.puBuf[l_uCurOff],
@@ -699,12 +701,14 @@ e_eFSS_DB_RES eFSS_DB_SaveElemen(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_
 
                                                 if( e_eFSS_DB_RES_OK == l_eRes )
                                                 {
-                                                    /* Flush the page */
+                                                    /* Ok, so we have updated the loaded buffer with
+                                                       the needed raw data that we want to save. Flush the page */
                                                     l_eDBCRes = eFSS_DBC_FlushBuffInPage(&p_ptCtx->tDbcCtx,
                                                                                          l_uCurOff);
                                                     l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
 
-                                                    if( e_eFSS_DB_RES_OK_BKP_RCVRD == l_eResLoad )
+                                                    if( ( e_eFSS_DB_RES_OK_BKP_RCVRD == l_eResLoad ) &&
+                                                        ( e_eFSS_DB_RES_OK == l_eRes ) )
                                                     {
                                                         l_eRes = e_eFSS_DB_RES_OK_BKP_RCVRD;
                                                     }

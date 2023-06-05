@@ -147,14 +147,14 @@ e_eFSS_DB_RES eFSS_DB_FormatToDefault(t_eFSS_DB_Ctx* const p_ptCtx);
  *
  * @param[in]   p_ptCtx       - Database context
  * @param[in]   p_uPos        - Position of the element we want to save in to the database
- * @param[in]   p_uElemL      - Length of the element
- * @param[in]   p_puRawVal    - Raw value of the element we want to save that must be of size of p_uElemL
+ * @param[in]   p_uRawValL    - Length of the element
+ * @param[in]   p_puRawVal    - Raw value of the element we want to save that must be of size of p_uRawValL
  *
  * @return      e_eFSS_DB_RES_BADPOINTER    - In case of bad pointer passed to the function
  *		        e_eFSS_DB_RES_BADPARAM      - In case of an invalid parameter passed to the function
  *              e_eFSS_DB_RES_OK            - Operation ended correctly
  */
-e_eFSS_DB_RES eFSS_DB_SaveElemen(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_uPos, const uint16_t p_uElemL,
+e_eFSS_DB_RES eFSS_DB_SaveElemen(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_uPos, const uint16_t p_uRawValL,
                                  uint8_t* const p_puRawVal);
 
 /**
