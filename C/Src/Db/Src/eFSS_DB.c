@@ -51,8 +51,8 @@ static e_eFSS_DB_RES eFSS_DB_DBCtoDBRes(const e_eFSS_DBC_RES p_eDBCRes);
 static bool_t eFSS_DB_IsDbDefStructValid(const t_eFSS_DB_DbStruct p_tDefaultDb, const uint32_t p_uNPage,
                                          const uint32_t p_uPageL);
 
-static e_eFSS_DB_RES eFSS_DB_GetEleRawInBuffer(const uint16_t p_uExpEleL, uint8_t* const p_puSrcBuff,
-                                               uint16_t* const p_puEleV, uint8_t** const p_puRawData);
+static e_eFSS_DB_RES eFSS_DB_GetEleRawInBuffer(const uint16_t p_uExpEleL, uint8_t* const p_puBuff,
+                                               t_eFSS_DB_DbElement* const p_ptEleToGet);
 
 static e_eFSS_DB_RES eFSS_DB_SetEleRawInBuffer(const t_eFSS_DB_DbElement p_tEleToSet, uint8_t* const p_puBuff);
 
@@ -295,8 +295,7 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
                                             l_tGettedEle.uEleL = l_tCurEle.uEleL;
                                             l_eRes = eFSS_DB_GetEleRawInBuffer( l_tCurEle.uEleL,
                                                                                 &l_tBuff.puBuf[l_uCurOff],
-                                                                                &l_tGettedEle.uEleV,
-                                                                                &l_tGettedEle.puEleRaw);
+                                                                                &l_tGettedEle);
                                             if( e_eFSS_DB_RES_OK == l_eRes )
                                             {
                                                 /* Check parameter */
@@ -703,7 +702,7 @@ e_eFSS_DB_RES eFSS_DB_SaveElemen(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_
                                         l_tCurEle.uEleL = p_ptCtx->tDB.ptDefEle[p_uPos].uEleL;
                                         l_eRes = eFSS_DB_GetEleRawInBuffer( p_ptCtx->tDB.ptDefEle[p_uPos].uEleL,
                                                                             &l_tBuff.puBuf[l_uCurOff],
-                                                                            &l_tCurEle.uEleV, &l_tCurEle.puEleRaw);
+                                                                            &l_tCurEle);
 
                                         if( e_eFSS_DB_RES_OK == l_eRes )
                                         {
@@ -847,7 +846,7 @@ e_eFSS_DB_RES eFSS_DB_GetElement(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_
                                         l_tCurEle.uEleL = p_ptCtx->tDB.ptDefEle[p_uPos].uEleL;
                                         l_eRes = eFSS_DB_GetEleRawInBuffer( p_ptCtx->tDB.ptDefEle[p_uPos].uEleL,
                                                                             &l_tBuff.puBuf[l_uCurOff],
-                                                                            &l_tCurEle.uEleV, &l_tCurEle.puEleRaw);
+                                                                            &l_tCurEle);
 
                                         if( e_eFSS_DB_RES_OK == l_eRes )
                                         {
@@ -1110,17 +1109,14 @@ static bool_t eFSS_DB_IsDbDefStructValid(const t_eFSS_DB_DbStruct p_tDefaultDb, 
     return l_bRes;
 }
 
-static e_eFSS_DB_RES eFSS_DB_GetEleRawInBuffer(const uint16_t p_uExpEleL, uint8_t* const p_puSrcBuff,
-                                               uint16_t* const p_puEleV, uint8_t** const p_puRawData)
+static e_eFSS_DB_RES eFSS_DB_GetEleRawInBuffer(const uint16_t p_uExpEleL, uint8_t* const p_puBuff,
+                                               t_eFSS_DB_DbElement* const p_ptEleToGet)
 {
     /* Local variable for result */
     e_eFSS_DB_RES l_eRes;
 
-    /* Local variable for calculation */
-    uint16_t l_uEleRedL;
-
     /* Check null pointer */
-    if( ( NULL == p_puSrcBuff ) || ( NULL == p_puEleV ) || ( NULL == p_puRawData ) )
+    if( ( NULL == p_puBuff ) || ( NULL == p_ptEleToGet ) )
     {
         l_eRes = e_eFSS_DB_RES_BADPOINTER;
     }
@@ -1134,28 +1130,28 @@ static e_eFSS_DB_RES eFSS_DB_GetEleRawInBuffer(const uint16_t p_uExpEleL, uint8_
         else
         {
             /* can be retrived, for now */
-            if( true != eFSS_Utils_RetriveU16(&p_puSrcBuff[EFSS_DB_VEROFF], p_puEleV) )
+            if( true != eFSS_Utils_RetriveU16(&p_puBuff[EFSS_DB_VEROFF], &p_ptEleToGet->uEleV) )
             {
                 l_eRes = e_eFSS_DB_RES_CORRUPTCTX;
             }
             else
             {
-                l_uEleRedL = 0u;
-                if( true != eFSS_Utils_RetriveU16(&p_puSrcBuff[EFSS_DB_LENOFF], &l_uEleRedL) )
+                p_ptEleToGet->uEleL = 0u;
+                if( true != eFSS_Utils_RetriveU16(&p_puBuff[EFSS_DB_LENOFF], &p_ptEleToGet->uEleL ) )
                 {
                     l_eRes = e_eFSS_DB_RES_CORRUPTCTX;
                 }
                 else
                 {
                     /* Check that the element has valid parameter */
-                    if( ( 0u == *p_puEleV ) || ( p_uExpEleL != l_uEleRedL ) )
+                    if( ( 0u == p_ptEleToGet->uEleV ) || ( p_uExpEleL != p_ptEleToGet->uEleL ) )
                     {
                         l_eRes = e_eFSS_DB_RES_NOTVALIDDB;
                     }
                     else
                     {
                         /* Can be retrived, copy the raw data */
-                        *p_puRawData = &p_puSrcBuff[EFSS_DB_RAWOFF];
+                        p_ptEleToGet->puEleRaw = &p_puBuff[EFSS_DB_RAWOFF];
 
                         /* All ok */
                         l_eRes = e_eFSS_DB_RES_OK;
