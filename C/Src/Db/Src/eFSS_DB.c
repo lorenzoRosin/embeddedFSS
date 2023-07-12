@@ -1024,12 +1024,12 @@ static bool_t eFSS_DB_IsDbDefStructValid(const t_eFSS_DB_DbStruct p_tDefaultDb, 
                                          const uint32_t p_uPageL)
 {
     /* Check db validity:
-       1- Each element version and len need to be different from zero
-       2- Element raw data must be different from NULL
-       3- An element length cannot be greater than page length
-       4- All element must be able to be stored in database
-       5- Numbers of element need to be different from zero
-       6- DB array must be valid and not NULL
+       1- DB array must be valid and not NULL
+       2- Numbers of element need to be different from zero
+       3- Each element version and len need to be different from zero
+       4- Element raw data must be different from NULL
+       5- An element length cannot be greater than page length
+       6- All element must be able to be stored in database
      */
 
     /* Local variable for return */
