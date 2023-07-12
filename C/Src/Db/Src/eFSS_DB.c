@@ -54,7 +54,7 @@ static bool_t eFSS_DB_IsDbDefStructValid(const t_eFSS_DB_DbStruct p_tDefaultDb, 
 static e_eFSS_DB_RES eFSS_DB_GetEleRawInBuffer(const uint16_t p_uExpEleL, uint8_t* const p_puSrcBuff,
                                                uint16_t* const p_puEleV, uint8_t** const p_puRawData);
 
-static e_eFSS_DB_RES eFSS_DB_SetEleRawInBuffer(uint8_t* const p_puBuff, const t_eFSS_DB_DbElement p_tEleToSet);
+static e_eFSS_DB_RES eFSS_DB_SetEleRawInBuffer(const t_eFSS_DB_DbElement p_tEleToSet, uint8_t* const p_puBuff);
 
 static e_eFSS_DB_RES eFSS_DB_FindElePageAndPos(const uint32_t p_uPageL, const t_eFSS_DB_DbStruct p_tDbDefault,
                                                const uint32_t p_uEleIdx, uint32_t* const p_puPageFound,
@@ -303,8 +303,8 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
                                                 if( l_tCurEle.uEleV != l_tGettedEle.uEleV )
                                                 {
                                                     /* Need to update this entry */
-                                                    l_eRes = eFSS_DB_SetEleRawInBuffer( &l_tBuff.puBuf[l_uCurOff],
-                                                                                        l_tCurEle);
+                                                    l_eRes = eFSS_DB_SetEleRawInBuffer( l_tCurEle,
+                                                                                        &l_tBuff.puBuf[l_uCurOff] );
                                                     if( e_eFSS_DB_RES_OK == l_eRes )
                                                     {
                                                         /* Updated */
@@ -352,8 +352,8 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
                                                     l_bNewParAdd = true;
 
                                                     /* Need to update this entry */
-                                                    l_eRes = eFSS_DB_SetEleRawInBuffer( &l_tBuff.puBuf[l_uCurOff],
-                                                                                        l_tCurEle);
+                                                    l_eRes = eFSS_DB_SetEleRawInBuffer( l_tCurEle,
+                                                                                        &l_tBuff.puBuf[l_uCurOff] );
                                                     if( e_eFSS_DB_RES_OK == l_eRes )
                                                     {
                                                         /* Updated */
@@ -406,8 +406,8 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
                                             {
                                                 /* So it's a freslhy added parameter */
                                                 /* Need to update this entry */
-                                                l_eRes = eFSS_DB_SetEleRawInBuffer( &l_tBuff.puBuf[l_uCurOff],
-                                                                                    l_tCurEle );
+                                                l_eRes = eFSS_DB_SetEleRawInBuffer( l_tCurEle,
+                                                                                    &l_tBuff.puBuf[l_uCurOff] );
                                                 if( e_eFSS_DB_RES_OK == l_eRes )
                                                 {
                                                     /* Updated */
@@ -568,8 +568,8 @@ e_eFSS_DB_RES eFSS_DB_FormatToDefault(t_eFSS_DB_Ctx* const p_ptCtx)
                                 else
                                 {
                                     /* This element can be stored in this buffer */
-                                    l_eRes = eFSS_DB_SetEleRawInBuffer(&l_tBuff.puBuf[l_uCurOff],
-                                                                       p_ptCtx->tDB.ptDefEle[l_uCheckedElem]);
+                                    l_eRes = eFSS_DB_SetEleRawInBuffer(p_ptCtx->tDB.ptDefEle[l_uCheckedElem],
+                                                                       &l_tBuff.puBuf[l_uCurOff] );
                                     if( e_eFSS_DB_RES_OK == l_eRes )
                                     {
                                         /* Element inserted, increase the offset and start elaborating the next
@@ -721,8 +721,8 @@ e_eFSS_DB_RES eFSS_DB_SaveElemen(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_
                                                 l_tCurEle.uEleV = p_ptCtx->tDB.ptDefEle[p_uPos].uEleV;
                                                 l_tCurEle.puEleRaw = p_puRawVal;
 
-                                                l_eRes = eFSS_DB_SetEleRawInBuffer(&l_tBuff.puBuf[l_uCurOff],
-                                                                                   l_tCurEle);
+                                                l_eRes = eFSS_DB_SetEleRawInBuffer(l_tCurEle,
+                                                                                   &l_tBuff.puBuf[l_uCurOff] );
 
                                                 if( e_eFSS_DB_RES_OK == l_eRes )
                                                 {
@@ -1168,7 +1168,7 @@ static e_eFSS_DB_RES eFSS_DB_GetEleRawInBuffer(const uint16_t p_uExpEleL, uint8_
     return l_eRes;
 }
 
-static e_eFSS_DB_RES eFSS_DB_SetEleRawInBuffer(uint8_t* const p_puBuff, const t_eFSS_DB_DbElement p_tEleToSet)
+static e_eFSS_DB_RES eFSS_DB_SetEleRawInBuffer(const t_eFSS_DB_DbElement p_tEleToSet, uint8_t* const p_puBuff)
 {
     /* Local variable for result */
     e_eFSS_DB_RES l_eRes;
@@ -1286,7 +1286,7 @@ static e_eFSS_DB_RES eFSS_DB_FindElePageAndPos(const uint32_t p_uPageL, const t_
             if( e_eFSS_DB_RES_OK == l_eRes )
             {
                 /* Finded the page and the offset of the index we were looking for. We just need to check if
-                   the findeded element can be present on the current pages, if not icnrease it */
+                   the findeded element can be present on the current pages, if not increase it */
                 l_tCurEle = p_tDbDefault.ptDefEle[l_uCurIndex];
 
                 /* Just check element validty, not needed because we check context validity every time, but

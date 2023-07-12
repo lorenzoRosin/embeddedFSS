@@ -36,7 +36,7 @@ extern "C" {
  * We are saving element in a single storage page and we are not able to have an element splitted between two page.
  * If we need to remove element or change some element size the only safe way is to increase the version of the
  * storage (not of the element), but in this way the default value of every element is ripristinated and all previously
- * stored value are lost */
+ * stored value will be lost */
 typedef struct
 {
 	uint16_t uEleV;
