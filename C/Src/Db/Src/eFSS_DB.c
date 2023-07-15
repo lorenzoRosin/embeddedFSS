@@ -131,9 +131,9 @@ e_eFSS_DB_RES eFSS_DB_InitCtx(t_eFSS_DB_Ctx* const p_ptCtx, const t_eFSS_TYPE_Cb
                         /* All ok, fill context */
                         p_ptCtx->tDB = p_tDbStruct;
 
-                        /* Set to false fo the first operation. The user must check the DB before using IT in order
+                        /* Set to false for the first operation. The user must check the DB before using it in order
                            to controll that the stored DB is valid, that new version are updated and to set to default
-                           new parameter */
+                           value new parameters */
                         p_ptCtx->bIsDbCheked = false;
                     }
                 }
