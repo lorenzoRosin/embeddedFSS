@@ -292,7 +292,6 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
                                         if( ( l_uCurOff + l_tCurEle.uEleL + EFSS_DB_RAWOFF ) <= l_tBuff.uBufL )
                                         {
                                             /* Can retrive the element */
-                                            l_tGettedEle.uEleL = l_tCurEle.uEleL;
                                             l_eRes = eFSS_DB_GetEleRawInBuffer( l_tCurEle.uEleL,
                                                                                 &l_tBuff.puBuf[l_uCurOff],
                                                                                 &l_tGettedEle);
@@ -699,7 +698,6 @@ e_eFSS_DB_RES eFSS_DB_SaveElemen(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_
                                         /* Verify if the already stored element is correct */
                                         (void)memset(&l_tCurEle, 0u, sizeof(t_eFSS_DB_DbElement) );
 
-                                        l_tCurEle.uEleL = p_ptCtx->tDB.ptDefEle[p_uPos].uEleL;
                                         l_eRes = eFSS_DB_GetEleRawInBuffer( p_ptCtx->tDB.ptDefEle[p_uPos].uEleL,
                                                                             &l_tBuff.puBuf[l_uCurOff],
                                                                             &l_tCurEle);
@@ -799,7 +797,7 @@ e_eFSS_DB_RES eFSS_DB_GetElement(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_
                 }
                 else
                 {
-                    /* First time calling a function we need to check for the whole stored integrity.
+                    /* First time calling a function we need to check for the whole storage integrity.
                      * We need to do this check to be sure that the DB version is not increased, to be sure that
                      * parameter with updated version are setted to default value and that new parameter are
                      * initialized */
@@ -843,14 +841,16 @@ e_eFSS_DB_RES eFSS_DB_GetElement(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_
                                         /* Verify if the already stored element is correct */
                                         (void)memset(&l_tCurEle, 0u, sizeof(t_eFSS_DB_DbElement) );
 
-                                        l_tCurEle.uEleL = p_ptCtx->tDB.ptDefEle[p_uPos].uEleL;
+                                        /* Get element reference */
                                         l_eRes = eFSS_DB_GetEleRawInBuffer( p_ptCtx->tDB.ptDefEle[p_uPos].uEleL,
                                                                             &l_tBuff.puBuf[l_uCurOff],
                                                                             &l_tCurEle);
 
                                         if( e_eFSS_DB_RES_OK == l_eRes )
                                         {
-                                            /* Check if previous param has correct version and length */
+                                            /* At this point the database shoul be already checked,
+                                               but just to be surecheck if previous stored param has correct
+                                               version and length */
                                             if( l_tCurEle.uEleV != p_ptCtx->tDB.ptDefEle[p_uPos].uEleV )
                                             {
                                                 /* The database is incoherent, the version should match because
@@ -1130,6 +1130,7 @@ static e_eFSS_DB_RES eFSS_DB_GetEleRawInBuffer(const uint16_t p_uExpEleL, uint8_
         else
         {
             /* can be retrived, for now */
+            p_ptEleToGet->uEleV = 0u;
             if( true != eFSS_Utils_RetriveU16(&p_puBuff[EFSS_DB_VEROFF], &p_ptEleToGet->uEleV) )
             {
                 l_eRes = e_eFSS_DB_RES_CORRUPTCTX;
