@@ -528,6 +528,8 @@ e_eFSS_DB_RES eFSS_DB_FormatToDefault(t_eFSS_DB_Ctx* const p_ptCtx)
                 }
                 else
                 {
+                    /* no need to check if database was checked, we are formating anyway */
+
                     /* Get storage info */
                     l_uTotPage = 0u;
                     l_eDBCRes = eFSS_DBC_GetBuffNUsable(&p_ptCtx->tDbcCtx, &l_tBuff, &l_uTotPage);
@@ -537,14 +539,15 @@ e_eFSS_DB_RES eFSS_DB_FormatToDefault(t_eFSS_DB_Ctx* const p_ptCtx)
                     {
                         /* In order to format to default the DB we can just set to zero the buffer to flush
                            and copy inside it only the needed parameter. If no parameter are needed, we can
-                           just flush a zero filled buffer */
+                           just flush a zero filled buffer. Flushyng zero as data will leave open the possibility
+                           to add new parameter */
                         l_uCurrPage = 0u;
                         l_uCheckedElem = 0u;
 
                         /* Continue till we have setted all pages or an error occours */
                         while( ( l_uCurrPage < l_uTotPage ) && ( e_eFSS_DB_RES_OK == l_eRes ) )
                         {
-                            /* Memset the current page */
+                            /* Memset the current page to zero */
                             (void)memset(&l_tBuff.puBuf, 0, l_tBuff.uBufL);
 
                             /* Set to zero the numbers of byte used */
@@ -579,7 +582,7 @@ e_eFSS_DB_RES eFSS_DB_FormatToDefault(t_eFSS_DB_Ctx* const p_ptCtx)
                                 }
                             }
 
-                            /* Page is completed, we can push */
+                            /* Page is completed, we can flush */
                             if( e_eFSS_DB_RES_OK == l_eRes )
                             {
                                 l_eDBCRes = eFSS_DBC_FlushBuffInPage(&p_ptCtx->tDbcCtx, l_uCurrPage);
