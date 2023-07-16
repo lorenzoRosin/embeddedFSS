@@ -31,8 +31,8 @@
 typedef enum
 {
     e_eFSS_DB_RES_CHECK_ALREADYADDED = 0,
-    e_eFSS_DB_RES_CHECK_NEWADDED,
-    e_eFSS_DB_RES_CHECK_NODATA
+    e_eFSS_DB_RES_CHECK_NODATA,
+    e_eFSS_DB_RES_CHECK_NEWADDED
 }e_eFSS_DB_PRVSMCHECK_RES;
 
 
@@ -275,22 +275,15 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
                                 case e_eFSS_DB_RES_CHECK_ALREADYADDED:
                                 {
                                     /* Check if the current parameter is correct.
-                                       1 - If parameter is correct continue ( e_eFSS_DB_RES_CHECK_ALREADYADDED )
-                                       2 - If the parameter is wrong the database is corrupted ( return error )
+                                       1 - If parameter is correct ( version and length match ) continue
+                                           ( e_eFSS_DB_RES_CHECK_ALREADYADDED )
+                                       2 - If the parameter is wrong ( length dosent match but different from zero)
+                                           the database is corrupted ( return error )
                                        3 - If parameter is correct but has different version update and continue
                                            ( e_eFSS_DB_RES_CHECK_ALREADYADDED )
-                                       4 - If the parameter is new change status ( e_eFSS_DB_RES_CHECK_NEWADDED )
+                                       4 - If the parameter is new ( found only zeros) change status
+                                           ( e_eFSS_DB_RES_CHECK_NEWADDED )
                                        5 - If no more data is present change status ( e_eFSS_DB_RES_CHECK_NODATA ) */
-                                    l_eRes = e_eFSS_COREHL_RES_OK;
-                                    break;
-                                }
-
-                                case e_eFSS_DB_RES_CHECK_NEWADDED:
-                                {
-                                    /* Check if the current parameter is new.
-                                       1 - If the parameter is new add and continue ( e_eFSS_DB_RES_CHECK_NEWADDED )
-                                       1 - If the parameter is not new the database is corrupted ( return error )
-                                       1 - If no more data is present change status ( e_eFSS_DB_RES_CHECK_NODATA ) */
                                     l_eRes = e_eFSS_COREHL_RES_OK;
                                     break;
                                 }
@@ -298,7 +291,20 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
                                 case e_eFSS_DB_RES_CHECK_NODATA:
                                 {
                                     /* Check if the rest of the database is stored as zeros.
-                                       1 - If some data is different from zero the database is corrupted ( return error ) */
+                                       1 - If some data is different from zero the database is corrupted
+                                           ( return error ) */
+                                    l_eRes = e_eFSS_COREHL_RES_OK;
+                                    break;
+                                }
+
+                                case e_eFSS_DB_RES_CHECK_NEWADDED:
+                                {
+                                    /* Check if the current parameter is new.
+                                       1 - If the parameter is new (all zeros) add and continue
+                                           ( e_eFSS_DB_RES_CHECK_NEWADDED )
+                                       2 - If the parameter is not new ( soem byte differs from zero) the database is
+                                           corrupted ( return error )
+                                       3 - If no more data is present change status ( e_eFSS_DB_RES_CHECK_NODATA ) */
                                     l_eRes = e_eFSS_COREHL_RES_OK;
                                     break;
                                 }
