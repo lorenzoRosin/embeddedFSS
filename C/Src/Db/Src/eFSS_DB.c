@@ -201,6 +201,9 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
     bool_t l_bNewParAdd;
     bool_t l_bIsNewAllZero;
 
+    /* Check status local variable */
+    e_eFSS_DB_PRVSMCHECK_RES l_eCurStatus;
+
 	/* Check pointer validity */
 	if( NULL == p_ptCtx )
 	{
@@ -258,6 +261,7 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
                         l_uCurrPage = 0u;
                         l_uCheckedElem = 0u;
                         l_bNewParAdd = false;
+                        l_eCurStatus = e_eFSS_DB_RES_CHECK_ALREADYADDED;
 
                         /* Read and check every page of the storage area, stop if an error occours */
                         while( ( ( e_eFSS_DB_RES_OK == l_eRes ) ||
@@ -265,6 +269,48 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
                                  ( e_eFSS_DB_RES_PARAM_DEF_RESET == l_eRes ) ) &&
                                ( l_uCurrPage < l_uTotPage ) )
                         {
+                            /* Do check using current status */
+                            switch( l_eCurStatus )
+                            {
+                                case e_eFSS_DB_RES_CHECK_ALREADYADDED:
+                                {
+                                    /* Check if the current parameter is correct.
+                                       1 - If parameter is correct continue ( e_eFSS_DB_RES_CHECK_ALREADYADDED )
+                                       2 - If the parameter is wrong the database is corrupted ( return error )
+                                       3 - If parameter is correct but has different version update and continue
+                                           ( e_eFSS_DB_RES_CHECK_ALREADYADDED )
+                                       4 - If the parameter is new change status ( e_eFSS_DB_RES_CHECK_NEWADDED )
+                                       5 - If no more data is present change status ( e_eFSS_DB_RES_CHECK_NODATA ) */
+                                    l_eRes = e_eFSS_COREHL_RES_OK;
+                                    break;
+                                }
+
+                                case e_eFSS_DB_RES_CHECK_NEWADDED:
+                                {
+                                    /* Check if the current parameter is new.
+                                       1 - If the parameter is new add and continue ( e_eFSS_DB_RES_CHECK_NEWADDED )
+                                       1 - If the parameter is not new the database is corrupted ( return error )
+                                       1 - If no more data is present change status ( e_eFSS_DB_RES_CHECK_NODATA ) */
+                                    l_eRes = e_eFSS_COREHL_RES_OK;
+                                    break;
+                                }
+
+                                case e_eFSS_DB_RES_CHECK_NODATA:
+                                {
+                                    /* Check if the rest of the database is stored as zeros.
+                                       1 - If some data is different from zero the database is corrupted ( return error ) */
+                                    l_eRes = e_eFSS_COREHL_RES_OK;
+                                    break;
+                                }
+
+                                default:
+                                {
+                                    /* Impossible end here */
+                                    l_eRes = e_eFSS_COREHL_RES_CORRUPTCTX;
+                                    break;
+                                }
+                            }
+
                             /* Init page check, so we know if the page need to be stored after a modification */
                             l_bIsPageMod = false;
 
