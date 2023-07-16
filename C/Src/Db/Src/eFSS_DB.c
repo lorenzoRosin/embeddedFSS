@@ -704,7 +704,9 @@ e_eFSS_DB_RES eFSS_DB_SaveElemen(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_
 
                                         if( e_eFSS_DB_RES_OK == l_eRes )
                                         {
-                                            /* Check if previous param has correct version */
+                                            /* At this point the database should be already checked,
+                                               but just to be sure check if previous stored param has correct
+                                               version and length */
                                             if( l_tCurEle.uEleV != p_ptCtx->tDB.ptDefEle[p_uPos].uEleV )
                                             {
                                                 /* The database is incoherent, the version should match because
@@ -729,10 +731,13 @@ e_eFSS_DB_RES eFSS_DB_SaveElemen(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_
                                                                                          l_uCurOff);
                                                     l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
 
-                                                    if( ( e_eFSS_DB_RES_OK_BKP_RCVRD == l_eResLoad ) &&
-                                                        ( e_eFSS_DB_RES_OK == l_eRes ) )
+                                                    if( e_eFSS_DB_RES_OK == l_eRes )
                                                     {
-                                                        l_eRes = e_eFSS_DB_RES_OK_BKP_RCVRD;
+                                                        /* Check if we had some problem loading the buffer */
+                                                        if( e_eFSS_DB_RES_OK_BKP_RCVRD == l_eResLoad )
+                                                        {
+                                                            l_eRes = e_eFSS_DB_RES_OK_BKP_RCVRD;
+                                                        }
                                                     }
                                                 }
                                             }
@@ -848,8 +853,8 @@ e_eFSS_DB_RES eFSS_DB_GetElement(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_
 
                                         if( e_eFSS_DB_RES_OK == l_eRes )
                                         {
-                                            /* At this point the database shoul be already checked,
-                                               but just to be surecheck if previous stored param has correct
+                                            /* At this point the database should be already checked,
+                                               but just to be sure check if previous stored param has correct
                                                version and length */
                                             if( l_tCurEle.uEleV != p_ptCtx->tDB.ptDefEle[p_uPos].uEleV )
                                             {
