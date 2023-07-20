@@ -245,16 +245,16 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
                            that unused storage area must be set to zero, in this way if anothers entry is added
                            to the default struct we can set the default value of the entry that are actualy stored
                            with length of zero byte.
-                           So:
-                           1 - If we need to check some parameter from def database read a storage page.
-                           2 - For every readed storage page check that every entry has the same length of the default
-                               database. After that check the parameter version, and if they differ update parameter
-                               default value and version.
-                           3 - If some parameter is updated with a new default value flush the page in to the storage.
-                           4 - When checking entry length keep in mind that if the stored entry has length zero it
-                               could be possible that a new entry was added to the default database. In that case
-                               add the new parameter and continue. If the next stored parameter has a length different
-                               from zero the database was corrupted.
+                           So we must follow this steps:
+                           1 - Read a storage page and check every entry present in the just readed area. For every
+                               entry check that parameter legth match the default vaue stored in the database. If
+                               legth dosent match go to point 2. If parameter legth match check parameter version.
+                               If parameter version dosent match update the stored param with the default value
+                               and save the modified storage page.
+                           2 - Check that every remaining byte stored in all the remainings page are set to zero.
+                               If they differ from zero the database is invalid. If they are all zero we can assume
+                               that every parameter that we need to check are new parameter and they must be stored
+                               in the storage area.
                             Keep in mind that the pourpose of this function is to: update new parameter version,
                             update newly added parameter and check if parameter are correct. If the database is
                             corrupted, we can ripristinate it only calling eFSS_DB_FormatToDefault */
@@ -271,53 +271,112 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
                                  ( e_eFSS_DB_RES_PARAM_DEF_RESET == l_eRes ) ) &&
                                ( l_uCurrPage < l_uTotPage ) )
                         {
-                            /* Do check using current status */
-                            switch( l_eCurStatus )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                            /* Setup status */
+                            l_eCurStatus = e_eFSS_DB_RES_CHECK_ALREADYADDED;
+
+                            /* Execute the check */
+                            while ( e_eFSS_DB_RES_CHECK_FINISH != l_eCurStatus )
                             {
-                                case e_eFSS_DB_RES_CHECK_ALREADYADDED:
+                                /* Do check using current status */
+                                switch( l_eCurStatus )
                                 {
-                                    /* Check if the current parameter is correct.
-                                       1 - If parameter is correct ( version and length match ) continue
-                                           ( e_eFSS_DB_RES_CHECK_ALREADYADDED )
-                                       2 - If the parameter is wrong ( length dosent match but different from zero)
-                                           the database is corrupted ( return error )
-                                       3 - If parameter is correct but has different version update and continue
-                                           ( e_eFSS_DB_RES_CHECK_ALREADYADDED )
-                                       4 - If the parameter is new ( found only zeros) change status
-                                           ( e_eFSS_DB_RES_CHECK_NEWADDED )
-                                       5 - If no more data is present change status ( e_eFSS_DB_RES_CHECK_NODATA ) */
-                                    l_eRes = e_eFSS_COREHL_RES_OK;
-                                    break;
-                                }
+                                    case e_eFSS_DB_RES_CHECK_ALREADYADDED:
+                                    {
+                                        /* Check if the current parameter is correct.
+                                        1 - If parameter is correct ( version and length match ) continue
+                                            ( e_eFSS_DB_RES_CHECK_ALREADYADDED )
+                                        2 - If the parameter is wrong ( length dosent match but different from zero)
+                                            the database is corrupted ( return error )
+                                        3 - If parameter is correct but has different version update and continue
+                                            ( e_eFSS_DB_RES_CHECK_ALREADYADDED )
+                                        4 - If the parameter is new ( found only zeros) change status
+                                            ( e_eFSS_DB_RES_CHECK_NEWADDED )
+                                        5 - If no more data is present change status ( e_eFSS_DB_RES_CHECK_NODATA ) */
+                                        l_eRes = e_eFSS_COREHL_RES_OK;
+                                        break;
+                                    }
 
-                                case e_eFSS_DB_RES_CHECK_NODATA:
-                                {
-                                    /* Check if the rest of the database is stored as zeros.
-                                       1 - If some data is different from zero the database is corrupted
-                                           ( return error ) */
-                                    l_eRes = e_eFSS_COREHL_RES_OK;
-                                    break;
-                                }
+                                    case e_eFSS_DB_RES_CHECK_NODATA:
+                                    case e_eFSS_DB_RES_CHECK_NODATAANDAFTERNEWADDED:
+                                    {
+                                        /* Check if the rest of the database is stored as zeros.
+                                        1 - If some data is different from zero the database is corrupted
+                                            ( return error ) */
+                                        l_eRes = e_eFSS_COREHL_RES_OK;
+                                        break;
+                                    }
 
-                                case e_eFSS_DB_RES_CHECK_NEWADDED:
-                                {
-                                    /* Check if the current parameter is new.
-                                       1 - If the parameter is new (all zeros) add and continue
-                                           ( e_eFSS_DB_RES_CHECK_NEWADDED )
-                                       2 - If the parameter is not new ( soem byte differs from zero) the database is
-                                           corrupted ( return error )
-                                       3 - If no more data is present change status ( e_eFSS_DB_RES_CHECK_NODATA ) */
-                                    l_eRes = e_eFSS_COREHL_RES_OK;
-                                    break;
-                                }
+                                    case e_eFSS_DB_RES_CHECK_NEWADDED:
+                                    {
+                                        /* Check if the current parameter is new.
+                                        1 - If the parameter is new (all zeros) add and continue
+                                            ( e_eFSS_DB_RES_CHECK_NEWADDED )
+                                        2 - If the parameter is not new ( soem byte differs from zero) the database is
+                                            corrupted ( return error )
+                                        3 - If no more data is present change status ( e_eFSS_DB_RES_CHECK_NODATA ) */
+                                        l_eRes = e_eFSS_COREHL_RES_OK;
+                                        break;
+                                    }
 
-                                default:
-                                {
-                                    /* Impossible end here */
-                                    l_eRes = e_eFSS_COREHL_RES_CORRUPTCTX;
-                                    break;
+                                    default:
+                                    {
+                                        /* Impossible end here */
+                                        l_eRes = e_eFSS_COREHL_RES_CORRUPTCTX;
+                                        break;
+                                    }
                                 }
                             }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
                             /* Init page check, so we know if the page need to be stored after a modification */
                             l_bIsPageMod = false;
