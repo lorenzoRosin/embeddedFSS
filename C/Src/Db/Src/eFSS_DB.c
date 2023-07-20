@@ -298,6 +298,11 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
                             /* Setup status */
                             l_eCurStatus = e_eFSS_DB_RES_CHECK_ALREADYADDED;
 
+                            /* Init variable */
+                            l_uCurrPage = 0u;
+                            l_uCheckedElem = 0u;
+                            l_uCurOff = 0u;
+
                             /* Execute the check */
                             while ( e_eFSS_DB_RES_CHECK_FINISH != l_eCurStatus )
                             {
