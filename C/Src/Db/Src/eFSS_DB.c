@@ -187,8 +187,8 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
     uint32_t l_uTotPage;
 
     /* Page and offset local variable */
-    uint32_t l_uCurrPage;
-    uint32_t l_uCurOff;
+    uint32_t l_uCurrPageGlob;
+    uint32_t l_uCurOffGlob;
 
     /* Local variable for element check */
     uint32_t l_uCheckedElem;
@@ -260,7 +260,7 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
                             corrupted, we can ripristinate it only calling eFSS_DB_FormatToDefault */
 
                         /* Init variable */
-                        l_uCurrPage = 0u;
+                        l_uCurrPageGlob = 0u;
                         l_uCheckedElem = 0u;
                         l_bNewParAdd = false;
                         l_eCurStatus = e_eFSS_DB_RES_CHECK_ALREADYADDED;
@@ -269,9 +269,9 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
                         l_eCurStatus = e_eFSS_DB_RES_CHECK_ALREADYADDED;
 
                         /* Init variable */
-                        l_uCurrPage = 0u;
+                        l_uCurrPageGlob = 0u;
                         l_uCheckedElem = 0u;
-                        l_uCurOff = 0u;
+                        l_uCurOffGlob = 0u;
 
                         /* Execute the check */
                         while ( e_eFSS_DB_RES_CHECK_FINISH != l_eCurStatus )
@@ -285,26 +285,26 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
                                     while( ( ( e_eFSS_DB_RES_OK == l_eRes ) ||
                                              ( e_eFSS_DB_RES_OK_BKP_RCVRD == l_eRes ) ||
                                              ( e_eFSS_DB_RES_PARAM_DEF_RESET == l_eRes ) ) &&
-                                           ( l_uCurrPage < l_uTotPage ) &&
+                                           ( l_uCurrPageGlob < l_uTotPage ) &&
                                            ( e_eFSS_DB_RES_CHECK_ALREADYADDED == l_eCurStatus ) )
                                     {
                                         /* Init page check, so we know if the page need to be stored after a modification */
                                         l_bIsPageMod = false;
 
                                         /* Load the current page */
-                                        l_eDBCRes = eFSS_DBC_LoadPageInBuff(&p_ptCtx->tDbcCtx, l_uCurrPage);
+                                        l_eDBCRes = eFSS_DBC_LoadPageInBuff(&p_ptCtx->tDbcCtx, l_uCurrPageGlob);
                                         l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
 
                                         if( ( e_eFSS_DB_RES_OK == l_eRes ) || ( e_eFSS_DB_RES_OK_BKP_RCVRD == l_eRes ) )
                                         {
                                             /* Init variable */
-                                            l_uCurOff = 0u;
+                                            l_uCurOffGlob = 0u;
 
                                             /* Whole page just readed, check the page against the default value */
                                             while( ( ( e_eFSS_DB_RES_OK == l_eRes ) ||
                                                     ( e_eFSS_DB_RES_OK_BKP_RCVRD == l_eRes ) ||
                                                     ( e_eFSS_DB_RES_PARAM_DEF_RESET == l_eRes ) ) &&
-                                                ( l_uCurOff < l_tBuff.uBufL ) &&
+                                                ( l_uCurOffGlob < l_tBuff.uBufL ) &&
                                                 ( e_eFSS_DB_RES_CHECK_ALREADYADDED == l_eCurStatus ) )
                                             {
                                                 if( l_uCheckedElem < p_ptCtx->tDB.uNEle )
@@ -314,11 +314,11 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
 
                                                     /* Check parameter */
                                                     /* Is the checked parameter present in this page? */
-                                                    if( ( l_uCurOff + l_tCurEle.uEleL + EFSS_DB_RAWOFF ) <= l_tBuff.uBufL )
+                                                    if( ( l_uCurOffGlob + l_tCurEle.uEleL + EFSS_DB_RAWOFF ) <= l_tBuff.uBufL )
                                                     {
                                                         /* Can retrive the element */
                                                         l_eRes = eFSS_DB_GetEleRawInBuffer( l_tCurEle.uEleL,
-                                                                                            &l_tBuff.puBuf[l_uCurOff],
+                                                                                            &l_tBuff.puBuf[l_uCurOffGlob],
                                                                                             &l_tGettedEle);
                                                         if( e_eFSS_DB_RES_OK == l_eRes )
                                                         {
@@ -327,12 +327,12 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
                                                             {
                                                                 /* Need to update this entry */
                                                                 l_eRes = eFSS_DB_SetEleRawInBuffer( l_tCurEle,
-                                                                                                    &l_tBuff.puBuf[l_uCurOff] );
+                                                                                                    &l_tBuff.puBuf[l_uCurOffGlob] );
                                                                 if( e_eFSS_DB_RES_OK == l_eRes )
                                                                 {
                                                                     /* Updated */
                                                                     l_uCheckedElem++;
-                                                                    l_uCurOff += ( l_tCurEle.uEleL + EFSS_DB_RAWOFF );
+                                                                    l_uCurOffGlob += ( l_tCurEle.uEleL + EFSS_DB_RAWOFF );
                                                                     l_bIsPageMod = true;
                                                                     l_eRes = e_eFSS_DB_RES_PARAM_DEF_RESET;
                                                                 }
@@ -346,7 +346,7 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
                                                             {
                                                                 /* DB entry is ok, nothing to do */
                                                                 l_uCheckedElem++;
-                                                                l_uCurOff += ( l_tCurEle.uEleL + EFSS_DB_RAWOFF );
+                                                                l_uCurOffGlob += ( l_tCurEle.uEleL + EFSS_DB_RAWOFF );
                                                             }
                                                         }
                                                         else if( e_eFSS_DB_RES_NOTVALIDDB == l_eRes )
@@ -364,7 +364,7 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
                                                     else
                                                     {
                                                         /* No more space in this page for other parameter */
-                                                        l_uCurOff = l_tBuff.uBufL;
+                                                        l_uCurOffGlob = l_tBuff.uBufL;
                                                     }
                                                 }
                                                 else
@@ -377,11 +377,11 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
                                                 if( ( e_eFSS_DB_RES_OK == l_eRes ) || ( e_eFSS_DB_RES_OK_BKP_RCVRD == l_eRes ) ||
                                                     ( e_eFSS_DB_RES_PARAM_DEF_RESET == l_eRes ) )
                                                 {
-                                                    while( l_uCurOff < l_tBuff.uBufL )
+                                                    while( l_uCurOffGlob < l_tBuff.uBufL )
                                                     {
-                                                        if( 0u == l_tBuff.puBuf[l_uCurOff] )
+                                                        if( 0u == l_tBuff.puBuf[l_uCurOffGlob] )
                                                         {
-                                                            l_uCurOff++;
+                                                            l_uCurOffGlob++;
                                                         }
                                                         else
                                                         {
@@ -398,11 +398,11 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
                                                     /* If page is modified we need to store the new value */
                                                     if( true == l_bIsPageMod )
                                                     {
-                                                        l_eDBCRes = eFSS_DBC_FlushBuffInPage(&p_ptCtx->tDbcCtx, l_uCurrPage);
+                                                        l_eDBCRes = eFSS_DBC_FlushBuffInPage(&p_ptCtx->tDbcCtx, l_uCurrPageGlob);
                                                         l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
                                                     }
 
-                                                    l_uCurrPage++;
+                                                    l_uCurrPageGlob++;
                                                 }
                                             }
                                         }
@@ -421,10 +421,10 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
                                     /* check that every remaining byte is zero */
                                     while( ( ( e_eFSS_DB_RES_CHECK_NODATA == l_eCurStatus ) ||
                                              ( e_eFSS_DB_RES_CHECK_NODATAANDAFTERNEWADDED == l_eCurStatus ) ) &&
-                                           ( l_uCurrPage < l_uTotPage ) )
+                                           ( l_uCurrPageGlob < l_uTotPage ) )
                                     {
                                         /* Load the current page */
-                                        l_eDBCRes = eFSS_DBC_LoadPageInBuff(&p_ptCtx->tDbcCtx, l_uCurrPage);
+                                        l_eDBCRes = eFSS_DBC_LoadPageInBuff(&p_ptCtx->tDbcCtx, l_uCurrPageGlob);
                                         l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
 
                                         if( ( e_eFSS_DB_RES_OK == l_eRes ) || ( e_eFSS_DB_RES_OK_BKP_RCVRD == l_eRes ) )
@@ -432,12 +432,12 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
                                             /* Check every byte */
                                             while( ( ( e_eFSS_DB_RES_CHECK_NODATA == l_eCurStatus ) ||
                                                      ( e_eFSS_DB_RES_CHECK_NODATAANDAFTERNEWADDED == l_eCurStatus ) ) &&
-                                                   ( l_uCurOff < l_tBuff.uBufL ) )
+                                                   ( l_uCurOffGlob < l_tBuff.uBufL ) )
                                             {
-                                                if( 0u == l_tBuff.puBuf[l_uCurOff] )
+                                                if( 0u == l_tBuff.puBuf[l_uCurOffGlob] )
                                                 {
                                                     /* Ok continue */
-                                                    l_uCurOff++;
+                                                    l_uCurOffGlob++;
                                                 }
                                                 else
                                                 {
@@ -451,8 +451,8 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
                                             if( ( e_eFSS_DB_RES_CHECK_NODATA == l_eCurStatus ) ||
                                                 ( e_eFSS_DB_RES_CHECK_NODATAANDAFTERNEWADDED == l_eCurStatus ) )
                                             {
-                                                l_uCurOff = 0u;
-                                                l_uCurrPage++;
+                                                l_uCurOffGlob = 0u;
+                                                l_uCurrPageGlob++;
                                             }
                                         }
                                         else
@@ -478,19 +478,19 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
                                         l_bIsPageMod = false;
 
                                         /* Load the current page */
-                                        l_eDBCRes = eFSS_DBC_LoadPageInBuff(&p_ptCtx->tDbcCtx, l_uCurrPage);
+                                        l_eDBCRes = eFSS_DBC_LoadPageInBuff(&p_ptCtx->tDbcCtx, l_uCurrPageGlob);
                                         l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
 
                                         if( ( e_eFSS_DB_RES_OK == l_eRes ) || ( e_eFSS_DB_RES_OK_BKP_RCVRD == l_eRes ) )
                                         {
                                             /* Init variable */
-                                            l_uCurOff = 0u;
+                                            l_uCurOffGlob = 0u;
 
                                             /* Whole page just readed, check the page against the default value */
                                             while( ( ( e_eFSS_DB_RES_OK == l_eRes ) ||
                                                     ( e_eFSS_DB_RES_OK_BKP_RCVRD == l_eRes ) ||
                                                     ( e_eFSS_DB_RES_PARAM_DEF_RESET == l_eRes ) ) &&
-                                                ( l_uCurOff < l_tBuff.uBufL ) &&
+                                                ( l_uCurOffGlob < l_tBuff.uBufL ) &&
                                                 ( e_eFSS_DB_RES_CHECK_ALREADYADDED == l_eCurStatus ) )
                                             {
                                                 /* Get current parameter to check */
@@ -498,16 +498,16 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
 
                                                 /* Check parameter */
                                                 /* Is the checked parameter present in this page? */
-                                                if( ( l_uCurOff + l_tCurEle.uEleL + EFSS_DB_RAWOFF ) <= l_tBuff.uBufL )
+                                                if( ( l_uCurOffGlob + l_tCurEle.uEleL + EFSS_DB_RAWOFF ) <= l_tBuff.uBufL )
                                                 {
                                                     /* Need to update this entry */
                                                     l_eRes = eFSS_DB_SetEleRawInBuffer( l_tCurEle,
-                                                                                        &l_tBuff.puBuf[l_uCurOff] );
+                                                                                        &l_tBuff.puBuf[l_uCurOffGlob] );
                                                     if( e_eFSS_DB_RES_OK == l_eRes )
                                                     {
                                                         /* Updated */
                                                         l_uCheckedElem++;
-                                                        l_uCurOff += ( l_tCurEle.uEleL + EFSS_DB_RAWOFF );
+                                                        l_uCurOffGlob += ( l_tCurEle.uEleL + EFSS_DB_RAWOFF );
                                                         l_bIsPageMod = true;
                                                         l_eRes = e_eFSS_DB_RES_PARAM_DEF_RESET;
                                                     }
@@ -520,7 +520,7 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
                                                 else
                                                 {
                                                     /* No more space in this page for other parameter */
-                                                    l_uCurOff = l_tBuff.uBufL;
+                                                    l_uCurOffGlob = l_tBuff.uBufL;
                                                 }
 
                                                 /* If no error found and some change where made, flush the page */
@@ -530,11 +530,11 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
                                                     /* If page is modified we need to store the new value */
                                                     if( true == l_bIsPageMod )
                                                     {
-                                                        l_eDBCRes = eFSS_DBC_FlushBuffInPage(&p_ptCtx->tDbcCtx, l_uCurrPage);
+                                                        l_eDBCRes = eFSS_DBC_FlushBuffInPage(&p_ptCtx->tDbcCtx, l_uCurrPageGlob);
                                                         l_eRes = eFSS_DB_DBCtoDBRes(l_eDBCRes);
                                                     }
 
-                                                    l_uCurrPage++;
+                                                    l_uCurrPageGlob++;
                                                 }
                                             }
                                         }
