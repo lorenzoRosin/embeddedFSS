@@ -203,6 +203,9 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
     bool_t l_bIsPageModGlob;
     bool_t l_bIsPageModLoc;
 
+    /* Local variable to keep track of recoveredPage */
+    bool_t l_bIsPageRecFromBkup;
+
     /* Check status local variable */
     e_eFSS_DB_PRVSMCHECK_RES l_eCurStatus;
 
@@ -261,19 +264,13 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
 
                         /* Init variable */
                         l_uCurrPageGlob = 0u;
-                        l_uCheckedElem = 0u;
-                        l_eCurStatus = e_eFSS_DB_RES_CHECK_ALREADYADDED;
-
-                        /* Setup status */
-                        l_eCurStatus = e_eFSS_DB_RES_CHECK_ALREADYADDED;
-
-                        /* Init variable */
-                        l_uCurrPageGlob = 0u;
-                        l_uCheckedElem = 0u;
                         l_uCurOffGlob = 0u;
+                        l_uCheckedElem = 0u;
                         l_bIsPageModGlob = false;
+                        l_bIsPageRecFromBkup = false;
+                        l_eCurStatus = e_eFSS_DB_RES_CHECK_ALREADYADDED;
 
-                        /* Execute the check */
+                        /* Execute the check till we have finished */
                         while ( e_eFSS_DB_RES_CHECK_FINISH != l_eCurStatus )
                         {
                             /* Do check using current status */
@@ -588,6 +585,16 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
                             {
                                 /* In this case we have updated some value */
                                 l_eRes = e_eFSS_DB_RES_PARAM_DEF_RESET;
+                            }
+                            else if( true == l_bIsPageRecFromBkup )
+                            {
+                                /* Signal that a page was recovered from bkup */
+                                l_eRes = e_eFSS_DB_RES_OK_BKP_RCVRD;
+                            }
+                            else
+                            {
+                                /* All ok perfect */
+                                l_eRes = e_eFSS_DB_RES_OK;
                             }
                         }
                         else
