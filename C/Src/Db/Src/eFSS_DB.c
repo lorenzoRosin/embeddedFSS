@@ -293,6 +293,11 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
 
                                         if( ( e_eFSS_DB_RES_OK == l_eRes ) || ( e_eFSS_DB_RES_OK_BKP_RCVRD == l_eRes ) )
                                         {
+                                            if( e_eFSS_DB_RES_OK_BKP_RCVRD == l_eRes )
+                                            {
+                                                l_bIsPageRecFromBkup = true;
+                                            }
+
                                             /* Init variable */
                                             l_uCurOffGlob = 0u;
 
@@ -427,6 +432,11 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
 
                                         if( ( e_eFSS_DB_RES_OK == l_eRes ) || ( e_eFSS_DB_RES_OK_BKP_RCVRD == l_eRes ) )
                                         {
+                                            if( e_eFSS_DB_RES_OK_BKP_RCVRD == l_eRes )
+                                            {
+                                                l_bIsPageRecFromBkup = true;
+                                            }
+
                                             /* Check every byte */
                                             while( ( ( e_eFSS_DB_RES_CHECK_NODATA == l_eCurStatus ) ||
                                                      ( e_eFSS_DB_RES_CHECK_NODATAANDAFTERNEWADDED == l_eCurStatus ) ) &&
@@ -473,7 +483,7 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
                                     }
                                     else
                                     {
-                                        /* Nothing to modify here */
+                                        /* Operation ended with an error */
                                     }
 
                                     break;
@@ -494,6 +504,11 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
 
                                         if( ( e_eFSS_DB_RES_OK == l_eRes ) || ( e_eFSS_DB_RES_OK_BKP_RCVRD == l_eRes ) )
                                         {
+                                            if( e_eFSS_DB_RES_OK_BKP_RCVRD == l_eRes )
+                                            {
+                                                l_bIsPageRecFromBkup = true;
+                                            }
+
                                             /* Whole page just readed, check the page against the default value */
                                             while( ( l_uCurOffGlob < l_tBuff.uBufL ) &&
                                                    ( l_uCheckedElem < p_ptCtx->tDB.uNEle ) &&
