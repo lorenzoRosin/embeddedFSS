@@ -209,6 +209,9 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
     /* Check status local variable */
     e_eFSS_DB_PRVSMCHECK_RES l_eCurStatus;
 
+    /* Support buff */
+    uint8_t* l_puSupBuf;
+
 	/* Check pointer validity */
 	if( NULL == p_ptCtx )
 	{
@@ -323,8 +326,9 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
                                                             if( l_tCurEle.uEleV != l_tGettedEle.uEleV )
                                                             {
                                                                 /* Need to update this entry */
+                                                                l_puSupBuf = &l_tBuff.puBuf[l_uOffGlob];
                                                                 l_eRes = eFSS_DB_SetEleRawInBuffer( l_tCurEle,
-                                                                                                    &l_tBuff.puBuf[l_uOffGlob] );
+                                                                                                    l_puSupBuf );
                                                                 if( e_eFSS_DB_RES_OK == l_eRes )
                                                                 {
                                                                     /* Updated */
