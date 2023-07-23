@@ -118,16 +118,28 @@ e_eFSS_DB_RES eFSS_DB_IsInit(t_eFSS_DB_Ctx* const p_ptCtx, bool_t* const p_pbIsI
 
 /**
  * @brief       Check the whole database status. This function must be called before doing anything else with the
- *              the database.
- *              This function is reading all the entry of the database, so i can takes some times to execute.
+ *              the database. This function will update new entry, will check that already stored entry are
+ *              correct and not corrupted and will restored entry with a new version.
+ *              This function will read all the entry of the database, so i can takes some times to execute.
  *              If e_eFSS_DB_RES_NOTVALIDDB or e_eFSS_DB_RES_NEWVERSIONFOUND are returned it's means that the database
  *              cannot be used untill we use the function called eFSS_DB_FormatToDefault.
  *
  * @param[in]   p_ptCtx          - Database context
  *
- * @return      e_eFSS_DB_DBFL_BADPOINTER    - In case of bad pointer passed to the function
- *		        e_eFSS_DB_DBFL_BADPARAM      - In case of an invalid parameter passed to the function
- *              e_eFSS_DB_DBFL_OK            - Operation ended correctly
+ * @return      e_eFSS_DB_RES_BADPOINTER       - In case of bad pointer passed to the function
+ *		        e_eFSS_DB_RES_BADPARAM         - In case of an invalid parameter passed to the function
+ *		        e_eFSS_DB_RES_CORRUPTCTX       - Context is corrupted
+ *		        e_eFSS_DB_RES_NOINITLIB        - Need to init lib before calling function
+ *		        e_eFSS_DB_RES_CLBCKREADERR     - The read callback reported an error
+ *              e_eFSS_DB_RES_CLBCKCRCERR      - The crc callback reported an error
+ *              e_eFSS_DB_RES_NOTVALIDDB       - The readed page is invalid
+ *              e_eFSS_DB_RES_NEWVERSIONFOUND  - The readed page has a new version
+ *              e_eFSS_DB_RES_CLBCKERASEERR    - Error reported from the callback
+ *              e_eFSS_DB_RES_CLBCKWRITEERR    - Error reported from the callback
+ *              e_eFSS_DB_RES_WRITENOMATCHREAD - For some unknow reason data write dosent match data readed
+ *              e_eFSS_DB_RES_OK_BKP_RCVRD     - operation ended successfully recovering a backup or an origin page
+ *              e_eFSS_DB_RES_PARAM_DEF_RESET  - Some of the database entry were updated to a new version
+ *              e_eFSS_DB_RES_OK               - Operation ended correctly
  */
 e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx);
 
@@ -137,9 +149,20 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx);
  *
  * @param[in]   p_ptCtx    - Database context
  *
- * @return      e_eFSS_DB_RES_BADPOINTER    - In case of bad pointer passed to the function
- *		        e_eFSS_DB_RES_BADPARAM      - In case of an invalid parameter passed to the function
- *              e_eFSS_DB_RES_OK            - Operation ended correctly
+ * @return      e_eFSS_DB_RES_BADPOINTER       - In case of bad pointer passed to the function
+ *		        e_eFSS_DB_RES_BADPARAM         - In case of an invalid parameter passed to the function
+ *		        e_eFSS_DB_RES_CORRUPTCTX       - Context is corrupted
+ *		        e_eFSS_DB_RES_NOINITLIB        - Need to init lib before calling function
+ *		        e_eFSS_DB_RES_CLBCKREADERR     - The read callback reported an error
+ *              e_eFSS_DB_RES_CLBCKCRCERR      - The crc callback reported an error
+ *              e_eFSS_DB_RES_NOTVALIDDB       - The readed page is invalid
+ *              e_eFSS_DB_RES_NEWVERSIONFOUND  - The readed page has a new version
+ *              e_eFSS_DB_RES_CLBCKERASEERR    - Error reported from the callback
+ *              e_eFSS_DB_RES_CLBCKWRITEERR    - Error reported from the callback
+ *              e_eFSS_DB_RES_WRITENOMATCHREAD - For some unknow reason data write dosent match data readed
+ *              e_eFSS_DB_RES_OK_BKP_RCVRD     - operation ended successfully recovering a backup or an origin page
+ *              e_eFSS_DB_RES_PARAM_DEF_RESET  - Some of the database entry were updated to a new version
+ *              e_eFSS_DB_RES_OK               - Operation ended correctly
  */
 e_eFSS_DB_RES eFSS_DB_FormatToDefault(t_eFSS_DB_Ctx* const p_ptCtx);
 
@@ -151,9 +174,20 @@ e_eFSS_DB_RES eFSS_DB_FormatToDefault(t_eFSS_DB_Ctx* const p_ptCtx);
  * @param[in]   p_uRawValL    - Length of the element
  * @param[in]   p_puRawVal    - Raw value of the element we want to save that must be of size of p_uRawValL
  *
- * @return      e_eFSS_DB_RES_BADPOINTER    - In case of bad pointer passed to the function
- *		        e_eFSS_DB_RES_BADPARAM      - In case of an invalid parameter passed to the function
- *              e_eFSS_DB_RES_OK            - Operation ended correctly
+ * @return      e_eFSS_DB_RES_BADPOINTER       - In case of bad pointer passed to the function
+ *		        e_eFSS_DB_RES_BADPARAM         - In case of an invalid parameter passed to the function
+ *		        e_eFSS_DB_RES_CORRUPTCTX       - Context is corrupted
+ *		        e_eFSS_DB_RES_NOINITLIB        - Need to init lib before calling function
+ *		        e_eFSS_DB_RES_CLBCKREADERR     - The read callback reported an error
+ *              e_eFSS_DB_RES_CLBCKCRCERR      - The crc callback reported an error
+ *              e_eFSS_DB_RES_NOTVALIDDB       - The readed page is invalid
+ *              e_eFSS_DB_RES_NEWVERSIONFOUND  - The readed page has a new version
+ *              e_eFSS_DB_RES_CLBCKERASEERR    - Error reported from the callback
+ *              e_eFSS_DB_RES_CLBCKWRITEERR    - Error reported from the callback
+ *              e_eFSS_DB_RES_WRITENOMATCHREAD - For some unknow reason data write dosent match data readed
+ *              e_eFSS_DB_RES_OK_BKP_RCVRD     - operation ended successfully recovering a backup or an origin page
+ *              e_eFSS_DB_RES_PARAM_DEF_RESET  - Some of the database entry were updated to a new version
+ *              e_eFSS_DB_RES_OK               - Operation ended correctly
  */
 e_eFSS_DB_RES eFSS_DB_SaveElemen(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_uPos, const uint16_t p_uRawValL,
                                  uint8_t* const p_puRawVal);
@@ -166,9 +200,20 @@ e_eFSS_DB_RES eFSS_DB_SaveElemen(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_
  * @param[in]   p_uRawValL    - Length of the element
  * @param[out]  p_puRawVal    - Storage are of size p_uRawValL were we will save the element
  *
- * @return      e_eFSS_DB_RES_BADPOINTER    - In case of bad pointer passed to the function
- *		        e_eFSS_DB_RES_BADPARAM      - In case of an invalid parameter passed to the function
- *              e_eFSS_DB_RES_OK            - Operation ended correctly
+ * @return      e_eFSS_DB_RES_BADPOINTER       - In case of bad pointer passed to the function
+ *		        e_eFSS_DB_RES_BADPARAM         - In case of an invalid parameter passed to the function
+ *		        e_eFSS_DB_RES_CORRUPTCTX       - Context is corrupted
+ *		        e_eFSS_DB_RES_NOINITLIB        - Need to init lib before calling function
+ *		        e_eFSS_DB_RES_CLBCKREADERR     - The read callback reported an error
+ *              e_eFSS_DB_RES_CLBCKCRCERR      - The crc callback reported an error
+ *              e_eFSS_DB_RES_NOTVALIDDB       - The readed page is invalid
+ *              e_eFSS_DB_RES_NEWVERSIONFOUND  - The readed page has a new version
+ *              e_eFSS_DB_RES_CLBCKERASEERR    - Error reported from the callback
+ *              e_eFSS_DB_RES_CLBCKWRITEERR    - Error reported from the callback
+ *              e_eFSS_DB_RES_WRITENOMATCHREAD - For some unknow reason data write dosent match data readed
+ *              e_eFSS_DB_RES_OK_BKP_RCVRD     - operation ended successfully recovering a backup or an origin page
+ *              e_eFSS_DB_RES_PARAM_DEF_RESET  - Some of the database entry were updated to a new version
+ *              e_eFSS_DB_RES_OK               - Operation ended correctly
  */
 e_eFSS_DB_RES eFSS_DB_GetElement(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_uPos, const uint16_t p_uRawValL,
                                  uint8_t* const p_puRawVal);
