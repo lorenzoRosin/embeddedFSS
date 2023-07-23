@@ -132,13 +132,14 @@ e_eFSS_DB_RES eFSS_DB_IsInit(t_eFSS_DB_Ctx* const p_ptCtx, bool_t* const p_pbIsI
  *		        e_eFSS_DB_RES_NOINITLIB        - Need to init lib before calling function
  *		        e_eFSS_DB_RES_CLBCKREADERR     - The read callback reported an error
  *              e_eFSS_DB_RES_CLBCKCRCERR      - The crc callback reported an error
- *              e_eFSS_DB_RES_NOTVALIDDB       - The readed page is invalid
- *              e_eFSS_DB_RES_NEWVERSIONFOUND  - The readed page has a new version
+ *              e_eFSS_DB_RES_NOTVALIDDB       - Database is invalid
+ *              e_eFSS_DB_RES_NEWVERSIONFOUND  - The database has a new version
  *              e_eFSS_DB_RES_CLBCKERASEERR    - Error reported from the callback
  *              e_eFSS_DB_RES_CLBCKWRITEERR    - Error reported from the callback
  *              e_eFSS_DB_RES_WRITENOMATCHREAD - For some unknow reason data write dosent match data readed
  *              e_eFSS_DB_RES_OK_BKP_RCVRD     - operation ended successfully recovering a backup or an origin page
- *              e_eFSS_DB_RES_PARAM_DEF_RESET  - Some of the database entry were updated to a new version
+ *              e_eFSS_DB_RES_PARAM_DEF_RESET  - Some of the database entry were updated to a new version, or a new
+ *                                               entry is added
  *              e_eFSS_DB_RES_OK               - Operation ended correctly
  */
 e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx);
@@ -155,13 +156,14 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx);
  *		        e_eFSS_DB_RES_NOINITLIB        - Need to init lib before calling function
  *		        e_eFSS_DB_RES_CLBCKREADERR     - The read callback reported an error
  *              e_eFSS_DB_RES_CLBCKCRCERR      - The crc callback reported an error
- *              e_eFSS_DB_RES_NOTVALIDDB       - The readed page is invalid
- *              e_eFSS_DB_RES_NEWVERSIONFOUND  - The readed page has a new version
+ *              e_eFSS_DB_RES_NOTVALIDDB       - Database is invalid
+ *              e_eFSS_DB_RES_NEWVERSIONFOUND  - The database has a new version
  *              e_eFSS_DB_RES_CLBCKERASEERR    - Error reported from the callback
  *              e_eFSS_DB_RES_CLBCKWRITEERR    - Error reported from the callback
  *              e_eFSS_DB_RES_WRITENOMATCHREAD - For some unknow reason data write dosent match data readed
  *              e_eFSS_DB_RES_OK_BKP_RCVRD     - operation ended successfully recovering a backup or an origin page
- *              e_eFSS_DB_RES_PARAM_DEF_RESET  - Some of the database entry were updated to a new version
+ *              e_eFSS_DB_RES_DBNOTCHECKED     - The function eFSS_DB_GetDBStatus needs to be called before and
+ *                                               the status of the database need to be ok to proceed
  *              e_eFSS_DB_RES_OK               - Operation ended correctly
  */
 e_eFSS_DB_RES eFSS_DB_FormatToDefault(t_eFSS_DB_Ctx* const p_ptCtx);
@@ -180,13 +182,14 @@ e_eFSS_DB_RES eFSS_DB_FormatToDefault(t_eFSS_DB_Ctx* const p_ptCtx);
  *		        e_eFSS_DB_RES_NOINITLIB        - Need to init lib before calling function
  *		        e_eFSS_DB_RES_CLBCKREADERR     - The read callback reported an error
  *              e_eFSS_DB_RES_CLBCKCRCERR      - The crc callback reported an error
- *              e_eFSS_DB_RES_NOTVALIDDB       - The readed page is invalid
- *              e_eFSS_DB_RES_NEWVERSIONFOUND  - The readed page has a new version
+ *              e_eFSS_DB_RES_NOTVALIDDB       - Database is invalid
+ *              e_eFSS_DB_RES_NEWVERSIONFOUND  - The database has a new version
  *              e_eFSS_DB_RES_CLBCKERASEERR    - Error reported from the callback
  *              e_eFSS_DB_RES_CLBCKWRITEERR    - Error reported from the callback
  *              e_eFSS_DB_RES_WRITENOMATCHREAD - For some unknow reason data write dosent match data readed
  *              e_eFSS_DB_RES_OK_BKP_RCVRD     - operation ended successfully recovering a backup or an origin page
- *              e_eFSS_DB_RES_PARAM_DEF_RESET  - Some of the database entry were updated to a new version
+ *              e_eFSS_DB_RES_DBNOTCHECKED     - The function eFSS_DB_GetDBStatus needs to be called before and
+ *                                               the status of the database need to be ok to proceed
  *              e_eFSS_DB_RES_OK               - Operation ended correctly
  */
 e_eFSS_DB_RES eFSS_DB_SaveElemen(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_uPos, const uint16_t p_uRawValL,
@@ -206,13 +209,14 @@ e_eFSS_DB_RES eFSS_DB_SaveElemen(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_
  *		        e_eFSS_DB_RES_NOINITLIB        - Need to init lib before calling function
  *		        e_eFSS_DB_RES_CLBCKREADERR     - The read callback reported an error
  *              e_eFSS_DB_RES_CLBCKCRCERR      - The crc callback reported an error
- *              e_eFSS_DB_RES_NOTVALIDDB       - The readed page is invalid
- *              e_eFSS_DB_RES_NEWVERSIONFOUND  - The readed page has a new version
+ *              e_eFSS_DB_RES_NOTVALIDDB       - Database is invalid
+ *              e_eFSS_DB_RES_NEWVERSIONFOUND  - The database has a new version
  *              e_eFSS_DB_RES_CLBCKERASEERR    - Error reported from the callback
  *              e_eFSS_DB_RES_CLBCKWRITEERR    - Error reported from the callback
  *              e_eFSS_DB_RES_WRITENOMATCHREAD - For some unknow reason data write dosent match data readed
  *              e_eFSS_DB_RES_OK_BKP_RCVRD     - operation ended successfully recovering a backup or an origin page
- *              e_eFSS_DB_RES_PARAM_DEF_RESET  - Some of the database entry were updated to a new version
+ *              e_eFSS_DB_RES_DBNOTCHECKED     - The function eFSS_DB_GetDBStatus needs to be called before and
+ *                                               the status of the database need to be ok to proceed
  *              e_eFSS_DB_RES_OK               - Operation ended correctly
  */
 e_eFSS_DB_RES eFSS_DB_GetElement(t_eFSS_DB_Ctx* const p_ptCtx, const uint32_t p_uPos, const uint16_t p_uRawValL,
