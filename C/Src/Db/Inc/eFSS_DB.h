@@ -127,7 +127,6 @@ e_eFSS_DB_RES eFSS_DB_IsInit(t_eFSS_DB_Ctx* const p_ptCtx, bool_t* const p_pbIsI
  * @param[in]   p_ptCtx          - Database context
  *
  * @return      e_eFSS_DB_RES_BADPOINTER       - In case of bad pointer passed to the function
- *		        e_eFSS_DB_RES_BADPARAM         - In case of an invalid parameter passed to the function
  *		        e_eFSS_DB_RES_CORRUPTCTX       - Context is corrupted
  *		        e_eFSS_DB_RES_NOINITLIB        - Need to init lib before calling function
  *		        e_eFSS_DB_RES_CLBCKREADERR     - The read callback reported an error
@@ -151,7 +150,6 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx);
  * @param[in]   p_ptCtx    - Database context
  *
  * @return      e_eFSS_DB_RES_BADPOINTER       - In case of bad pointer passed to the function
- *		        e_eFSS_DB_RES_BADPARAM         - In case of an invalid parameter passed to the function
  *		        e_eFSS_DB_RES_CORRUPTCTX       - Context is corrupted
  *		        e_eFSS_DB_RES_NOINITLIB        - Need to init lib before calling function
  *		        e_eFSS_DB_RES_CLBCKREADERR     - The read callback reported an error
