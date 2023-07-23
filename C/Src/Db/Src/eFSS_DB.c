@@ -415,6 +415,13 @@ e_eFSS_DB_RES eFSS_DB_GetDBStatus(t_eFSS_DB_Ctx* const p_ptCtx)
                                             l_eCurStatus = e_eFSS_DB_RES_CHECK_FINISH;
                                         }
                                     }
+
+                                    if ( e_eFSS_DB_RES_CHECK_ALREADYADDED == l_eCurStatus )
+                                    {
+                                        /* This means that we have finished the check  */
+                                        l_eCurStatus = e_eFSS_DB_RES_CHECK_FINISH;
+                                    }
+
                                     break;
                                 }
 
