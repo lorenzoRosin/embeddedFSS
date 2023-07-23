@@ -53,6 +53,7 @@ static e_eFSS_BLOB_RES eFSS_BLOB_IsAreaValid(t_eFSS_BLOB_Ctx* const p_ptCtx, con
                                              bool_t* const p_pbIsVal);
 
 
+
 /***********************************************************************************************************************
  *   GLOBAL FUNCTIONS
  **********************************************************************************************************************/
@@ -1176,7 +1177,7 @@ static e_eFSS_BLOB_RES eFSS_BLOB_BlobCtoBLOBRes(const e_eFSS_BLOBC_RES p_eCRes)
 
         case e_eFSS_BLOBC_RES_NEWVERSIONFOUND:
         {
-            l_eRes = e_eFSS_BLOB_RES_NEWVERSIONBLOB;
+            l_eRes = e_eFSS_BLOB_RES_NEWVERSIONFOUND;
             break;
         }
 
