@@ -90,30 +90,43 @@ e_eFSS_BLOB_RES eFSS_BLOB_InitCtx(t_eFSS_BLOB_Ctx* const p_ptCtx, const t_eFSS_T
             if( e_eFSS_BLOB_RES_OK == l_eRes )
             {
                 /* Check if page length is OK */
-                if( l_tBuff.uBufL < EFSS_BLOB_MINPAGESIZE )
+                if( ( l_uUsePages <= 0u ) || ( l_tBuff.uBufL < EFSS_BLOB_MINPAGESIZE ) )
                 {
                     /* We need more space for the BLOB */
                     l_eRes = e_eFSS_BLOB_RES_BADPARAM;
 
                     /* De init BLOBC */
                     (void)memset(&p_ptCtx->tBLOBCCtx, 0, sizeof(t_eFSS_BLOBC_Ctx));
-                }
-                else
-                {
-                    /* All ok, fill context */
+
+                    /* De init current context */
+                    p_ptCtx->bIsBlobCheked = false;
                     p_ptCtx->bIsWriteOngoing = false;
                     p_ptCtx->uDataWritten = 0u;
                     p_ptCtx->uCrcOfDataWritten = 0u;
                     p_ptCtx->uCurrentSeqN = 0u;
 
-                    /* Set to false fo the first operation, this will trigger a stored BLOB check */
+                }
+                else
+                {
+                    /* All ok, fill context */
                     p_ptCtx->bIsBlobCheked = false;
+                    p_ptCtx->bIsWriteOngoing = false;
+                    p_ptCtx->uDataWritten = 0u;
+                    p_ptCtx->uCrcOfDataWritten = 0u;
+                    p_ptCtx->uCurrentSeqN = 0u;
                 }
             }
             else
             {
                 /* De init BLOBC */
                 (void)memset(&p_ptCtx->tBLOBCCtx, 0, sizeof(t_eFSS_BLOBC_Ctx));
+
+                /* De init current context */
+                p_ptCtx->bIsBlobCheked = false;
+                p_ptCtx->bIsWriteOngoing = false;
+                p_ptCtx->uDataWritten = 0u;
+                p_ptCtx->uCrcOfDataWritten = 0u;
+                p_ptCtx->uCurrentSeqN = 0u;
             }
         }
     }
@@ -124,7 +137,7 @@ e_eFSS_BLOB_RES eFSS_BLOB_InitCtx(t_eFSS_BLOB_Ctx* const p_ptCtx, const t_eFSS_T
 e_eFSS_BLOB_RES eFSS_BLOB_IsInit(t_eFSS_BLOB_Ctx* const p_ptCtx, bool_t* const p_pbIsInit)
 {
 	/* Local variable */
-	e_eFSS_BLOB_RES l_eRes;
+    e_eFSS_BLOB_RES l_eRes;
     e_eFSS_BLOBC_RES l_eResC;
 
 	/* Check pointer validity */
