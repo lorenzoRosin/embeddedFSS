@@ -249,43 +249,55 @@ e_eFSS_BLOB_RES eFSS_BLOB_GetInfo(t_eFSS_BLOB_Ctx* const p_ptCtx, uint32_t* cons
                 }
                 else
                 {
-                    if( true == p_ptCtx->bIsWriteOngoing )
+                    /* First time calling a function we need to check for the whole stored integrity */
+                    if( false == p_ptCtx->bIsBlobCheked )
                     {
-                        l_eRes = e_eFSS_BLOB_RES_WRITEONGOING;
+                        /* Check status */
+                        l_eRes = e_eFSS_BLOB_RES_BLOBNOTCHECKED;
                     }
                     else
                     {
-                        l_eRes = eFSS_BLOB_OriginBackupAligner(p_ptCtx, false);
-
-                        if( ( e_eFSS_BLOB_RES_OK == l_eRes ) || ( e_eFSS_BLOB_RES_OK_BKP_RCVRD == l_eRes ) )
+                        /* If a write operation is started we are not able to provide correct data */
+                        if( true == p_ptCtx->bIsWriteOngoing )
                         {
-                            /* Retrive parameter from the last page, we are sure that some correct data will be
-                               retrived because eFSS_BLOB_OriginBackupAligner is called before this operation */
-                            l_uUsePages = 0u;
-                            l_eResC = eFSS_BLOBC_GetBuffNUsable(&p_ptCtx->tBLOBCCtx, &l_tBuff, &l_uUsePages);
-                            l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
+                            l_eRes = e_eFSS_BLOB_RES_WRITEONGOING;
+                        }
+                        else
+                        {
+                            /* Blob initialized and no write ongoing. Call aligner in order to fix
+                               eventual run time corruption that can occour in the original or backup section */
+                            l_eRes = eFSS_BLOB_OriginBackupAligner(p_ptCtx, false);
 
-                            if( e_eFSS_BLOB_RES_OK == l_eRes )
+                            if( ( e_eFSS_BLOB_RES_OK == l_eRes ) || ( e_eFSS_BLOB_RES_OK_BKP_RCVRD == l_eRes ) )
                             {
-                                /* Load the last page, where blob length is stored */
-                                l_eResC = eFSS_BLOBC_LoadPageInBuff(&p_ptCtx->tBLOBCCtx, true,
-                                                                        ( l_uUsePages - 1u ), &l_uSeqNumb);
+                                /* Retrive parameter from the last page, we are sure that some correct data will be
+                                retrived because eFSS_BLOB_OriginBackupAligner is called before this operation */
+                                l_uUsePages = 0u;
+                                l_eResC = eFSS_BLOBC_GetBuffNUsable(&p_ptCtx->tBLOBCCtx, &l_tBuff, &l_uUsePages);
                                 l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
+
                                 if( e_eFSS_BLOB_RES_OK == l_eRes )
                                 {
-                                    /* Extract data from the last page */
-                                    if( true != eFSS_Utils_RetriveU32(&l_tBuff.puBuf[l_tBuff.uBufL - EFSS_BLOB_LENOFF],
-                                                                      p_puBlobSize ) )
+                                    /* Load the last page, where blob length is stored */
+                                    l_eResC = eFSS_BLOBC_LoadPageInBuff(&p_ptCtx->tBLOBCCtx, true,
+                                                                            ( l_uUsePages - 1u ), &l_uSeqNumb);
+                                    l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
+                                    if( e_eFSS_BLOB_RES_OK == l_eRes )
                                     {
-                                        l_eRes = e_eFSS_BLOB_RES_CORRUPTCTX;
-                                    }
-                                    else
-                                    {
-                                        /* Is retrived size coherent? (do it just to be sure, even if not needed) */
-                                        l_uMaxBlobSize = ( l_uUsePages * l_tBuff.uBufL ) - EFSS_BLOB_LENOFF;
-                                        if( *p_puBlobSize > l_uMaxBlobSize )
+                                        /* Extract data from the last page */
+                                        if( true != eFSS_Utils_RetriveU32(&l_tBuff.puBuf[l_tBuff.uBufL - EFSS_BLOB_LENOFF],
+                                                                        p_puBlobSize ) )
                                         {
-                                            l_eRes = e_eFSS_BLOB_RES_NOTVALIDBLOB;
+                                            l_eRes = e_eFSS_BLOB_RES_CORRUPTCTX;
+                                        }
+                                        else
+                                        {
+                                            /* Is retrived size coherent? (do it just to be sure, even if not needed) */
+                                            l_uMaxBlobSize = ( l_uUsePages * l_tBuff.uBufL ) - EFSS_BLOB_LENOFF;
+                                            if( *p_puBlobSize > l_uMaxBlobSize )
+                                            {
+                                                l_eRes = e_eFSS_BLOB_RES_NOTVALIDBLOB;
+                                            }
                                         }
                                     }
                                 }
