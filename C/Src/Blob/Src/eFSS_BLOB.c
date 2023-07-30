@@ -9,9 +9,9 @@
 
 /* In this module we need to keep in mind a few things:
  * 1 - The file in order to be valid must have the same sequntial number on every pages.
- * 2 - We can call write function multiple time, but we can stored the value of file size and CRC only when the write
- *     process is DONE. So during the write process we could have and invalid file on the originals page, but we will
- *     have a valid file on the backup pages.
+ * 2 - We can call write function multiple time, but we can store the value of file size and CRC only when the write
+ *     process is DONE. So during the write process we will have and invalid file on the originals page, but we will
+ *     have the previous valid file on the backup pages.
  * 3 - File CRC and SIZE are store on the last 8 byte ot the last page, in this order: FILE LENGTH, FILE CRC
  * 4 - During the write process we are not able to perform any additcional operation
  * 5 - Buffer passed during init as support buffer can be used for other operation when we are not calling a module
