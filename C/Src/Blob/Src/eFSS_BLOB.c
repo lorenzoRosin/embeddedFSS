@@ -48,7 +48,7 @@ static e_eFSS_BLOB_RES eFSS_BLOB_BlobCtoBLOBRes(const e_eFSS_BLOBC_RES p_eCRes);
 /***********************************************************************************************************************
  *  PRIVATE UTILS STATIC FUNCTION DECLARATION
  **********************************************************************************************************************/
-static e_eFSS_BLOB_RES eFSS_BLOB_OriginBackupAligner(t_eFSS_BLOB_Ctx* const p_ptCtx, const bool_t p_bForce);
+static e_eFSS_BLOB_RES eFSS_BLOB_OriginBackupAligner(t_eFSS_BLOB_Ctx* const p_ptCtx);
 static e_eFSS_BLOB_RES eFSS_BLOB_IsAreaValid(t_eFSS_BLOB_Ctx* const p_ptCtx, const bool_t p_bIsOri,
                                              bool_t* const p_pbIsVal);
 
@@ -197,7 +197,13 @@ e_eFSS_BLOB_RES eFSS_BLOB_GetStorageStatus(t_eFSS_BLOB_Ctx* const p_ptCtx)
                     else
                     {
                         /* Align if possible corrupted area, forcing the process */
-                        l_eRes = eFSS_BLOB_OriginBackupAligner(p_ptCtx, true);
+                        l_eRes = eFSS_BLOB_OriginBackupAligner(p_ptCtx);
+
+                        if( ( e_eFSS_BLOB_RES_OK == l_eRes ) || ( e_eFSS_BLOB_RES_OK_BKP_RCVRD == l_eRes ) )
+                        {
+                            /* All ok now */
+                            p_ptCtx->bIsBlobCheked = false;
+                        }
                     }
                 }
             }
@@ -266,12 +272,12 @@ e_eFSS_BLOB_RES eFSS_BLOB_GetInfo(t_eFSS_BLOB_Ctx* const p_ptCtx, uint32_t* cons
                         {
                             /* Blob initialized and no write ongoing. Call aligner in order to fix
                                eventual run time corruption that can occour in the original or backup section */
-                            l_eRes = eFSS_BLOB_OriginBackupAligner(p_ptCtx, false);
+                            l_eRes = eFSS_BLOB_OriginBackupAligner(p_ptCtx);
 
                             if( ( e_eFSS_BLOB_RES_OK == l_eRes ) || ( e_eFSS_BLOB_RES_OK_BKP_RCVRD == l_eRes ) )
                             {
                                 /* Retrive parameter from the last page, we are sure that some correct data will be
-                                retrived because eFSS_BLOB_OriginBackupAligner is called before this operation */
+                                   retrived because eFSS_BLOB_OriginBackupAligner is called before this operation */
                                 l_uUsePages = 0u;
                                 l_eResC = eFSS_BLOBC_GetBuffNUsable(&p_ptCtx->tBLOBCCtx, &l_tBuff, &l_uUsePages);
                                 l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
@@ -280,13 +286,13 @@ e_eFSS_BLOB_RES eFSS_BLOB_GetInfo(t_eFSS_BLOB_Ctx* const p_ptCtx, uint32_t* cons
                                 {
                                     /* Load the last page, where blob length is stored */
                                     l_eResC = eFSS_BLOBC_LoadPageInBuff(&p_ptCtx->tBLOBCCtx, true,
-                                                                            ( l_uUsePages - 1u ), &l_uSeqNumb);
+                                                                        ( l_uUsePages - 1u ), &l_uSeqNumb);
                                     l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
                                     if( e_eFSS_BLOB_RES_OK == l_eRes )
                                     {
                                         /* Extract data from the last page */
                                         if( true != eFSS_Utils_RetriveU32(&l_tBuff.puBuf[l_tBuff.uBufL - EFSS_BLOB_LENOFF],
-                                                                        p_puBlobSize ) )
+                                                                           p_puBlobSize ) )
                                         {
                                             l_eRes = e_eFSS_BLOB_RES_CORRUPTCTX;
                                         }
@@ -500,7 +506,7 @@ e_eFSS_BLOB_RES eFSS_BLOB_ReadBlob(t_eFSS_BLOB_Ctx* const p_ptCtx, const uint32_
                     else
                     {
                         /* Fix any memory problem */
-                        l_eRes = eFSS_BLOB_OriginBackupAligner(p_ptCtx, false);
+                        l_eRes = eFSS_BLOB_OriginBackupAligner(p_ptCtx);
 
                         if( ( e_eFSS_BLOB_RES_OK == l_eRes ) || ( e_eFSS_BLOB_RES_OK_BKP_RCVRD == l_eRes ) )
                         {
@@ -642,7 +648,7 @@ e_eFSS_BLOB_RES eFSS_BLOB_StartWrite(t_eFSS_BLOB_Ctx* const p_ptCtx)
                     else
                     {
                         /* Fix any memory problem */
-                        l_eRes = eFSS_BLOB_OriginBackupAligner(p_ptCtx, false);
+                        l_eRes = eFSS_BLOB_OriginBackupAligner(p_ptCtx);
 
                         if( ( e_eFSS_BLOB_RES_OK == l_eRes ) || ( e_eFSS_BLOB_RES_OK_BKP_RCVRD == l_eRes ) )
                         {
@@ -1228,7 +1234,7 @@ static e_eFSS_BLOB_RES eFSS_BLOB_BlobCtoBLOBRes(const e_eFSS_BLOBC_RES p_eCRes)
     return l_eRes;
 }
 
-static e_eFSS_BLOB_RES eFSS_BLOB_OriginBackupAligner(t_eFSS_BLOB_Ctx* const p_ptCtx, const bool_t p_bForce)
+static e_eFSS_BLOB_RES eFSS_BLOB_OriginBackupAligner(t_eFSS_BLOB_Ctx* const p_ptCtx)
 {
 	/* Local return variable */
 	e_eFSS_BLOB_RES l_eRes;
@@ -1244,7 +1250,7 @@ static e_eFSS_BLOB_RES eFSS_BLOB_OriginBackupAligner(t_eFSS_BLOB_Ctx* const p_pt
     l_eRes = e_eFSS_BLOB_RES_OK;
 
     /* Check if alignement is needed */
-    if( ( true == p_bForce ) || ( false == p_ptCtx->bIsBlobCheked ) )
+    if( false == p_ptCtx->bIsBlobCheked )
     {
         /* Get needed data structures */
         l_eResC = eFSS_BLOBC_GetBuffNUsable(&p_ptCtx->tBLOBCCtx, &l_tBuff, &l_uUsableP);
@@ -1308,6 +1314,8 @@ static e_eFSS_BLOB_RES eFSS_BLOB_OriginBackupAligner(t_eFSS_BLOB_Ctx* const p_pt
         /* Be sure to redo the check */
         p_ptCtx->bIsBlobCheked = false;
     }
+
+    /* Add verify parameter coherence and sequence number different from zero */
 
 	return l_eRes;
 }
