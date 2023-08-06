@@ -33,6 +33,7 @@
 #define EFSS_BLOB_MINPAGESIZE                                                             ( ( uint32_t )         0x09u )
 #define EFSS_BLOB_LENOFF                                                                  ( ( uint32_t )         0x08u )
 #define EFSS_BLOB_CRCOFF                                                                  ( ( uint32_t )         0x04u )
+#define EFSS_SEQN_START                                                                   ( ( uint32_t )         0x01u )
 #define EFSS_BLOB_SEED                                                                    ( ( uint32_t )  0x0FFFFFFFFu )
 
 
@@ -329,7 +330,6 @@ e_eFSS_BLOB_RES eFSS_BLOB_Format(t_eFSS_BLOB_Ctx* const p_ptCtx)
     t_eFSS_BLOBC_StorBuf l_tBuff;
     uint32_t l_uUsePages;
     uint32_t l_uCurrPage;
-    uint32_t l_uBlobCrc;
     uint32_t l_uCrcOffset;
 
 	/* Check pointer validity */
@@ -359,32 +359,32 @@ e_eFSS_BLOB_RES eFSS_BLOB_Format(t_eFSS_BLOB_Ctx* const p_ptCtx)
                 }
                 else
                 {
+                    /* If a write operation is started we are not able to do other operation */
                     if( true == p_ptCtx->bIsWriteOngoing )
                     {
                         l_eRes = e_eFSS_BLOB_RES_WRITEONGOING;
                     }
                     else
                     {
+                        /* No need to check if the image was already verified, we are formatting it anyway, now
+                           get some basic info */
                         l_uUsePages = 0u;
                         l_eResC = eFSS_BLOBC_GetBuffNUsable(&p_ptCtx->tBLOBCCtx, &l_tBuff, &l_uUsePages);
                         l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
 
                         if( e_eFSS_BLOB_RES_OK == l_eRes )
                         {
-                            /* Erase internal status data */
-                            p_ptCtx->bIsBlobCheked = true;
-                            p_ptCtx->bIsWriteOngoing = false;
-                            p_ptCtx->uDataWritten = 0u;
-                            p_ptCtx->uCrcOfDataWritten = 0u;
-                            p_ptCtx->uCurrentSeqN = 0u;
-
-                            /* Init crc with default seed */
-                            l_uBlobCrc = EFSS_BLOB_SEED;
+                            /* To format the blob we need to :
+                               1 - Write zero in every page
+                               2 - Use One as sequence numbers of every page
+                               2 - use as CRC the seed
+                               3 - Write in the last page the calculated CRC and Zero as blob Len
+                             */
 
                             /* Init local variable */
                             l_uCurrPage = 0u;
 
-                            /* Write at zero every pages of the origin area, after that update backup one  */
+                            /* Do the things here */
                             while( ( l_uCurrPage < l_uUsePages ) && ( e_eFSS_BLOB_RES_OK == l_eRes ) )
                             {
                                 /* Clear buffer */
@@ -392,35 +392,19 @@ e_eFSS_BLOB_RES eFSS_BLOB_Format(t_eFSS_BLOB_Ctx* const p_ptCtx)
 
                                 if( ( l_uUsePages - 1u ) == l_uCurrPage )
                                 {
-                                    /* Last page, calculate the CRC but exlude the CRC itself, and after that insert
-                                       it inside the last page */
+                                    /* Last page, Insert the CRC seed. No need to udpate the LEN because is zero  */
                                     l_uCrcOffset = ( l_tBuff.uBufL - EFSS_BLOB_CRCOFF );
-                                    l_eResC = eFSS_BLOBC_CalcCrcInBuff(&p_ptCtx->tBLOBCCtx, l_uBlobCrc,
-                                                                             l_uCrcOffset, &l_uBlobCrc);
-                                    l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
-
-                                    if( e_eFSS_BLOB_RES_OK == l_eRes )
+                                    if( true != eFSS_Utils_InsertU32(&l_tBuff.puBuf[l_uCrcOffset], EFSS_BLOB_SEED ) )
                                     {
-                                        /* Insert the CRC inside the buffer */
-                                        if( true != eFSS_Utils_InsertU32(&l_tBuff.puBuf[l_uCrcOffset],
-                                                                         l_uBlobCrc ) )
-                                        {
-                                            l_eRes = e_eFSS_BLOB_RES_CORRUPTCTX;
-                                        }
+                                        l_eRes = e_eFSS_BLOB_RES_CORRUPTCTX;
                                     }
-                                }
-                                else
-                                {
-                                    /* This is not the last page, can calculate the CRC of the whole buffer */
-                                    l_eResC = eFSS_BLOBC_CalcCrcInBuff(&p_ptCtx->tBLOBCCtx, l_uBlobCrc,
-                                                                             l_tBuff.uBufL, &l_uBlobCrc);
-                                    l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
                                 }
 
                                 /* If all ok flush the page in storage */
                                 if( e_eFSS_BLOB_RES_OK == l_eRes )
                                 {
-                                    l_eResC = eFSS_BLOBC_FlushBufferInPage(&p_ptCtx->tBLOBCCtx, true, l_uCurrPage, 0u );
+                                    l_eResC = eFSS_BLOBC_FlushBufferInPage( &p_ptCtx->tBLOBCCtx, true, l_uCurrPage,
+                                                                            EFSS_SEQN_START );
                                     l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
                                 }
 
@@ -428,15 +412,20 @@ e_eFSS_BLOB_RES eFSS_BLOB_Format(t_eFSS_BLOB_Ctx* const p_ptCtx)
                                 l_uCurrPage++;
                             }
 
+                            /* original page done, if all ok create the backup */
                             if( e_eFSS_BLOB_RES_OK == l_eRes )
                             {
-                                /* Original pages are OK, need to clone backup */
-                                l_uCurrPage = 0u;
+                                l_eResC = eFSS_BLOBC_CloneArea(&p_ptCtx->tBLOBCCtx, true);
+                                l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
 
-                                while( ( l_uCurrPage < l_uUsePages ) && ( e_eFSS_BLOB_RES_OK == l_eRes ) )
+                                if( e_eFSS_BLOB_RES_OK == l_eRes )
                                 {
-                                    l_eResC = eFSS_BLOBC_CloneArea(&p_ptCtx->tBLOBCCtx, true);
-                                    l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
+                                    /* Erase internal status data */
+                                    p_ptCtx->bIsBlobCheked = true;
+                                    p_ptCtx->bIsWriteOngoing = false;
+                                    p_ptCtx->uDataWritten = 0u;
+                                    p_ptCtx->uCrcOfDataWritten = 0u;
+                                    p_ptCtx->uCurrentSeqN = EFSS_SEQN_START;
                                 }
                             }
                         }
@@ -1046,7 +1035,9 @@ e_eFSS_BLOB_RES eFSS_BLOB_AbortWrite(t_eFSS_BLOB_Ctx* const p_ptCtx)
                     }
                     else
                     {
-                        /* In order to abort a write we just need to ripristinate backup pages */
+                        /* In order to abort a write we just need to ripristinate backup pages.
+                           If for some reasons the backup page are corrupted we will recognize this situation
+                           during any other operation. */
                         l_eResC = eFSS_BLOBC_CloneArea(&p_ptCtx->tBLOBCCtx, false);
                         l_eRes = eFSS_BLOB_BlobCtoBLOBRes(l_eResC);
 
@@ -1323,6 +1314,10 @@ static e_eFSS_BLOB_RES eFSS_BLOB_OriginBackupAligner(t_eFSS_BLOB_Ctx* const p_pt
 static e_eFSS_BLOB_RES eFSS_BLOB_IsAreaValid(t_eFSS_BLOB_Ctx* const p_ptCtx, const bool_t p_bIsOri,
                                              bool_t* const p_pbIsVal)
 {
+    /* The LEN refeers to the LEN of the written blob.
+       The CRC refers ponly to the CRC of the written buffer. If len is zero the CRC is the SEED.
+       Other written data must be setted to zero */
+
 	/* Local return variable */
 	e_eFSS_BLOB_RES l_eRes;
     e_eFSS_BLOBC_RES l_eResC;
